@@ -36,7 +36,7 @@ export interface DetailedActivity {
   splits_metric: Split;
   splits_standard: Split;
   sport_type: ActivityType;
-  start_date_local: Date;
+  start_date_local: string;
   start_date: string;
   start_latlng: number[];
   timezone: string;

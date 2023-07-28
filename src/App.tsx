@@ -2,52 +2,41 @@ import {ChangeEvent, useState} from 'react';
 import {
   Checkbox,
   Input,
-  ListItem,
   Heading,
   Spinner,
   Stack,
   VStack,
   Box,
+  Center,
+  List,
+  Button,
+  InputRightElement,
+  InputGroup,
   Tag,
   HStack,
-  TagLeftIcon,
-  TagLabel,
-  Center,
-  ListIcon,
-  List,
-  Spacer,
-  Button,
 } from '@chakra-ui/react';
-import {GiPathDistance} from 'react-icons/gi';
-import {MdOutlineShowChart, MdOutlineSpeed, MdOutlineTimer} from 'react-icons/md';
+import {SortType, SORT_TYPES} from './models';
+import {ActivityListItem, ProgressChart, Stats} from './components';
 import {useActivities} from './hooks';
-import {
-  SortType,
-  formatDistance,
-  formatDuration,
-  formatElevation,
-  formatSpeed,
-  getActivityTypeIcon,
-  sortTypes,
-} from './models';
 
-const ACTIVITY_URL = 'https://www.strava.com/activities/';
+const DEFAULT_SORT: SortType = 'date';
 
 const App = () => {
-  const [showCommute, setShowCommute] = useState<boolean>(false);
-  const [showPrivate, setShowPrivate] = useState<boolean>(false);
+  const [withCommute, setwithCommute] = useState<boolean>(true);
+  const [withPrivate, setwithPrivate] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
-  const [sort, setSort] = useState<SortType>('date');
-  const activities = useActivities({search, showCommute, sort, showPrivate});
+  const [activeSort, setActiveSort] = useState<SortType>(DEFAULT_SORT);
 
-  const handleCommuteChange = (event: ChangeEvent<HTMLInputElement>) => setShowCommute(event.target.checked);
-  const handlePrivateChange = (event: ChangeEvent<HTMLInputElement>) => setShowPrivate(event.target.checked);
+  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate});
+
+  const handleCommuteChange = (event: ChangeEvent<HTMLInputElement>) => setwithCommute(event.target.checked);
+  const handlePrivateChange = (event: ChangeEvent<HTMLInputElement>) => setwithPrivate(event.target.checked);
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value);
-  const handleSortChange = (sortType: SortType) => () => setSort(sortType);
+  const handleSortChange = (sortType: SortType) => () => setActiveSort(sortType);
 
   if (null === activities) {
     return (
-      <Center height="full" flexDirection="column" gap="10">
+      <Center height="full" flexDirection="column" gap={10}>
         <Heading as="h1" size="lg">
           Fetching activities
         </Heading>
@@ -56,64 +45,46 @@ const App = () => {
     );
   }
 
-  console.log(activities);
-
   return (
-    <Box padding={4} margin="0 auto" width="4xl">
-      <VStack spacing={4} align="stretch">
-        <Heading as="h3" size="lg">
-          {activities.length} activities
-        </Heading>
-        <Input autoFocus={true} value={search} onChange={handleSearchChange} />
-        <Stack direction={['row']} alignSelf="center">
-          {Object.values(sortTypes).map(sortType => (
-            <Button
-              variant="ghost"
-              isActive={sort === sortType.value}
-              onClick={handleSortChange(sortType.value as SortType)}
-            >
-              {sortType.label}
-            </Button>
-          ))}
-        </Stack>
-        <Stack direction={['column']}>
-          <Checkbox checked={showCommute} onChange={handleCommuteChange}>
-            Show commute
-          </Checkbox>
-          <Checkbox checked={showPrivate} onChange={handlePrivateChange}>
-            Show private
-          </Checkbox>
-        </Stack>
-        <List shadow="md" padding={4}>
-          {activities.map(activity => (
-            <ListItem key={activity.id} height={8}>
-              <HStack spacing={2}>
-                <ListIcon as={getActivityTypeIcon(activity.sport_type)} />
-                <a target="_blank" href={`${ACTIVITY_URL}${activity.id}`}>
-                  {activity.name}
-                </a>
-                <Spacer />
-                <Tag>
-                  <TagLeftIcon as={GiPathDistance}></TagLeftIcon>
-                  <TagLabel>{formatDistance(activity.distance)}</TagLabel>
-                </Tag>
-                <Tag>
-                  <TagLeftIcon as={MdOutlineShowChart}></TagLeftIcon>
-                  <TagLabel>{formatElevation(activity.total_elevation_gain)}</TagLabel>
-                </Tag>
-                <Tag>
-                  <TagLeftIcon as={MdOutlineTimer}></TagLeftIcon>
-                  <TagLabel>{formatDuration(activity.moving_time)}</TagLabel>
-                </Tag>
-                <Tag>
-                  <TagLeftIcon as={MdOutlineSpeed}></TagLeftIcon>
-                  <TagLabel>{formatSpeed(activity.average_speed)}</TagLabel>
-                </Tag>
-              </HStack>
-            </ListItem>
-          ))}
-        </List>
-      </VStack>
+    <Box padding={10}>
+      <HStack alignItems="baseline" gap={10}>
+        <VStack align="stretch" flex={0.75} gap={10}>
+          <Stats />
+          <ProgressChart />
+        </VStack>
+        <VStack align="stretch" flex={1}>
+          <InputGroup>
+            <Input placeholder="Search" autoFocus={true} value={search} onChange={handleSearchChange} />
+            <InputRightElement marginRight={2}>
+              <Tag>{activities.length}</Tag>
+            </InputRightElement>
+          </InputGroup>
+          <Stack direction={['row']} alignSelf="center">
+            {Object.values(SORT_TYPES).map(sortType => (
+              <Button
+                key={sortType.value}
+                variant="ghost"
+                colorScheme="orange"
+                isActive={activeSort === sortType.value}
+                onClick={handleSortChange(sortType.value as SortType)}
+              >
+                {sortType.label}
+              </Button>
+            ))}
+            <Checkbox isChecked={withCommute} onChange={handleCommuteChange}>
+              Commute?
+            </Checkbox>
+            <Checkbox isChecked={withPrivate} onChange={handlePrivateChange}>
+              Private?
+            </Checkbox>
+          </Stack>
+          <List>
+            {activities.map(activity => (
+              <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} />
+            ))}
+          </List>
+        </VStack>
+      </HStack>
     </Box>
   );
 };
