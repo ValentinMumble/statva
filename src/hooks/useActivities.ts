@@ -1,15 +1,24 @@
 import {useEffect, useState} from 'react';
-import {DetailedActivity, SortType} from '../models';
+import {ActivityType, DetailedActivity, SortType} from '../models';
 import {getActivities} from '../strava';
 
 type ActivityFilter = {
-  search: string;
-  showCommute: boolean;
-  showPrivate: boolean;
-  sort: SortType;
+  search?: string;
+  sort?: SortType;
+  sortDirection?: 'asc' | 'desc';
+  excludedActivityTypes?: ActivityType[];
+  withCommute: boolean;
+  withPrivate: boolean;
 };
 
-const useActivities = ({showCommute, showPrivate, search, sort}: ActivityFilter) => {
+const useActivities = ({
+  withCommute,
+  withPrivate,
+  search = '',
+  sort = 'date',
+  sortDirection = 'asc',
+  excludedActivityTypes = [ActivityType.AlpineSki],
+}: ActivityFilter) => {
   const [activities, setActivities] = useState<DetailedActivity[] | null>(null);
 
   useEffect(() => {
@@ -27,23 +36,28 @@ const useActivities = ({showCommute, showPrivate, search, sort}: ActivityFilter)
   }
 
   return activities
-    .filter(({commute}) => commute === false || true === showCommute)
-    .filter(activity => activity.private === false || true === showPrivate)
+    .filter(({commute}) => commute === false || true === withCommute)
+    .filter(activity => activity.private === false || true === withPrivate)
     .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
+    .filter(({type}) => !excludedActivityTypes.includes(type))
     .sort((a, b) => {
+      const [first, second] = 'asc' === sortDirection ? [a, b] : [b, a];
+
       switch (sort) {
         case 'name':
-          return a.name < b.name ? 1 : -1;
+          return first.name < second.name ? 1 : -1;
         case 'elevation':
-          return b.total_elevation_gain - a.total_elevation_gain;
+          return second.total_elevation_gain - first.total_elevation_gain;
         case 'distance':
-          return b.distance - a.distance;
+          return second.distance - first.distance;
         case 'date':
-          return a.start_date < b.start_date ? 1 : -1;
+          return first.start_date < second.start_date ? 1 : -1;
         case 'duration':
-          return b.moving_time - a.moving_time;
+          return second.moving_time - first.moving_time;
         case 'average_speed':
-          return b.average_speed - a.average_speed;
+          return second.average_speed - first.average_speed;
+        case 'max_speed':
+          return second.max_speed - first.max_speed;
       }
     });
 };
