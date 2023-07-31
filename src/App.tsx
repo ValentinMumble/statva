@@ -14,6 +14,7 @@ import {
   InputGroup,
   Tag,
   HStack,
+  Select,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES} from './models';
 import {ActivityListItem, ProgressChart, Stats} from './components';
@@ -21,18 +22,44 @@ import {useActivities} from './hooks';
 
 const DEFAULT_SORT: SortType = 'date';
 
+const GEARS: {label: string; value: string}[] = [
+  {
+    value: 'b12655849',
+    label: '🐈‍⬛',
+  },
+  {
+    value: 'b11897955',
+    label: '🦖',
+  },
+  {
+    value: 'b3121762',
+    label: '🐝',
+  },
+  {
+    value: 'b2391730',
+    label: '🦎',
+  },
+  {
+    value: 'b2417181',
+    label: '🫐',
+  },
+];
+
 const App = () => {
   const [withCommute, setwithCommute] = useState<boolean>(true);
   const [withPrivate, setwithPrivate] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
   const [activeSort, setActiveSort] = useState<SortType>(DEFAULT_SORT);
+  const [gearId, setGearId] = useState<string>();
 
-  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate});
+  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate, gearId});
 
-  const handleCommuteChange = (event: ChangeEvent<HTMLInputElement>) => setwithCommute(event.target.checked);
-  const handlePrivateChange = (event: ChangeEvent<HTMLInputElement>) => setwithPrivate(event.target.checked);
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value);
+  const handleCommuteChange = ({target}: ChangeEvent<HTMLInputElement>) => setwithCommute(target.checked);
+  const handlePrivateChange = ({target}: ChangeEvent<HTMLInputElement>) => setwithPrivate(target.checked);
+  const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
   const handleSortChange = (sortType: SortType) => () => setActiveSort(sortType);
+  const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
+    setGearId('' === target.value ? undefined : target.value);
 
   if (null === activities) {
     return (
@@ -71,6 +98,13 @@ const App = () => {
                 {sortType.label}
               </Button>
             ))}
+            <Select placeholder="🚲" width={20} onChange={handleGearChange}>
+              {GEARS.map(({value, label}) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
             <Checkbox isChecked={withCommute} onChange={handleCommuteChange}>
               Commute?
             </Checkbox>

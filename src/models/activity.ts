@@ -23,7 +23,6 @@ const SORT_TYPES = {
     value: 'elevation',
     label: '⛰️',
   },
-
   duration: {
     value: 'duration',
     label: '⏱️',
