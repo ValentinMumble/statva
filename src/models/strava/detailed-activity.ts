@@ -1,4 +1,4 @@
-import {DetailedSegmentEffort, Lap, MetaAthlete, PhotoSummary, PolylineMap, Split, SummaryGear, ActivityType} from '.';
+import {DetailedSegmentEffort, Lap, MetaAthlete, PhotoSummary, PolylineMap, Split, ActivityType} from '.';
 
 export interface DetailedActivity {
   id: number;
@@ -20,7 +20,7 @@ export interface DetailedActivity {
   end_latlng: number[];
   external_id: string;
   flagged: boolean;
-  gear: SummaryGear;
+  gear_id: string;
   has_kudoed: boolean;
   kudos_count: number;
   laps: Lap[];
