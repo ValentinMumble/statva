@@ -30,12 +30,8 @@ const options: ApexCharts.ApexOptions = {
     size: [5],
   },
   chart: {
-    toolbar: {
-      show: false,
-    },
-    zoom: {
-      enabled: false,
-    },
+    toolbar: {show: false},
+    zoom: {enabled: false},
   },
 };
 
@@ -54,6 +50,7 @@ const ProgressChart = () => {
 
   const averageSpeedSerie = activities.map(activity => activity.average_speed);
   const labels = activities.map(activity => new Date(activity.start_date_local).toLocaleDateString());
+  const series = [{name: 'Average speed', data: averageSpeedSerie}];
 
   return (
     <Chart
@@ -61,7 +58,7 @@ const ProgressChart = () => {
         ...options,
         labels,
       }}
-      series={[{name: 'Average speed', data: averageSpeedSerie}]}
+      series={series}
       type="line"
       height={400}
     />

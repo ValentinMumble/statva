@@ -8,6 +8,7 @@ type ActivityFilter = {
   sortDirection?: 'asc' | 'desc';
   excludedActivityTypes?: ActivityType[];
   gearId?: string;
+  year?: number;
   withCommute: boolean;
   withPrivate: boolean;
 };
@@ -20,6 +21,7 @@ const useActivities = ({
   sortDirection = 'asc',
   excludedActivityTypes = [ActivityType.AlpineSki],
   gearId,
+  year,
 }: ActivityFilter) => {
   const [activities, setActivities] = useState<DetailedActivity[] | null>(null);
 
@@ -42,6 +44,7 @@ const useActivities = ({
     .filter(activity => activity.private === false || true === withPrivate)
     .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
     .filter(({gear_id}) => gearId === undefined || gear_id === gearId)
+    .filter(({start_date}) => undefined === year || new Date(start_date).getUTCFullYear() === year)
     .filter(({type}) => !excludedActivityTypes.includes(type))
     .sort((a, b) => {
       const [first, second] = 'asc' === sortDirection ? [a, b] : [b, a];
