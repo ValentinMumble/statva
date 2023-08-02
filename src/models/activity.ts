@@ -13,7 +13,7 @@ const SORT_TYPES = {
   },
   date: {
     value: 'date',
-    label: '📆',
+    label: '📅',
   },
   distance: {
     value: 'distance',
