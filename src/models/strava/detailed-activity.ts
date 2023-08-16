@@ -6,6 +6,7 @@ export interface DetailedActivity {
   athlete_count: number;
   athlete: MetaAthlete;
   average_speed: number;
+  average_watts: number;
   best_efforts: DetailedSegmentEffort[];
   calories: number;
   comment_count: number;

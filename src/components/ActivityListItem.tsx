@@ -1,7 +1,13 @@
 import {HStack, ListIcon, ListItem, Spacer, Tag, TagLabel, TagLeftIcon} from '@chakra-ui/react';
 import {IconType} from 'react-icons';
 import {GiPathDistance} from 'react-icons/gi';
-import {MdOutlineShowChart, MdOutlineTimer, MdOutlineSpeed, MdOutlineRocketLaunch} from 'react-icons/md';
+import {
+  MdOutlineShowChart,
+  MdOutlineTimer,
+  MdOutlineSpeed,
+  MdOutlineRocketLaunch,
+  MdOutlineElectricBolt,
+} from 'react-icons/md';
 import {
   ACTIVITY_URL,
   DetailedActivity,
@@ -44,6 +50,11 @@ const TAGS: ActivityTag[] = [
     label: activity => formatSpeed(activity.max_speed),
     icon: MdOutlineRocketLaunch,
     sortType: 'max_speed',
+  },
+  {
+    label: activity => `${activity.average_watts?.toFixed(0) ?? 0} W`,
+    icon: MdOutlineElectricBolt,
+    sortType: 'average_watts',
   },
 ];
 
