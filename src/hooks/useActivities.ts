@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {ActivityType, DetailedActivity, SortType} from '../models';
+import {ActivityType, DEFAULT_EXCLUDED_ACTIVITY_TYPES, DetailedActivity, SortType} from '../models';
 import {getActivities} from '../strava';
 
 type ActivityFilter = {
@@ -19,7 +19,7 @@ const useActivities = ({
   search = '',
   sort = 'date',
   sortDirection = 'asc',
-  excludedActivityTypes = [ActivityType.AlpineSki],
+  excludedActivityTypes = DEFAULT_EXCLUDED_ACTIVITY_TYPES,
   gearId,
   year,
 }: ActivityFilter) => {
@@ -43,7 +43,7 @@ const useActivities = ({
     .filter(({commute}) => commute === false || true === withCommute)
     .filter(activity => activity.private === false || true === withPrivate)
     .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
-    .filter(({gear_id}) => gearId === undefined || gear_id === gearId)
+    .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))
     .filter(({start_date}) => undefined === year || new Date(start_date).getUTCFullYear() === year)
     .filter(({type}) => !excludedActivityTypes.includes(type))
     .sort((a, b) => {
@@ -64,6 +64,8 @@ const useActivities = ({
           return second.average_speed - first.average_speed;
         case 'max_speed':
           return second.max_speed - first.max_speed;
+        case 'average_watts':
+          return second.average_watts - first.average_watts;
       }
     });
 };

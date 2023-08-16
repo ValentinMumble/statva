@@ -1,8 +1,10 @@
-import {GiDutchBike, GiSkier} from 'react-icons/gi';
-import {LiaBicycleSolid} from 'react-icons/lia';
+import {GiSkier} from 'react-icons/gi';
+import {PiBicycle, PiBicycleFill} from 'react-icons/pi';
 import {TbKayak} from 'react-icons/tb';
 import {MdOutlineLock} from 'react-icons/md';
 import {ActivityType, DetailedActivity} from './strava';
+
+const DEFAULT_EXCLUDED_ACTIVITY_TYPES: ActivityType[] = [ActivityType.AlpineSki, ActivityType.Kayaking];
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
@@ -35,7 +37,37 @@ const SORT_TYPES = {
     value: 'max_speed',
     label: '🚀',
   },
+  average_watts: {
+    value: 'average_watts',
+    label: '⚡️',
+  },
 };
+
+const GEARS: {[id: string]: {label: string; value: string}} = {
+  b12655849: {
+    value: 'b12655849',
+    label: '🐈‍⬛',
+  },
+  b11897955: {
+    value: 'b11897955',
+    label: '🦖',
+  },
+  b3121762: {
+    value: 'b3121762',
+    label: '🐝',
+  },
+  b2391730: {
+    value: 'b2391730',
+    label: '🦎',
+  },
+  b2417181: {
+    value: 'b2417181',
+    label: '🫐',
+  },
+  null: {value: 'null', label: '🤷'},
+};
+
+const YEARS = [2015, 2016, 2017, 2018, 2023, 2024];
 
 type SortType = keyof typeof SORT_TYPES;
 
@@ -48,12 +80,12 @@ const getActivityIcon = (activity: DetailedActivity) => {
     case ActivityType.AlpineSki:
       return GiSkier;
     case ActivityType.GravelRide:
-      return GiDutchBike;
+      return PiBicycleFill;
     case ActivityType.Kayaking:
       return TbKayak;
     case ActivityType.Ride:
     default:
-      return LiaBicycleSolid;
+      return PiBicycle;
   }
 };
 
@@ -84,7 +116,10 @@ const getMaxValue = (activities: DetailedActivity[], value: keyof DetailedActivi
 
 export {
   ACTIVITY_URL,
+  DEFAULT_EXCLUDED_ACTIVITY_TYPES,
+  GEARS,
   SORT_TYPES,
+  YEARS,
   formatDistance,
   formatDuration,
   formatElevation,

@@ -16,36 +16,11 @@ import {
   HStack,
   Select,
 } from '@chakra-ui/react';
-import {SortType, SORT_TYPES} from './models';
-import {ActivityListItem, DistanceChart, ProgressChart, Stats} from './components';
+import {SortType, SORT_TYPES, GEARS, YEARS} from './models';
+import {ActivityListItem, DistanceChart, GearChart, ProgressChart, Stats} from './components';
 import {useActivities} from './hooks';
 
 const DEFAULT_SORT: SortType = 'date';
-
-const GEARS: {label: string; value: string}[] = [
-  {
-    value: 'b12655849',
-    label: '🐈‍⬛',
-  },
-  {
-    value: 'b11897955',
-    label: '🦖',
-  },
-  {
-    value: 'b3121762',
-    label: '🐝',
-  },
-  {
-    value: 'b2391730',
-    label: '🦎',
-  },
-  {
-    value: 'b2417181',
-    label: '🫐',
-  },
-];
-
-const YEARS = [2015, 2016, 2017, 2018, 2023, 2024];
 
 const App = () => {
   const [withCommute, setwithCommute] = useState<boolean>(true);
@@ -85,6 +60,7 @@ const App = () => {
           <Stats />
           <ProgressChart />
           <DistanceChart />
+          <GearChart />
         </VStack>
         <VStack align="stretch" flex={1}>
           <InputGroup>
@@ -106,7 +82,7 @@ const App = () => {
               </Button>
             ))}
             <Select placeholder="🚲" width={24} value={gearId} onChange={handleGearChange}>
-              {GEARS.map(({value, label}) => (
+              {Object.values(GEARS).map(({value, label}) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
