@@ -1,7 +1,7 @@
 import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText} from '@chakra-ui/react';
 import {useActivities} from '../hooks';
 import {
-  ActivityType,
+  DEFAULT_EXCLUDED_ACTIVITY_TYPES,
   DetailedActivity,
   formatDistance,
   formatDuration,
@@ -9,8 +9,6 @@ import {
   getMaxValue,
   getTotalValue,
 } from '../models';
-
-const EXCLUDED_TYPES = [ActivityType.AlpineSki, ActivityType.Kayaking];
 
 type Stat = {
   label: string;
@@ -32,7 +30,7 @@ const STATS: Stat[] = [
   {
     label: '⛰️',
     helpText: 'Total D+',
-    number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain'), 2),
+    number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain'), 1),
   },
   {
     label: '⏱️',
@@ -55,7 +53,7 @@ const Stats = ({}: StatsProps) => {
     return null;
   }
 
-  const filteredActivities = activities.filter(activity => !EXCLUDED_TYPES.includes(activity.type));
+  const filteredActivities = activities.filter(activity => !DEFAULT_EXCLUDED_ACTIVITY_TYPES.includes(activity.type));
 
   return (
     <StatGroup>
