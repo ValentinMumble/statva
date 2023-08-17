@@ -1,7 +1,6 @@
 import {GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill} from 'react-icons/pi';
 import {TbKayak} from 'react-icons/tb';
-import {MdOutlineLock} from 'react-icons/md';
 import {ActivityType, DetailedActivity} from './strava';
 
 const DEFAULT_EXCLUDED_ACTIVITY_TYPES: ActivityType[] = [ActivityType.AlpineSki, ActivityType.Kayaking];
@@ -72,10 +71,6 @@ const YEARS = [2015, 2016, 2017, 2018, 2023, 2024];
 type SortType = keyof typeof SORT_TYPES;
 
 const getActivityIcon = (activity: DetailedActivity) => {
-  if (activity.private) {
-    return MdOutlineLock;
-  }
-
   switch (activity.sport_type) {
     case ActivityType.AlpineSki:
       return GiSkier;
