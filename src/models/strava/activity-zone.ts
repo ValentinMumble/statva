@@ -1,5 +1,5 @@
-import { TimedZoneRange } from '.';
-import { ActivityZoneType } from '../enums';
+import {TimedZoneRange} from '.';
+import {ActivityZoneType} from './activity-zone-type';
 
 export interface ActivityZone {
   score: number;

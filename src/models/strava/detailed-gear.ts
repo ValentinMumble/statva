@@ -1,4 +1,4 @@
-import { ResourceState } from '../enums';
+import {ResourceState} from './resource-state';
 
 export interface DetailedGear {
   id: string;

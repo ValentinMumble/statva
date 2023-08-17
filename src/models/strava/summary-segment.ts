@@ -1,5 +1,4 @@
-import { SummarySegmentEffort } from '.';
-import { ActivityType } from '../enums';
+import {ActivityType, SummarySegmentEffort} from '.';
 
 export interface SummarySegment {
   id: number;

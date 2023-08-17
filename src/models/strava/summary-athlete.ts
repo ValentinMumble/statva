@@ -1,4 +1,5 @@
-import { ResourceState, Sex } from '../enums';
+import {ResourceState} from './resource-state';
+import {Sex} from './sex';
 
 export interface SummaryAthlete {
   id: number;
