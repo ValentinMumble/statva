@@ -1,24 +1,13 @@
 import {useEffect, useState} from 'react';
-import {ActivityType, DEFAULT_EXCLUDED_ACTIVITY_TYPES, DetailedActivity, SortType} from '../models';
+import {ActivityFilter, DEFAULT_EXCLUDED_ACTIVITY_TYPES, DetailedActivity} from '../models';
 import {getActivities} from '../strava';
-
-type ActivityFilter = {
-  search?: string;
-  sort?: SortType;
-  sortDirection?: 'asc' | 'desc';
-  excludedActivityTypes?: ActivityType[];
-  gearId?: string;
-  year?: number;
-  withCommute: boolean;
-  withPrivate: boolean;
-};
 
 const useActivities = ({
   withCommute,
   withPrivate,
   search = '',
   sort = 'date',
-  sortDirection = 'asc',
+  sortDirection = 'desc',
   excludedActivityTypes = DEFAULT_EXCLUDED_ACTIVITY_TYPES,
   gearId,
   year,
@@ -47,7 +36,7 @@ const useActivities = ({
     .filter(({start_date}) => undefined === year || new Date(start_date).getUTCFullYear() === year)
     .filter(({type}) => !excludedActivityTypes.includes(type))
     .sort((a, b) => {
-      const [first, second] = 'asc' === sortDirection ? [a, b] : [b, a];
+      const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
 
       switch (sort) {
         case 'name':

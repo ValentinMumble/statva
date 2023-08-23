@@ -70,6 +70,19 @@ const YEARS = [2015, 2016, 2017, 2018, 2023, 2024];
 
 type SortType = keyof typeof SORT_TYPES;
 
+type SortDirection = 'asc' | 'desc';
+
+type ActivityFilter = {
+  search?: string;
+  sort?: SortType;
+  sortDirection?: SortDirection;
+  excludedActivityTypes?: ActivityType[];
+  gearId?: string;
+  year?: number;
+  withCommute: boolean;
+  withPrivate: boolean;
+};
+
 const getActivityIcon = (activity: DetailedActivity) => {
   switch (activity.sport_type) {
     case ActivityType.AlpineSki:
@@ -123,4 +136,4 @@ export {
   getMaxValue,
   getTotalValue,
 };
-export type {SortType};
+export type {SortType, ActivityFilter, SortDirection};

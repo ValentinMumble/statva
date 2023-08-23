@@ -16,7 +16,7 @@ import {
   HStack,
   Select,
 } from '@chakra-ui/react';
-import {SortType, SORT_TYPES, GEARS, YEARS} from './models';
+import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection} from './models';
 import {ActivityListItem, DistanceChart, GearChart, ProgressChart, Stats, TimeChart} from './components';
 import {useActivities} from './hooks';
 
@@ -27,15 +27,18 @@ const App = () => {
   const [withPrivate, setwithPrivate] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
   const [activeSort, setActiveSort] = useState<SortType>(DEFAULT_SORT);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearId, setGearId] = useState<string | undefined>();
   const [year, setYear] = useState<number | undefined>(new Date().getUTCFullYear());
 
-  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate, gearId, year});
+  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate, gearId, year, sortDirection});
 
   const handleCommuteChange = ({target}: ChangeEvent<HTMLInputElement>) => setwithCommute(target.checked);
   const handlePrivateChange = ({target}: ChangeEvent<HTMLInputElement>) => setwithPrivate(target.checked);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
+  const handleSearchClear = () => setSearch('');
   const handleSortChange = (sortType: SortType) => () => setActiveSort(sortType);
+  const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
 
   const handleYearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
     setYear('' === target.value ? undefined : Number(target.value));
@@ -64,11 +67,17 @@ const App = () => {
           <TimeChart />
         </VStack>
         <VStack align="stretch" flex={1}>
-          <InputGroup>
+          <InputGroup gap={1}>
+            <Button variant="ghost" onClick={handleSortDirectionToggle}>
+              {'asc' === sortDirection ? '⬆️' : '⬇️'}
+            </Button>
             <Input placeholder="Search" autoFocus={true} value={search} onChange={handleSearchChange} />
-            <InputRightElement marginRight={2}>
+            <InputRightElement marginRight="65px">
               <Tag>{activities.length}</Tag>
             </InputRightElement>
+            <Button variant="ghost" onClick={handleSearchClear}>
+              🗑️
+            </Button>
           </InputGroup>
           <Stack direction={['row']} alignSelf="center">
             {Object.values(SORT_TYPES).map(sortType => (
