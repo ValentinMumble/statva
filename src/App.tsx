@@ -17,7 +17,7 @@ import {
   Select,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES, GEARS, YEARS} from './models';
-import {ActivityListItem, DistanceChart, GearChart, ProgressChart, Stats} from './components';
+import {ActivityListItem, DistanceChart, GearChart, ProgressChart, Stats, TimeChart} from './components';
 import {useActivities} from './hooks';
 
 const DEFAULT_SORT: SortType = 'date';
@@ -61,6 +61,7 @@ const App = () => {
           <ProgressChart />
           <DistanceChart />
           <GearChart />
+          <TimeChart />
         </VStack>
         <VStack align="stretch" flex={1}>
           <InputGroup>
