@@ -41,7 +41,7 @@ const ProgressChart = () => {
     withCommute: false,
     withPrivate: false,
     sort: 'date',
-    sortDirection: 'desc',
+    sortDirection: 'asc',
   });
 
   if (null === activities) {
