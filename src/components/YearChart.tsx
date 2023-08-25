@@ -1,10 +1,9 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
-import {formatDistance} from '../models';
+import {DetailedActivity, formatDistance} from '../models';
 
 const options: ApexCharts.ApexOptions = {
   title: {
-    text: 'Distance / year 🗺️',
     style: {
       fontSize: '18px',
     },
@@ -24,7 +23,14 @@ const options: ApexCharts.ApexOptions = {
   colors: ['darkOrange'],
 };
 
-const DistanceChart = () => {
+type YearChartProps = {
+  [K in keyof DetailedActivity]: {
+    data: K;
+    title: string;
+  };
+}[keyof DetailedActivity];
+
+const YearChart = ({title, data}: YearChartProps) => {
   const activities = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -36,21 +42,25 @@ const DistanceChart = () => {
     return null;
   }
 
-  const distancePerYear = activities.reduce((yearMap: {[year: number]: number}, activity) => {
+  const dataPerYear = activities.reduce((yearMap: {[year: number]: number}, activity) => {
     const year = new Date(activity.start_date).getUTCFullYear();
-    yearMap[year] = (yearMap[year] ?? 0) + activity.distance;
+    yearMap[year] = (yearMap[year] ?? 0) + (activity[data] as number);
 
     return yearMap;
   }, {});
 
-  const labels = Object.keys(distancePerYear);
-  const series = [{name: 'Distance', data: Object.values(distancePerYear)}];
+  const labels = Object.keys(dataPerYear);
+  const series = [{name: data, data: Object.values(dataPerYear)}];
 
   return (
     <Chart
       options={{
         ...options,
         labels,
+        title: {
+          ...options.title,
+          text: title,
+        },
       }}
       series={series}
       type="bar"
@@ -59,4 +69,4 @@ const DistanceChart = () => {
   );
 };
 
-export {DistanceChart};
+export {YearChart};
