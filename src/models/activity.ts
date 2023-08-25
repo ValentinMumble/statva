@@ -8,13 +8,13 @@ const DEFAULT_EXCLUDED_ACTIVITY_TYPES: ActivityType[] = [ActivityType.AlpineSki,
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
 const SORT_TYPES = {
-  name: {
-    value: 'name',
-    label: '🔤',
-  },
   date: {
     value: 'date',
     label: '📅',
+  },
+  name: {
+    value: 'name',
+    label: '🔤',
   },
   distance: {
     value: 'distance',
