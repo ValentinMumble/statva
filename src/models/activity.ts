@@ -3,7 +3,7 @@ import {PiBicycle, PiBicycleFill} from 'react-icons/pi';
 import {TbKayak} from 'react-icons/tb';
 import {ActivityType, DetailedActivity} from './strava';
 
-const DEFAULT_EXCLUDED_ACTIVITY_TYPES: ActivityType[] = [ActivityType.AlpineSki, ActivityType.Kayaking];
+const DEFAULT_INCLUDED_ACTIVITY_TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.GravelRide];
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
@@ -76,7 +76,7 @@ type ActivityFilter = {
   search?: string;
   sort?: SortType;
   sortDirection?: SortDirection;
-  excludedActivityTypes?: ActivityType[];
+  includedActivityTypes?: ActivityType[];
   gearId?: string;
   year?: number;
   withCommute: boolean;
@@ -124,7 +124,7 @@ const getMaxValue = (activities: DetailedActivity[], value: keyof DetailedActivi
 
 export {
   ACTIVITY_URL,
-  DEFAULT_EXCLUDED_ACTIVITY_TYPES,
+  DEFAULT_INCLUDED_ACTIVITY_TYPES,
   GEARS,
   SORT_TYPES,
   YEARS,

@@ -1,7 +1,7 @@
 import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText} from '@chakra-ui/react';
 import {useActivities} from '../hooks';
 import {
-  DEFAULT_EXCLUDED_ACTIVITY_TYPES,
+  DEFAULT_INCLUDED_ACTIVITY_TYPES,
   DetailedActivity,
   formatDistance,
   formatDuration,
@@ -53,7 +53,7 @@ const Stats = ({}: StatsProps) => {
     return null;
   }
 
-  const filteredActivities = activities.filter(activity => !DEFAULT_EXCLUDED_ACTIVITY_TYPES.includes(activity.type));
+  const filteredActivities = activities.filter(activity => DEFAULT_INCLUDED_ACTIVITY_TYPES.includes(activity.type));
 
   return (
     <StatGroup>
