@@ -35,9 +35,13 @@ const options: ApexCharts.ApexOptions = {
   },
 };
 
-const ProgressChart = () => {
+type ProgressChartProps = {
+  search: string;
+};
+
+const ProgressChart = ({search}: ProgressChartProps) => {
   const activities = useActivities({
-    search: 'N-Peloton',
+    search,
     withCommute: false,
     withPrivate: false,
     sort: 'date',

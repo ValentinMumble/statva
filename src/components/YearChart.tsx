@@ -1,36 +1,8 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
-import {DetailedActivity, formatDistance} from '../models';
+import {ChartProps, getOptions} from '../models';
 
-const options: ApexCharts.ApexOptions = {
-  title: {
-    style: {
-      fontSize: '18px',
-    },
-  },
-  yaxis: {
-    labels: {
-      formatter: (value: number) => formatDistance(value),
-    },
-  },
-  chart: {
-    toolbar: {show: false},
-    zoom: {enabled: false},
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  colors: ['darkOrange'],
-};
-
-type YearChartProps = {
-  [K in keyof DetailedActivity]: {
-    data: K;
-    title: string;
-  };
-}[keyof DetailedActivity];
-
-const YearChart = ({title, data}: YearChartProps) => {
+const YearChart = ({title, data, formatter}: ChartProps) => {
   const activities = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -52,21 +24,7 @@ const YearChart = ({title, data}: YearChartProps) => {
   const labels = Object.keys(dataPerYear);
   const series = [{name: data, data: Object.values(dataPerYear)}];
 
-  return (
-    <Chart
-      options={{
-        ...options,
-        labels,
-        title: {
-          ...options.title,
-          text: title,
-        },
-      }}
-      series={series}
-      type="bar"
-      height={400}
-    />
-  );
+  return <Chart options={getOptions(title, labels, formatter)} series={series} type="bar" height={400} />;
 };
 
 export {YearChart};

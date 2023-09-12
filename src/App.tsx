@@ -16,8 +16,8 @@ import {
   HStack,
   Select,
 } from '@chakra-ui/react';
-import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection} from './models';
-import {ActivityListItem, YearChart, GearChart, ProgressChart, Stats, TimeChart} from './components';
+import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection, formatDuration, formatDistance} from './models';
+import {ActivityListItem, YearChart, GearChart, ProgressChart, Stats} from './components';
 import {useActivities} from './hooks';
 
 const DEFAULT_SORT: SortType = 'date';
@@ -61,11 +61,15 @@ const App = () => {
       <HStack alignItems="baseline" gap={10}>
         <VStack align="stretch" flex={0.75}>
           <Stats />
-          <ProgressChart />
-          <YearChart data="distance" title="Distance / year 🗺️" />
-          <YearChart data="total_elevation_gain" title="Elevation / year ⛰️" />
-          <GearChart />
-          <TimeChart />
+          <ProgressChart search="N-Peloton" />
+          <YearChart data="distance" title="Distance / year 🗺️" formatter={value => formatDistance(value)} />
+          <YearChart
+            data="total_elevation_gain"
+            title="Elevation / year ⛰️"
+            formatter={value => formatDistance(value)}
+          />
+          <GearChart data="distance" title="Distance / gear 🚲" formatter={value => formatDistance(value)} />
+          <GearChart data="moving_time" title="Time / gear ⏱️" formatter={value => formatDuration(value)} />
         </VStack>
         <VStack align="stretch" flex={1}>
           <InputGroup gap={1}>
