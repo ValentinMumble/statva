@@ -39,7 +39,7 @@ const STATS: Stat[] = [
   },
   {
     label: '💯',
-    helpText: 'Max average speed',
+    helpText: 'Max avg speed',
     number: activities => formatSpeed(getMaxValue(activities, 'average_speed')),
   },
 ];

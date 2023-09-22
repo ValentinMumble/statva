@@ -1,6 +1,5 @@
 import {ChangeEvent, useState} from 'react';
 import {
-  Checkbox,
   Input,
   Heading,
   Spinner,
@@ -23,8 +22,8 @@ import {useActivities} from './hooks';
 const DEFAULT_SORT: SortType = 'date';
 
 const App = () => {
-  const [withCommute, setwithCommute] = useState<boolean>(true);
-  const [withPrivate, setwithPrivate] = useState<boolean>(true);
+  const [withCommute, setWithCommute] = useState<boolean>(true);
+  const [withPrivate, setWithPrivate] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
   const [activeSort, setActiveSort] = useState<SortType>(DEFAULT_SORT);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -33,8 +32,8 @@ const App = () => {
 
   const activities = useActivities({search, withCommute, sort: activeSort, withPrivate, gearId, year, sortDirection});
 
-  const handleCommuteChange = ({target}: ChangeEvent<HTMLInputElement>) => setwithCommute(target.checked);
-  const handlePrivateChange = ({target}: ChangeEvent<HTMLInputElement>) => setwithPrivate(target.checked);
+  const handleCommuteToggle = () => setWithCommute(!withCommute);
+  const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
   const handleSearchClear = () => setSearch('');
   const handleSortChange = (sortType: SortType) => () => setActiveSort(sortType);
@@ -59,7 +58,7 @@ const App = () => {
   return (
     <Box padding={10}>
       <HStack alignItems="baseline" gap={10}>
-        <VStack align="stretch" flex={0.75}>
+        <VStack align="stretch" flex={1}>
           <Stats />
           <ProgressChart search="N-Peloton" />
           <YearChart data="distance" title="Distance / year 🗺️" formatter={value => formatDistance(value)} />
@@ -110,12 +109,12 @@ const App = () => {
                 </option>
               ))}
             </Select>
-            <Checkbox isChecked={withCommute} onChange={handleCommuteChange}>
-              Commute?
-            </Checkbox>
-            <Checkbox isChecked={withPrivate} onChange={handlePrivateChange}>
-              Private?
-            </Checkbox>
+            <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
+              🔒
+            </Button>
+            <Button variant="ghost" isActive={withCommute} onClick={handleCommuteToggle}>
+              💼
+            </Button>
           </Stack>
           <List>
             {activities.map(activity => (
