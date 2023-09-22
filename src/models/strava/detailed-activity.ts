@@ -5,6 +5,8 @@ export interface DetailedActivity {
   achievement_count: number;
   athlete_count: number;
   athlete: MetaAthlete;
+  average_heartrate?: number;
+  average_cadence?: number;
   average_speed: number;
   average_watts: number;
   best_efforts: DetailedSegmentEffort[];
