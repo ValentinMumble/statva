@@ -1,12 +1,10 @@
 import {DetailedActivity} from './strava';
 
 type ChartProps = {
-  [K in keyof DetailedActivity]: {
-    data: K;
-    title: string;
-    formatter: (value: number) => string;
-  };
-}[keyof DetailedActivity];
+  data: keyof DetailedActivity;
+  title: string;
+  formatter: (value: number) => string;
+};
 
 const getOptions: (title: string, labels: string[], formatter: (value: number) => string) => ApexCharts.ApexOptions = (
   title,
