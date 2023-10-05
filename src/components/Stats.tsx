@@ -5,8 +5,6 @@ import {
   DetailedActivity,
   formatDistance,
   formatDuration,
-  formatSpeed,
-  getMaxValue,
   getTotalValue,
 } from '../models';
 
@@ -37,11 +35,11 @@ const STATS: Stat[] = [
     helpText: 'Total moving time',
     number: activities => formatDuration(getTotalValue(activities, 'moving_time')),
   },
-  {
-    label: '💯',
-    helpText: 'Max avg speed',
-    number: activities => formatSpeed(getMaxValue(activities, 'average_speed')),
-  },
+  // {
+  //   label: '💯',
+  //   helpText: 'Max avg speed',
+  //   number: activities => formatSpeed(getMaxValue(activities, 'average_speed')),
+  // },
 ];
 
 type StatsProps = {};

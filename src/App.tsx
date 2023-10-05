@@ -58,7 +58,7 @@ const App = () => {
   return (
     <Box padding={10}>
       <HStack alignItems="baseline" gap={10}>
-        <VStack align="stretch" flex={1}>
+        <VStack align="stretch" flexBasis="35%">
           <Stats />
           <ProgressChart search="N-Peloton" />
           <YearChart data="distance" title="Distance / year 🗺️" formatter={value => formatDistance(value)} />
@@ -70,7 +70,7 @@ const App = () => {
           <GearChart data="distance" title="Distance / gear 🚲" formatter={value => formatDistance(value)} />
           <GearChart data="moving_time" title="Time / gear ⏱️" formatter={value => formatDuration(value)} />
         </VStack>
-        <VStack align="stretch" flex={1}>
+        <VStack align="stretch" flexBasis="65%">
           <InputGroup gap={1}>
             <Button variant="ghost" onClick={handleSortDirectionToggle}>
               {'asc' === sortDirection ? '⬆️' : '⬇️'}
