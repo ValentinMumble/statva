@@ -1,9 +1,11 @@
+import {ActivityFilter} from './activity';
 import {DetailedActivity} from './strava';
 
 type ChartProps = {
   data: keyof DetailedActivity;
   title: string;
   formatter: (value: number) => string;
+  filter?: Partial<ActivityFilter>;
 };
 
 const getOptions: (title: string, labels: string[], formatter: (value: number) => string) => ApexCharts.ApexOptions = (
