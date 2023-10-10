@@ -16,7 +16,7 @@ import {
   Select,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection, formatDuration, formatDistance} from './models';
-import {ActivityListItem, YearChart, GearChart, ProgressChart, Stats} from './components';
+import {ActivityListItem, MonthChart, GearChart, ProgressChart, Stats} from './components';
 import {useActivities} from './hooks';
 
 const DEFAULT_SORT: SortType = 'date';
@@ -28,9 +28,9 @@ const App = () => {
   const [activeSort, setActiveSort] = useState<SortType>(DEFAULT_SORT);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearId, setGearId] = useState<string | undefined>();
-  const [year, setYear] = useState<number | undefined>(new Date().getUTCFullYear());
+  const [years, setYears] = useState<number[]>([new Date().getUTCFullYear()]);
 
-  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate, gearId, year, sortDirection});
+  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate, gearId, years, sortDirection});
 
   const handleCommuteToggle = () => setWithCommute(!withCommute);
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
@@ -40,7 +40,7 @@ const App = () => {
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
 
   const handleYearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
-    setYear('' === target.value ? undefined : Number(target.value));
+    setYears('' === target.value ? [] : [Number(target.value)]);
   const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
     setGearId('' === target.value ? undefined : target.value);
 
@@ -61,10 +61,16 @@ const App = () => {
         <VStack align="stretch" flexBasis="35%">
           <Stats />
           <ProgressChart search="N-Peloton" />
-          <YearChart data="distance" title="Distance / year 🗺️" formatter={value => formatDistance(value)} />
-          <YearChart
+          <MonthChart
+            data="distance"
+            title="Distance / month 🗺️"
+            filter={{years: [2023, 2024]}}
+            formatter={value => formatDistance(value)}
+          />
+          <MonthChart
             data="total_elevation_gain"
-            title="Elevation / year ⛰️"
+            title="Elevation / month ⛰️"
+            filter={{years: [2023, 2024]}}
             formatter={value => formatDistance(value)}
           />
           <GearChart data="distance" title="Distance / gear 🚲" formatter={value => formatDistance(value)} />
@@ -102,7 +108,7 @@ const App = () => {
                 </option>
               ))}
             </Select>
-            <Select placeholder="🗓️" width={24} value={year} onChange={handleYearChange}>
+            <Select placeholder="🗓️" width={24} value={years[0]} onChange={handleYearChange}>
               {YEARS.map(year => (
                 <option key={year} value={year}>
                   {year}

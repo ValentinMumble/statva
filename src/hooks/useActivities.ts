@@ -10,7 +10,7 @@ const useActivities = ({
   sortDirection = 'desc',
   includedActivityTypes = DEFAULT_INCLUDED_ACTIVITY_TYPES,
   gearId,
-  year,
+  years = [],
 }: ActivityFilter) => {
   const [activities, setActivities] = useState<DetailedActivity[] | null>(null);
 
@@ -33,7 +33,7 @@ const useActivities = ({
     .filter(activity => activity.private === false || true === withPrivate)
     .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
     .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))
-    .filter(({start_date}) => undefined === year || new Date(start_date).getUTCFullYear() === year)
+    .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
     .filter(({type}) => includedActivityTypes.includes(type))
     .sort((a, b) => sortActivities(sort, sortDirection, a, b));
 };

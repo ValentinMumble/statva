@@ -138,7 +138,7 @@ type ActivityFilter = {
   sortDirection?: SortDirection;
   includedActivityTypes?: ActivityType[];
   gearId?: string;
-  year?: number;
+  years?: number[];
   withCommute: boolean;
   withPrivate: boolean;
 };
