@@ -1,12 +1,16 @@
-import {GiPathDistance, GiSkier} from 'react-icons/gi';
-import {PiBicycle, PiBicycleFill, PiPinwheel, PiHeartbeatBold} from 'react-icons/pi';
-import {TbKayak} from 'react-icons/tb';
 import {IconType} from 'react-icons';
+import {GiPathDistance, GiSkier} from 'react-icons/gi';
+import {PiBicycle, PiBicycleFill, PiPinwheel, PiHeartbeatBold, PiGameControllerBold} from 'react-icons/pi';
+import {TbKayak} from 'react-icons/tb';
 import {FiZap} from 'react-icons/fi';
 import {MdOutlineShowChart, MdOutlineTimer, MdOutlineSpeed, MdOutlineRocketLaunch} from 'react-icons/md';
 import {ActivityType, DetailedActivity} from './strava';
 
-const DEFAULT_INCLUDED_ACTIVITY_TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.GravelRide];
+const DEFAULT_INCLUDED_ACTIVITY_TYPES: ActivityType[] = [
+  ActivityType.Ride,
+  ActivityType.GravelRide,
+  ActivityType.VirtualRide,
+];
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
@@ -73,6 +77,10 @@ const GEARS: {[id: string]: {label: string; value: string}} = {
   b2417181: {
     value: 'b2417181',
     label: '🫐',
+  },
+  b13424500: {
+    value: 'b13424500',
+    label: '🤖',
   },
   null: {value: 'null', label: '🤷'},
 };
@@ -151,6 +159,8 @@ const getActivityIcon = (activity: DetailedActivity) => {
       return PiBicycleFill;
     case ActivityType.Kayaking:
       return TbKayak;
+    case ActivityType.VirtualRide:
+      return PiGameControllerBold;
     case ActivityType.Ride:
     default:
       return PiBicycle;
