@@ -204,12 +204,20 @@ const formatElevation = (elevation: number): string => `${elevation.toFixed(0)} 
 const formatSpeed = (speed: number): string => `${(speed * 3.6).toFixed(1)} km/h`;
 
 const formatDuration = (durationInSeconds: number): string => {
-  const hours = durationInSeconds / (60 * 60);
+  const hours = durationInSeconds / 60 / 60;
   const roundHours = Math.floor(hours);
   const minutes = (hours - roundHours) * 60;
   const roundMinutes = Math.round(minutes);
 
   return `${roundHours}:${roundMinutes.toString().padStart(2, '0')} h`;
+};
+
+const formatDurationInDays = (durationInSeconds: number): string => {
+  const hourCount = durationInSeconds / 60 / 60 / 24;
+  const hoursRemaining = (hourCount % 24) - Math.floor(hourCount);
+  const suffix = 0.75 <= hoursRemaining ? '¾' : 0.5 <= hoursRemaining ? '½' : 0.25 <= hoursRemaining ? '¼' : '';
+
+  return `${Math.floor(hourCount)}${suffix} days`;
 };
 
 const getTotalValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
@@ -224,6 +232,39 @@ const getTotalValue = (activities: DetailedActivity[], value: keyof DetailedActi
 const getMaxValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
   Math.max(...activities.map(activity => activity[value] as number));
 
+const eddingtonNumber = (rides: DetailedActivity[]) => {
+  const ridesPerDay = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
+    const dateString = new Date(activity.start_date).toDateString();
+    dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
+
+    return dayMap;
+  }, {});
+
+  const rideCount = Object.values(ridesPerDay).length;
+  const rideCountPerDistance: number[] = new Array(rideCount).fill(0);
+  let eddingtonNumber = 0;
+  let above = 0;
+
+  Object.values(ridesPerDay).forEach(distance => {
+    const distanceInKm = Math.round(distance / 1000);
+
+    if (distanceInKm > eddingtonNumber) {
+      above++;
+
+      if (distanceInKm < rideCount) {
+        rideCountPerDistance[distanceInKm]++;
+      }
+
+      if (above > eddingtonNumber) {
+        eddingtonNumber++;
+        above -= rideCountPerDistance[eddingtonNumber];
+      }
+    }
+  });
+
+  return eddingtonNumber;
+};
+
 export {
   ACTIVITY_URL,
   DEFAULT_INCLUDED_ACTIVITY_TYPES,
@@ -231,8 +272,10 @@ export {
   SORT_TYPES,
   TAGS,
   YEARS,
+  eddingtonNumber,
   formatDistance,
   formatDuration,
+  formatDurationInDays,
   formatElevation,
   formatSpeed,
   getActivityIcon,

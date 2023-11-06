@@ -3,8 +3,9 @@ import {useActivities} from '../hooks';
 import {
   DEFAULT_INCLUDED_ACTIVITY_TYPES,
   DetailedActivity,
+  eddingtonNumber,
   formatDistance,
-  formatDuration,
+  formatDurationInDays,
   getTotalValue,
 } from '../models';
 
@@ -15,11 +16,11 @@ type Stat = {
 };
 
 const STATS: Stat[] = [
-  {
-    label: '🚲',
-    helpText: 'Total count',
-    number: activities => activities.length.toString(),
-  },
+  // {
+  //   label: '🚲',
+  //   helpText: 'Total count',
+  //   number: activities => activities.length.toString(),
+  // },
   {
     label: '🗺️',
     helpText: 'Total distance',
@@ -33,13 +34,18 @@ const STATS: Stat[] = [
   {
     label: '⏱️',
     helpText: 'Total moving time',
-    number: activities => formatDuration(getTotalValue(activities, 'moving_time')),
+    number: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
   },
   // {
   //   label: '💯',
   //   helpText: 'Max avg speed',
   //   number: activities => formatSpeed(getMaxValue(activities, 'average_speed')),
   // },
+  {
+    label: '🧸',
+    helpText: 'Eddington number',
+    number: activities => eddingtonNumber(activities).toString(),
+  },
 ];
 
 type StatsProps = {};
