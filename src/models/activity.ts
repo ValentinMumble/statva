@@ -19,10 +19,10 @@ const SORT_TYPES = {
     value: 'date',
     label: '📅',
   },
-  name: {
-    value: 'name',
-    label: '🔤',
-  },
+  // name: {
+  //   value: 'name',
+  //   label: '🔤',
+  // },
   distance: {
     value: 'distance',
     label: '🗺️',
@@ -176,8 +176,8 @@ const sortActivities = (
   const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
 
   switch (sortType) {
-    case 'name':
-      return first.name < second.name ? 1 : -1;
+    // case 'name':
+    //   return first.name < second.name ? 1 : -1;
     case 'elevation':
       return second.total_elevation_gain - first.total_elevation_gain;
     case 'distance':

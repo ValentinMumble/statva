@@ -16,7 +16,15 @@ import {
   Select,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection, formatDuration, formatDistance} from './models';
-import {ActivityListItem, MonthChart, GearChart, ProgressChart, Stats} from './components';
+import {
+  ActivityListItem,
+  MonthChart,
+  GearChart,
+  ProgressChart,
+  Stats,
+  AverageGearChart,
+  HeartChart,
+} from './components';
 import {useActivities} from './hooks';
 
 const DEFAULT_SORT: SortType = 'date';
@@ -75,6 +83,8 @@ const App = () => {
           />
           <GearChart data="distance" title="Distance / gear 🚲" formatter={value => formatDistance(value)} />
           <GearChart data="moving_time" title="Time / gear ⏱️" formatter={value => formatDuration(value)} />
+          <HeartChart />
+          <AverageGearChart />
         </VStack>
         <VStack align="stretch" flexBasis="65%">
           <InputGroup gap={1}>

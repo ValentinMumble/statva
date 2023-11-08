@@ -1,13 +1,6 @@
 import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText} from '@chakra-ui/react';
 import {useActivities} from '../hooks';
-import {
-  DEFAULT_INCLUDED_ACTIVITY_TYPES,
-  DetailedActivity,
-  eddingtonNumber,
-  formatDistance,
-  formatDurationInDays,
-  getTotalValue,
-} from '../models';
+import {DetailedActivity, eddingtonNumber, formatDistance, formatDurationInDays, getTotalValue} from '../models';
 
 type Stat = {
   label: string;
@@ -48,23 +41,19 @@ const STATS: Stat[] = [
   },
 ];
 
-type StatsProps = {};
-
-const Stats = ({}: StatsProps) => {
+const Stats = () => {
   const activities = useActivities({withCommute: true, withPrivate: true});
 
   if (null === activities) {
     return null;
   }
 
-  const filteredActivities = activities.filter(activity => DEFAULT_INCLUDED_ACTIVITY_TYPES.includes(activity.type));
-
   return (
     <StatGroup>
       {STATS.map(stat => (
         <Stat key={stat.label}>
           <StatLabel>{stat.label}</StatLabel>
-          <StatNumber>{stat.number(filteredActivities)}</StatNumber>
+          <StatNumber>{stat.number(activities)}</StatNumber>
           <StatHelpText>{stat.helpText}</StatHelpText>
         </Stat>
       ))}
