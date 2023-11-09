@@ -6,12 +6,6 @@ const MIN_CHART_SPEED = 26;
 const MAX_CHART_SPEED = 35;
 
 const options: ApexCharts.ApexOptions = {
-  title: {
-    text: 'N-Peloton average speed 💯',
-    style: {
-      fontSize: '18px',
-    },
-  },
   yaxis: {
     labels: {
       formatter: (value: number) => formatSpeed(value),

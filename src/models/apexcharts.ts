@@ -3,23 +3,15 @@ import {DetailedActivity} from './strava';
 
 type ChartProps = {
   data: keyof DetailedActivity;
-  title: string;
   formatter: (value: number) => string;
   filter?: Partial<ActivityFilter>;
 };
 
-const getOptions: (title: string, labels: string[], formatter: (value: number) => string) => ApexCharts.ApexOptions = (
-  title,
+const getOptions: (labels: string[], formatter: (value: number) => string) => ApexCharts.ApexOptions = (
   labels,
   formatter
 ) => ({
   labels,
-  title: {
-    text: title,
-    style: {
-      fontSize: '18px',
-    },
-  },
   yaxis: {
     labels: {
       formatter,
