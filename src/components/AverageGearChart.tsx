@@ -27,14 +27,7 @@ const AverageGearChart = () => {
     },
   ];
 
-  return (
-    <Chart
-      options={getOptions('Average speed / gear 💯', labels, value => formatSpeed(value))}
-      series={series}
-      type="bar"
-      height={400}
-    />
-  );
+  return <Chart options={getOptions(labels, value => formatSpeed(value))} series={series} type="bar" height={400} />;
 };
 
 export {AverageGearChart};

@@ -1,4 +1,4 @@
-import {ChangeEvent, useState} from 'react';
+import {ChangeEvent, ReactNode, useState} from 'react';
 import {
   Input,
   Heading,
@@ -14,6 +14,11 @@ import {
   Tag,
   HStack,
   Select,
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection, formatDuration, formatDistance} from './models';
 import {
@@ -28,6 +33,28 @@ import {
 import {useActivities} from './hooks';
 
 const DEFAULT_SORT: SortType = 'date';
+
+const accordionItems: {label: string; component: ReactNode}[] = [
+  {label: 'N-Peloton average speed 💯', component: <ProgressChart search="N-Peloton" />},
+  {
+    label: 'Distance / month 🗺️',
+    component: <MonthChart data="distance" filter={{years: [2023, 2024]}} formatter={value => formatDistance(value)} />,
+  },
+  {
+    label: 'Elevation / month ⛰️',
+    component: (
+      <MonthChart
+        data="total_elevation_gain"
+        filter={{years: [2023, 2024]}}
+        formatter={value => formatDistance(value)}
+      />
+    ),
+  },
+  {label: 'Distance / gear 🚲', component: <GearChart data="distance" formatter={value => formatDistance(value)} />},
+  {label: 'Time / gear ⏱️', component: <GearChart data="moving_time" formatter={value => formatDuration(value)} />},
+  {label: 'Average heart rate 🫀', component: <HeartChart />},
+  {label: 'Average speed / gear 💯', component: <AverageGearChart />},
+];
 
 const App = () => {
   const [withCommute, setWithCommute] = useState<boolean>(true);
@@ -66,25 +93,23 @@ const App = () => {
   return (
     <Box padding={10}>
       <HStack alignItems="baseline" gap={10}>
-        <VStack align="stretch" flexBasis="35%">
+        <VStack align="stretch" flexBasis="35%" gap={10}>
           <Stats />
-          <ProgressChart search="N-Peloton" />
-          <MonthChart
-            data="distance"
-            title="Distance / month 🗺️"
-            filter={{years: [2023, 2024]}}
-            formatter={value => formatDistance(value)}
-          />
-          <MonthChart
-            data="total_elevation_gain"
-            title="Elevation / month ⛰️"
-            filter={{years: [2023, 2024]}}
-            formatter={value => formatDistance(value)}
-          />
-          <GearChart data="distance" title="Distance / gear 🚲" formatter={value => formatDistance(value)} />
-          <GearChart data="moving_time" title="Time / gear ⏱️" formatter={value => formatDuration(value)} />
-          <HeartChart />
-          <AverageGearChart />
+          <Accordion allowMultiple={true}>
+            {accordionItems.map(item => (
+              <AccordionItem key={item.label}>
+                <h2>
+                  <AccordionButton>
+                    <Box as="b" flex="1" fontSize="1.1em" textAlign="left">
+                      {item.label}
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                </h2>
+                <AccordionPanel>{item.component}</AccordionPanel>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </VStack>
         <VStack align="stretch" flexBasis="65%">
           <InputGroup gap={1}>

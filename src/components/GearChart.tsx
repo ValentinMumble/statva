@@ -2,7 +2,7 @@ import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
 import {ChartProps, GEARS, getOptions} from '../models';
 
-const GearChart = ({title, data, formatter}: ChartProps) => {
+const GearChart = ({data, formatter}: ChartProps) => {
   const activities = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -21,7 +21,7 @@ const GearChart = ({title, data, formatter}: ChartProps) => {
   const labels = Object.keys(dataPerGear).map(gearId => GEARS[gearId]?.label ?? '🤷');
   const series = [{name: data, data: Object.values(dataPerGear)}];
 
-  return <Chart options={getOptions(title, labels, formatter)} series={series} type="bar" height={400} />;
+  return <Chart options={getOptions(labels, formatter)} series={series} type="bar" height={400} />;
 };
 
 export {GearChart};

@@ -2,7 +2,7 @@ import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
 import {ChartProps, getOptions} from '../models';
 
-const MonthChart = ({title, data, formatter, filter}: ChartProps) => {
+const MonthChart = ({data, formatter, filter}: ChartProps) => {
   const activities = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -26,7 +26,7 @@ const MonthChart = ({title, data, formatter, filter}: ChartProps) => {
   const labels = Object.keys(dataPerMonth);
   const series = [{name: data, data: Object.values(dataPerMonth)}];
 
-  return <Chart options={getOptions(title, labels, formatter)} series={series} type="bar" height={400} />;
+  return <Chart options={getOptions(labels, formatter)} series={series} type="bar" height={400} />;
 };
 
 export {MonthChart};

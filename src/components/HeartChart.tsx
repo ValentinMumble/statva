@@ -4,12 +4,6 @@ import {useActivities} from '../hooks';
 const MIN_DISTANCE_METERS = 40 * 1000;
 
 const options: ApexCharts.ApexOptions = {
-  title: {
-    text: 'Average heart rate 🫀',
-    style: {
-      fontSize: '18px',
-    },
-  },
   colors: ['orange'],
   stroke: {
     curve: 'smooth',
