@@ -62,6 +62,10 @@ const GEARS: {[id: string]: {label: string; value: string}} = {
     value: 'b12655849',
     label: '🐈‍⬛',
   },
+  b13440652: {
+    value: 'b13440652',
+    label: '🦈',
+  },
   b11897955: {
     value: 'b11897955',
     label: '🦖',

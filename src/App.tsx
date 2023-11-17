@@ -95,7 +95,7 @@ const App = () => {
       <HStack alignItems="baseline" gap={10}>
         <VStack align="stretch" flexBasis="35%" gap={10}>
           <Stats />
-          <Accordion allowMultiple={true}>
+          <Accordion defaultIndex={[0]} allowMultiple={true}>
             {accordionItems.map(item => (
               <AccordionItem key={item.label}>
                 <h2>
