@@ -151,7 +151,7 @@ type ActivityFilter = {
   includedActivityTypes?: ActivityType[];
   gearId?: string;
   years?: number[];
-  withCommute: boolean;
+  withCommute?: boolean;
   withPrivate: boolean;
 };
 
