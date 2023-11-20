@@ -3,7 +3,7 @@ import {ActivityFilter, DEFAULT_INCLUDED_ACTIVITY_TYPES, DetailedActivity, sortA
 import {getActivities} from '../strava';
 
 const useActivities = ({
-  withCommute,
+  withCommute = true,
   withPrivate,
   search = '',
   sort = 'date',

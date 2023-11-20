@@ -57,7 +57,6 @@ const accordionItems: {label: string; component: ReactNode}[] = [
 ];
 
 const App = () => {
-  const [withCommute, setWithCommute] = useState<boolean>(true);
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
   const [activeSort, setActiveSort] = useState<SortType>(DEFAULT_SORT);
@@ -65,9 +64,8 @@ const App = () => {
   const [gearId, setGearId] = useState<string | undefined>();
   const [years, setYears] = useState<number[]>([new Date().getUTCFullYear()]);
 
-  const activities = useActivities({search, withCommute, sort: activeSort, withPrivate, gearId, years, sortDirection});
+  const activities = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
 
-  const handleCommuteToggle = () => setWithCommute(!withCommute);
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
   const handleSearchClear = () => setSearch('');
@@ -124,7 +122,7 @@ const App = () => {
               🗑️
             </Button>
           </InputGroup>
-          <Stack direction={['row']} alignSelf="center">
+          <Stack direction={['row']} justifyContent="space-between">
             {Object.values(SORT_TYPES).map(sortType => (
               <Button
                 key={sortType.value}
@@ -152,9 +150,6 @@ const App = () => {
             </Select>
             <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
               🔒
-            </Button>
-            <Button variant="ghost" isActive={withCommute} onClick={handleCommuteToggle}>
-              💼
             </Button>
           </Stack>
           <List>
