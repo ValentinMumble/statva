@@ -50,10 +50,10 @@ const accordionItems: {label: string; component: ReactNode}[] = [
       />
     ),
   },
-  {label: 'Distance / gear 🚲', component: <GearChart data="distance" formatter={value => formatDistance(value)} />},
-  {label: 'Time / gear ⏱️', component: <GearChart data="moving_time" formatter={value => formatDuration(value)} />},
+  {label: 'Distance / bike 🚲', component: <GearChart data="distance" formatter={value => formatDistance(value)} />},
+  {label: 'Time / bike ⏱️', component: <GearChart data="moving_time" formatter={value => formatDuration(value)} />},
+  {label: 'Average speed / bike 💯', component: <AverageGearChart />},
   {label: 'Average heart rate 🫀', component: <HeartChart />},
-  {label: 'Average speed / gear 💯', component: <AverageGearChart />},
 ];
 
 const App = () => {
