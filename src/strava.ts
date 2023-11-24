@@ -7,6 +7,7 @@ const userId = import.meta.env.VITE_STRAVA_USER_ID;
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETES_ENDPOINT = `https://www.strava.com/api/v3/athletes/${userId}`;
+const ITEMS_PER_PAGE = 200;
 
 const getAccessToken = async () => {
   const body = JSON.stringify({
@@ -40,12 +41,11 @@ const initializeActivities = async () => {
   const {access_token: accessToken} = await getAccessToken();
 
   let page = 1;
-  let itemsPerPage = 200;
   let resultCount = 0;
 
   do {
     const response = await fetch(
-      `${ATHLETES_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${itemsPerPage}`
+      `${ATHLETES_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
     );
 
     const data = (await response.json()) as DetailedActivity[];
@@ -54,7 +54,7 @@ const initializeActivities = async () => {
 
     resultCount = data.length;
     page++;
-  } while (resultCount === itemsPerPage);
+  } while (resultCount === ITEMS_PER_PAGE);
 };
 
 const getActivities = async (): Promise<DetailedActivity[] | null> => {

@@ -138,7 +138,7 @@ const TAGS: ActivityTag[] = [
   },
 ];
 
-const YEARS = [2015, 2016, 2017, 2018, 2023, 2024];
+const YEARS = [2015, 2016, 2017, 2018, 2023, 2024].sort((a, b) => b - a);
 
 type SortType = keyof typeof SORT_TYPES;
 
