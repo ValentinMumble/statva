@@ -89,7 +89,7 @@ const App = () => {
 
   return (
     <Box padding={10}>
-      <HStack alignItems="baseline" gap={10}>
+      <HStack alignItems="baseline" gap={10} flexDirection={{base: 'column', md: 'row'}}>
         <VStack align="stretch" flexBasis="35%" gap={10}>
           <Stats />
           <Accordion defaultIndex={[0]} allowMultiple={true}>
