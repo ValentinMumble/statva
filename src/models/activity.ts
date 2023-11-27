@@ -91,6 +91,7 @@ const GEARS: {[id: string]: {label: string; value: string}} = {
 
 type ActivityTag = {
   label: (activity: DetailedActivity) => string;
+  isRelevant: (activity: DetailedActivity) => boolean;
   icon: IconType;
   sortType: SortType;
 };
@@ -98,41 +99,49 @@ type ActivityTag = {
 const TAGS: ActivityTag[] = [
   {
     label: activity => formatDistance(activity.distance, 0),
+    isRelevant: activity => 0 < activity.distance,
     icon: GiPathDistance,
     sortType: 'distance',
   },
   {
     label: activity => formatElevation(activity.total_elevation_gain),
+    isRelevant: activity => 0 < activity.total_elevation_gain,
     icon: MdOutlineShowChart,
     sortType: 'elevation',
   },
   {
     label: activity => formatDuration(activity.moving_time),
+    isRelevant: activity => 0 < activity.moving_time,
     icon: MdOutlineTimer,
     sortType: 'duration',
   },
   {
     label: activity => formatSpeed(activity.average_speed),
+    isRelevant: activity => 0 < activity.average_speed,
     icon: MdOutlineSpeed,
     sortType: 'average_speed',
   },
   {
     label: activity => formatSpeed(activity.max_speed),
+    isRelevant: activity => 0 < activity.max_speed,
     icon: MdOutlineRocketLaunch,
     sortType: 'max_speed',
   },
   {
     label: activity => `${activity.average_watts?.toFixed(0) ?? 0} W`,
+    isRelevant: activity => 0 < (activity.average_watts ?? 0),
     icon: FiZap,
     sortType: 'average_watts',
   },
   {
-    label: activity => `${activity.average_cadence?.toFixed(0) ?? 0} rpm`,
+    label: activity => `${activity.average_cadence?.toFixed(0) ?? 0}`,
+    isRelevant: activity => 0 < (activity.average_cadence ?? 0),
     icon: PiPinwheel,
     sortType: 'average_cadence',
   },
   {
-    label: activity => `${activity.average_heartrate?.toFixed(0) ?? 0} bpm`,
+    label: activity => `${activity.average_heartrate?.toFixed(0) ?? 0}`,
+    isRelevant: activity => 0 < (activity.average_heartrate ?? 0),
     icon: PiHeartbeatBold,
     sortType: 'average_heartrate',
   },
@@ -195,7 +204,7 @@ const sortActivities = (
     case 'max_speed':
       return second.max_speed - first.max_speed;
     case 'average_watts':
-      return second.average_watts - first.average_watts;
+      return (second.average_watts ?? 0) - (first.average_watts ?? 0);
     case 'average_cadence':
       return (second.average_cadence ?? 0) - (first.average_cadence ?? 0);
     case 'average_heartrate':

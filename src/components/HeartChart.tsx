@@ -4,15 +4,19 @@ import {useActivities} from '../hooks';
 const MIN_DISTANCE_METERS = 40 * 1000;
 
 const options: ApexCharts.ApexOptions = {
-  colors: ['orange'],
+  colors: ['#7ab933'],
   stroke: {
     curve: 'smooth',
   },
   fill: {
     type: 'gradient',
+    gradient: {
+      type: 'vertical',
+      gradientToColors: ['#fd8f35'],
+    },
   },
   markers: {
-    size: [5],
+    size: [4],
   },
   chart: {
     toolbar: {show: false},

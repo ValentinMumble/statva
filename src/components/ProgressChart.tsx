@@ -21,7 +21,7 @@ const options: ApexCharts.ApexOptions = {
     type: 'gradient',
   },
   markers: {
-    size: [5],
+    size: [4],
   },
   chart: {
     toolbar: {show: false},

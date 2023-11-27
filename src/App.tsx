@@ -32,8 +32,6 @@ import {
 } from './components';
 import {useActivities} from './hooks';
 
-const DEFAULT_SORT: SortType = 'date';
-
 const accordionItems: {label: string; component: ReactNode}[] = [
   {label: 'N-Peloton average speed 💯', component: <ProgressChart search="N-Peloton" />},
   {
@@ -59,18 +57,19 @@ const accordionItems: {label: string; component: ReactNode}[] = [
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
-  const [activeSort, setActiveSort] = useState<SortType>(DEFAULT_SORT);
+  const [activeSort, setActiveSort] = useState<SortType>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearId, setGearId] = useState<string | undefined>();
   const [years, setYears] = useState<number[]>([new Date().getUTCFullYear()]);
 
   const activities = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
 
+  const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
   const handleSearchClear = () => setSearch('');
-  const handleSortChange = (sortType: SortType) => () => setActiveSort(sortType);
-  const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
+  const handleSortChange = (sortType: SortType) => () =>
+    sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
 
   const handleYearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
     setYears('' === target.value ? [] : [Number(target.value)]);

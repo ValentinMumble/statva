@@ -19,11 +19,20 @@ const AverageGearChart = () => {
     return gearMap;
   }, {});
 
-  const labels = Object.keys(dataPerGear).map(gearId => GEARS[gearId]?.label ?? '🤷');
+  const averagePerGear = Object.keys(dataPerGear).reduce((gearMap: {[gearId: string]: number}, gearId) => {
+    const [cumulativeSpeed, rideCount] = dataPerGear[gearId];
+    gearMap[gearId] = cumulativeSpeed / rideCount;
+
+    return gearMap;
+  }, {});
+
+  const sortedDesc = Object.fromEntries(Object.entries(averagePerGear).sort(([, a], [, b]) => b - a));
+
+  const labels = Object.keys(sortedDesc).map(gearId => GEARS[gearId]?.label ?? '🤷');
   const series = [
     {
       name: 'Average speed',
-      data: Object.values(dataPerGear).map(([cumulativeSpeed, rideCount]) => cumulativeSpeed / rideCount),
+      data: Object.values(sortedDesc),
     },
   ];
 
