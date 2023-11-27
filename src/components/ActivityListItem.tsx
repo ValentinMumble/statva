@@ -26,7 +26,12 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
         </Tooltip>
         <Spacer />
         {TAGS.map(tag => (
-          <Tag key={tag.sortType} size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : undefined}>
+          <Tag
+            key={tag.sortType}
+            opacity={tag.isRelevant(activity) ? 1 : 0.4}
+            size="sm"
+            colorScheme={activeSort === tag.sortType ? 'orange' : undefined}
+          >
             <TagLeftIcon as={tag.icon} />
             <TagLabel>{tag.label(activity)}</TagLabel>
           </Tag>

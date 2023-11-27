@@ -18,8 +18,9 @@ const GearChart = ({data, formatter}: ChartProps) => {
     return gearMap;
   }, {});
 
-  const labels = Object.keys(dataPerGear).map(gearId => GEARS[gearId]?.label ?? '🤷');
-  const series = [{name: data, data: Object.values(dataPerGear)}];
+  const sortedDesc = Object.fromEntries(Object.entries(dataPerGear).sort(([, a], [, b]) => b - a));
+  const labels = Object.keys(sortedDesc).map(gearId => GEARS[gearId]?.label ?? '🤷');
+  const series = [{name: data, data: Object.values(sortedDesc)}];
 
   return <Chart options={getOptions(labels, formatter)} series={series} type="bar" height={400} />;
 };
