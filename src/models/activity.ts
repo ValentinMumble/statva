@@ -89,6 +89,8 @@ const GEARS: {[id: string]: {label: string; value: string}} = {
   null: {value: 'null', label: '🤷'},
 };
 
+const bikeLabel = (gearId: string) => GEARS[gearId]?.label ?? '🤷';
+
 type ActivityTag = {
   label: (activity: DetailedActivity) => string;
   isRelevant: (activity: DetailedActivity) => boolean;
@@ -285,6 +287,7 @@ export {
   SORT_TYPES,
   TAGS,
   YEARS,
+  bikeLabel,
   eddingtonNumber,
   formatDistance,
   formatDuration,
