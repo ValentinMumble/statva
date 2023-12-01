@@ -1,5 +1,5 @@
 import {HStack, ListIcon, ListItem, Spacer, Tag, TagLabel, TagLeftIcon, Text, Tooltip} from '@chakra-ui/react';
-import {ACTIVITY_URL, DetailedActivity, SortType, TAGS, getActivityIcon} from '../models';
+import {ACTIVITY_URL, DetailedActivity, SortType, TAGS, bikeLabel, getActivityIcon} from '../models';
 
 type ActivityListItemProps = {
   activity: DetailedActivity;
@@ -16,7 +16,11 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
           color="gray.700"
           hasArrow={true}
           placement="right"
-          label={new Date(activity.start_date).toLocaleDateString()}
+          label={
+            <>
+              {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;{bikeLabel(activity.gear_id)}
+            </>
+          }
         >
           <Text>
             <a target="_blank" href={`${ACTIVITY_URL}${activity.id}`}>

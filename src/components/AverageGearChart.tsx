@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
-import {GEARS, formatSpeed, getOptions} from '../models';
+import {bikeLabel, formatSpeed, getOptions} from '../models';
 
 const AverageGearChart = () => {
   const activities = useActivities({
@@ -28,7 +28,7 @@ const AverageGearChart = () => {
 
   const sortedDesc = Object.fromEntries(Object.entries(averagePerGear).sort(([, a], [, b]) => b - a));
 
-  const labels = Object.keys(sortedDesc).map(gearId => GEARS[gearId]?.label ?? '🤷');
+  const labels = Object.keys(sortedDesc).map(bikeLabel);
   const series = [
     {
       name: 'Average speed',
