@@ -1,7 +1,7 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
 
-const MIN_DISTANCE_METERS = 40 * 1000;
+const MIN_DISTANCE_METERS = 30 * 1000;
 
 const options: ApexCharts.ApexOptions = {
   colors: ['#7ab933'],
