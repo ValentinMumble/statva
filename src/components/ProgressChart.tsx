@@ -6,16 +6,25 @@ const MIN_CHART_SPEED = 26;
 const MAX_CHART_SPEED = 35;
 
 const options: ApexCharts.ApexOptions = {
-  yaxis: {
-    labels: {
-      formatter: (value: number) => formatSpeed(value),
+  yaxis: [
+    {
+      labels: {
+        formatter: (value: number) => formatSpeed(value),
+      },
+      min: MIN_CHART_SPEED / 3.6,
+      max: MAX_CHART_SPEED / 3.6,
     },
-    min: MIN_CHART_SPEED / 3.6,
-    max: MAX_CHART_SPEED / 3.6,
-  },
-  colors: ['orange'],
+    {
+      opposite: true,
+      labels: {
+        formatter: (value: number) => `${value.toFixed(0)} W`,
+      },
+    },
+  ],
+  colors: ['#c04000', '#ffa500'],
   stroke: {
     curve: 'smooth',
+    width: 4,
   },
   fill: {
     type: 'gradient',
@@ -47,8 +56,12 @@ const ProgressChart = ({search}: ProgressChartProps) => {
   }
 
   const averageSpeedSerie = activities.map(activity => activity.average_speed);
+  const averagePowerSerie = activities.map(activity => activity.average_watts ?? 0);
   const labels = activities.map(activity => new Date(activity.start_date_local).toLocaleDateString());
-  const series = [{name: 'Average speed', data: averageSpeedSerie}];
+  const series = [
+    {name: '🏁', data: averageSpeedSerie},
+    {name: '⚡️', data: averagePowerSerie},
+  ];
 
   return (
     <Chart
