@@ -37,7 +37,7 @@ const SORT_TYPES = {
   },
   average_speed: {
     value: 'average_speed',
-    label: '💯',
+    label: '🏁',
   },
   max_speed: {
     value: 'max_speed',
@@ -277,7 +277,9 @@ const eddingtonNumber = (rides: DetailedActivity[]) => {
     }
   });
 
-  return eddingtonNumber;
+  const next = eddingtonNumber - above + 1;
+
+  return [eddingtonNumber, next];
 };
 
 export {

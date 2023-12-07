@@ -33,7 +33,7 @@ import {
 import {useActivities} from './hooks';
 
 const accordionItems: {label: string; component: ReactNode}[] = [
-  {label: 'N-Peloton average speed 💯', component: <ProgressChart search="N-Peloton" />},
+  {label: 'N-Peloton 🏁 & ⚡️', component: <ProgressChart search="N-Peloton" />},
   {
     label: 'Distance / month 🗺️',
     component: <MonthChart data="distance" filter={{years: [2023, 2024]}} formatter={value => formatDistance(value)} />,
@@ -50,7 +50,7 @@ const accordionItems: {label: string; component: ReactNode}[] = [
   },
   {label: 'Distance / bike 🚲', component: <GearChart data="distance" formatter={value => formatDistance(value)} />},
   {label: 'Time / bike ⏱️', component: <GearChart data="moving_time" formatter={value => formatDuration(value)} />},
-  {label: 'Average speed / bike 💯', component: <AverageGearChart />},
+  {label: 'Average speed / bike 🏁', component: <AverageGearChart />},
   {label: 'Average heart rate 🫀', component: <HeartChart />},
 ];
 
