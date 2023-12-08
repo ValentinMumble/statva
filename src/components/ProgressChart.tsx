@@ -2,26 +2,25 @@ import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
 import {formatSpeed} from '../models';
 
-const MIN_CHART_SPEED = 26;
-const MAX_CHART_SPEED = 35;
-
 const options: ApexCharts.ApexOptions = {
   yaxis: [
     {
       labels: {
         formatter: (value: number) => formatSpeed(value),
       },
-      min: MIN_CHART_SPEED / 3.6,
-      max: MAX_CHART_SPEED / 3.6,
+      min: 26 / 3.6,
+      max: 35 / 3.6,
     },
     {
       opposite: true,
       labels: {
         formatter: (value: number) => `${value.toFixed(0)} W`,
       },
+      min: 120,
+      max: 260,
     },
   ],
-  colors: ['#c04000', '#ffa500'],
+  colors: ['#ffa500', '#c04000'],
   stroke: {
     curve: 'smooth',
     width: 4,

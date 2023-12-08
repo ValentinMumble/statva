@@ -3,6 +3,8 @@ import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, Text, VStack} from
 import {useActivities} from '../hooks';
 import {
   DetailedActivity,
+  FTP,
+  WEIGHT,
   eddingtonNumber,
   formatDistance,
   formatDurationInDays,
@@ -48,8 +50,8 @@ const STATS: Stat[][] = [
     },
     {
       label: '⚡️',
-      helpText: 'FTP',
-      number: () => '234 W',
+      helpText: 'FTP - W | W/kg',
+      number: () => `${FTP} | ${(FTP / WEIGHT).toFixed(1)}`,
     },
     {
       label: '🧸',
