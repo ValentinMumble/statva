@@ -6,6 +6,9 @@ import {FiZap} from 'react-icons/fi';
 import {MdOutlineShowChart, MdOutlineTimer, MdOutlineSpeed, MdOutlineRocketLaunch} from 'react-icons/md';
 import {ActivityType, DetailedActivity} from './strava';
 
+const FTP = 234;
+const WEIGHT = 73;
+
 const DEFAULT_INCLUDED_ACTIVITY_TYPES: ActivityType[] = [
   ActivityType.Ride,
   ActivityType.GravelRide,
@@ -285,9 +288,11 @@ const eddingtonNumber = (rides: DetailedActivity[]) => {
 export {
   ACTIVITY_URL,
   DEFAULT_INCLUDED_ACTIVITY_TYPES,
+  FTP,
   GEARS,
   SORT_TYPES,
   TAGS,
+  WEIGHT,
   YEARS,
   bikeLabel,
   eddingtonNumber,
