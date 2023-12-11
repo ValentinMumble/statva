@@ -1,10 +1,9 @@
 import {ReactNode} from 'react';
 import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, Text, VStack} from '@chakra-ui/react';
-import {useActivities} from '../hooks';
+import {useActivities, useAthlete} from '../hooks';
 import {
   DetailedActivity,
-  FTP,
-  WEIGHT,
+  DetailedAthlete,
   eddingtonNumber,
   formatDistance,
   formatDurationInDays,
@@ -16,7 +15,7 @@ import {
 type Stat = {
   label: string;
   helpText: string;
-  number: (activities: DetailedActivity[]) => ReactNode;
+  number: (activities: DetailedActivity[], athlete: DetailedAthlete) => ReactNode;
 };
 
 const STATS: Stat[][] = [
@@ -24,7 +23,7 @@ const STATS: Stat[][] = [
     {
       label: '🚲',
       helpText: 'Ride count',
-      number: activities => activities.length.toString(),
+      number: activities => activities.length,
     },
     {
       label: '🗺️',
@@ -51,7 +50,7 @@ const STATS: Stat[][] = [
     {
       label: '⚡️',
       helpText: 'FTP - W | W/kg',
-      number: () => `${FTP} | ${(FTP / WEIGHT).toFixed(1)}`,
+      number: (_, athlete) => `${athlete.ftp} | ${(athlete.ftp / athlete.weight).toFixed(1)}`,
     },
     {
       label: '🧸',
@@ -74,8 +73,9 @@ const STATS: Stat[][] = [
 
 const Stats = () => {
   const activities = useActivities({withCommute: true, withPrivate: true});
+  const athlete = useAthlete();
 
-  if (null === activities) {
+  if (null === activities || null === athlete) {
     return null;
   }
 
@@ -86,7 +86,7 @@ const Stats = () => {
           {statGroup.map(stat => (
             <Stat key={stat.label}>
               <StatLabel>{stat.label}</StatLabel>
-              <StatNumber>{stat.number(activities)}</StatNumber>
+              <StatNumber>{stat.number(activities, athlete)}</StatNumber>
               <StatHelpText>{stat.helpText}</StatHelpText>
             </Stat>
           ))}

@@ -3,10 +3,9 @@ import {DetailedActivity} from './models';
 const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
 const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
 const refreshToken = import.meta.env.VITE_STRAVA_REFRESH_TOKEN;
-const userId = import.meta.env.VITE_STRAVA_USER_ID;
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
-const ATHLETES_ENDPOINT = `https://www.strava.com/api/v3/athletes/${userId}`;
+const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ITEMS_PER_PAGE = 200;
 
 const getAccessToken = async () => {
@@ -32,6 +31,14 @@ const getAccessToken = async () => {
 const activities: {[id: string]: DetailedActivity} = {};
 let isInitializing = false;
 
+const fetchAthlete = async () => {
+  const {access_token: accessToken} = await getAccessToken();
+
+  const response = await fetch(`${ATHLETE_ENDPOINT}?access_token=${accessToken}`);
+
+  return await response.json();
+};
+
 const initializeActivities = async () => {
   if (isInitializing) {
     return;
@@ -45,7 +52,7 @@ const initializeActivities = async () => {
 
   do {
     const response = await fetch(
-      `${ATHLETES_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
+      `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
     );
 
     const data = (await response.json()) as DetailedActivity[];
@@ -67,4 +74,4 @@ const getActivities = async (): Promise<DetailedActivity[] | null> => {
   return Promise.resolve(Object.values(activities));
 };
 
-export {getActivities};
+export {getActivities, fetchAthlete};

@@ -1,13 +1,10 @@
 import {IconType} from 'react-icons';
 import {GiPathDistance, GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill, PiPinwheel, PiHeartbeatBold, PiGameControllerBold} from 'react-icons/pi';
-import {TbKayak} from 'react-icons/tb';
+import {TbKayak, TbThumbUp} from 'react-icons/tb';
 import {FiZap} from 'react-icons/fi';
 import {MdOutlineShowChart, MdOutlineTimer, MdOutlineSpeed, MdOutlineRocketLaunch} from 'react-icons/md';
 import {ActivityType, DetailedActivity} from './strava';
-
-const FTP = 234;
-const WEIGHT = 73;
 
 const DEFAULT_INCLUDED_ACTIVITY_TYPES: ActivityType[] = [
   ActivityType.Ride,
@@ -57,6 +54,10 @@ const SORT_TYPES = {
   average_heartrate: {
     value: 'average_heartrate',
     label: '🫀',
+  },
+  kudos_count: {
+    value: 'kudos_count',
+    label: '👍',
   },
 };
 
@@ -150,6 +151,12 @@ const TAGS: ActivityTag[] = [
     icon: PiHeartbeatBold,
     sortType: 'average_heartrate',
   },
+  {
+    label: activity => `${activity.kudos_count}`,
+    isRelevant: activity => 0 < activity.kudos_count,
+    icon: TbThumbUp,
+    sortType: 'kudos_count',
+  },
 ];
 
 const YEARS = [2015, 2016, 2017, 2018, 2023, 2024].sort((a, b) => b - a);
@@ -214,6 +221,8 @@ const sortActivities = (
       return (second.average_cadence ?? 0) - (first.average_cadence ?? 0);
     case 'average_heartrate':
       return (second.average_heartrate ?? 0) - (first.average_heartrate ?? 0);
+    case 'kudos_count':
+      return second.kudos_count - first.kudos_count;
   }
 };
 
@@ -288,11 +297,9 @@ const eddingtonNumber = (rides: DetailedActivity[]) => {
 export {
   ACTIVITY_URL,
   DEFAULT_INCLUDED_ACTIVITY_TYPES,
-  FTP,
   GEARS,
   SORT_TYPES,
   TAGS,
-  WEIGHT,
   YEARS,
   bikeLabel,
   eddingtonNumber,

@@ -1,34 +1,35 @@
 import {ChangeEvent, ReactNode, useState} from 'react';
 import {
-  Input,
-  Heading,
-  Spinner,
-  Stack,
-  VStack,
-  Box,
-  Center,
-  List,
-  Button,
-  InputRightElement,
-  InputGroup,
-  Tag,
-  HStack,
-  Select,
   Accordion,
   AccordionButton,
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Box,
+  Button,
+  Center,
+  Heading,
+  HStack,
+  Input,
+  InputGroup,
+  InputRightElement,
+  List,
+  Select,
+  Spinner,
+  Stack,
+  Tag,
+  VStack,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection, formatDuration, formatDistance} from './models';
 import {
   ActivityListItem,
-  MonthChart,
+  AverageGearChart,
+  EddingtonChart,
   GearChart,
+  HeartChart,
+  MonthChart,
   ProgressChart,
   Stats,
-  AverageGearChart,
-  HeartChart,
 } from './components';
 import {useActivities} from './hooks';
 
@@ -36,20 +37,15 @@ const accordionItems: {label: string; component: ReactNode}[] = [
   {label: 'N-Peloton 🏁 & ⚡️', component: <ProgressChart search="N-Peloton" />},
   {
     label: 'Distance / month 🗺️',
-    component: <MonthChart data="distance" filter={{years: [2023, 2024]}} formatter={value => formatDistance(value)} />,
+    component: <MonthChart data="distance" filter={{years: [2023, 2024]}} formatter={formatDistance} />,
   },
   {
     label: 'Elevation / month ⛰️',
-    component: (
-      <MonthChart
-        data="total_elevation_gain"
-        filter={{years: [2023, 2024]}}
-        formatter={value => formatDistance(value)}
-      />
-    ),
+    component: <MonthChart data="total_elevation_gain" filter={{years: [2023, 2024]}} formatter={formatDistance} />,
   },
-  {label: 'Distance / bike 🚲', component: <GearChart data="distance" formatter={value => formatDistance(value)} />},
-  {label: 'Time / bike ⏱️', component: <GearChart data="moving_time" formatter={value => formatDuration(value)} />},
+  {label: 'Eddington / month 🧸', component: <EddingtonChart startYear={2023} />},
+  {label: 'Distance / bike 🚲', component: <GearChart data="distance" formatter={formatDistance} />},
+  {label: 'Time / bike ⏱️', component: <GearChart data="moving_time" formatter={formatDuration} />},
   {label: 'Average speed / bike 🏁', component: <AverageGearChart />},
   {label: 'Average heart rate 🫀', component: <HeartChart />},
 ];
