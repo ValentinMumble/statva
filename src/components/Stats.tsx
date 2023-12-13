@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, Text, VStack} from '@chakra-ui/react';
+import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, Text, VStack, Skeleton} from '@chakra-ui/react';
 import {useActivities, useAthlete} from '../hooks';
 import {
   DetailedActivity,
@@ -72,12 +72,10 @@ const STATS: Stat[][] = [
 ];
 
 const Stats = () => {
-  const activities = useActivities({withCommute: true, withPrivate: true});
+  const [activities, isActivityLoading] = useActivities({withCommute: true, withPrivate: true});
   const athlete = useAthlete();
 
-  if (null === activities || null === athlete) {
-    return null;
-  }
+  const isLoading = null === athlete || isActivityLoading;
 
   return (
     <VStack alignItems="stretch">
@@ -86,7 +84,13 @@ const Stats = () => {
           {statGroup.map(stat => (
             <Stat key={stat.label}>
               <StatLabel>{stat.label}</StatLabel>
-              <StatNumber>{stat.number(activities, athlete)}</StatNumber>
+              {isLoading ? (
+                <Skeleton width="70%">
+                  <StatNumber>Loading</StatNumber>
+                </Skeleton>
+              ) : (
+                <StatNumber>{stat.number(activities, athlete)}</StatNumber>
+              )}
               <StatHelpText>{stat.helpText}</StatHelpText>
             </Stat>
           ))}

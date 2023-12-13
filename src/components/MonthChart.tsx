@@ -3,7 +3,7 @@ import {useActivities} from '../hooks';
 import {ChartProps, getOptions} from '../models';
 
 const MonthChart = ({data, formatter, filter}: ChartProps) => {
-  const activities = useActivities({
+  const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
@@ -11,13 +11,9 @@ const MonthChart = ({data, formatter, filter}: ChartProps) => {
     ...filter,
   });
 
-  if (null === activities) {
-    return null;
-  }
-
   const dataPerMonth = activities.reduce((yearMap: {[monthYear: string]: number}, activity) => {
     const date = new Date(activity.start_date);
-    const monthYear = `${(date.getUTCMonth() + 1).toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
+    const monthYear = `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
     yearMap[monthYear] = (yearMap[monthYear] ?? 0) + (activity[data] as number);
 
     return yearMap;

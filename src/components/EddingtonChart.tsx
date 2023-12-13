@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../hooks';
-import {DetailedActivity, eddingtonNumber} from '../models';
+import {eddingtonNumber, getRidesBeforeMonth} from '../models';
 
 const options: ApexCharts.ApexOptions = {
   colors: ['#ca8c19'],
@@ -8,36 +8,25 @@ const options: ApexCharts.ApexOptions = {
     curve: 'smooth',
     width: 4,
   },
-  fill: {
-    type: 'gradient',
-  },
-  markers: {
-    size: [4],
-  },
+  fill: {type: 'gradient'},
+  markers: {size: [4]},
   chart: {
     toolbar: {show: false},
     zoom: {enabled: false},
   },
 };
 
-const getRidesBeforeMonth = (rides: DetailedActivity[], date: Date) =>
-  rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
-
 type EddingtonChartProps = {
   startYear: number;
 };
 
 const EddingtonChart = ({startYear}: EddingtonChartProps) => {
-  const activities = useActivities({
+  const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
   });
-
-  if (null === activities) {
-    return null;
-  }
 
   const dataPerMonth = activities.reduce((eddingtonByMonth: {[monthYear: string]: number}, activity) => {
     const date = new Date(activity.start_date);

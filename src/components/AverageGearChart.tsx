@@ -3,14 +3,10 @@ import {useActivities} from '../hooks';
 import {bikeLabel, formatSpeed, getOptions} from '../models';
 
 const AverageGearChart = () => {
-  const activities = useActivities({
+  const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
   });
-
-  if (null === activities) {
-    return null;
-  }
 
   const dataPerGear = activities.reduce((gearMap: {[gearId: string]: number[]}, activity) => {
     const [cumulativeSpeed, rideCount] = gearMap[activity.gear_id] ?? [0, 0];

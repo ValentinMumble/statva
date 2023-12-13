@@ -25,12 +25,8 @@ const options: ApexCharts.ApexOptions = {
     curve: 'smooth',
     width: 4,
   },
-  fill: {
-    type: 'gradient',
-  },
-  markers: {
-    size: [4],
-  },
+  fill: {type: 'gradient'},
+  markers: {size: [4]},
   chart: {
     toolbar: {show: false},
     zoom: {enabled: false},
@@ -42,7 +38,7 @@ type ProgressChartProps = {
 };
 
 const ProgressChart = ({search}: ProgressChartProps) => {
-  const activities = useActivities({
+  const [activities] = useActivities({
     search,
     withCommute: false,
     withPrivate: false,
@@ -50,13 +46,9 @@ const ProgressChart = ({search}: ProgressChartProps) => {
     sortDirection: 'asc',
   });
 
-  if (null === activities) {
-    return null;
-  }
-
-  const averageSpeedSerie = activities.map(activity => activity.average_speed);
-  const averagePowerSerie = activities.map(activity => activity.average_watts ?? 0);
-  const labels = activities.map(activity => new Date(activity.start_date_local).toLocaleDateString());
+  const averageSpeedSerie = activities.map(({average_speed}) => average_speed);
+  const averagePowerSerie = activities.map(({average_watts}) => average_watts ?? 0);
+  const labels = activities.map(({start_date}) => new Date(start_date).toLocaleDateString());
   const series = [
     {name: '🏁', data: averageSpeedSerie},
     {name: '⚡️', data: averagePowerSerie},

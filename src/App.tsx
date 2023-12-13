@@ -7,15 +7,14 @@ import {
   AccordionPanel,
   Box,
   Button,
-  Center,
-  Heading,
   HStack,
   Input,
   InputGroup,
   InputRightElement,
   List,
+  ListItem,
   Select,
-  Spinner,
+  Skeleton,
   Stack,
   Tag,
   VStack,
@@ -58,7 +57,7 @@ const App = () => {
   const [gearId, setGearId] = useState<string | undefined>();
   const [years, setYears] = useState<number[]>([new Date().getUTCFullYear()]);
 
-  const activities = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
+  const [activities, isLoading] = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
 
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
@@ -71,17 +70,6 @@ const App = () => {
     setYears('' === target.value ? [] : [Number(target.value)]);
   const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
     setGearId('' === target.value ? undefined : target.value);
-
-  if (null === activities) {
-    return (
-      <Center height="full" flexDirection="column" gap={10}>
-        <Heading as="h1" size="lg">
-          Fetching activities
-        </Heading>
-        <Spinner color="orange.500" />
-      </Center>
-    );
-  }
 
   return (
     <Box padding={10}>
@@ -109,7 +97,13 @@ const App = () => {
             <Button variant="ghost" onClick={handleSortDirectionToggle}>
               {'asc' === sortDirection ? '⬆️' : '⬇️'}
             </Button>
-            <Input placeholder="Search" autoFocus={true} value={search} onChange={handleSearchChange} />
+            <Input
+              disabled={isLoading}
+              placeholder="Search"
+              autoFocus={true}
+              value={search}
+              onChange={handleSearchChange}
+            />
             <InputRightElement marginRight="65px">
               <Tag>{activities.length}</Tag>
             </InputRightElement>
@@ -121,6 +115,7 @@ const App = () => {
             {Object.values(SORT_TYPES).map(sortType => (
               <Button
                 key={sortType.value}
+                disabled={isLoading}
                 variant="ghost"
                 colorScheme="orange"
                 isActive={activeSort === sortType.value}
@@ -148,9 +143,15 @@ const App = () => {
             </Button>
           </Stack>
           <List>
-            {activities.map(activity => (
-              <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} />
-            ))}
+            {isLoading
+              ? [...new Array(20)].map((_, index) => (
+                  <Skeleton key={index} marginBottom="8px">
+                    <ListItem>Loading</ListItem>
+                  </Skeleton>
+                ))
+              : activities.map(activity => (
+                  <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} />
+                ))}
           </List>
         </VStack>
       </HStack>
