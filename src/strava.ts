@@ -8,36 +8,53 @@ const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ITEMS_PER_PAGE = 200;
 
-const getAccessToken = async () => {
-  const body = JSON.stringify({
-    client_id: clientId,
-    client_secret: clientSecret,
-    refresh_token: refreshToken,
-    grant_type: 'refresh_token',
-  });
+type Token = string;
+let token: Token | null = null;
 
-  const response = await fetch(TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json, text/plain, */*',
-      'Content-Type': 'application/json',
-    },
-    body,
-  });
+const fetchAccessToken = async () => {
+  if (null === token) {
+    const body = JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    });
 
-  return response.json();
+    const response = await fetch(TOKEN_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+      },
+      body,
+    });
+
+    token = (await response.json()).access_token;
+  }
+
+  return token;
 };
 
 const fetchAthlete = async (): Promise<DetailedAthlete> => {
-  const {access_token: accessToken} = await getAccessToken();
+  const accessToken = await fetchAccessToken();
 
   const response = await fetch(`${ATHLETE_ENDPOINT}?access_token=${accessToken}`);
 
   return await response.json();
 };
 
-const fetchAllActivities = async (): Promise<DetailedActivity[]> => {
-  const {access_token: accessToken} = await getAccessToken();
+const fetchActivities = async (page: number): Promise<DetailedActivity[]> => {
+  const accessToken = await fetchAccessToken();
+
+  const response = await fetch(
+    `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
+  );
+
+  return await response.json();
+};
+
+const fetchAllActivities = async () => {
+  const accessToken = await fetchAccessToken();
 
   let page = 1;
   let resultCount = 0;
@@ -59,4 +76,4 @@ const fetchAllActivities = async (): Promise<DetailedActivity[]> => {
   return Object.values(activities);
 };
 
-export {fetchAllActivities, fetchAthlete, ITEMS_PER_PAGE};
+export {fetchAllActivities, fetchActivities, fetchAthlete, ITEMS_PER_PAGE};

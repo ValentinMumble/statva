@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {ChakraProvider, ThemeConfig, extendTheme} from '@chakra-ui/react';
-import {ActivitiesProvider} from './providers';
 import {App} from './App.tsx';
+import {ActivitiesProvider} from './providers';
 import './index.css';
 
 const config: ThemeConfig = {
