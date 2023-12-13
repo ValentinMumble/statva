@@ -4,7 +4,8 @@ import {GiPathDistance} from 'react-icons/gi';
 import {MdOutlineShowChart, MdOutlineTimer, MdOutlineSpeed, MdOutlineRocketLaunch} from 'react-icons/md';
 import {PiPinwheel, PiHeartbeatBold} from 'react-icons/pi';
 import {TbThumbUp} from 'react-icons/tb';
-import {DetailedActivity, SortType, formatDistance, formatElevation, formatDuration, formatSpeed} from '../models';
+import {SortType, formatDistance, formatElevation, formatDuration, formatSpeed} from '../models';
+import {DetailedActivity} from './strava';
 
 type Tag = {
   label: (activity: DetailedActivity) => string;
