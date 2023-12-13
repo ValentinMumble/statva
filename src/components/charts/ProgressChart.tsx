@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../hooks';
-import {formatSpeed} from '../models';
+import {useActivities} from '../../hooks';
+import {formatSpeed} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
   yaxis: [

@@ -1,4 +1,4 @@
-import {DetailedActivity, DetailedAthlete} from './models';
+import {DetailedActivity, DetailedAthlete} from './models/strava';
 
 const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
 const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;

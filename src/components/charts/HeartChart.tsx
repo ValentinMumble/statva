@@ -1,5 +1,5 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../hooks';
+import {useActivities} from '../../hooks';
 
 const MIN_DISTANCE_METERS = 30 * 1000;
 

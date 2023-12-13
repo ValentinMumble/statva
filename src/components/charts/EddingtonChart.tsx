@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../hooks';
-import {eddingtonNumber, getRidesBeforeMonth} from '../models';
+import {useActivities} from '../../hooks';
+import {eddingtonNumber, getRidesBeforeMonth} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
   colors: ['#ca8c19'],

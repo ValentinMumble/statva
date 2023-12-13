@@ -19,7 +19,7 @@ import {
   Tag,
   VStack,
 } from '@chakra-ui/react';
-import {SortType, SORT_TYPES, GEARS, YEARS, SortDirection, formatDuration, formatDistance} from './models';
+import {SortType, SORT_TYPES, GEARS, SortDirection, formatDuration, formatDistance} from './models';
 import {
   ActivityListItem,
   AverageGearChart,
@@ -72,9 +72,9 @@ const App = () => {
     setGearId('' === target.value ? undefined : target.value);
 
   return (
-    <Box padding={10}>
-      <HStack alignItems="baseline" gap={10} flexDirection={{base: 'column', md: 'row'}}>
-        <VStack align="stretch" flexBasis="35%" gap={10}>
+    <Box padding={7}>
+      <HStack alignItems="baseline" gap={5} flexDirection={{base: 'column', md: 'row'}}>
+        <VStack align="stretch" flexBasis="38%" gap={7}>
           <Stats />
           <Accordion defaultIndex={[0]} allowMultiple={true}>
             {accordionItems.map(item => (
@@ -92,7 +92,7 @@ const App = () => {
             ))}
           </Accordion>
         </VStack>
-        <VStack align="stretch" flexBasis="65%">
+        <VStack align="stretch" flexBasis="62%">
           <InputGroup gap={1}>
             <Button variant="ghost" onClick={handleSortDirectionToggle}>
               {'asc' === sortDirection ? '⬆️' : '⬇️'}
@@ -112,18 +112,20 @@ const App = () => {
             </Button>
           </InputGroup>
           <Stack direction={['row']} justifyContent="space-between">
-            {Object.values(SORT_TYPES).map(sortType => (
-              <Button
-                key={sortType.value}
-                disabled={isLoading}
-                variant="ghost"
-                colorScheme="orange"
-                isActive={activeSort === sortType.value}
-                onClick={handleSortChange(sortType.value as SortType)}
-              >
-                {sortType.label}
-              </Button>
-            ))}
+            {Object.values(SORT_TYPES)
+              .filter(sortType => !('disabled' in sortType))
+              .map(sortType => (
+                <Button
+                  key={sortType.value}
+                  disabled={isLoading}
+                  variant="ghost"
+                  colorScheme="orange"
+                  isActive={activeSort === sortType.value}
+                  onClick={handleSortChange(sortType.value as SortType)}
+                >
+                  {sortType.label}
+                </Button>
+              ))}
             <Select placeholder="🚲" width={24} value={gearId} onChange={handleGearChange}>
               {Object.values(GEARS).map(({value, label}) => (
                 <option key={value} value={value}>
@@ -132,7 +134,7 @@ const App = () => {
               ))}
             </Select>
             <Select placeholder="🗓️" width={24} value={years[0]} onChange={handleYearChange}>
-              {YEARS.map(year => (
+              {[2024, 2023, 2018, 2017, 2016, 2015].map(year => (
                 <option key={year} value={year}>
                   {year}
                 </option>
