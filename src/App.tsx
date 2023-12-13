@@ -81,7 +81,7 @@ const App = () => {
               <AccordionItem key={item.label}>
                 <h2>
                   <AccordionButton>
-                    <Box as="b" flex="1" fontSize="1.1em" textAlign="left">
+                    <Box as="b" flex="1" textAlign="left">
                       {item.label}
                     </Box>
                     <AccordionIcon />
