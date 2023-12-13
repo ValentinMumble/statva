@@ -16,9 +16,7 @@ const options: ApexCharts.ApexOptions = {
       gradientToColors: ['#fd8f35'],
     },
   },
-  markers: {
-    size: [4],
-  },
+  markers: {size: [4]},
   chart: {
     toolbar: {show: false},
     zoom: {enabled: false},
@@ -26,16 +24,12 @@ const options: ApexCharts.ApexOptions = {
 };
 
 const HeartChart = () => {
-  const activities = useActivities({
+  const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
   });
-
-  if (null === activities) {
-    return null;
-  }
 
   const filteredActivities = activities.filter(
     ({average_heartrate, distance}) => 0 < (average_heartrate ?? 0) && MIN_DISTANCE_METERS < distance

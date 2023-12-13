@@ -1,4 +1,4 @@
-import {DetailedActivity} from './models';
+import {DetailedActivity, DetailedAthlete} from './models';
 
 const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
 const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
@@ -28,10 +28,7 @@ const getAccessToken = async () => {
   return response.json();
 };
 
-const activities: {[id: string]: DetailedActivity} = {};
-let isInitializing = false;
-
-const fetchAthlete = async () => {
+const fetchAthlete = async (): Promise<DetailedAthlete> => {
   const {access_token: accessToken} = await getAccessToken();
 
   const response = await fetch(`${ATHLETE_ENDPOINT}?access_token=${accessToken}`);
@@ -39,16 +36,12 @@ const fetchAthlete = async () => {
   return await response.json();
 };
 
-const initializeActivities = async () => {
-  if (isInitializing) {
-    return;
-  }
-
-  isInitializing = true;
+const fetchAllActivities = async (): Promise<DetailedActivity[]> => {
   const {access_token: accessToken} = await getAccessToken();
 
   let page = 1;
   let resultCount = 0;
+  const activities: {[id: string]: DetailedActivity} = {};
 
   do {
     const response = await fetch(
@@ -62,16 +55,8 @@ const initializeActivities = async () => {
     resultCount = data.length;
     page++;
   } while (resultCount === ITEMS_PER_PAGE);
+
+  return Object.values(activities);
 };
 
-const getActivities = async (): Promise<DetailedActivity[] | null> => {
-  await initializeActivities();
-
-  if (isInitializing && Object.values(activities).length === 0) {
-    return null;
-  }
-
-  return Promise.resolve(Object.values(activities));
-};
-
-export {getActivities, fetchAthlete};
+export {fetchAllActivities, fetchAthlete, ITEMS_PER_PAGE};

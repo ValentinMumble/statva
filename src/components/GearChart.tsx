@@ -3,14 +3,10 @@ import {useActivities} from '../hooks';
 import {ChartProps, bikeLabel, getOptions} from '../models';
 
 const GearChart = ({data, formatter}: ChartProps) => {
-  const activities = useActivities({
+  const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
   });
-
-  if (null === activities) {
-    return null;
-  }
 
   const dataPerGear = activities.reduce((gearMap: {[gearId: string]: number}, activity) => {
     gearMap[activity.gear_id] = (gearMap[activity.gear_id] ?? 0) + (activity[data] as number);
