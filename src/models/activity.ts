@@ -4,12 +4,6 @@ import {TbKayak} from 'react-icons/tb';
 import {SortType, SortDirection} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
 
-const DEFAULT_INCLUDED_ACTIVITY_TYPES: ActivityType[] = [
-  ActivityType.Ride,
-  ActivityType.GravelRide,
-  ActivityType.VirtualRide,
-];
-
 type ActivityFilter = {
   search?: string;
   sort?: SortType;
@@ -116,13 +110,5 @@ const eddingtonNumber = (rides: DetailedActivity[]) => {
   return [eddingtonNumber, next];
 };
 
-export {
-  DEFAULT_INCLUDED_ACTIVITY_TYPES,
-  eddingtonNumber,
-  getRidesBeforeMonth,
-  getActivityIcon,
-  getMaxValue,
-  getTotalValue,
-  sortActivities,
-};
+export {eddingtonNumber, getRidesBeforeMonth, getActivityIcon, getMaxValue, getTotalValue, sortActivities};
 export type {ActivityFilter};
