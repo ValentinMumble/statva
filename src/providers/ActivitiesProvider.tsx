@@ -1,5 +1,5 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
-import {DetailedActivity} from '../models';
+import {DetailedActivity} from '../models/strava';
 import {ITEMS_PER_PAGE, fetchActivities as stravaFetchActivities} from '../strava';
 
 const ActivitiesContext = createContext<[DetailedActivity[], boolean]>([[], true]);

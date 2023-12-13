@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../hooks';
-import {ChartProps, getOptions} from '../models';
+import {useActivities} from '../../hooks';
+import {ChartProps, getOptions} from '../../models';
 
 const MonthChart = ({data, formatter, filter}: ChartProps) => {
   const [activities] = useActivities({

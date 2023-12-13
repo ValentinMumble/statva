@@ -1,5 +1,6 @@
 import {useContext} from 'react';
-import {ActivityFilter, DEFAULT_INCLUDED_ACTIVITY_TYPES, DetailedActivity, sortActivities} from '../models';
+import {ActivityFilter, DEFAULT_INCLUDED_ACTIVITY_TYPES, sortActivities} from '../models';
+import {DetailedActivity} from '../models/strava';
 import {ActivitiesContext} from '../providers';
 
 const useActivities = ({

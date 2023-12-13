@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {DetailedAthlete} from '../models';
+import {DetailedAthlete} from '../models/strava';
 import {fetchAthlete as fetchStravaAthlete} from '../strava';
 
 const useAthlete = () => {
