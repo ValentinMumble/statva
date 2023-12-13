@@ -37,7 +37,7 @@ const HeartChart = () => {
 
   const averageHeartRateSerie = filteredActivities.map(activity => activity.average_heartrate ?? 0);
   const labels = filteredActivities.map(activity => new Date(activity.start_date_local).toLocaleDateString());
-  const series = [{name: 'Average heart rate', data: averageHeartRateSerie}];
+  const series = [{name: '🫀', data: averageHeartRateSerie}];
 
   return (
     <Chart

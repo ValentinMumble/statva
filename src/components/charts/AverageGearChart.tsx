@@ -27,7 +27,7 @@ const AverageGearChart = () => {
   const labels = Object.keys(sortedDesc).map(gearLabel);
   const series = [
     {
-      name: 'Average speed',
+      name: '🏁',
       data: Object.values(sortedDesc),
     },
   ];
