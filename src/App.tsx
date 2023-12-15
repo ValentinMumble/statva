@@ -36,15 +36,26 @@ const accordionItems: {label: string; component: ReactNode}[] = [
   {label: 'N-Peloton 🏁 & ⚡️', component: <ProgressChart search="N-Peloton" />},
   {
     label: 'Distance / month 🗺️',
-    component: <MonthChart data="distance" filter={{years: [2023, 2024]}} formatter={formatDistance} />,
+    component: <MonthChart data="distance" dataLabel="🗺️" filter={{years: [2023, 2024]}} formatter={formatDistance} />,
   },
   {
-    label: 'Elevation / month ⛰️',
-    component: <MonthChart data="total_elevation_gain" filter={{years: [2023, 2024]}} formatter={formatDistance} />,
+    label: 'D+ / month ⛰️',
+    component: (
+      <MonthChart
+        data="total_elevation_gain"
+        dataLabel="⛰️"
+        filter={{years: [2023, 2024]}}
+        formatter={formatDistance}
+        type="area"
+      />
+    ),
   },
   {label: 'Eddington / month 🧸', component: <EddingtonChart startYear={2023} />},
-  {label: 'Distance / bike 🚲', component: <GearChart data="distance" formatter={formatDistance} />},
-  {label: 'Time / bike ⏱️', component: <GearChart data="moving_time" formatter={formatDuration} />},
+  {label: 'Distance / bike 🚲', component: <GearChart dataLabel="🗺️" data="distance" formatter={formatDistance} />},
+  {
+    label: 'Time / bike ⏱️',
+    component: <GearChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} type="pie" />,
+  },
   {label: 'Average speed / bike 🏁', component: <AverageGearChart />},
   {label: 'Average heart rate 🫀', component: <HeartChart />},
 ];
