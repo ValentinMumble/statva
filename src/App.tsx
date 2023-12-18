@@ -35,23 +35,22 @@ import {useActivities} from './hooks';
 const accordionItems: {label: string; component: ReactNode}[] = [
   {label: 'N-Peloton 🏁 & ⚡️', component: <ProgressChart search="N-Peloton" />},
   {
-    label: 'Distance / month 🗺️',
-    component: <MonthChart data="distance" dataLabel="🗺️" filter={{years: [2023, 2024]}} formatter={formatDistance} />,
+    label: 'Distance / time 🗺️',
+    component: (
+      <MonthChart timeframe="week" data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />
+    ),
   },
   {
-    label: 'D+ / month ⛰️',
+    label: 'D+ / time ⛰️',
     component: (
-      <MonthChart
-        data="total_elevation_gain"
-        dataLabel="⛰️"
-        filter={{years: [2023, 2024]}}
-        formatter={formatDistance}
-        type="area"
-      />
+      <MonthChart data="total_elevation_gain" dataLabel="⛰️" formatter={value => formatDistance(value)} type="area" />
     ),
   },
   {label: 'Eddington / month 🧸', component: <EddingtonChart startYear={2023} />},
-  {label: 'Distance / bike 🚲', component: <GearChart dataLabel="🗺️" data="distance" formatter={formatDistance} />},
+  {
+    label: 'Distance / bike 🚲',
+    component: <GearChart dataLabel="🗺️" data="distance" formatter={value => formatDistance(value, 0)} type="pie" />,
+  },
   {
     label: 'Time / bike ⏱️',
     component: <GearChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} type="pie" />,

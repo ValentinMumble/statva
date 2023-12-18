@@ -35,7 +35,7 @@ const HeartChart = () => {
     ({average_heartrate, distance}) => 0 < (average_heartrate ?? 0) && MIN_DISTANCE_METERS < distance
   );
 
-  const averageHeartRateSerie = filteredActivities.map(activity => activity.average_heartrate ?? 0);
+  const averageHeartRateSerie = filteredActivities.map(activity => Math.round(activity.average_heartrate ?? 0));
   const labels = filteredActivities.map(activity => new Date(activity.start_date_local).toLocaleDateString());
   const series = [{name: '🫀', data: averageHeartRateSerie}];
 

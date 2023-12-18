@@ -18,7 +18,28 @@ const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
   const labels = Object.keys(sortedDesc).map(gearLabel);
   const series = 'pie' === type ? Object.values(sortedDesc) : [{name: dataLabel, data: Object.values(sortedDesc)}];
 
-  return <Chart options={getOptions(labels, formatter)} series={series} type={type ?? 'bar'} height={400} {...rest} />;
+  return (
+    <Chart
+      options={getOptions(
+        labels,
+        formatter,
+        'pie' === type
+          ? {
+              legend: {show: false},
+              dataLabels: {
+                enabled: true,
+                formatter: (_, {seriesIndex}) => labels[seriesIndex],
+                dropShadow: {enabled: false},
+              },
+            }
+          : {}
+      )}
+      series={series}
+      type={type ?? 'bar'}
+      height={400}
+      {...rest}
+    />
+  );
 };
 
 export {GearChart};
