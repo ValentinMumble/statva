@@ -64,15 +64,15 @@ const STATS: Stat[][] = [
     },
     {
       label: '🧸',
-      helpText: 'Eddington number',
+      helpText: 'Eddington №',
       number: activities => {
         const [eddington, next] = eddingtonNumber(activities);
 
         return (
           <>
             {eddington}
-            <Text marginLeft={5} fontSize="14px" as="b">
-              (next in {next})
+            <Text marginLeft={2} fontSize="14px" as="b">
+              ({next} for {eddington + 1})
             </Text>
           </>
         );

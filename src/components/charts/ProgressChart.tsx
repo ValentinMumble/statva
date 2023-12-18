@@ -20,7 +20,7 @@ const options: ApexCharts.ApexOptions = {
       max: 260,
     },
   ],
-  colors: ['#ffa500', '#aba19c'],
+  colors: ['#e09200', '#aba19c'],
   stroke: {
     curve: 'smooth',
     width: 4,

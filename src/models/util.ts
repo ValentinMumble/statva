@@ -19,4 +19,15 @@ const formatDurationInDays = (durationInSeconds: number): string => {
   return `${Math.floor(hourCount)}${suffix} days`;
 };
 
-export {formatDistance, formatDuration, formatDurationInDays, formatElevation, formatSpeed};
+const getWeekNumber = (date: Date): number => {
+  date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  // Set to nearest Thursday: current date + 4 - current day number
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+  // Get first day of year
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+
+  // Calculate full weeks to nearest Thursday
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
+};
+
+export {getWeekNumber, formatDistance, formatDuration, formatDurationInDays, formatElevation, formatSpeed};
