@@ -56,7 +56,7 @@ const accordionItems: {label: string; component: ReactNode}[] = [
     component: <GearChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} type="pie" />,
   },
   {label: 'Average speed / bike 🏁', component: <AverageGearChart />},
-  {label: 'Average heart rate 🫀', component: <HeartChart />},
+  {label: 'Average 🫀 & 🎡', component: <HeartChart />},
 ];
 
 const App = () => {
