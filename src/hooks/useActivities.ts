@@ -3,13 +3,15 @@ import {ActivityFilter, sortActivities} from '../models';
 import {ActivityType, DetailedActivity} from '../models/strava';
 import {ActivitiesContext} from '../providers';
 
+const DEFAULT_TYPES = [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
+
 const useActivities = ({
   withCommute = true,
   withPrivate,
   search = '',
   sort = 'date',
   sortDirection = 'desc',
-  includedActivityTypes = [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
+  includedActivityTypes = DEFAULT_TYPES,
   gearId,
   years = [],
 }: ActivityFilter): [DetailedActivity[], boolean] => {

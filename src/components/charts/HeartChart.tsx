@@ -4,7 +4,7 @@ import {useActivities} from '../../hooks';
 const MIN_DISTANCE_METERS = 30 * 1000;
 
 const options: ApexCharts.ApexOptions = {
-  colors: ['#7ab933'],
+  colors: ['#8ac448', '#b18a83'],
   stroke: {
     curve: 'smooth',
     width: 4,
@@ -13,7 +13,7 @@ const options: ApexCharts.ApexOptions = {
     type: 'gradient',
     gradient: {
       type: 'vertical',
-      gradientToColors: ['#fd8f35'],
+      gradientToColors: ['#fd8f35', '#fd3549'],
     },
   },
   markers: {size: [4]},
@@ -21,6 +21,17 @@ const options: ApexCharts.ApexOptions = {
     toolbar: {show: false},
     zoom: {enabled: false},
   },
+  yaxis: [
+    {
+      max: 190,
+      min: 40,
+    },
+    {
+      opposite: true,
+      min: 40,
+      max: 110,
+    },
+  ],
 };
 
 const HeartChart = () => {
@@ -31,13 +42,18 @@ const HeartChart = () => {
     sortDirection: 'asc',
   });
 
-  const filteredActivities = activities.filter(
-    ({average_heartrate, distance}) => 0 < (average_heartrate ?? 0) && MIN_DISTANCE_METERS < distance
+  const rides = activities.filter(
+    ({average_heartrate, average_cadence, distance}) =>
+      (0 < (average_heartrate ?? 0) || 0 < (average_cadence ?? 0)) && MIN_DISTANCE_METERS < distance
   );
 
-  const averageHeartRateSerie = filteredActivities.map(activity => Math.round(activity.average_heartrate ?? 0));
-  const labels = filteredActivities.map(activity => new Date(activity.start_date_local).toLocaleDateString());
-  const series = [{name: '🫀', data: averageHeartRateSerie}];
+  const heartRateSerie = rides.map(({average_heartrate}) => (average_heartrate ? Math.round(average_heartrate) : null));
+  const cadenceSerie = rides.map(({average_cadence}) => (average_cadence ? Math.round(average_cadence) : null));
+  const labels = rides.map(({start_date}) => new Date(start_date).toLocaleDateString());
+  const series = [
+    {name: '🫀', data: heartRateSerie},
+    {name: '🎡', data: cadenceSerie},
+  ];
 
   return (
     <Chart
