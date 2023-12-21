@@ -48,5 +48,6 @@ export interface DetailedActivity {
   trainer: boolean;
   type: ActivityType;
   upload_id: number;
+  weighted_average_watts?: number;
   workout_type: number;
 }

@@ -14,7 +14,7 @@ const options: ApexCharts.ApexOptions = {
     {
       opposite: true,
       labels: {
-        formatter: (value: number) => `${value.toFixed(0)} W`,
+        formatter: (value: number) => `${Math.round(value)} W`,
       },
       min: 120,
       max: 260,

@@ -1,5 +1,5 @@
 const formatDistance = (distance: number, precision = 1): string => `${(distance / 1000).toFixed(precision)} km`;
-const formatElevation = (elevation: number): string => `${elevation.toFixed(0)} m`;
+const formatElevation = (elevation: number): string => `${Math.round(elevation)} m`;
 const formatSpeed = (speed: number): string => `${(speed * 3.6).toFixed(1)} km/h`;
 
 const formatDuration = (durationInSeconds: number): string => {
