@@ -30,4 +30,19 @@ const getWeekNumber = (date: Date): number => {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
 };
 
-export {getWeekNumber, formatDistance, formatDuration, formatDurationInDays, formatElevation, formatSpeed};
+const extractEmoji = (text: string): string => {
+  const emojiRegex = /\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/g;
+  const emojis = text.match(emojiRegex);
+
+  return emojis?.join('') ?? '🤷';
+};
+
+export {
+  extractEmoji,
+  formatDistance,
+  formatDuration,
+  formatDurationInDays,
+  formatElevation,
+  formatSpeed,
+  getWeekNumber,
+};

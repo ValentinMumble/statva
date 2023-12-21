@@ -1,12 +1,13 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../../hooks';
-import {ChartProps, gearLabel, getOptions} from '../../models';
+import {useActivities, useAthlete} from '../../hooks';
+import {ChartProps, getBikeEmoji, getOptions} from '../../models';
 
 const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
   });
+  const athlete = useAthlete();
 
   const dataPerGear = activities.reduce((gearMap: {[gearId: string]: number}, activity) => {
     gearMap[activity.gear_id] = (gearMap[activity.gear_id] ?? 0) + (activity[data] as number);
@@ -15,7 +16,7 @@ const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
   }, {});
 
   const sortedDesc = Object.fromEntries(Object.entries(dataPerGear).sort(([, a], [, b]) => b - a));
-  const labels = Object.keys(sortedDesc).map(gearLabel);
+  const labels = Object.keys(sortedDesc).map(gearId => getBikeEmoji(athlete?.bikes ?? [], gearId));
   const series = 'pie' === type ? Object.values(sortedDesc) : [{name: dataLabel, data: Object.values(sortedDesc)}];
 
   return (

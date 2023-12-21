@@ -1,6 +1,6 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
+import {ITEMS_PER_PAGE, fetchActivities} from '../strava';
 import {DetailedActivity} from '../models/strava';
-import {ITEMS_PER_PAGE, fetchActivities as stravaFetchActivities} from '../strava';
 
 const ActivitiesContext = createContext<[DetailedActivity[], boolean]>([[], true]);
 
@@ -14,21 +14,21 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
   const [page, setPage] = useState<number>(1);
 
   useEffect(() => {
-    const fetchActivities = async (page: number) => {
+    const doFetchActivities = async (page: number) => {
       setLoading(true);
 
-      const activities = await stravaFetchActivities(page);
+      const activities = await fetchActivities(page);
       setActivities(currentActivities => [...currentActivities, ...activities]);
 
       if (ITEMS_PER_PAGE === activities.length) {
-        fetchActivities(page + 1);
+        doFetchActivities(page + 1);
         setPage(page + 1);
       }
 
       setLoading(false);
     };
 
-    fetchActivities(page);
+    doFetchActivities(page);
   }, []);
 
   return <ActivitiesContext.Provider value={[activities, isLoading]}>{children}</ActivitiesContext.Provider>;

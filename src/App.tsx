@@ -19,7 +19,7 @@ import {
   Tag,
   VStack,
 } from '@chakra-ui/react';
-import {SortType, SORT_TYPES, GEARS, SortDirection, formatDuration, formatDistance} from './models';
+import {SortType, SORT_TYPES, SortDirection, formatDuration, formatDistance, getBikeEmoji} from './models';
 import {
   ActivityListItem,
   AverageGearChart,
@@ -30,7 +30,7 @@ import {
   ProgressChart,
   Stats,
 } from './components';
-import {useActivities} from './hooks';
+import {useActivities, useAthlete} from './hooks';
 
 const accordionItems: {label: string; component: ReactNode}[] = [
   {label: 'N-Peloton 🏁 & ⚡️', component: <ProgressChart search="N-Peloton" />},
@@ -68,6 +68,7 @@ const App = () => {
   const [years, setYears] = useState<number[]>([new Date().getUTCFullYear()]);
 
   const [activities, isLoading] = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
+  const athlete = useAthlete();
 
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
@@ -137,11 +138,12 @@ const App = () => {
                 </Button>
               ))}
             <Select placeholder="🚲" width={24} value={gearId} onChange={handleGearChange}>
-              {Object.values(GEARS).map(({value, label}) => (
-                <option key={value} value={value}>
-                  {label}
+              {athlete?.bikes.map(bike => (
+                <option key={bike.id} value={bike.id}>
+                  {getBikeEmoji(athlete.bikes, bike.id)}
                 </option>
               ))}
+              <option value="null">🤷</option>
             </Select>
             <Select placeholder="🗓️" width={24} value={years[0]} onChange={handleYearChange}>
               {[2024, 2023, 2018, 2017, 2016, 2015].map(year => (

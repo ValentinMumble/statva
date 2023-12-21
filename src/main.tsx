@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom/client';
 import {ChakraProvider, ThemeConfig, extendTheme} from '@chakra-ui/react';
 import {App} from './App.tsx';
-import {ActivitiesProvider} from './providers';
+import {ActivitiesProvider, AthleteProvider} from './providers';
 
 const config: ThemeConfig = {
   initialColorMode: 'light',
@@ -12,8 +12,10 @@ const theme = extendTheme({config});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ChakraProvider theme={theme}>
-    <ActivitiesProvider>
-      <App />
-    </ActivitiesProvider>
+    <AthleteProvider>
+      <ActivitiesProvider>
+        <App />
+      </ActivitiesProvider>
+    </AthleteProvider>
   </ChakraProvider>
 );
