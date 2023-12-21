@@ -10,62 +10,65 @@ import {DetailedActivity} from './strava';
 type Tag = {
   label: (activity: DetailedActivity) => string;
   isRelevant: (activity: DetailedActivity) => boolean;
+  tooltip?: (activity: DetailedActivity) => string | null;
   icon: IconType;
   sortType: SortType;
 };
 
 const TAGS: Tag[] = [
   {
-    label: activity => formatDistance(activity.distance, 0),
-    isRelevant: activity => 0 < activity.distance,
+    label: ({distance}) => formatDistance(distance, 0),
+    isRelevant: ({distance}) => 0 < distance,
     icon: GiPathDistance,
     sortType: 'distance',
   },
   {
-    label: activity => formatElevation(activity.total_elevation_gain),
-    isRelevant: activity => 0 < activity.total_elevation_gain,
+    label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
+    isRelevant: ({total_elevation_gain}) => 0 < total_elevation_gain,
     icon: MdOutlineShowChart,
     sortType: 'elevation',
   },
   {
-    label: activity => formatDuration(activity.moving_time),
-    isRelevant: activity => 0 < activity.moving_time,
+    label: ({moving_time}) => formatDuration(moving_time),
+    isRelevant: ({moving_time}) => 0 < moving_time,
     icon: MdOutlineTimer,
     sortType: 'duration',
   },
   {
-    label: activity => formatSpeed(activity.average_speed),
-    isRelevant: activity => 0 < activity.average_speed,
+    label: ({average_speed}) => formatSpeed(average_speed),
+    isRelevant: ({average_speed}) => 0 < average_speed,
     icon: MdOutlineSpeed,
     sortType: 'average_speed',
   },
   {
-    label: activity => formatSpeed(activity.max_speed),
-    isRelevant: activity => 0 < activity.max_speed,
+    label: ({max_speed}) => formatSpeed(max_speed),
+    isRelevant: ({max_speed}) => 0 < max_speed,
     icon: MdOutlineRocketLaunch,
     sortType: 'max_speed',
   },
   {
-    label: activity => `${activity.average_watts?.toFixed(0) ?? 0} W`,
-    isRelevant: activity => 0 < (activity.average_watts ?? 0),
+    label: ({average_watts}) => `${Math.round(average_watts ?? 0)} W`,
+    isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
+    tooltip: ({weighted_average_watts}) =>
+      weighted_average_watts ? `🏋️ ${Math.round(weighted_average_watts)} W` : null,
     icon: FiZap,
     sortType: 'average_watts',
   },
   {
-    label: activity => `${activity.average_cadence?.toFixed(0) ?? 0}`,
-    isRelevant: activity => 0 < (activity.average_cadence ?? 0),
+    label: ({average_cadence}) => `${Math.round(average_cadence ?? 0)}`,
+    isRelevant: ({average_cadence}) => 0 < (average_cadence ?? 0),
     icon: PiPinwheel,
     sortType: 'average_cadence',
   },
   {
-    label: activity => `${activity.average_heartrate?.toFixed(0) ?? 0}`,
-    isRelevant: activity => 0 < (activity.average_heartrate ?? 0),
+    label: ({average_heartrate}) => `${Math.round(average_heartrate ?? 0)}`,
+    isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),
     icon: PiHeartbeatBold,
     sortType: 'average_heartrate',
   },
   {
-    label: activity => `${activity.kudos_count}`,
-    isRelevant: activity => 0 < activity.kudos_count,
+    label: ({kudos_count}) => `${kudos_count}`,
+    isRelevant: ({kudos_count}) => 0 < kudos_count,
     icon: TbThumbUp,
     sortType: 'kudos_count',
   },
