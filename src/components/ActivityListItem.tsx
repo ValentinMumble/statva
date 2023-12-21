@@ -1,6 +1,7 @@
 import {HStack, ListIcon, ListItem, Spacer, Tag, TagLabel, TagLeftIcon, Text, Tooltip} from '@chakra-ui/react';
-import {SortType, TAGS, gearLabel, getActivityIcon} from '../models';
+import {SortType, TAGS, getActivityIcon, getBikeEmoji} from '../models';
 import {DetailedActivity} from '../models/strava';
+import {useAthlete} from '../hooks';
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
@@ -10,6 +11,8 @@ type ActivityListItemProps = {
 };
 
 const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
+  const athlete = useAthlete();
+
   return (
     <ListItem height={8}>
       <HStack opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
@@ -21,7 +24,8 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
           placement="right"
           label={
             <>
-              {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;{gearLabel(activity.gear_id)}
+              {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
+              {getBikeEmoji(athlete?.bikes ?? [], activity.gear_id)}
             </>
           }
         >

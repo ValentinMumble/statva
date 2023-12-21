@@ -1,12 +1,13 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../../hooks';
-import {gearLabel, formatSpeed, getOptions} from '../../models';
+import {useActivities, useAthlete} from '../../hooks';
+import {formatSpeed, getOptions, getBikeEmoji} from '../../models';
 
 const AverageGearChart = () => {
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
   });
+  const athlete = useAthlete();
 
   const dataPerGear = activities.reduce((gearMap: {[gearId: string]: number[]}, activity) => {
     const [cumulativeSpeed, rideCount] = gearMap[activity.gear_id] ?? [0, 0];
@@ -24,7 +25,7 @@ const AverageGearChart = () => {
 
   const sortedDesc = Object.fromEntries(Object.entries(averagePerGear).sort(([, a], [, b]) => b - a));
 
-  const labels = Object.keys(sortedDesc).map(gearLabel);
+  const labels = Object.keys(sortedDesc).map(gearId => getBikeEmoji(athlete?.bikes ?? [], gearId));
   const series = [
     {
       name: '🏁',

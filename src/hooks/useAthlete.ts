@@ -1,19 +1,8 @@
-import {useEffect, useState} from 'react';
-import {DetailedAthlete} from '../models/strava';
-import {fetchAthlete as fetchStravaAthlete} from '../strava';
+import {useContext} from 'react';
+import {AthleteContext} from '../providers';
 
 const useAthlete = () => {
-  const [athlete, setAthlete] = useState<DetailedAthlete | null>(null);
-
-  useEffect(() => {
-    const fetchAthlete = async () => {
-      const athlete = await fetchStravaAthlete();
-
-      setAthlete(athlete);
-    };
-
-    fetchAthlete();
-  }, []);
+  const [athlete] = useContext(AthleteContext);
 
   return athlete;
 };
