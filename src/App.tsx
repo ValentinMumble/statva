@@ -1,10 +1,5 @@
-import {ChangeEvent, ReactNode, useState} from 'react';
+import {ChangeEvent, useState} from 'react';
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Box,
   Button,
   HStack,
@@ -15,49 +10,14 @@ import {
   ListItem,
   Select,
   Skeleton,
-  Stack,
   Tag,
   VStack,
 } from '@chakra-ui/react';
-import {SortType, SORT_TYPES, SortDirection, formatDuration, formatDistance, getBikeEmoji} from './models';
-import {
-  ActivityListItem,
-  AverageGearChart,
-  EddingtonChart,
-  GearChart,
-  HeartChart,
-  MonthChart,
-  ProgressChart,
-  Stats,
-} from './components';
+import {SortType, SORT_TYPES, SortDirection, getBikeEmoji} from './models';
+import {ActivityListItem, ChartAccordion, Stats} from './components';
 import {useActivities, useAthlete} from './hooks';
 
-const accordionItems: {label: string; component: ReactNode}[] = [
-  {label: 'N-Peloton 🏁 & ⚡️', component: <ProgressChart search="N-Peloton" />},
-  {
-    label: 'Distance / time 🗺️',
-    component: (
-      <MonthChart timeframe="week" data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />
-    ),
-  },
-  {
-    label: 'D+ / time ⛰️',
-    component: (
-      <MonthChart data="total_elevation_gain" dataLabel="⛰️" formatter={value => formatDistance(value)} type="area" />
-    ),
-  },
-  {label: 'Eddington / month 🧸', component: <EddingtonChart startYear={2023} />},
-  {
-    label: 'Distance / bike 🚲',
-    component: <GearChart dataLabel="🗺️" data="distance" formatter={value => formatDistance(value, 0)} type="pie" />,
-  },
-  {
-    label: 'Time / bike ⏱️',
-    component: <GearChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} type="pie" />,
-  },
-  {label: 'Average speed / bike 🏁', component: <AverageGearChart />},
-  {label: 'Average 🫀 & 🎡', component: <HeartChart />},
-];
+const YEARS = [2024, 2023, 2018, 2017, 2016, 2015];
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
@@ -73,7 +33,14 @@ const App = () => {
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
-  const handleSearchClear = () => setSearch('');
+  const handleSearchClear = () => {
+    setWithPrivate(false);
+    setSearch('');
+    setActiveSort('date');
+    setSortDirection('desc');
+    setGearId(undefined);
+    setYears([new Date().getUTCFullYear()]);
+  };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
 
@@ -84,24 +51,10 @@ const App = () => {
 
   return (
     <Box padding={7}>
-      <HStack alignItems="baseline" gap={5} flexDirection={{base: 'column', md: 'row'}}>
+      <HStack alignItems="start" gap={5}>
         <VStack align="stretch" flexBasis="38%" gap={7}>
           <Stats />
-          <Accordion defaultIndex={[0]} allowMultiple={true}>
-            {accordionItems.map(item => (
-              <AccordionItem key={item.label}>
-                <h2>
-                  <AccordionButton>
-                    <Box as="b" flex="1" textAlign="left">
-                      {item.label}
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel>{item.component}</AccordionPanel>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          <ChartAccordion />
         </VStack>
         <VStack align="stretch" flexBasis="62%">
           <InputGroup gap={1}>
@@ -122,7 +75,7 @@ const App = () => {
               🗑️
             </Button>
           </InputGroup>
-          <Stack direction={['row']} justifyContent="space-between">
+          <HStack justifyContent="space-between">
             {Object.values(SORT_TYPES)
               .filter(sortType => !('disabled' in sortType))
               .map(sortType => (
@@ -146,7 +99,7 @@ const App = () => {
               <option value="null">🤷</option>
             </Select>
             <Select placeholder="🗓️" width={24} value={years[0]} onChange={handleYearChange}>
-              {[2024, 2023, 2018, 2017, 2016, 2015].map(year => (
+              {YEARS.map(year => (
                 <option key={year} value={year}>
                   {year}
                 </option>
@@ -155,7 +108,7 @@ const App = () => {
             <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
               🔒
             </Button>
-          </Stack>
+          </HStack>
           <List>
             {isLoading
               ? [...new Array(20)].map((_, index) => (
