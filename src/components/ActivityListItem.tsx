@@ -25,7 +25,7 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
           label={
             <>
               {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
-              {getBikeEmoji(athlete?.bikes ?? [], activity.gear_id)}
+              {getBikeEmoji(athlete?.bikes, activity.gear_id)}
             </>
           }
         >

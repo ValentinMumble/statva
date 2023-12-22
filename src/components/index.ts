@@ -1,3 +1,3 @@
 export * from './ActivityListItem';
-export * from './charts';
+export * from './ChartAccordion';
 export * from './Stats';
