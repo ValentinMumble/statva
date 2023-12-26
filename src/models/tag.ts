@@ -3,7 +3,7 @@ import {FiZap} from 'react-icons/fi';
 import {GiPathDistance} from 'react-icons/gi';
 import {MdOutlineShowChart, MdOutlineTimer, MdOutlineSpeed, MdOutlineRocketLaunch} from 'react-icons/md';
 import {PiPinwheel, PiHeartbeatBold} from 'react-icons/pi';
-import {TbThumbUp} from 'react-icons/tb';
+import {TbPepper, TbThumbUp} from 'react-icons/tb';
 import {SortType, formatDistance, formatElevation, formatDuration, formatSpeed} from '../models';
 import {DetailedActivity} from './strava';
 
@@ -55,6 +55,12 @@ const TAGS: Tag[] = [
     sortType: 'average_watts',
   },
   {
+    label: ({suffer_score}) => `${Math.round(suffer_score ?? 0)}`,
+    isRelevant: ({suffer_score}) => 0 < (suffer_score ?? 0),
+    icon: TbPepper,
+    sortType: 'suffer_score',
+  },
+  {
     label: ({average_cadence}) => `${Math.round(average_cadence ?? 0)}`,
     isRelevant: ({average_cadence}) => 0 < (average_cadence ?? 0),
     icon: PiPinwheel,
@@ -63,6 +69,7 @@ const TAGS: Tag[] = [
   {
     label: ({average_heartrate}) => `${Math.round(average_heartrate ?? 0)}`,
     isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),
+    tooltip: ({max_heartrate}) => `🫀 ${Math.round(max_heartrate ?? 0)}`,
     icon: PiHeartbeatBold,
     sortType: 'average_heartrate',
   },
