@@ -1,4 +1,4 @@
-# 📈 Strava ⚛️
+# 📈 Statva
 
 > Statistics about Strava rides, mostly
 
@@ -18,4 +18,10 @@ $ cp .env.dist .env
 
 ```bash
 $ pnpm dev
+```
+
+## Build
+
+```bash
+$ pnpm build
 ```

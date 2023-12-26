@@ -4,7 +4,10 @@ import {ProgressChart, MonthChart, EddingtonChart, GearChart, AverageGearChart, 
 import {formatDistance, formatDuration} from '../models';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
-  {label: 'N-Peloton 🏁 & ⚡️', component: <ProgressChart search="N-Peloton" />},
+  {
+    label: 'N-Peloton 🏁 & ⚡️',
+    component: <ProgressChart search="N-Peloton" />,
+  },
   {
     label: 'Distance / time 🗺️',
     component: (
@@ -44,14 +47,12 @@ const ChartAccordion = () => {
     <Accordion defaultIndex={[0]} allowMultiple={true}>
       {ACCORDION_ITEMS.map(item => (
         <AccordionItem key={item.label}>
-          <h2>
-            <AccordionButton>
-              <Box as="b" flex="1" textAlign="left">
-                {item.label}
-              </Box>
-              <AccordionIcon />
-            </AccordionButton>
-          </h2>
+          <AccordionButton>
+            <Box as="b" flex="1" textAlign="left">
+              {item.label}
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
           <AccordionPanel padding={0}>{item.component}</AccordionPanel>
         </AccordionItem>
       ))}
