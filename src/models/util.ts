@@ -5,10 +5,9 @@ const formatSpeed = (speed: number): string => `${(speed * 3.6).toFixed(1)} km/h
 const formatDuration = (durationInSeconds: number): string => {
   const hours = durationInSeconds / 60 / 60;
   const roundHours = Math.floor(hours);
-  const minutes = (hours - roundHours) * 60;
-  const roundMinutes = Math.round(minutes);
+  const minutes = Math.round((hours - roundHours) * 60);
 
-  return `${roundHours}:${roundMinutes.toString().padStart(2, '0')} h`;
+  return `${roundHours}:${minutes.toString().padStart(2, '0')} h`;
 };
 
 const formatDurationInDays = (durationInSeconds: number): string => {
