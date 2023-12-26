@@ -1,4 +1,4 @@
-import {HStack, ListIcon, ListItem, Spacer, Tag, TagLabel, TagLeftIcon, Text, Tooltip} from '@chakra-ui/react';
+import {HStack, ListIcon, ListItem, Show, Spacer, Tag, TagLabel, TagLeftIcon, Text, Tooltip} from '@chakra-ui/react';
 import {SortType, TAGS, getActivityIcon, getBikeEmoji} from '../models';
 import {DetailedActivity} from '../models/strava';
 import {useAthlete} from '../hooks';
@@ -14,7 +14,7 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
   const athlete = useAthlete();
 
   return (
-    <ListItem height={8} onClick={() => console.log(activity)}>
+    <ListItem height={8} onClick={() => console.log(activity)} width={['100vw', 'unset']}>
       <HStack opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
         <ListIcon as={getActivityIcon(activity)} />
         <Tooltip
@@ -36,17 +36,19 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
           </Text>
         </Tooltip>
         <Spacer />
-        {TAGS.map(tag => (
-          <Tooltip key={tag.sortType} label={tag.tooltip?.(activity)}>
-            <Tag
-              opacity={tag.isRelevant(activity) ? 1 : 0.4}
-              size="sm"
-              colorScheme={activeSort === tag.sortType ? 'orange' : undefined}
-            >
-              <TagLeftIcon as={tag.icon} />
-              <TagLabel>{tag.label(activity)}</TagLabel>
-            </Tag>
-          </Tooltip>
+        {TAGS.map((tag, index) => (
+          <Show key={tag.sortType} above={0 === index ? undefined : 'sm'}>
+            <Tooltip label={tag.tooltip?.(activity)}>
+              <Tag
+                opacity={tag.isRelevant(activity) ? 1 : 0.4}
+                size="sm"
+                colorScheme={activeSort === tag.sortType ? 'orange' : undefined}
+              >
+                <TagLeftIcon as={tag.icon} />
+                <TagLabel>{tag.label(activity)}</TagLabel>
+              </Tag>
+            </Tooltip>
+          </Show>
         ))}
       </HStack>
     </ListItem>

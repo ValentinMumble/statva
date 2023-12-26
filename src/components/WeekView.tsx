@@ -5,6 +5,23 @@ import {arrayRotate, getActivityIcon, getWeekNumber} from '../models';
 import {DetailedActivity} from '../models/strava';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const WEEK_COUNT = 5;
+
+const getWeekLabel = (week: string): string => {
+  const today = new Date(),
+    lastWeek = new Date();
+  lastWeek.setDate(today.getDate() - 7);
+
+  if (week === `${getWeekNumber(today)}/${today.getUTCFullYear()}`) {
+    return 'This week';
+  }
+
+  if (week === `${getWeekNumber(lastWeek)}/${lastWeek.getUTCFullYear()}`) {
+    return 'Last week';
+  }
+
+  return week;
+};
 
 const WeekView = () => {
   const [activities] = useActivities({
@@ -33,9 +50,8 @@ const WeekView = () => {
     {}
   );
 
-  const lastWeeks = Object.fromEntries(Object.entries(dataPerWeek).slice(-5).reverse());
-  const thisWeek = `${getWeekNumber(new Date())}/${new Date().getUTCFullYear()}`;
-  const mondayFirst = arrayRotate<string>(WEEKDAYS, -1);
+  const lastWeeks = Object.fromEntries(Object.entries(dataPerWeek).slice(-WEEK_COUNT).reverse());
+  const mondayFirst = arrayRotate(WEEKDAYS, -1);
 
   return (
     <Table variant="striped" colorScheme="orange">
@@ -50,13 +66,13 @@ const WeekView = () => {
       <Tbody>
         {Object.keys(lastWeeks).map(week => (
           <Tr key={week}>
-            <Td>{week === thisWeek ? 'This week' : week}</Td>
+            <Td>{getWeekLabel(week)}</Td>
             {mondayFirst.map(weekDay => {
               const activity = lastWeeks[week][weekDay];
 
               return activity ? (
                 <Tooltip key={weekDay} label={activity.name}>
-                  <Td>{createElement(getActivityIcon(lastWeeks[week][weekDay]))}</Td>
+                  <Td>{createElement(getActivityIcon(activity))}</Td>
                 </Tooltip>
               ) : (
                 <Td key={weekDay}>-</Td>

@@ -13,7 +13,7 @@ const Stats = () => {
       {STATS.map((statGroup, index) => (
         <StatGroup key={index}>
           {statGroup.map(stat => (
-            <Stat key={stat.label}>
+            <Stat key={stat.label} size={['sm', 'md']}>
               <StatLabel>{stat.label}</StatLabel>
               {isLoading ? (
                 <Skeleton width="70%">
@@ -22,7 +22,7 @@ const Stats = () => {
               ) : (
                 <StatNumber>{stat.number(activities, athlete)}</StatNumber>
               )}
-              <StatHelpText>{stat.helpText}</StatHelpText>
+              <StatHelpText fontSize={['xs', 'sm']}>{stat.helpText}</StatHelpText>
             </Stat>
           ))}
         </StatGroup>
