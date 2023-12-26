@@ -14,7 +14,7 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
   const athlete = useAthlete();
 
   return (
-    <ListItem height={8}>
+    <ListItem height={8} onClick={() => console.log(activity)}>
       <HStack opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
         <ListIcon as={getActivityIcon(activity)} />
         <Tooltip

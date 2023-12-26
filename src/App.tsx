@@ -14,7 +14,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES, SortDirection, getBikeEmoji} from './models';
-import {ActivityListItem, ChartAccordion, Stats} from './components';
+import {ActivityListItem, ChartAccordion, Stats, WeekView} from './components';
 import {useActivities, useAthlete} from './hooks';
 
 const YEARS = [2024, 2023, 2018, 2017, 2016, 2015];
@@ -55,6 +55,7 @@ const App = () => {
         <VStack align="stretch" flexBasis="38%" gap={7}>
           <Stats />
           <ChartAccordion />
+          <WeekView />
         </VStack>
         <VStack align="stretch" flexBasis="62%">
           <InputGroup gap={1}>

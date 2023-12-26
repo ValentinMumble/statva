@@ -29,7 +29,9 @@ export interface DetailedActivity {
   laps: Lap[];
   manual: boolean;
   map: PolylineMap;
+  max_heartrate?: number;
   max_speed: number;
+  max_watts?: number;
   moving_time: number;
   name: string;
   photo_count: number;

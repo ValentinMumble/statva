@@ -24,7 +24,7 @@ const useActivities = ({
       .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
       .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))
       .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
-      .filter(({type}) => includedActivityTypes.includes(type))
+      .filter(({type}) => 0 === includedActivityTypes.length || includedActivityTypes.includes(type))
       .sort((a, b) => sortActivities(sort, sortDirection, a, b)),
     isLoading,
   ];
