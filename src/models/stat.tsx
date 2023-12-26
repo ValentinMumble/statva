@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {Text} from '@chakra-ui/react';
+import {StatArrow, Text} from '@chakra-ui/react';
 import {
   formatDistance,
   getTotalValue,
@@ -72,7 +72,7 @@ const STATS: Stat[][] = [
           <>
             {eddington}
             <Text marginLeft={2} fontSize="14px" as="b">
-              ({next} for {eddington + 1})
+              <StatArrow type="increase" marginLeft={4} /> {next}
             </Text>
           </>
         );

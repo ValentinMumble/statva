@@ -52,7 +52,7 @@ const ChartAccordion = () => {
               <AccordionIcon />
             </AccordionButton>
           </h2>
-          <AccordionPanel>{item.component}</AccordionPanel>
+          <AccordionPanel padding={0}>{item.component}</AccordionPanel>
         </AccordionItem>
       ))}
     </Accordion>
