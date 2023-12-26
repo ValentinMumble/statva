@@ -29,6 +29,7 @@ export interface DetailedActivity {
   laps: Lap[];
   manual: boolean;
   map: PolylineMap;
+  max_cadence?: number;
   max_heartrate?: number;
   max_speed: number;
   max_watts?: number;
@@ -44,6 +45,7 @@ export interface DetailedActivity {
   start_date_local: string;
   start_date: string;
   start_latlng: number[];
+  suffer_score?: number;
   timezone: string;
   total_elevation_gain: number;
   total_photo_count: number;

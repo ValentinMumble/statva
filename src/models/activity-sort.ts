@@ -1,3 +1,5 @@
+import {DetailedActivity} from './strava';
+
 type SortType = keyof typeof SORT_TYPES;
 
 type SortDirection = 'asc' | 'desc';
@@ -36,6 +38,10 @@ const SORT_TYPES = {
     value: 'average_watts',
     label: '⚡️',
   },
+  suffer_score: {
+    value: 'suffer_score',
+    label: '🌶️',
+  },
   average_cadence: {
     value: 'average_cadence',
     label: '🎡',
@@ -50,5 +56,36 @@ const SORT_TYPES = {
   },
 };
 
-export {SORT_TYPES};
+const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: DetailedActivity, b: DetailedActivity) => {
+  const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
+
+  switch (sortType) {
+    case 'name':
+      return first.name < second.name ? 1 : -1;
+    case 'elevation':
+      return second.total_elevation_gain - first.total_elevation_gain;
+    case 'distance':
+      return second.distance - first.distance;
+    case 'date':
+      return first.start_date < second.start_date ? 1 : -1;
+    case 'duration':
+      return second.moving_time - first.moving_time;
+    case 'average_speed':
+      return second.average_speed - first.average_speed;
+    case 'max_speed':
+      return second.max_speed - first.max_speed;
+    case 'average_watts':
+      return (second.average_watts ?? 0) - (first.average_watts ?? 0);
+    case 'average_cadence':
+      return (second.average_cadence ?? 0) - (first.average_cadence ?? 0);
+    case 'average_heartrate':
+      return (second.average_heartrate ?? 0) - (first.average_heartrate ?? 0);
+    case 'kudos_count':
+      return second.kudos_count - first.kudos_count;
+    case 'suffer_score':
+      return (second.suffer_score ?? 0) - (first.suffer_score ?? 0);
+  }
+};
+
+export {SORT_TYPES, sortActivities};
 export type {SortDirection, SortType};
