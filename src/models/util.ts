@@ -37,7 +37,16 @@ const extractEmoji = (text: string): string => {
   return emojis?.join('') ?? '🤷';
 };
 
+const arrayRotate = <Type>(originalArray: Type[], count: number): Type[] => {
+  const array = [...originalArray];
+  const length = array.length;
+  array.push(...array.splice(0, ((-count % length) + length) % length));
+
+  return array;
+};
+
 export {
+  arrayRotate,
   extractEmoji,
   formatDistance,
   formatDuration,

@@ -1,5 +1,5 @@
 import {GiSkier} from 'react-icons/gi';
-import {PiBicycle, PiBicycleFill, PiGameControllerBold} from 'react-icons/pi';
+import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
 import {TbKayak} from 'react-icons/tb';
 import {SortType, SortDirection} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
@@ -23,11 +23,14 @@ const getActivityIcon = (activity: DetailedActivity) => {
       return PiBicycleFill;
     case ActivityType.Kayaking:
       return TbKayak;
+    case ActivityType.Ride:
+      return PiBicycle;
+    case ActivityType.Tennis:
+      return PiTennisBallBold;
     case ActivityType.VirtualRide:
       return PiGameControllerBold;
-    case ActivityType.Ride:
     default:
-      return PiBicycle;
+      return PiQuestionBold;
   }
 };
 
@@ -70,7 +73,7 @@ const getTotalValue = (activities: DetailedActivity[], value: keyof DetailedActi
   }, 0);
 
 const getMaxValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
-  Math.max(...activities.map(activity => activity[value] as number));
+  Math.max(...activities.map(activity => (activity[value] ?? 0) as number));
 
 const getRidesBeforeMonth = (rides: DetailedActivity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));

@@ -17,7 +17,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
       <MonthChart data="total_elevation_gain" dataLabel="⛰️" formatter={value => formatDistance(value)} type="area" />
     ),
   },
-  {label: 'Eddington / month 🧸', component: <EddingtonChart startYear={2023} />},
+  {
+    label: 'Eddington / month 🧸',
+    component: <EddingtonChart startYear={2023} />,
+  },
   {
     label: 'Distance / bike 🚲',
     component: <GearChart dataLabel="🗺️" data="distance" formatter={value => formatDistance(value, 0)} type="pie" />,
@@ -26,8 +29,14 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     label: 'Time / bike ⏱️',
     component: <GearChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} type="pie" />,
   },
-  {label: 'Average speed / bike 🏁', component: <AverageGearChart />},
-  {label: 'Average 🫀 & 🎡', component: <HeartChart />},
+  {
+    label: 'Average speed / bike 🏁',
+    component: <AverageGearChart />,
+  },
+  {
+    label: 'Average 🫀 & 🎡',
+    component: <HeartChart />,
+  },
 ];
 
 const ChartAccordion = () => {
