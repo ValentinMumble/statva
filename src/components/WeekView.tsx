@@ -54,12 +54,14 @@ const WeekView = () => {
   const mondayFirst = arrayRotate(WEEKDAYS, -1);
 
   return (
-    <Table variant="striped" colorScheme="orange">
+    <Table variant="striped" colorScheme="orange" size={['sm', 'md']}>
       <Thead>
         <Tr>
           <Th>Week</Th>
           {mondayFirst.map(weekDay => (
-            <Th key={weekDay}>{weekDay.substring(0, 2)}</Th>
+            <Th key={weekDay} background={weekDay === WEEKDAYS[new Date().getDay()] ? 'orange.100' : undefined}>
+              {weekDay.substring(0, 2)}
+            </Th>
           ))}
         </Tr>
       </Thead>
