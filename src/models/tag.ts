@@ -49,8 +49,8 @@ const TAGS: Tag[] = [
   {
     label: ({average_watts}) => `${Math.round(average_watts ?? 0)} W`,
     isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
-    tooltip: ({weighted_average_watts}) =>
-      weighted_average_watts ? `🏋️ ${Math.round(weighted_average_watts)} W` : null,
+    tooltip: ({weighted_average_watts, max_watts}) =>
+      weighted_average_watts ? `🏋️ ${Math.round(weighted_average_watts)} W | 💥 ${Math.round(max_watts ?? 0)} W` : null,
     icon: FiZap,
     sortType: 'average_watts',
   },
