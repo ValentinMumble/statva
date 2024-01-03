@@ -32,7 +32,7 @@ const getWeekNumber = (date: Date): number => {
 const extractEmoji = (text: string): string =>
   text
     .match(/\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/g)
-    ?.join('') ?? '🤷';
+    ?.join('') ?? '';
 
 const arrayRotate = (originalArray: any[], count: number): typeof originalArray => {
   const array = [...originalArray];

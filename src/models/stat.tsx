@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {StatArrow, Text} from '@chakra-ui/react';
+import {StatArrow, Text, Tooltip} from '@chakra-ui/react';
 import {
   formatDistance,
   getTotalValue,
@@ -60,7 +60,13 @@ const STATS: Stat[][] = [
     {
       label: '⚡️',
       helpText: 'FTP - W | W/kg',
-      number: (_, athlete) => `${athlete.ftp} | ${(athlete.ftp / athlete.weight).toFixed(1)}`,
+      number: (_, athlete) => (
+        <Tooltip label={`${athlete.weight} kg`}>
+          <span>
+            {athlete.ftp} | {(athlete.ftp / athlete.weight).toFixed(1)}
+          </span>
+        </Tooltip>
+      ),
     },
     {
       label: '🧸',
@@ -69,12 +75,15 @@ const STATS: Stat[][] = [
         const [eddington, next] = eddingtonNumber(activities);
 
         return (
-          <>
-            {eddington}
-            <Text marginLeft={2} fontSize="14px" as="b">
-              <StatArrow type="increase" marginLeft={4} /> {next}
-            </Text>
-          </>
+          <Tooltip label={`${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`}>
+            <span>
+              {eddington}
+              <Text marginLeft={2} fontSize="14px" as="b">
+                <StatArrow type="increase" marginLeft={5} />
+                {next}
+              </Text>
+            </span>
+          </Tooltip>
         );
       },
     },

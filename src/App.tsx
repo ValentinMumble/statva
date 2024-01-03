@@ -25,7 +25,7 @@ const App = () => {
   const [activeSort, setActiveSort] = useState<SortType>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearId, setGearId] = useState<string | undefined>();
-  const [years, setYears] = useState<number[]>([new Date().getUTCFullYear()]);
+  const [years, setYears] = useState<number[]>([2023, new Date().getUTCFullYear()]);
 
   const [activities, isLoading] = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
   const athlete = useAthlete();
