@@ -70,7 +70,7 @@ const WeekView = () => {
           <Tr key={week}>
             <Td>{getWeekLabel(week)}</Td>
             {mondayFirst.map(weekDay => {
-              const activity = lastWeeks[week][weekDay];
+              const activity = lastWeeks[week][weekDay] ?? null;
 
               return activity ? (
                 <Tooltip key={weekDay} label={activity.name}>
