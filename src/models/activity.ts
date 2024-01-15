@@ -1,8 +1,11 @@
 import {GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
 import {TbKayak} from 'react-icons/tb';
+import {MdDirectionsWalk, MdHiking} from 'react-icons/md';
 import {SortType, SortDirection} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
+
+const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
 type ActivityFilter = {
   search?: string;
@@ -29,6 +32,10 @@ const getActivityIcon = (activity: DetailedActivity) => {
       return PiTennisBallBold;
     case ActivityType.VirtualRide:
       return PiGameControllerBold;
+    case ActivityType.Walk:
+      return MdDirectionsWalk;
+    case ActivityType.Hike:
+      return MdHiking;
     default:
       return PiQuestionBold;
   }
@@ -84,5 +91,7 @@ const eddingtonNumber = (rides: DetailedActivity[]) => {
   return [eddingtonNumber, next];
 };
 
-export {eddingtonNumber, getRidesBeforeMonth, getActivityIcon, getMaxValue, getTotalValue};
+const getActivityUrl = ({id}: DetailedActivity): string => `${ACTIVITY_URL}${id}`;
+
+export {eddingtonNumber, getActivityUrl, getRidesBeforeMonth, getActivityIcon, getMaxValue, getTotalValue};
 export type {ActivityFilter};

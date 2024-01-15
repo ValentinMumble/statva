@@ -59,11 +59,11 @@ const STATS: Stat[][] = [
     },
     {
       label: '⚡️',
-      helpText: 'FTP - W | W/kg',
+      helpText: 'FTP: W 〰 W/kg',
       number: (_, athlete) => (
         <Tooltip label={`${athlete.weight} kg`}>
           <span>
-            {athlete.ftp} | {(athlete.ftp / athlete.weight).toFixed(1)}
+            {athlete.ftp} 〰 {(athlete.ftp / athlete.weight).toFixed(1)}
           </span>
         </Tooltip>
       ),

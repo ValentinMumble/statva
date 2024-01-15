@@ -1,11 +1,11 @@
-import {createElement} from 'react';
-import {Table, Tbody, Td, Th, Thead, Tooltip, Tr} from '@chakra-ui/react';
-import {useActivities} from '../hooks';
-import {arrayRotate, getActivityIcon, getWeekNumber} from '../models';
+import {createElement, useState} from 'react';
+import {IconButton, Table, Tbody, Td, Th, Thead, Tooltip, Tr} from '@chakra-ui/react';
+import {PiPlus} from 'react-icons/pi';
+import {useActivities, useAthlete} from '../hooks';
+import {arrayRotate, getActivityIcon, getActivityUrl, getBikeEmoji, getWeekNumber} from '../models';
 import {DetailedActivity} from '../models/strava';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const WEEK_COUNT = 5;
 
 const getWeekLabel = (week: string): string => {
   const today = new Date(),
@@ -24,6 +24,8 @@ const getWeekLabel = (week: string): string => {
 };
 
 const WeekView = () => {
+  const [weekCount, setWeekCount] = useState<number>(5);
+  const athlete = useAthlete();
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -31,6 +33,8 @@ const WeekView = () => {
     sortDirection: 'asc',
     includedActivityTypes: [],
   });
+
+  const incrementWeekCount = () => setWeekCount(weekCount => weekCount + 1);
 
   const dataPerWeek = activities.reduce(
     (weekMap: {[weekId: string]: {[weekday: string]: DetailedActivity}}, activity) => {
@@ -50,14 +54,17 @@ const WeekView = () => {
     {}
   );
 
-  const lastWeeks = Object.fromEntries(Object.entries(dataPerWeek).slice(-WEEK_COUNT).reverse());
+  const lastWeeks = Object.fromEntries(Object.entries(dataPerWeek).slice(-weekCount).reverse());
   const mondayFirst = arrayRotate(WEEKDAYS, -1);
 
   return (
     <Table variant="striped" colorScheme="orange" size={['sm', 'md']}>
       <Thead>
         <Tr>
-          <Th>Week</Th>
+          <Th>
+            Week
+            <IconButton onClick={incrementWeekCount} marginLeft="8px" aria-label="More" size="xs" icon={<PiPlus />} />
+          </Th>
           {mondayFirst.map(weekDay => (
             <Th key={weekDay} background={weekDay === WEEKDAYS[new Date().getDay()] ? 'orange.100' : undefined}>
               {weekDay.substring(0, 2)}
@@ -73,8 +80,12 @@ const WeekView = () => {
               const activity = lastWeeks[week][weekDay] ?? null;
 
               return activity ? (
-                <Tooltip key={weekDay} label={activity.name}>
-                  <Td>{createElement(getActivityIcon(activity))}</Td>
+                <Tooltip key={weekDay} label={`${activity.name} 〰 ${getBikeEmoji(athlete?.bikes, activity.gear_id)}`}>
+                  <Td>
+                    <a target="_blank" href={getActivityUrl(activity)}>
+                      {createElement(getActivityIcon(activity))}
+                    </a>
+                  </Td>
                 </Tooltip>
               ) : (
                 <Td key={weekDay}>-</Td>
