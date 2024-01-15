@@ -8,7 +8,7 @@ import {SortType, formatDistance, formatElevation, formatDuration, formatSpeed} 
 import {DetailedActivity} from './strava';
 
 type Tag = {
-  label: (activity: DetailedActivity) => string;
+  label: (activity: DetailedActivity) => string | number;
   isRelevant: (activity: DetailedActivity) => boolean;
   tooltip?: (activity: DetailedActivity) => string | null;
   icon: IconType;
@@ -19,6 +19,7 @@ const TAGS: Tag[] = [
   {
     label: ({distance}) => formatDistance(distance, 0),
     isRelevant: ({distance}) => 0 < distance,
+    tooltip: ({distance}) => `🗺️ ${formatDistance(distance, 2)}`,
     icon: GiPathDistance,
     sortType: 'distance',
   },
@@ -31,13 +32,14 @@ const TAGS: Tag[] = [
   {
     label: ({moving_time}) => formatDuration(moving_time),
     isRelevant: ({moving_time}) => 0 < moving_time,
+    tooltip: ({elapsed_time}) => `⏳ ${formatDuration(elapsed_time)}`,
     icon: MdOutlineTimer,
     sortType: 'duration',
   },
   {
     label: ({average_speed}) => formatSpeed(average_speed),
     isRelevant: ({average_speed}) => 0 < average_speed,
-    tooltip: ({average_speed}) => formatSpeed(average_speed, 3),
+    tooltip: ({average_speed}) => `🏁 ${formatSpeed(average_speed, 3)}`,
     icon: MdOutlineSpeed,
     sortType: 'average_speed',
   },
@@ -58,26 +60,26 @@ const TAGS: Tag[] = [
     sortType: 'average_watts',
   },
   {
-    label: ({suffer_score}) => `${Math.round(suffer_score ?? 0)}`,
+    label: ({suffer_score}) => Math.round(suffer_score ?? 0),
     isRelevant: ({suffer_score}) => 0 < (suffer_score ?? 0),
     icon: TbPepper,
     sortType: 'suffer_score',
   },
   {
-    label: ({average_cadence}) => `${Math.round(average_cadence ?? 0)}`,
+    label: ({average_cadence}) => Math.round(average_cadence ?? 0),
     isRelevant: ({average_cadence}) => 0 < (average_cadence ?? 0),
     icon: PiPinwheel,
     sortType: 'average_cadence',
   },
   {
-    label: ({average_heartrate}) => `${Math.round(average_heartrate ?? 0)}`,
+    label: ({average_heartrate}) => Math.round(average_heartrate ?? 0),
     isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),
     tooltip: ({max_heartrate}) => `🫀 ${Math.round(max_heartrate ?? 0)}`,
     icon: PiHeartbeatBold,
     sortType: 'average_heartrate',
   },
   {
-    label: ({kudos_count}) => `${kudos_count}`,
+    label: ({kudos_count}) => kudos_count,
     isRelevant: ({kudos_count}) => 0 < kudos_count,
     icon: TbThumbUp,
     sortType: 'kudos_count',
