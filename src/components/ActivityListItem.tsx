@@ -1,9 +1,7 @@
 import {ListIcon, ListItem, Show, Spacer, Tag, TagLabel, TagLeftIcon, Text, Tooltip} from '@chakra-ui/react';
-import {SortType, TAGS, getActivityIcon, getBikeEmoji} from '../models';
+import {SortType, TAGS, getActivityIcon, getActivityUrl, getBikeEmoji} from '../models';
 import {DetailedActivity} from '../models/strava';
 import {useAthlete} from '../hooks';
-
-const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
 type ActivityListItemProps = {
   activity: DetailedActivity;
@@ -38,7 +36,7 @@ const ActivityListItem = ({activity, activeSort}: ActivityListItemProps) => {
         }
       >
         <Text>
-          <a target="_blank" href={`${ACTIVITY_URL}${activity.id}`}>
+          <a target="_blank" href={getActivityUrl(activity)}>
             {activity.name}
           </a>
         </Text>

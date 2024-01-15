@@ -37,6 +37,7 @@ const TAGS: Tag[] = [
   {
     label: ({average_speed}) => formatSpeed(average_speed),
     isRelevant: ({average_speed}) => 0 < average_speed,
+    tooltip: ({average_speed}) => formatSpeed(average_speed, 3),
     icon: MdOutlineSpeed,
     sortType: 'average_speed',
   },
@@ -50,7 +51,9 @@ const TAGS: Tag[] = [
     label: ({average_watts}) => `${Math.round(average_watts ?? 0)} W`,
     isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
     tooltip: ({weighted_average_watts, max_watts}) =>
-      weighted_average_watts ? `🏋️ ${Math.round(weighted_average_watts)} W | 💥 ${Math.round(max_watts ?? 0)} W` : null,
+      weighted_average_watts
+        ? `🏋️ ${Math.round(weighted_average_watts)} W 〰 💥 ${Math.round(max_watts ?? 0)} W`
+        : null,
     icon: FiZap,
     sortType: 'average_watts',
   },
