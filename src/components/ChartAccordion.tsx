@@ -10,9 +10,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Distance / time 🗺️',
-    component: (
-      <MonthChart timeframe="week" data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />
-    ),
+    component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
   },
   {
     label: 'D+ / time ⛰️',

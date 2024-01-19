@@ -4,13 +4,21 @@ import {GiPathDistance} from 'react-icons/gi';
 import {MdOutlineShowChart, MdOutlineTimer, MdOutlineSpeed, MdOutlineRocketLaunch} from 'react-icons/md';
 import {PiPinwheel, PiHeartbeatBold} from 'react-icons/pi';
 import {TbPepper, TbThumbUp} from 'react-icons/tb';
-import {SortType, formatDistance, formatElevation, formatDuration, formatSpeed} from '../models';
-import {DetailedActivity} from './strava';
+import {
+  SortType,
+  formatDistance,
+  formatElevation,
+  formatDuration,
+  formatSpeed,
+  getHeartZone,
+  getPowerZone,
+} from '../models';
+import {DetailedActivity, DetailedAthlete} from './strava';
 
 type Tag = {
   label: (activity: DetailedActivity) => string | number;
   isRelevant: (activity: DetailedActivity) => boolean;
-  tooltip?: (activity: DetailedActivity) => string | null;
+  tooltip?: (activity: DetailedActivity, athlete: DetailedAthlete | null) => string | number | null;
   icon: IconType;
   sortType: SortType;
 };
@@ -26,6 +34,7 @@ const TAGS: Tag[] = [
   {
     label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
     isRelevant: ({total_elevation_gain}) => 0 < total_elevation_gain,
+    tooltip: ({total_elevation_gain, distance}) => `⛰️ ${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
     icon: MdOutlineShowChart,
     sortType: 'elevation',
   },
@@ -52,10 +61,10 @@ const TAGS: Tag[] = [
   {
     label: ({average_watts}) => `${Math.round(average_watts ?? 0)} W`,
     isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
-    tooltip: ({weighted_average_watts, max_watts}) =>
-      weighted_average_watts
-        ? `🏋️ ${Math.round(weighted_average_watts)} W 〰 💥 ${Math.round(max_watts ?? 0)} W`
-        : null,
+    tooltip: (activity, athlete) =>
+      `🏋️ ${Math.round(activity.weighted_average_watts ?? 0)} W 〰 💥 ${Math.round(
+        activity.max_watts ?? 0
+      )} W 〰 Zone ${getPowerZone(activity, athlete?.ftp ?? 0)}`,
     icon: FiZap,
     sortType: 'average_watts',
   },
@@ -74,7 +83,7 @@ const TAGS: Tag[] = [
   {
     label: ({average_heartrate}) => Math.round(average_heartrate ?? 0),
     isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),
-    tooltip: ({max_heartrate}) => `🫀 ${Math.round(max_heartrate ?? 0)}`,
+    tooltip: activity => `🫀 ${Math.round(activity.max_heartrate ?? 0)} 〰 Zone ${getHeartZone(activity)}`,
     icon: PiHeartbeatBold,
     sortType: 'average_heartrate',
   },
