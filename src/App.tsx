@@ -26,6 +26,7 @@ const App = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearId, setGearId] = useState<string | undefined>();
   const [years, setYears] = useState<number[]>([new Date().getUTCFullYear()]);
+  const [bgOption, setBgOption] = useState<string>('date');
 
   const [activities, isLoading] = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
   const athlete = useAthlete();
@@ -40,6 +41,7 @@ const App = () => {
     setSortDirection('desc');
     setGearId(undefined);
     setYears([new Date().getUTCFullYear()]);
+    setBgOption('date');
   };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
@@ -48,29 +50,37 @@ const App = () => {
     setYears('' === target.value ? [] : [Number(target.value)]);
   const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
     setGearId('' === target.value ? undefined : target.value);
+  const handleBgOptionChange = ({target}: ChangeEvent<HTMLSelectElement>) => setBgOption(target.value);
 
   return (
-    <Stack padding={[2, 7]} alignItems="start" gap={5} direction={['column', 'row']}>
+    <Stack padding={[2, 7]} alignItems="start" gap={5} direction={['column-reverse', 'row']}>
       <VStack align="stretch" flexBasis="38%" gap={7} width={['100vw', null]}>
         <Stats />
         <ChartAccordion />
         <WeekView />
       </VStack>
       <VStack align="stretch" flexBasis="62%">
-        <InputGroup gap={1}>
+        <InputGroup gap={3}>
           <Button variant="ghost" onClick={handleSortDirectionToggle}>
             {'asc' === sortDirection ? '⬆️' : '⬇️'}
           </Button>
-          <Input
-            disabled={isLoading}
-            placeholder="Search"
-            autoFocus={true}
-            value={search}
-            onChange={handleSearchChange}
-          />
-          <InputRightElement marginRight="65px">
-            <Tag>{activities.length}</Tag>
-          </InputRightElement>
+          <InputGroup>
+            <Input
+              disabled={isLoading}
+              placeholder="Search"
+              autoFocus={true}
+              value={search}
+              onChange={handleSearchChange}
+            />
+            <InputRightElement marginRight="5px">
+              <Tag>{activities.length}</Tag>
+            </InputRightElement>
+          </InputGroup>
+          <Select width={24} value={bgOption} onChange={handleBgOptionChange}>
+            <option value="date">📅</option>
+            <option value="power-zone">⚡️</option>
+            <option value="heart-zone">🫀</option>
+          </Select>
           <Button variant="ghost" onClick={handleSearchClear}>
             🗑️
           </Button>
@@ -109,15 +119,15 @@ const App = () => {
             🔒
           </Button>
         </HStack>
-        <List>
+        <List display="flex" flexDirection="column" gap={2}>
           {isLoading
             ? [...new Array(20)].map((_, index) => (
-                <Skeleton key={index} marginBottom="8px">
+                <Skeleton key={index} marginBottom={1}>
                   <ListItem>Loading</ListItem>
                 </Skeleton>
               ))
             : activities.map(activity => (
-                <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} />
+                <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} bgOption={bgOption} />
               ))}
         </List>
       </VStack>

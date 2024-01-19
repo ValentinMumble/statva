@@ -93,5 +93,56 @@ const eddingtonNumber = (rides: DetailedActivity[]) => {
 
 const getActivityUrl = ({id}: DetailedActivity): string => `${ACTIVITY_URL}${id}`;
 
-export {eddingtonNumber, getActivityUrl, getRidesBeforeMonth, getActivityIcon, getMaxValue, getTotalValue};
+const getHeartZone = ({average_heartrate = 0}: DetailedActivity, maxHeartrate = 190): number => {
+  switch (true) {
+    case average_heartrate === 0:
+      break;
+    case average_heartrate < 0.59 * maxHeartrate:
+      return 1;
+    case average_heartrate < 0.8 * maxHeartrate: // 0.78
+      return 2;
+    case average_heartrate < 0.87 * maxHeartrate:
+      return 3;
+    case average_heartrate < 0.97 * maxHeartrate:
+      return 4;
+    case average_heartrate >= 0.97 * maxHeartrate:
+      return 5;
+  }
+
+  return 0;
+};
+
+const getPowerZone = ({average_watts = 0}: DetailedActivity, ftp: number): number => {
+  switch (true) {
+    case average_watts === 0:
+      break;
+    case average_watts < 0.55 * ftp:
+      return 1;
+    case average_watts < 0.75 * ftp:
+      return 2;
+    case average_watts < 0.9 * ftp:
+      return 3;
+    case average_watts < 1.05 * ftp:
+      return 4;
+    case average_watts < 1.2 * ftp:
+      return 5;
+    case average_watts < 1.5 * ftp:
+      return 6;
+    case average_watts >= 1.5 * ftp:
+      return 7;
+  }
+
+  return 0;
+};
+
+export {
+  eddingtonNumber,
+  getActivityUrl,
+  getRidesBeforeMonth,
+  getActivityIcon,
+  getHeartZone,
+  getMaxValue,
+  getPowerZone,
+  getTotalValue,
+};
 export type {ActivityFilter};
