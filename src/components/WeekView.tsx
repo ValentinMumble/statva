@@ -2,26 +2,10 @@ import {createElement, useState} from 'react';
 import {IconButton, Table, Tbody, Td, Th, Thead, Tooltip, Tr} from '@chakra-ui/react';
 import {PiPlus} from 'react-icons/pi';
 import {useActivities, useAthlete} from '../hooks';
-import {arrayRotate, getActivityIcon, getActivityUrl, getBikeEmoji, getWeekNumber} from '../models';
+import {arrayRotate, getActivityIcon, getActivityUrl, getBikeEmoji, getWeekLabel, getWeekNumber} from '../models';
 import {DetailedActivity} from '../models/strava';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-const getWeekLabel = (week: string): string => {
-  const today = new Date(),
-    lastWeek = new Date();
-  lastWeek.setDate(today.getDate() - 7);
-
-  if (week === `${getWeekNumber(today)}/${today.getUTCFullYear()}`) {
-    return 'This week';
-  }
-
-  if (week === `${getWeekNumber(lastWeek)}/${lastWeek.getUTCFullYear()}`) {
-    return 'Last week';
-  }
-
-  return week;
-};
 
 const WeekView = () => {
   const [weekCount, setWeekCount] = useState<number>(5);

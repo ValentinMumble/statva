@@ -29,6 +29,30 @@ const getWeekNumber = (date: Date): number => {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
 };
 
+const WEEK_LABELS: {[week: string]: string} = {
+  '8/2023': 'Tignes ⛷️',
+  '35/2023': 'Italia 🇮🇹',
+  '36/2023': 'Italia 🍝',
+  '4/2024': "AFK'24 🍺",
+  '5/2024': 'Grippe 🤒',
+};
+
+const getWeekLabel = (week: string): string => {
+  const today = new Date(),
+    lastWeek = new Date();
+  lastWeek.setDate(today.getDate() - 7);
+
+  if (week === `${getWeekNumber(today)}/${today.getUTCFullYear()}`) {
+    return 'This week';
+  }
+
+  if (week === `${getWeekNumber(lastWeek)}/${lastWeek.getUTCFullYear()}`) {
+    return 'Last week';
+  }
+
+  return WEEK_LABELS[week] ?? week;
+};
+
 const extractEmoji = (text: string): string =>
   text
     .match(/\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/g)
@@ -50,5 +74,6 @@ export {
   formatDurationInDays,
   formatElevation,
   formatSpeed,
+  getWeekLabel,
   getWeekNumber,
 };
