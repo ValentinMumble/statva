@@ -11,7 +11,7 @@ import {
   RadioGroup,
 } from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
-import {ChartProps, getOptions, getWeekNumber} from '../../models';
+import {ChartProps, getOptions, getWeekLabel, getWeekNumber} from '../../models';
 import {DetailedActivity} from '../../models/strava';
 
 const INITIAL_MONTH_COUNT = 12;
@@ -76,7 +76,7 @@ const MonthChart = ({
   }, generatePeriodKeys(activities, timeframe));
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = Object.keys(sliced);
+  const labels = Object.keys(sliced).map(getWeekLabel);
   const series = [{name: dataLabel, data: Object.values(sliced)}];
 
   return (
