@@ -7,7 +7,7 @@ const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
 const MONTH_COLORS = [
   '#f0f8ff',
-  '#f0ffff',
+  '#e2f5f1',
   '#f5f5dc',
   '#f5f5f5',
   '#fafad2',

@@ -1,6 +1,17 @@
+import {useState} from 'react';
 import Chart from 'react-apexcharts';
+import {
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  FormControl,
+} from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
 import {eddingtonNumber, getRidesBeforeMonth} from '../../models';
+
+const DEFAULT_ITEM_COUNT = 18;
 
 const options: ApexCharts.ApexOptions = {
   colors: ['#ca8c19'],
@@ -8,6 +19,7 @@ const options: ApexCharts.ApexOptions = {
     curve: 'smooth',
     width: 4,
   },
+  yaxis: {min: 10},
   fill: {type: 'gradient'},
   markers: {size: [4]},
   chart: {
@@ -16,11 +28,10 @@ const options: ApexCharts.ApexOptions = {
   },
 };
 
-type EddingtonChartProps = {
-  startYear: number;
-};
+type EddingtonChartProps = {};
 
-const EddingtonChart = ({startYear}: EddingtonChartProps) => {
+const EddingtonChart = ({}: EddingtonChartProps) => {
+  const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -30,30 +41,37 @@ const EddingtonChart = ({startYear}: EddingtonChartProps) => {
 
   const dataPerMonth = activities.reduce((eddingtonByMonth: {[monthYear: string]: number}, activity) => {
     const date = new Date(activity.start_date);
-
-    if (date.getFullYear() < startYear) {
-      return eddingtonByMonth;
-    }
-
     const monthYear = `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
     eddingtonByMonth[monthYear] = eddingtonNumber(getRidesBeforeMonth(activities, date))[0];
 
     return eddingtonByMonth;
   }, {});
 
-  const labels = Object.keys(dataPerMonth);
-  const series = [{name: '🧸', data: Object.values(dataPerMonth)}];
+  const sliced = Object.fromEntries(Object.entries(dataPerMonth).slice(-itemCount));
+  const labels = Object.keys(sliced);
+  const series = [{name: '🧸', data: Object.values(sliced)}];
 
   return (
-    <Chart
-      options={{
-        ...options,
-        labels,
-      }}
-      series={series}
-      type="line"
-      height={400}
-    />
+    <div>
+      <FormControl display="flex" alignItems="center" justifyContent="end" gap={4}>
+        <NumberInput width="70px" size="xs" value={itemCount} onChange={(_, value) => setItemCount(value)}>
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
+      </FormControl>
+      <Chart
+        options={{
+          ...options,
+          labels,
+        }}
+        series={series}
+        type="line"
+        height={400}
+      />
+    </div>
   );
 };
 
