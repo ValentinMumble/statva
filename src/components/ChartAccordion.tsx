@@ -20,7 +20,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Eddington / month 🧸',
-    component: <EddingtonChart startYear={2023} />,
+    component: <EddingtonChart />,
   },
   {
     label: 'Distance / bike 🚲',

@@ -33,6 +33,7 @@ const WEEK_LABELS: {[week: string]: string} = {
   '8/2023': 'Tignes ⛷️',
   '35/2023': 'Italia 🇮🇹',
   '36/2023': 'Italia 🍝',
+  '3/2024': "Mum's 🏡",
   '4/2024': "AFK'24 🍺",
   '5/2024': 'Grippe 🤒',
 };
