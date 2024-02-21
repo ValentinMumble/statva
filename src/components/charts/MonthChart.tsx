@@ -76,7 +76,7 @@ const MonthChart = ({
   }, generatePeriodKeys(activities, timeframe));
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = Object.keys(sliced).map(getWeekLabel);
+  const labels = 'week' === timeframe ? Object.keys(sliced).map(getWeekLabel) : Object.keys(sliced);
   const series = [{name: dataLabel, data: Object.values(sliced)}];
 
   return (
