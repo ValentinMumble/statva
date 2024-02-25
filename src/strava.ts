@@ -6,7 +6,7 @@ const refreshToken = import.meta.env.VITE_STRAVA_REFRESH_TOKEN;
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
-const ITEMS_PER_PAGE = 50;
+const ITEMS_PER_PAGE = 75;
 
 type Token = string;
 let token: Token | null = null;
