@@ -7,8 +7,9 @@ import {
   formatSpeed,
   getMaxValue,
   eddingtonNumber,
+  formatDuration,
 } from '../models';
-import {DetailedActivity, DetailedAthlete} from './strava';
+import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
 
 type Stat = {
   label: string;
@@ -50,12 +51,22 @@ const STATS: Stat[][] = [
     {
       label: '⏱️',
       helpText: 'Total moving time',
-      number: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
+      number: activities => (
+        <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
+          {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
+        </Tooltip>
+      ),
     },
     {
       label: '🏁',
       helpText: 'Max avg speed',
-      number: activities => formatSpeed(getMaxValue(activities, 'average_speed')),
+      number: activities =>
+        formatSpeed(
+          getMaxValue(
+            activities.filter(({type}) => ActivityType.VirtualRide !== type),
+            'average_speed'
+          )
+        ),
     },
     {
       label: '⚡️',
