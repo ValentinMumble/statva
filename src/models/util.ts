@@ -2,12 +2,17 @@ const formatDistance = (distance: number, precision = 1): string => `${(distance
 const formatElevation = (elevation: number): string => `${Math.round(elevation)} m`;
 const formatSpeed = (speed: number, precision = 1): string => `${(speed * 3.6).toFixed(precision)} km/h`;
 
-const formatDuration = (durationInSeconds: number): string => {
+const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string => {
   const hours = durationInSeconds / 60 / 60;
-  const roundHours = Math.floor(hours);
-  const minutes = Math.round((hours - roundHours) * 60);
 
-  return `${roundHours}:${minutes.toString().padStart(2, '0')} h`;
+  if (hoursOnly) {
+    return `${Math.round(hours)} h`;
+  }
+
+  const wholeHours = Math.floor(hours);
+  const minutes = Math.round((hours - wholeHours) * 60);
+
+  return `${wholeHours}:${minutes.toString().padStart(2, '0')} h`;
 };
 
 const formatDurationInDays = (durationInSeconds: number): string => {
@@ -36,6 +41,7 @@ const WEEK_LABELS: {[week: string]: string} = {
   '3/2024': "Mum's 🏡",
   '4/2024': "AFK'24 🍺",
   '5/2024': 'Grippe 🤒',
+  '11/2024': 'Monêtier 🎿',
 };
 
 const getWeekLabel = (week: string): string => {
