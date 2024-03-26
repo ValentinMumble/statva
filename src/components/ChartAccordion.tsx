@@ -1,6 +1,6 @@
 import {ReactNode} from 'react';
 import {Accordion, AccordionItem, AccordionButton, Box, AccordionIcon, AccordionPanel} from '@chakra-ui/react';
-import {ProgressChart, MonthChart, EddingtonChart, GearChart, AverageGearChart, HeartChart} from './charts';
+import {ProgressChart, MonthChart, EddingtonChart, GearChart, AverageGearChart, HeartChart, FTPChart} from './charts';
 import {formatDistance, formatDuration} from '../models';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
@@ -17,6 +17,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: (
       <MonthChart data="total_elevation_gain" dataLabel="⛰️" formatter={value => formatDistance(value)} type="area" />
     ),
+  },
+  {
+    label: 'FTP / time ⚡️',
+    component: <FTPChart />,
   },
   {
     label: 'Eddington / month 🧸',
