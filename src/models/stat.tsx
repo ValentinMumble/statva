@@ -32,14 +32,25 @@ const STATS: Stat[][] = [
     {
       label: '🎊',
       helpText: 'This year',
-      number: activities =>
-        formatDistance(
-          getTotalValue(
-            activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
-            'distance'
-          ),
-          0
-        ),
+      number: activities => (
+        <Tooltip
+          label={`Last year: ${formatDistance(
+            getTotalValue(
+              activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear() - 1),
+              'distance'
+            ),
+            0
+          )}`}
+        >
+          {formatDistance(
+            getTotalValue(
+              activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+              'distance'
+            ),
+            0
+          )}
+        </Tooltip>
+      ),
     },
     {
       label: '⛰️',
@@ -63,7 +74,7 @@ const STATS: Stat[][] = [
       number: activities =>
         formatSpeed(
           getMaxValue(
-            activities.filter(({type}) => ActivityType.VirtualRide !== type),
+            activities.filter(({type}) => ![ActivityType.VirtualRide].includes(type)),
             'average_speed'
           )
         ),
