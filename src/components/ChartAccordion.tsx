@@ -5,12 +5,12 @@ import {formatDistance, formatDuration} from '../models';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
-    label: 'N-Peloton 🏁 & ⚡️',
-    component: <ProgressChart search="N-Peloton" />,
-  },
-  {
     label: 'Distance / time 🗺️',
     component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
+  },
+  {
+    label: 'N-Peloton 🏁 & ⚡️',
+    component: <ProgressChart search="N-Peloton" />,
   },
   {
     label: 'D+ / time ⛰️',
@@ -23,7 +23,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <FTPChart />,
   },
   {
-    label: 'Eddington / month 🧸',
+    label: 'Eddington / time 🧸',
     component: <EddingtonChart />,
   },
   {

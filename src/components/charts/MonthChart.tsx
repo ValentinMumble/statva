@@ -14,7 +14,7 @@ import {useActivities} from '../../hooks';
 import {ChartProps, getOptions, getWeekLabel, getWeekNumber} from '../../models';
 import {DetailedActivity} from '../../models/strava';
 
-const INITIAL_MONTH_COUNT = 12;
+const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
 
 type Timeframe = 'month' | 'week';
