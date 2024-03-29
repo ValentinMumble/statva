@@ -73,6 +73,11 @@ const arrayRotate = (originalArray: any[], count: number): typeof originalArray 
   return array;
 };
 
+const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
+  Array(Math.ceil((stop - start) / step) + 1)
+    .fill(start)
+    .map((x, y) => x + y * step);
+
 export {
   arrayRotate,
   extractEmoji,
@@ -83,4 +88,5 @@ export {
   formatSpeed,
   getWeekLabel,
   getWeekNumber,
+  range,
 };
