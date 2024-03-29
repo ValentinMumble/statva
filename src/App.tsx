@@ -13,11 +13,9 @@ import {
   Tag,
   VStack,
 } from '@chakra-ui/react';
-import {SortType, SORT_TYPES, SortDirection, getBikeEmoji} from './models';
-import {ActivityListItem, ChartAccordion, Stats, WeekView} from './components';
+import {SortType, SORT_TYPES, SortDirection, getBikeEmoji, range} from './models';
+import {ActivityListItem, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
 import {useActivities, useAthlete} from './hooks';
-
-const YEARS = [2024, 2023, 2018, 2017, 2016, 2015];
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
@@ -25,10 +23,17 @@ const App = () => {
   const [activeSort, setActiveSort] = useState<SortType>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearId, setGearId] = useState<string | undefined>();
-  const [years, setYears] = useState<number[]>([]);
+  const [yearRange, setYearRange] = useState<number[]>([]);
   const [bgOption, setBgOption] = useState<string>('date');
 
-  const [activities, isLoading] = useActivities({search, sort: activeSort, withPrivate, gearId, years, sortDirection});
+  const [activities, isLoading] = useActivities({
+    search,
+    sort: activeSort,
+    withPrivate,
+    gearId,
+    years: 0 === yearRange.length ? yearRange : range(yearRange.at(0), yearRange.at(-1)),
+    sortDirection,
+  });
   const athlete = useAthlete();
 
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
@@ -40,14 +45,11 @@ const App = () => {
     setActiveSort('date');
     setSortDirection('desc');
     setGearId(undefined);
-    setYears([]);
+    setYearRange([]);
     setBgOption('date');
   };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
-
-  const handleYearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
-    setYears('' === target.value ? [] : [Number(target.value)]);
   const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
     setGearId('' === target.value ? undefined : target.value);
   const handleBgOptionChange = ({target}: ChangeEvent<HTMLSelectElement>) => setBgOption(target.value);
@@ -85,6 +87,7 @@ const App = () => {
             🗑️
           </Button>
         </InputGroup>
+        <YearRangeSlider value={yearRange} onChange={setYearRange} />
         <HStack justifyContent="space-between">
           {Object.values(SORT_TYPES)
             .filter(sortType => !('disabled' in sortType))
@@ -107,13 +110,6 @@ const App = () => {
               </option>
             ))}
             <option value="null">🤷</option>
-          </Select>
-          <Select placeholder="🗓️" width={24} value={years[0]} onChange={handleYearChange}>
-            {YEARS.map(year => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
           </Select>
           <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
             🔒
