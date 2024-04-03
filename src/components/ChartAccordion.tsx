@@ -1,7 +1,7 @@
 import {ReactNode} from 'react';
 import {Accordion, AccordionItem, AccordionButton, Box, AccordionIcon, AccordionPanel} from '@chakra-ui/react';
 import {ProgressChart, MonthChart, EddingtonChart, GearChart, AverageGearChart, HeartChart, FTPChart} from './charts';
-import {formatDistance, formatDuration} from '../models';
+import {formatDistance, formatDuration, formatElevation} from '../models';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
@@ -28,11 +28,15 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Distance / bike 🚲',
-    component: <GearChart dataLabel="🗺️" data="distance" formatter={value => formatDistance(value, 0)} type="pie" />,
+    component: <GearChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} type="pie" />,
   },
   {
     label: 'Time / bike ⏱️',
     component: <GearChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} type="pie" />,
+  },
+  {
+    label: 'D+ / bike ⛰️',
+    component: <GearChart data="total_elevation_gain" dataLabel="⛰️" formatter={formatElevation} type="pie" />,
   },
   {
     label: 'Average speed / bike 🏁',
