@@ -6,18 +6,18 @@ import {useAthlete} from '../hooks';
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
 const MONTH_COLORS = [
-  '#f0f8ff',
-  '#e2f5f1',
-  '#f5f5dc',
-  '#f5f5f5',
-  '#fafad2',
-  '#fdf5e6',
-  '#f5ebfc',
-  '#fff8dc',
-  '#f0fff0',
-  '#f8f8ff',
-  '#f0fcf1',
-  '#faf3e5',
+  '#F7D7D680', // Light Red
+  '#D6F7F180', // Light Blue
+  '#D9F7D980', // Mint
+  '#E2D8F780', // Lavender
+  '#F7DCF180', // Light Purple
+  '#EAF7D980', // Light Green
+  '#F7F6D880', // Pale Yellow
+  '#F7E7E080', // Pale Pink
+  '#F7E7D680', // Peach
+  '#F7F0D780', // Light Orange
+  '#D8EDF780', // Sky Blue
+  '#F7DCEB80', // Light Pink
 ];
 
 const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: DetailedAthlete | null): string => {
