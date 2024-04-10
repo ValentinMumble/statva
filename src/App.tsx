@@ -1,16 +1,17 @@
 import {ChangeEvent, useState} from 'react';
 import {
   Button,
-  HStack,
   Input,
   InputGroup,
   InputRightElement,
-  List,
-  ListItem,
   Select,
-  Skeleton,
   Stack,
+  Table,
   Tag,
+  Tbody,
+  Th,
+  Thead,
+  Tr,
   VStack,
 } from '@chakra-ui/react';
 import {SortType, SORT_TYPES, SortDirection, getBikeEmoji, range} from './models';
@@ -78,32 +79,12 @@ const App = () => {
               <Tag>{activities.length}</Tag>
             </InputRightElement>
           </InputGroup>
-          <Select width={24} value={bgOption} onChange={handleBgOptionChange}>
+          <Select width="120px" value={bgOption} onChange={handleBgOptionChange}>
             <option value="date">📅</option>
             <option value="power-zone">⚡️</option>
             <option value="heart-zone">🫀</option>
           </Select>
-          <Button variant="ghost" onClick={handleSearchClear}>
-            🗑️
-          </Button>
-        </InputGroup>
-        <YearRangeSlider value={yearRange} onChange={setYearRange} />
-        <HStack justifyContent="space-between">
-          {Object.values(SORT_TYPES)
-            .filter(sortType => !('disabled' in sortType))
-            .map(sortType => (
-              <Button
-                key={sortType.value}
-                disabled={isLoading}
-                variant="ghost"
-                colorScheme="orange"
-                isActive={activeSort === sortType.value}
-                onClick={handleSortChange(sortType.value as SortType)}
-              >
-                {sortType.label}
-              </Button>
-            ))}
-          <Select placeholder="🚲" width={24} value={gearId} onChange={handleGearChange}>
+          <Select width="120px" placeholder="🚲" value={gearId} onChange={handleGearChange}>
             {athlete?.bikes.map(bike => (
               <option key={bike.id} value={bike.id}>
                 {getBikeEmoji(athlete.bikes, bike.id)}
@@ -114,18 +95,42 @@ const App = () => {
           <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
             🔒
           </Button>
-        </HStack>
-        <List display="flex" flexDirection="column" gap={2}>
-          {isLoading
-            ? [...new Array(20)].map((_, index) => (
-                <Skeleton key={index} marginBottom={1}>
-                  <ListItem>Loading</ListItem>
-                </Skeleton>
-              ))
-            : activities.map(activity => (
-                <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} bgOption={bgOption} />
-              ))}
-        </List>
+          <Button variant="ghost" onClick={handleSearchClear}>
+            🗑️
+          </Button>
+        </InputGroup>
+        <YearRangeSlider value={yearRange} onChange={setYearRange} />
+        <Table size="sm" variant="unstyled" whiteSpace="nowrap">
+          <Thead>
+            <Tr>
+              <Th />
+              {Object.values(SORT_TYPES)
+                .filter(sortType => !('disabled' in sortType))
+                .map(sortType => (
+                  <Th
+                    key={sortType.value}
+                    onClick={handleSortChange(sortType.value as SortType)}
+                    padding="5px 0"
+                    textAlign="center"
+                  >
+                    {sortType.label}
+                  </Th>
+                ))}
+            </Tr>
+          </Thead>
+          <Tbody>
+            {isLoading
+              ? null
+              : // ? [...new Array(20)].map((_, index) => (
+                //     <Skeleton key={index} marginBottom={1}>
+                //       <Tr>Loading</Tr>
+                //     </Skeleton>
+                //   )) TODO
+                activities.map(activity => (
+                  <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} bgOption={bgOption} />
+                ))}
+          </Tbody>
+        </Table>
       </VStack>
     </Stack>
   );

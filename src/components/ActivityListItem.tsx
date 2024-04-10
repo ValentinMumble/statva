@@ -1,4 +1,4 @@
-import {ListIcon, ListItem, Show, Tag, TagLabel, TagLeftIcon, Text, Tooltip} from '@chakra-ui/react';
+import {Icon, Tag, Td, Text, Tooltip, Tr} from '@chakra-ui/react';
 import {SortType, TAGS, getActivityIcon, getActivityUrl, getBikeEmoji, getHeartZone, getPowerZone} from '../models';
 import {DetailedActivity, DetailedAthlete} from '../models/strava';
 import {useAthlete} from '../hooks';
@@ -42,50 +42,40 @@ const ActivityListItem = ({activity, activeSort, bgOption}: ActivityListItemProp
   const athlete = useAthlete();
 
   return (
-    <ListItem
-      onClick={() => console.log(activity)}
-      opacity={activity.private ? 0.6 : 1}
-      _hover={{opacity: 1}}
-      width={['97vw', 'unset']}
-      display="flex"
-      alignItems="center"
-      gap={1.5}
-    >
-      <ListIcon as={getActivityIcon(activity)} />
-      <Text flex={1} bg={getBgColor(bgOption, activity, athlete)} padding="1px 5px" borderRadius="8px">
-        <Tooltip
-          bg="gray.100"
-          color="gray.700"
-          hasArrow={true}
-          placement="right"
-          label={
-            <>
-              {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
-              {getBikeEmoji(athlete?.bikes, activity.gear_id)}
-            </>
-          }
-        >
-          <a target="_blank" href={getActivityUrl(activity)}>
-            {activity.name}
-          </a>
-        </Tooltip>
-      </Text>
+    <Tr onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
+      <Td padding={0} textAlign="center" width={1}>
+        <Icon as={getActivityIcon(activity)} />
+      </Td>
+      <Td padding="4px 0px">
+        <Text bg={getBgColor(bgOption, activity, athlete)} fontSize="1rem" borderRadius="8px" padding="4px 10px">
+          <Tooltip
+            bg="gray.100"
+            color="gray.700"
+            hasArrow={true}
+            placement="right"
+            label={
+              <>
+                {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
+                {getBikeEmoji(athlete?.bikes, activity.gear_id)}
+              </>
+            }
+          >
+            <a target="_blank" href={getActivityUrl(activity)}>
+              {activity.name}
+            </a>
+          </Tooltip>
+        </Text>
+      </Td>
       {TAGS.map((tag, index) => (
-        <Show key={tag.sortType} above={0 === index ? undefined : 'sm'}>
+        <Td key={index} textAlign="center" padding="0px 2px" width="1%" opacity={tag.isRelevant(activity) ? 1 : 0.4}>
           <Tooltip label={tag.tooltip?.(activity, athlete)}>
-            <Tag
-              opacity={tag.isRelevant(activity) ? 1 : 0.4}
-              size="sm"
-              colorScheme={activeSort === tag.sortType ? 'orange' : undefined}
-              padding="4px"
-            >
-              <TagLeftIcon as={tag.icon} />
-              <TagLabel>{tag.label(activity)}</TagLabel>
+            <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : undefined}>
+              {tag.label(activity)}
             </Tag>
           </Tooltip>
-        </Show>
+        </Td>
       ))}
-    </ListItem>
+    </Tr>
   );
 };
 
