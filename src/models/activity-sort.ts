@@ -42,6 +42,10 @@ const SORT_TYPES = {
     value: 'suffer_score',
     label: '🌶️',
   },
+  kilojoules: {
+    value: 'kilojoules',
+    label: '🍕',
+  },
   average_cadence: {
     value: 'average_cadence',
     label: '🎡',
@@ -84,6 +88,8 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
       return second.kudos_count - first.kudos_count;
     case 'suffer_score':
       return (second.suffer_score ?? 0) - (first.suffer_score ?? 0);
+    case 'kilojoules':
+      return second.kilojoules - first.kilojoules;
   }
 };
 

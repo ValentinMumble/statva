@@ -10,7 +10,6 @@ export interface DetailedActivity {
   average_speed: number;
   average_watts?: number;
   best_efforts: DetailedSegmentEffort[];
-  calories: number;
   comment_count: number;
   commute: boolean;
   description: string;
@@ -25,6 +24,7 @@ export interface DetailedActivity {
   flagged: boolean;
   gear_id: string;
   has_kudoed: boolean;
+  kilojoules: number;
   kudos_count: number;
   laps: Lap[];
   manual: boolean;
