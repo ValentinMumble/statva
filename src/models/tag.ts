@@ -6,6 +6,7 @@ import {
   formatSpeed,
   getHeartZone,
   getPowerZone,
+  KJ_TO_CAL_RATIO,
 } from '../models';
 import {DetailedActivity, DetailedAthlete} from './strava';
 
@@ -61,7 +62,7 @@ const TAGS: Tag[] = [
     sortType: 'suffer_score',
   },
   {
-    label: ({kilojoules}) => Math.round(kilojoules * 1.114937039),
+    label: ({kilojoules}) => Math.round(kilojoules * KJ_TO_CAL_RATIO),
     isRelevant: ({kilojoules}) => 0 < kilojoules,
     sortType: 'kilojoules',
   },
@@ -75,6 +76,11 @@ const TAGS: Tag[] = [
     isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),
     tooltip: activity => `🫀 ${Math.round(activity.max_heartrate ?? 0)} 〰 Zone ${getHeartZone(activity)}`,
     sortType: 'average_heartrate',
+  },
+  {
+    label: ({pr_count}) => pr_count,
+    isRelevant: ({pr_count}) => 0 < pr_count,
+    sortType: 'pr_count',
   },
   {
     label: ({kudos_count}) => kudos_count,

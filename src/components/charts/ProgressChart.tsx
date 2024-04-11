@@ -5,17 +5,13 @@ import {formatSpeed} from '../../models';
 const options: ApexCharts.ApexOptions = {
   yaxis: [
     {
-      labels: {
-        formatter: (value: number) => formatSpeed(value),
-      },
+      labels: {formatter: (value: number) => formatSpeed(value)},
       min: 26 / 3.6,
-      max: 35 / 3.6,
+      max: 40 / 3.6,
     },
     {
       opposite: true,
-      labels: {
-        formatter: (value: number) => `${Math.round(value)} W`,
-      },
+      labels: {formatter: (value: number) => `${Math.round(value)} W`},
       min: 120,
       max: 260,
     },

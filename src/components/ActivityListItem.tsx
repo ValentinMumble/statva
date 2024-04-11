@@ -1,4 +1,4 @@
-import {Icon, Tag, Td, Text, Tooltip, Tr} from '@chakra-ui/react';
+import {Icon, Skeleton, Tag, Td, Text, Tooltip, Tr} from '@chakra-ui/react';
 import {SortType, TAGS, getActivityIcon, getActivityUrl, getBikeEmoji, getHeartZone, getPowerZone} from '../models';
 import {DetailedActivity, DetailedAthlete} from '../models/strava';
 import {useAthlete} from '../hooks';
@@ -33,13 +33,31 @@ const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: Detai
 };
 
 type ActivityListItemProps = {
-  activity: DetailedActivity;
+  activity: DetailedActivity | null;
   activeSort: SortType;
   bgOption: string;
 };
 
 const ActivityListItem = ({activity, activeSort, bgOption}: ActivityListItemProps) => {
   const athlete = useAthlete();
+
+  if (null === activity) {
+    return (
+      <Tr>
+        <Td padding="4px" width={1}>
+          <Skeleton>i</Skeleton>
+        </Td>
+        <Td padding="8px">
+          <Skeleton>name</Skeleton>
+        </Td>
+        {TAGS.map((_, index) => (
+          <Td key={index} padding="5px" width="1%">
+            <Skeleton>tag</Skeleton>
+          </Td>
+        ))}
+      </Tr>
+    );
+  }
 
   return (
     <Tr onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>

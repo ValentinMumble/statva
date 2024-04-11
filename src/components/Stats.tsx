@@ -13,16 +13,16 @@ const Stats = () => {
       {STATS.map((statGroup, index) => (
         <StatGroup key={index}>
           {statGroup.map(stat => (
-            <Stat key={stat.label} size={['sm', 'md']}>
+            <Stat key={stat.label} size={['sm']}>
               <StatLabel>{stat.label}</StatLabel>
               {isLoading ? (
                 <Skeleton width="70%">
                   <StatNumber>Loading</StatNumber>
                 </Skeleton>
               ) : (
-                <StatNumber>{stat.number(activities, athlete)}</StatNumber>
+                <StatNumber fontSize="1.2em">{stat.number(activities, athlete)}</StatNumber>
               )}
-              <StatHelpText fontSize={['xs', 'sm']}>{stat.helpText}</StatHelpText>
+              <StatHelpText fontSize={['sm']}>{stat.helpText}</StatHelpText>
             </Stat>
           ))}
         </StatGroup>
