@@ -8,6 +8,7 @@ import {
   getMaxValue,
   eddingtonNumber,
   formatDuration,
+  KJ_TO_CAL_RATIO,
 } from '../models';
 import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
 
@@ -26,7 +27,7 @@ const STATS: Stat[][] = [
     },
     {
       label: '🗺️',
-      helpText: 'Total distance',
+      helpText: 'Distance ridden',
       number: activities => formatDistance(getTotalValue(activities, 'distance'), 0),
     },
     {
@@ -57,16 +58,26 @@ const STATS: Stat[][] = [
       helpText: 'Total D+',
       number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain'), 1),
     },
+    {
+      label: '🥾',
+      helpText: 'Gran Fondos',
+      number: activities => activities.filter(({distance}) => distance >= 100 * 1000).length,
+    },
   ],
   [
     {
       label: '⏱️',
-      helpText: 'Total moving time',
+      helpText: 'Spent riding',
       number: activities => (
         <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
           {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
         </Tooltip>
       ),
+    },
+    {
+      label: '🍕',
+      helpText: 'Calories burned',
+      number: activities => Math.round(getTotalValue(activities, 'kilojoules') * KJ_TO_CAL_RATIO),
     },
     {
       label: '🏁',

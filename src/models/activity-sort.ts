@@ -54,6 +54,10 @@ const SORT_TYPES = {
     value: 'average_heartrate',
     label: '🫀',
   },
+  pr_count: {
+    value: 'pr_count',
+    label: '🏆',
+  },
   kudos_count: {
     value: 'kudos_count',
     label: '👍',
@@ -90,6 +94,8 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
       return (second.suffer_score ?? 0) - (first.suffer_score ?? 0);
     case 'kilojoules':
       return second.kilojoules - first.kilojoules;
+    case 'pr_count':
+      return second.pr_count - first.pr_count;
   }
 };
 

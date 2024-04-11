@@ -38,6 +38,7 @@ export interface DetailedActivity {
   photo_count: number;
   photos: PhotoSummary;
   private: boolean;
+  pr_count: number;
   segment_efforts: DetailedSegmentEffort[];
   splits_metric: Split;
   splits_standard: Split;

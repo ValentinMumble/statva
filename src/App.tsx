@@ -112,6 +112,7 @@ const App = () => {
                     onClick={handleSortChange(sortType.value as SortType)}
                     padding="5px 0"
                     textAlign="center"
+                    cursor="pointer"
                   >
                     {sortType.label}
                   </Th>
@@ -120,13 +121,10 @@ const App = () => {
           </Thead>
           <Tbody>
             {isLoading
-              ? null
-              : // ? [...new Array(20)].map((_, index) => (
-                //     <Skeleton key={index} marginBottom={1}>
-                //       <Tr>Loading</Tr>
-                //     </Skeleton>
-                //   )) TODO
-                activities.map(activity => (
+              ? [...new Array(15)].map((_, index) => (
+                  <ActivityListItem key={index} activity={null} activeSort={activeSort} bgOption={bgOption} />
+                ))
+              : activities.map(activity => (
                   <ActivityListItem key={activity.id} activity={activity} activeSort={activeSort} bgOption={bgOption} />
                 ))}
           </Tbody>

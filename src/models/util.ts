@@ -1,3 +1,5 @@
+const KJ_TO_CAL_RATIO = 1.114937039;
+
 const formatDistance = (distance: number, precision = 1): string => `${(distance / 1000).toFixed(precision)} km`;
 const formatElevation = (elevation: number): string => `${Math.round(elevation)} m`;
 const formatSpeed = (speed: number, precision = 1): string => `${(speed * 3.6).toFixed(precision)} km/h`;
@@ -42,19 +44,18 @@ const WEEK_LABELS: {[week: string]: string} = {
   '4/2024': "AFK'24 🍺",
   '5/2024': 'Grippe 🤒',
   '11/2024': 'Monêtier 🎿',
+  '15/2024': 'Alpes M ⛰️',
+  '16/2024': 'Annecy 🚤',
+  '17/2024': 'Ventoux 🏔️',
+  '18/2024': 'Toulon 😎',
+  '23/2024': 'Briançon ⛰️',
 };
 
 const getWeekLabel = (week: string): string => {
-  const today = new Date(),
-    lastWeek = new Date();
-  lastWeek.setDate(today.getDate() - 7);
+  const today = new Date();
 
   if (week === `${getWeekNumber(today)}/${today.getUTCFullYear()}`) {
     return 'This week';
-  }
-
-  if (week === `${getWeekNumber(lastWeek)}/${lastWeek.getUTCFullYear()}`) {
-    return 'Last week';
   }
 
   return WEEK_LABELS[week] ?? week;
@@ -88,5 +89,6 @@ export {
   formatSpeed,
   getWeekLabel,
   getWeekNumber,
+  KJ_TO_CAL_RATIO,
   range,
 };

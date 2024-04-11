@@ -9,8 +9,8 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
   },
   {
-    label: 'N-Peloton 🏁 & ⚡️',
-    component: <ProgressChart search="N-Peloton" />,
+    label: 'Moving / time ⏱️',
+    component: <MonthChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} />,
   },
   {
     label: 'D+ / time ⛰️',
@@ -41,6 +41,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Average speed / bike 🏁',
     component: <AverageGearChart />,
+  },
+  {
+    label: 'N-Peloton 🏁 & ⚡️',
+    component: <ProgressChart search="N-Peloton" />,
   },
   {
     label: 'Average 🫀 & 🎡',
