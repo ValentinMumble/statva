@@ -17,6 +17,11 @@ const FTP_TESTS: FTPTest[] = [
     weight: 72,
     ftp: 252,
   },
+  {
+    date: new Date('2024-04-13'),
+    weight: 72,
+    ftp: 256,
+  },
 ];
 
 const options: ApexCharts.ApexOptions = {

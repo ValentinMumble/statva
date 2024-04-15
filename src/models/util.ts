@@ -40,6 +40,7 @@ const WEEK_LABELS: {[week: string]: string} = {
   '8/2023': 'Tignes ⛷️',
   '35/2023': 'Italia 🇮🇹',
   '36/2023': 'Italia 🍝',
+  '39/2023': "Provenc'Alpes ⛰️",
   '3/2024': "Mum's 🏡",
   '4/2024': "AFK'24 🍺",
   '5/2024': 'Grippe 🤒',
@@ -79,6 +80,24 @@ const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
     .fill(start)
     .map((x, y) => x + y * step);
 
+const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: 'month' | 'week') => {
+  const emptyValues: {[period: string]: any} = {};
+
+  for (let year = firstDate.getFullYear(); year <= lastDate.getFullYear(); year++) {
+    let maxPeriod = 'month' === timeframe ? 12 : 52;
+    maxPeriod =
+      year === lastDate.getUTCFullYear()
+        ? Math.min('month' === timeframe ? lastDate.getUTCMonth() + 1 : getWeekNumber(lastDate), maxPeriod)
+        : maxPeriod;
+
+    for (let period = 1; period <= maxPeriod; period++) {
+      emptyValues[`${period}/${year}`] = null;
+    }
+  }
+
+  return emptyValues;
+};
+
 export {
   arrayRotate,
   extractEmoji,
@@ -87,6 +106,7 @@ export {
   formatDurationInDays,
   formatElevation,
   formatSpeed,
+  generatePeriodKeys,
   getWeekLabel,
   getWeekNumber,
   KJ_TO_CAL_RATIO,

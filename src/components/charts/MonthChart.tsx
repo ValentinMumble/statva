@@ -11,33 +11,10 @@ import {
   RadioGroup,
 } from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
-import {ChartProps, getOptions, getWeekLabel, getWeekNumber} from '../../models';
-import {DetailedActivity} from '../../models/strava';
+import {ChartProps, generatePeriodKeys, getOptions, getWeekLabel, getWeekNumber} from '../../models';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
-
-type Timeframe = 'month' | 'week';
-
-const generatePeriodKeys = (activities: DetailedActivity[], timeframe: Timeframe) => {
-  const firstDate = new Date(activities.at(0)?.start_date ?? 0);
-  const lastDate = new Date(activities.at(-1)?.start_date ?? 0);
-  const emptyValues: {[period: string]: number} = {};
-
-  for (let year = firstDate.getFullYear(); year <= lastDate.getFullYear(); year++) {
-    let maxPeriod = 'month' === timeframe ? 12 : 52;
-    maxPeriod =
-      year === lastDate.getUTCFullYear()
-        ? Math.min('month' === timeframe ? lastDate.getUTCMonth() + 1 : getWeekNumber(lastDate), maxPeriod)
-        : maxPeriod;
-
-    for (let period = 1; period <= maxPeriod; period++) {
-      emptyValues[`${period}/${year}`] = 0;
-    }
-  }
-
-  return emptyValues;
-};
 
 const MonthChart = ({
   data,
@@ -46,8 +23,8 @@ const MonthChart = ({
   filter,
   timeframe: initialTimeframe = 'month',
   ...rest
-}: ChartProps & {timeframe?: Timeframe}) => {
-  const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
+}: ChartProps & {timeframe?: 'month' | 'week'}) => {
+  const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
@@ -59,8 +36,8 @@ const MonthChart = ({
     ...filter,
   });
 
-  const handleTimeframeChange = (newTimeframe: string) => {
-    setTimeframe(newTimeframe as Timeframe);
+  const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
+    setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
 
@@ -73,7 +50,7 @@ const MonthChart = ({
     periodMap[period] = (periodMap[period] ?? 0) + (activity[data] as number);
 
     return periodMap;
-  }, generatePeriodKeys(activities, timeframe));
+  }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe));
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
   const labels = 'week' === timeframe ? Object.keys(sliced).map(getWeekLabel) : Object.keys(sliced);
