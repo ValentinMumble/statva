@@ -1,5 +1,10 @@
 import {ChangeEvent, useState} from 'react';
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Button,
   Checkbox,
   CheckboxGroup,
@@ -68,56 +73,65 @@ const App = () => {
         <WeekView />
       </VStack>
       <VStack align="stretch" flexBasis="62%">
-        <InputGroup gap={3}>
-          <Button variant="ghost" onClick={handleSortDirectionToggle}>
-            {'asc' === sortDirection ? '⬆️' : '⬇️'}
-          </Button>
-          <InputGroup>
-            <Input
-              disabled={isLoading}
-              placeholder="Search"
-              autoFocus={true}
-              value={search}
-              onChange={handleSearchChange}
-            />
-            <InputRightElement marginRight="5px">
-              <Tag>{activities.length}</Tag>
-            </InputRightElement>
-          </InputGroup>
-          <Select width="120px" value={bgOption} onChange={handleBgOptionChange}>
-            <option value="date">📅</option>
-            <option value="power-zone">⚡️</option>
-            <option value="heart-zone">🫀</option>
-          </Select>
-          <Select width="120px" placeholder="🚲" value={gearId} onChange={handleGearChange}>
-            {athlete?.bikes.map(({id}) => (
-              <option key={id} value={id}>
-                {getBikeEmoji(athlete.bikes, id)}
-              </option>
-            ))}
-            <option value="null">🤷</option>
-          </Select>
-          <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
-            🔒
-          </Button>
-          <Button variant="ghost" onClick={handleSearchClear}>
-            🗑️
-          </Button>
-        </InputGroup>
-        <YearRangeSlider value={yearRange} onChange={setYearRange} />
-        <HStack justifyContent="space-between">
-          <CheckboxGroup
-            colorScheme="orange"
-            value={displayedSorts}
-            onChange={newSorts => setDisplayedSorts(newSorts as SortType[])}
-          >
-            {TAGS.map(tag => (
-              <Checkbox key={tag.sortType} value={tag.sortType}>
-                {tag.emoji}
-              </Checkbox>
-            ))}
-          </CheckboxGroup>
-        </HStack>
+        <Accordion allowMultiple={true}>
+          <AccordionItem border="none">
+            <HStack gap="10px">
+              <Button variant="ghost" onClick={handleSortDirectionToggle}>
+                {'asc' === sortDirection ? '⬆️' : '⬇️'}
+              </Button>
+              <InputGroup>
+                <Input
+                  disabled={isLoading}
+                  placeholder="Search"
+                  autoFocus={true}
+                  value={search}
+                  onChange={handleSearchChange}
+                />
+                <InputRightElement marginRight="5px">
+                  <Tag>{activities.length}</Tag>
+                </InputRightElement>
+              </InputGroup>
+              <Select width="120px" value={bgOption} onChange={handleBgOptionChange}>
+                <option value="date">📅</option>
+                <option value="power-zone">⚡️</option>
+                <option value="heart-zone">🫀</option>
+              </Select>
+              <Select width="120px" placeholder="🚲" value={gearId} onChange={handleGearChange}>
+                {athlete?.bikes.map(({id}) => (
+                  <option key={id} value={id}>
+                    {getBikeEmoji(athlete.bikes, id)}
+                  </option>
+                ))}
+                <option value="null">🤷</option>
+              </Select>
+              <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
+                🔒
+              </Button>
+              <Button variant="ghost" onClick={handleSearchClear}>
+                🗑️
+              </Button>
+              <AccordionButton width="unset">
+                <AccordionIcon />
+              </AccordionButton>
+            </HStack>
+            <AccordionPanel>
+              <YearRangeSlider value={yearRange} onChange={setYearRange} />
+              <HStack justifyContent="space-between">
+                <CheckboxGroup
+                  colorScheme="orange"
+                  value={displayedSorts}
+                  onChange={newSorts => setDisplayedSorts(newSorts as SortType[])}
+                >
+                  {TAGS.map(tag => (
+                    <Checkbox key={tag.sortType} value={tag.sortType}>
+                      {tag.emoji}
+                    </Checkbox>
+                  ))}
+                </CheckboxGroup>
+              </HStack>
+            </AccordionPanel>
+          </AccordionItem>
+        </Accordion>
         <Table size="sm" variant="unstyled" whiteSpace="nowrap">
           <Thead>
             <Tr cursor="pointer">
