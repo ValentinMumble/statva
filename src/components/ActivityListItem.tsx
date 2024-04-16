@@ -34,11 +34,12 @@ const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: Detai
 
 type ActivityListItemProps = {
   activity: DetailedActivity | null;
-  activeSort: SortType;
+  activeSort?: SortType;
+  enabledSorts?: SortType[];
   bgOption: string;
 };
 
-const ActivityListItem = ({activity, activeSort, bgOption}: ActivityListItemProps) => {
+const ActivityListItem = ({activity, activeSort, enabledSorts = [], bgOption}: ActivityListItemProps) => {
   const athlete = useAthlete();
 
   if (null === activity) {
@@ -84,7 +85,7 @@ const ActivityListItem = ({activity, activeSort, bgOption}: ActivityListItemProp
           </Tooltip>
         </Text>
       </Td>
-      {TAGS.map((tag, index) => (
+      {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map((tag, index) => (
         <Td key={index} textAlign="center" padding="0px 2px" width="1%" opacity={tag.isRelevant(activity) ? 1 : 0.4}>
           <Tooltip label={tag.tooltip?.(activity, athlete)}>
             <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : undefined}>
