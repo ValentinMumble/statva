@@ -8,6 +8,7 @@ export interface DetailedActivity {
   average_heartrate?: number;
   average_cadence?: number;
   average_speed: number;
+  average_temp?: number;
   average_watts?: number;
   best_efforts: DetailedSegmentEffort[];
   comment_count: number;

@@ -127,7 +127,12 @@ const App = () => {
                   <Tooltip key={tag.sortType} label={tag.help}>
                     <VStack cursor="pointer" onClick={handleSortToggle(tag.sortType)}>
                       <span>{tag.emoji}</span>
-                      <Switch size="sm" colorScheme="orange" isChecked={displayedSorts.includes(tag.sortType)} />
+                      <Switch
+                        size="sm"
+                        colorScheme="orange"
+                        onChange={handleSortToggle(tag.sortType)}
+                        isChecked={displayedSorts.includes(tag.sortType)}
+                      />
                     </VStack>
                   </Tooltip>
                 ))}
