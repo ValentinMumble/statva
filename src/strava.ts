@@ -44,6 +44,10 @@ const fetchAthlete = async (): Promise<DetailedAthlete> => {
 };
 
 const fetchActivities = async (page: number): Promise<DetailedActivity[]> => {
+  if (import.meta.env.DEV) {
+    return await (await fetch('../local_activities.json')).json();
+  }
+
   const accessToken = await fetchAccessToken();
 
   const response = await fetch(
