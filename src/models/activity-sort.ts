@@ -4,6 +4,7 @@ type SortType =
   | 'average_cadence'
   | 'average_heartrate'
   | 'average_speed'
+  | 'average_temp'
   | 'average_watts'
   | 'date'
   | 'distance'
@@ -16,6 +17,7 @@ type SortType =
   | 'max_heartrate'
   | 'max_speed'
   | 'max_watts'
+  | 'photo_count'
   | 'pr_count'
   | 'suffer_score'
   | 'weighted_average_watts';
@@ -46,6 +48,8 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
       return (second.average_heartrate ?? 0) - (first.average_heartrate ?? 0);
     case 'average_speed':
       return second.average_speed - first.average_speed;
+    case 'average_temp':
+      return (second.average_temp ?? -Infinity) - (first.average_temp ?? -Infinity);
     case 'average_watts':
       return (second.average_watts ?? 0) - (first.average_watts ?? 0);
     case 'date':
@@ -70,6 +74,8 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
       return second.max_speed - first.max_speed;
     case 'max_watts':
       return (second.max_watts ?? 0) - (first.max_watts ?? 0);
+    case 'photo_count':
+      return second.total_photo_count - first.total_photo_count;
     case 'pr_count':
       return second.pr_count - first.pr_count;
     case 'suffer_score':

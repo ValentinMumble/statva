@@ -130,6 +130,13 @@ const TAGS: Tag[] = [
     help: 'Max heartrate',
   },
   {
+    label: ({average_temp}) => (undefined === average_temp ? '🤷' : Math.round(average_temp)),
+    isRelevant: ({average_temp}) => undefined !== average_temp,
+    sortType: 'average_temp',
+    emoji: '🌡️',
+    help: 'Average temperature',
+  },
+  {
     label: ({pr_count}) => pr_count,
     isRelevant: ({pr_count}) => 0 < pr_count,
     sortType: 'pr_count',
@@ -142,6 +149,13 @@ const TAGS: Tag[] = [
     sortType: 'kudos_count',
     emoji: '👍',
     help: 'Kudos count',
+  },
+  {
+    label: ({total_photo_count}) => total_photo_count,
+    isRelevant: ({total_photo_count}) => 0 < total_photo_count,
+    sortType: 'photo_count',
+    emoji: '🖼️',
+    help: 'Photo count',
   },
 ];
 
