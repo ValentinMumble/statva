@@ -6,19 +6,19 @@ import {
   AccordionItem,
   AccordionPanel,
   Button,
-  Checkbox,
-  CheckboxGroup,
   HStack,
   Input,
   InputGroup,
   InputRightElement,
   Select,
   Stack,
+  Switch,
   Table,
   Tag,
   Tbody,
   Th,
   Thead,
+  Tooltip,
   Tr,
   VStack,
 } from '@chakra-ui/react';
@@ -64,6 +64,12 @@ const App = () => {
   const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) =>
     setGearId('' === target.value ? undefined : target.value);
   const handleBgOptionChange = ({target}: ChangeEvent<HTMLSelectElement>) => setBgOption(target.value);
+  const handleSortToggle = (sortType: SortType) => () =>
+    setDisplayedSorts(displayedSorts =>
+      displayedSorts.includes(sortType)
+        ? displayedSorts.filter(sort => sort !== sortType)
+        : [...displayedSorts, sortType]
+    );
 
   return (
     <Stack padding={[2, 7]} alignItems="start" gap={5} direction={['column-reverse', 'row']}>
@@ -117,17 +123,14 @@ const App = () => {
             <AccordionPanel>
               <YearRangeSlider value={yearRange} onChange={setYearRange} />
               <HStack justifyContent="space-between">
-                <CheckboxGroup
-                  colorScheme="orange"
-                  value={displayedSorts}
-                  onChange={newSorts => setDisplayedSorts(newSorts as SortType[])}
-                >
-                  {TAGS.map(tag => (
-                    <Checkbox key={tag.sortType} value={tag.sortType}>
-                      {tag.emoji}
-                    </Checkbox>
-                  ))}
-                </CheckboxGroup>
+                {TAGS.map(tag => (
+                  <Tooltip key={tag.sortType} label={tag.help}>
+                    <VStack cursor="pointer" onClick={handleSortToggle(tag.sortType)}>
+                      <span>{tag.emoji}</span>
+                      <Switch size="sm" colorScheme="orange" isChecked={displayedSorts.includes(tag.sortType)} />
+                    </VStack>
+                  </Tooltip>
+                ))}
               </HStack>
             </AccordionPanel>
           </AccordionItem>
@@ -141,7 +144,7 @@ const App = () => {
               </Th>
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
                 <Th key={tag.sortType} onClick={handleSortChange(tag.sortType)} padding="5px 0" textAlign="center">
-                  {tag.emoji}
+                  <Tooltip label={tag.help}>{tag.emoji}</Tooltip>
                 </Th>
               ))}
             </Tr>

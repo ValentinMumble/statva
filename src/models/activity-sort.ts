@@ -8,6 +8,7 @@ type SortType =
   | 'date'
   | 'distance'
   | 'duration'
+  | 'elapsed_time'
   | 'elevation'
   | 'elevation_percent'
   | 'kilojoules'
@@ -53,6 +54,8 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
       return second.distance - first.distance;
     case 'duration':
       return second.moving_time - first.moving_time;
+    case 'elapsed_time':
+      return second.elapsed_time - first.elapsed_time;
     case 'elevation':
       return second.total_elevation_gain - first.total_elevation_gain;
     case 'elevation_percent':
