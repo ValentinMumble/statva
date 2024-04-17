@@ -56,7 +56,7 @@ const STATS: Stat[][] = [
     {
       label: '⛰️',
       helpText: 'Total D+',
-      number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain'), 1),
+      number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain'), 0),
     },
     {
       label: '🥾',

@@ -62,7 +62,7 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
 
   return (
     <Tr onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
-      <Td padding={0} textAlign="center" width={1}>
+      <Td padding={0} textAlign="center">
         <Icon as={getActivityIcon(activity)} />
       </Td>
       <Td padding="4px 0px">

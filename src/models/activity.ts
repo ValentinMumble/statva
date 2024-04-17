@@ -1,6 +1,6 @@
 import {GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
-import {TbKayak} from 'react-icons/tb';
+import {TbKayak, TbRun} from 'react-icons/tb';
 import {MdDirectionsWalk, MdHiking} from 'react-icons/md';
 import {SortType, SortDirection} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
@@ -24,18 +24,20 @@ const getActivityIcon = (activity: DetailedActivity) => {
       return GiSkier;
     case ActivityType.GravelRide:
       return PiBicycleFill;
+    case ActivityType.Hike:
+      return MdHiking;
     case ActivityType.Kayaking:
       return TbKayak;
     case ActivityType.Ride:
       return PiBicycle;
+    case ActivityType.Run:
+      return TbRun;
     case ActivityType.Tennis:
       return PiTennisBallBold;
     case ActivityType.VirtualRide:
       return PiGameControllerBold;
     case ActivityType.Walk:
       return MdDirectionsWalk;
-    case ActivityType.Hike:
-      return MdHiking;
     default:
       return PiQuestionBold;
   }
