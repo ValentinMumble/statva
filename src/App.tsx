@@ -156,8 +156,8 @@ const App = () => {
           </Thead>
           <Tbody>
             {isLoading
-              ? [...new Array(15)].map((_, index) => (
-                  <ActivityListItem key={index} activity={null} bgOption={bgOption} />
+              ? [...new Array(20)].map((_, index) => (
+                  <ActivityListItem key={index} activity={null} bgOption={bgOption} enabledSorts={displayedSorts} />
                 ))
               : activities.map(activity => (
                   <ActivityListItem

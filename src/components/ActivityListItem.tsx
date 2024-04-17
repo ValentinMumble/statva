@@ -35,24 +35,24 @@ const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: Detai
 type ActivityListItemProps = {
   activity: DetailedActivity | null;
   activeSort?: SortType;
-  enabledSorts?: SortType[];
+  enabledSorts: SortType[];
   bgOption: string;
 };
 
-const ActivityListItem = ({activity, activeSort, enabledSorts = [], bgOption}: ActivityListItemProps) => {
+const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: ActivityListItemProps) => {
   const athlete = useAthlete();
 
   if (null === activity) {
     return (
       <Tr>
-        <Td padding="4px" width={1}>
+        <Td padding="8px" width="1px">
           <Skeleton>i</Skeleton>
         </Td>
-        <Td padding="8px">
+        <Td padding="4px">
           <Skeleton>name</Skeleton>
         </Td>
-        {TAGS.map((_, index) => (
-          <Td key={index} padding="5px" width="1%">
+        {enabledSorts.map(sort => (
+          <Td key={sort} padding="4px" width={`${Math.random() * 60}px`}>
             <Skeleton>tag</Skeleton>
           </Td>
         ))}
