@@ -14,7 +14,7 @@ const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string 
   const wholeHours = Math.floor(hours);
   const minutes = Math.round((hours - wholeHours) * 60);
 
-  return `${wholeHours}:${minutes.toString().padStart(2, '0')} h`;
+  return `${wholeHours}h${minutes.toString().padStart(2, '0')}`;
 };
 
 const formatDurationInDays = (durationInSeconds: number): string => {
