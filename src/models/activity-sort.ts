@@ -1,6 +1,8 @@
 import {DetailedActivity} from './strava';
 
 type SortType =
+  | 'achievement_count'
+  | 'athlete_count'
   | 'average_cadence'
   | 'average_heartrate'
   | 'average_speed'
@@ -42,6 +44,10 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
   const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
 
   switch (sortType) {
+    case 'achievement_count':
+      return second.achievement_count - first.achievement_count;
+    case 'athlete_count':
+      return second.athlete_count - first.athlete_count;
     case 'average_cadence':
       return (second.average_cadence ?? 0) - (first.average_cadence ?? 0);
     case 'average_heartrate':
