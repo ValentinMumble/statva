@@ -144,6 +144,20 @@ const TAGS: Tag[] = [
     help: 'PR count',
   },
   {
+    label: ({achievement_count}) => achievement_count,
+    isRelevant: ({achievement_count}) => 0 < achievement_count,
+    sortType: 'achievement_count',
+    emoji: '🎖️',
+    help: 'Achievement count',
+  },
+  {
+    label: ({athlete_count}) => athlete_count,
+    isRelevant: ({athlete_count}) => 1 < athlete_count,
+    sortType: 'athlete_count',
+    emoji: '🧑‍🤝‍🧑',
+    help: 'Athlete count',
+  },
+  {
     label: ({kudos_count}) => kudos_count,
     isRelevant: ({kudos_count}) => 0 < kudos_count,
     sortType: 'kudos_count',
