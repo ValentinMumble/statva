@@ -3,7 +3,7 @@ import {ActivityFilter} from './activity';
 import {DetailedActivity} from './strava';
 
 type ChartProps = {
-  data: keyof DetailedActivity;
+  data: keyof DetailedActivity | number;
   dataLabel: string;
   formatter: (value: number) => string;
   filter?: Partial<ActivityFilter>;

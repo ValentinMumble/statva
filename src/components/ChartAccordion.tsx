@@ -9,13 +9,24 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
   },
   {
+    label: 'Activities / time 🚴',
+    component: (
+      <MonthChart data={1} dataLabel="🚴" formatter={value => value.toString()} filter={{withCommute: false}} />
+    ),
+  },
+  {
     label: 'Moving / time ⏱️',
     component: <MonthChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} />,
   },
   {
     label: 'D+ / time ⛰️',
     component: (
-      <MonthChart data="total_elevation_gain" dataLabel="⛰️" formatter={value => formatDistance(value)} type="area" />
+      <MonthChart
+        data="total_elevation_gain"
+        dataLabel="⛰️"
+        formatter={value => formatDistance(value, 1)}
+        type="area"
+      />
     ),
   },
   {
