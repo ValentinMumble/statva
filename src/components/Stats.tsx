@@ -1,9 +1,13 @@
 import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, VStack, Skeleton} from '@chakra-ui/react';
 import {useActivities, useAthlete} from '../hooks';
 import {STATS} from '../models';
+import {ActivityType} from '../models/strava';
 
 const Stats = () => {
-  const [activities, isActivityLoading] = useActivities({withCommute: true, withPrivate: true});
+  const [activities, isActivityLoading] = useActivities({
+    withPrivate: true,
+    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
+  });
   const athlete = useAthlete();
 
   const isLoading = null === athlete || isActivityLoading;

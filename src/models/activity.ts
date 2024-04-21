@@ -7,6 +7,8 @@ import {ActivityType, DetailedActivity} from './strava';
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
+const DEFAULT_TYPES = [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide, ActivityType.Run];
+
 type ActivityFilter = {
   search?: string;
   sort?: SortType;
@@ -18,14 +20,15 @@ type ActivityFilter = {
   withPrivate: boolean;
 };
 
-const getActivityIcon = (activity: DetailedActivity) => {
-  switch (activity.sport_type) {
+const getActivityIcon = (activityType: ActivityType) => {
+  switch (activityType) {
     case ActivityType.AlpineSki:
       return GiSkier;
     case ActivityType.GravelRide:
       return PiBicycleFill;
     case ActivityType.Hike:
       return MdHiking;
+    case ActivityType.Canoeing:
     case ActivityType.Kayaking:
       return TbKayak;
     case ActivityType.Ride:
@@ -151,6 +154,7 @@ const formatPaceOrSpeed = (activity: DetailedActivity): string => {
 };
 
 export {
+  DEFAULT_TYPES,
   eddingtonNumber,
   formatPaceOrSpeed,
   getActivityUrl,

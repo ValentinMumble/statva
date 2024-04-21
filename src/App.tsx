@@ -16,19 +16,22 @@ import {
   Table,
   Tag,
   Tbody,
+  Td,
   Th,
   Thead,
   Tooltip,
   Tr,
   VStack,
 } from '@chakra-ui/react';
-import {SortType, SortDirection, getBikeEmoji, range, TAGS, DEFAULT_SORTS} from './models';
-import {ActivityListItem, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
+import {SortType, SortDirection, getBikeEmoji, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES} from './models';
+import {ActivityType} from './models/strava';
+import {ActivityListItem, ActivityTypeFilter, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
 import {useActivities, useAthlete} from './hooks';
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
+  const [types, setTypes] = useState<ActivityType[]>(DEFAULT_TYPES);
   const [activeSort, setActiveSort] = useState<SortType>('date');
   const [displayedSorts, setDisplayedSorts] = useState<SortType[]>(DEFAULT_SORTS);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -39,6 +42,7 @@ const App = () => {
   const athlete = useAthlete();
   const [activities, isLoading] = useActivities({
     search,
+    includedActivityTypes: types,
     sort: activeSort,
     withPrivate,
     gearId,
@@ -52,6 +56,7 @@ const App = () => {
   const handleSearchClear = () => {
     setWithPrivate(false);
     setSearch('');
+    setTypes(DEFAULT_TYPES);
     setActiveSort('date');
     setDisplayedSorts(DEFAULT_SORTS);
     setSortDirection('desc');
@@ -121,6 +126,7 @@ const App = () => {
               </AccordionButton>
             </HStack>
             <AccordionPanel>
+              <ActivityTypeFilter types={types} onTypesChange={setTypes} />
               <YearRangeSlider value={yearRange} onChange={setYearRange} />
               <HStack justifyContent="space-between">
                 {TAGS.map(tag => (
@@ -155,19 +161,25 @@ const App = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {isLoading
-              ? [...new Array(20)].map((_, index) => (
-                  <ActivityListItem key={index} activity={null} bgOption={bgOption} enabledSorts={displayedSorts} />
-                ))
-              : activities.map(activity => (
-                  <ActivityListItem
-                    key={activity.id}
-                    activity={activity}
-                    activeSort={activeSort}
-                    bgOption={bgOption}
-                    enabledSorts={displayedSorts}
-                  />
-                ))}
+            {isLoading ? (
+              [...new Array(20)].map((_, index) => (
+                <ActivityListItem key={index} activity={null} bgOption={bgOption} enabledSorts={displayedSorts} />
+              ))
+            ) : 0 === activities.length ? (
+              <Tr>
+                <Td>No activities...</Td>
+              </Tr>
+            ) : (
+              activities.map(activity => (
+                <ActivityListItem
+                  key={activity.id}
+                  activity={activity}
+                  activeSort={activeSort}
+                  bgOption={bgOption}
+                  enabledSorts={displayedSorts}
+                />
+              ))
+            )}
           </Tbody>
         </Table>
       </VStack>
