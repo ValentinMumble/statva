@@ -1,4 +1,4 @@
-import {Checkbox, CheckboxGroup, HStack, Icon, Tooltip} from '@chakra-ui/react';
+import {Checkbox, CheckboxGroup, HStack, Icon} from '@chakra-ui/react';
 import {ActivityType} from '../models/strava';
 import {useActivities} from '../hooks';
 import {DEFAULT_TYPES, getActivityIcon} from '../models';
