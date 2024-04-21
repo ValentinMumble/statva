@@ -16,6 +16,10 @@ import {ChartProps, generatePeriodKeys, getOptions, getWeekLabel, getWeekNumber}
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
 
+type MonthChartProps = ChartProps & {
+  timeframe?: 'month' | 'week';
+};
+
 const MonthChart = ({
   data,
   dataLabel,
@@ -23,7 +27,7 @@ const MonthChart = ({
   filter,
   timeframe: initialTimeframe = 'month',
   ...rest
-}: ChartProps & {timeframe?: 'month' | 'week'}) => {
+}: MonthChartProps) => {
   const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
@@ -47,7 +51,7 @@ const MonthChart = ({
       'week' === timeframe
         ? `${getWeekNumber(date)}/${date.getUTCFullYear()}`
         : `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
-    periodMap[period] = (periodMap[period] ?? 0) + (activity[data] as number);
+    periodMap[period] = (periodMap[period] ?? 0) + (typeof data === 'number' ? data : (activity[data] as number));
 
     return periodMap;
   }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe));
