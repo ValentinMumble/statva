@@ -22,7 +22,7 @@ const useActivities = ({
       .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
       .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))
       .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
-      .filter(({type}) => 0 === includedActivityTypes.length || includedActivityTypes.includes(type))
+      .filter(({sport_type}) => 0 === includedActivityTypes.length || includedActivityTypes.includes(sport_type))
       .sort((a, b) => sortActivities(sort, sortDirection, a, b)),
     isLoading,
   ];
