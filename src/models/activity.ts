@@ -2,7 +2,7 @@ import {GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
 import {TbKayak, TbRun} from 'react-icons/tb';
 import {MdDirectionsWalk, MdHiking} from 'react-icons/md';
-import {SortType, SortDirection} from '../models';
+import {SortType, SortDirection, formatSpeed} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
@@ -137,8 +137,22 @@ const getPowerZone = ({average_watts = 0}: DetailedActivity, ftp: number): numbe
   return 0;
 };
 
+const formatPaceOrSpeed = (activity: DetailedActivity): string => {
+  switch (activity.sport_type) {
+    case ActivityType.Run:
+      const secsPerKm = (activity.moving_time / activity.distance) * 1000;
+      const minutes = Math.floor(secsPerKm / 60);
+      const seconds = Math.round(secsPerKm - minutes * 60);
+
+      return `${minutes}:${seconds} /km`;
+    default:
+      return formatSpeed(activity.average_speed);
+  }
+};
+
 export {
   eddingtonNumber,
+  formatPaceOrSpeed,
   getActivityUrl,
   getRidesBeforeMonth,
   getActivityIcon,

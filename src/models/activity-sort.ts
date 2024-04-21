@@ -71,7 +71,7 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
     case 'elevation_percent':
       return second.total_elevation_gain / second.distance - first.total_elevation_gain / first.distance;
     case 'kilojoules':
-      return second.kilojoules - first.kilojoules;
+      return (second.kilojoules ?? 0) - (first.kilojoules ?? 0);
     case 'kudos_count':
       return second.kudos_count - first.kudos_count;
     case 'max_heartrate':
