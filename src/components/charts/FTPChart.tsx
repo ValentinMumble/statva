@@ -19,7 +19,7 @@ const FTP_TESTS: FTPTest[] = [
   },
   {
     date: new Date('2024-04-13'),
-    weight: 72,
+    weight: 74,
     ftp: 256,
   },
 ];

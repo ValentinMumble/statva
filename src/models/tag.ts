@@ -7,6 +7,7 @@ import {
   getHeartZone,
   getPowerZone,
   KJ_TO_CAL_RATIO,
+  formatPaceOrSpeed,
 } from '../models';
 import {DetailedActivity, DetailedAthlete} from './strava';
 
@@ -57,7 +58,7 @@ const TAGS: Tag[] = [
     help: 'Elapsed time',
   },
   {
-    label: ({average_speed}) => formatSpeed(average_speed),
+    label: formatPaceOrSpeed,
     isRelevant: ({average_speed}) => 0 < average_speed,
     tooltip: ({average_speed}) => `🏁 ${formatSpeed(average_speed, 3)}`,
     sortType: 'average_speed',
@@ -101,8 +102,8 @@ const TAGS: Tag[] = [
     help: 'Suffer score',
   },
   {
-    label: ({kilojoules}) => `${Math.round(kilojoules * KJ_TO_CAL_RATIO)} kcal`,
-    isRelevant: ({kilojoules}) => 0 < kilojoules,
+    label: ({kilojoules}) => `${Math.round((kilojoules ?? 0) * KJ_TO_CAL_RATIO)} kcal`,
+    isRelevant: ({kilojoules}) => 0 < (kilojoules ?? 0),
     sortType: 'kilojoules',
     emoji: '🍕',
     help: 'Calories burned',

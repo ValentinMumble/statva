@@ -25,7 +25,7 @@ export interface DetailedActivity {
   flagged: boolean;
   gear_id: string;
   has_kudoed: boolean;
-  kilojoules: number;
+  kilojoules?: number;
   kudos_count: number;
   laps: Lap[];
   manual: boolean;
