@@ -9,9 +9,14 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
   },
   {
-    label: 'Activities / time 🚴',
+    label: 'Activities / time 🛹',
     component: (
-      <MonthChart data={1} dataLabel="🚴" formatter={value => value.toString()} filter={{withCommute: false}} />
+      <MonthChart
+        data={1}
+        dataLabel="🛹"
+        formatter={value => value.toString()}
+        filter={{includedActivityTypes: [], withPrivate: false, withCommute: false}}
+      />
     ),
   },
   {
