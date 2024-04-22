@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
 import {eddingtonNumber, getRidesBeforeMonth} from '../../models';
+import {ActivityType} from '../../models/strava';
 
 const DEFAULT_ITEM_COUNT = 18;
 
@@ -37,6 +38,7 @@ const EddingtonChart = ({}: EddingtonChartProps) => {
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
+    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
   });
 
   const dataPerMonth = activities.reduce((eddingtonByMonth: {[monthYear: string]: number}, activity) => {

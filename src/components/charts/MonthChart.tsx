@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, getWeekLabel, getWeekNumber} from '../../models';
+import {ActivityType} from '../../models/strava';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
@@ -37,6 +38,7 @@ const MonthChart = ({
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
+    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
     ...filter,
   });
 

@@ -1,11 +1,13 @@
 import Chart from 'react-apexcharts';
 import {useActivities, useAthlete} from '../../hooks';
 import {formatSpeed, getOptions, getBikeEmoji} from '../../models';
+import {ActivityType} from '../../models/strava';
 
 const AverageGearChart = () => {
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
+    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
   });
   const athlete = useAthlete();
 

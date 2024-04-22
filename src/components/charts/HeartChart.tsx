@@ -1,5 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../../hooks';
+import {ActivityType} from '../../models/strava';
 
 const MIN_DISTANCE_METERS = 30 * 1000;
 
@@ -7,7 +8,7 @@ const options: ApexCharts.ApexOptions = {
   colors: ['#8ac448', '#b18a83'],
   stroke: {
     curve: 'smooth',
-    width: 4,
+    width: 3,
   },
   fill: {
     type: 'gradient',
@@ -16,7 +17,6 @@ const options: ApexCharts.ApexOptions = {
       gradientToColors: ['#fd8f35', '#fd3549'],
     },
   },
-  markers: {size: [4]},
   chart: {
     toolbar: {show: false},
     zoom: {enabled: false},
@@ -40,6 +40,7 @@ const HeartChart = () => {
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
+    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
   });
 
   const rides = activities.filter(
