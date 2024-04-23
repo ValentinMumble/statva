@@ -12,7 +12,7 @@ import {
 import {DetailedActivity, DetailedAthlete} from './strava';
 
 type Tag = {
-  label: (activity: DetailedActivity) => string | number;
+  label: (activity: DetailedActivity) => string | number | null;
   isRelevant: (activity: DetailedActivity) => boolean;
   tooltip?: (activity: DetailedActivity, athlete: DetailedAthlete | null) => string | number | null;
   sortType: SortType;
@@ -73,7 +73,7 @@ const TAGS: Tag[] = [
     help: 'Max speed',
   },
   {
-    label: ({average_watts}) => `${Math.round(average_watts ?? 0)} W`,
+    label: ({average_watts}) => (undefined === average_watts ? null : `${Math.round(average_watts)} W`),
     isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
     tooltip: (activity, athlete) => `⚡️ Zone ${getPowerZone(activity, athlete?.ftp ?? 0)}`,
     sortType: 'average_watts',
@@ -81,42 +81,43 @@ const TAGS: Tag[] = [
     help: 'Average power',
   },
   {
-    label: ({weighted_average_watts}) => `${Math.round(weighted_average_watts ?? 0)} W`,
+    label: ({weighted_average_watts}) =>
+      undefined === weighted_average_watts ? null : `${Math.round(weighted_average_watts)} W`,
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
     sortType: 'weighted_average_watts',
     emoji: '🏋️',
     help: 'Weighted average power',
   },
   {
-    label: ({max_watts}) => `${Math.round(max_watts ?? 0)} W`,
+    label: ({max_watts}) => (undefined === max_watts ? null : `${Math.round(max_watts)} W`),
     isRelevant: ({max_watts}) => 0 < (max_watts ?? 0),
     sortType: 'max_watts',
     emoji: '💥',
     help: 'Max power',
   },
   {
-    label: ({suffer_score}) => Math.round(suffer_score ?? 0),
+    label: ({suffer_score}) => (undefined === suffer_score ? null : Math.round(suffer_score)),
     isRelevant: ({suffer_score}) => 0 < (suffer_score ?? 0),
     sortType: 'suffer_score',
     emoji: '🌶️',
     help: 'Suffer score',
   },
   {
-    label: ({kilojoules}) => `${Math.round((kilojoules ?? 0) * KJ_TO_CAL_RATIO)} kcal`,
+    label: ({kilojoules}) => (undefined === kilojoules ? null : `${Math.round(kilojoules * KJ_TO_CAL_RATIO)} kcal`),
     isRelevant: ({kilojoules}) => 0 < (kilojoules ?? 0),
     sortType: 'kilojoules',
     emoji: '🍕',
     help: 'Calories burned',
   },
   {
-    label: ({average_cadence}) => Math.round(average_cadence ?? 0),
+    label: ({average_cadence}) => (undefined === average_cadence ? null : Math.round(average_cadence)),
     isRelevant: ({average_cadence}) => 0 < (average_cadence ?? 0),
     sortType: 'average_cadence',
     emoji: '🎡',
     help: 'Average cadence',
   },
   {
-    label: ({average_heartrate}) => Math.round(average_heartrate ?? 0),
+    label: ({average_heartrate}) => (undefined === average_heartrate ? null : Math.round(average_heartrate)),
     isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),
     tooltip: activity => `🫀 Zone ${getHeartZone(activity)}`,
     sortType: 'average_heartrate',
@@ -124,14 +125,14 @@ const TAGS: Tag[] = [
     help: 'Average heartrate',
   },
   {
-    label: ({max_heartrate}) => Math.round(max_heartrate ?? 0),
+    label: ({max_heartrate}) => (undefined === max_heartrate ? null : Math.round(max_heartrate)),
     isRelevant: ({max_heartrate}) => 0 < (max_heartrate ?? 0),
     sortType: 'max_heartrate',
     emoji: '💓',
     help: 'Max heartrate',
   },
   {
-    label: ({average_temp}) => (undefined === average_temp ? '🤷' : Math.round(average_temp)),
+    label: ({average_temp}) => (undefined === average_temp ? null : `${Math.round(average_temp)} °C`),
     isRelevant: ({average_temp}) => undefined !== average_temp,
     sortType: 'average_temp',
     emoji: '🌡️',

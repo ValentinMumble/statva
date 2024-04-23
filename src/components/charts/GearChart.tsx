@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useActivities, useAthlete} from '../../hooks';
-import {ChartProps, getBikeEmoji, getOptions} from '../../models';
+import {ChartProps, getGearEmoji, getOptions} from '../../models';
 import {ActivityType} from '../../models/strava';
 
 const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
@@ -19,7 +19,7 @@ const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
   }, {});
 
   const sortedDesc = Object.fromEntries(Object.entries(dataPerGear).sort(([, a], [, b]) => b - a));
-  const labels = Object.keys(sortedDesc).map(gearId => getBikeEmoji(athlete?.bikes, gearId));
+  const labels = Object.keys(sortedDesc).map(gearId => getGearEmoji(athlete, ActivityType.Ride, gearId));
   const series = 'pie' === type ? Object.values(sortedDesc) : [{name: dataLabel, data: Object.values(sortedDesc)}];
 
   return (
