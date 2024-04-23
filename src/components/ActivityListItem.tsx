@@ -1,5 +1,5 @@
 import {Icon, Skeleton, Tag, Td, Text, Tooltip, Tr} from '@chakra-ui/react';
-import {SortType, TAGS, getActivityIcon, getActivityUrl, getBikeEmoji, getHeartZone, getPowerZone} from '../models';
+import {SortType, TAGS, getActivityIcon, getActivityUrl, getGearEmoji, getHeartZone, getPowerZone} from '../models';
 import {DetailedActivity, DetailedAthlete} from '../models/strava';
 import {useAthlete} from '../hooks';
 
@@ -75,7 +75,7 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
             label={
               <>
                 {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
-                {getBikeEmoji(athlete?.bikes, activity.gear_id)}
+                {getGearEmoji(athlete, activity.sport_type, activity.gear_id)}
               </>
             }
           >
@@ -85,13 +85,21 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
           </Tooltip>
         </Text>
       </Td>
-      {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map((tag, index) => (
-        <Td key={index} textAlign="center" padding="0px 2px" width="1%" opacity={tag.isRelevant(activity) ? 1 : 0.4}>
-          <Tooltip label={tag.tooltip?.(activity, athlete)}>
-            <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : undefined}>
-              {tag.label(activity)}
-            </Tag>
-          </Tooltip>
+      {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => (
+        <Td
+          key={tag.sortType}
+          textAlign="center"
+          padding="0px 2px"
+          width="1%"
+          opacity={tag.isRelevant(activity) ? 1 : 0.4}
+        >
+          {null !== tag.label(activity) && (
+            <Tooltip label={tag.tooltip?.(activity, athlete)}>
+              <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : undefined}>
+                {tag.label(activity)}
+              </Tag>
+            </Tooltip>
+          )}
         </Td>
       ))}
     </Tr>

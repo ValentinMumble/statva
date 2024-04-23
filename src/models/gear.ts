@@ -1,7 +1,14 @@
-import {SummaryGear} from './strava';
+import {ActivityType, DetailedAthlete} from './strava';
 import {extractEmoji} from './util';
 
-const getBikeEmoji = (bikes: SummaryGear[] | undefined, bikeId: string) =>
-  extractEmoji(bikes?.find(({id}) => id === bikeId)?.name ?? '🤷');
+const getGearEmoji = (athlete: DetailedAthlete | null, type: ActivityType, gearId: string) => {
+  if (null === athlete) {
+    return '🤷';
+  }
 
-export {getBikeEmoji};
+  return extractEmoji(
+    (ActivityType.Run === type ? athlete.shoes : athlete.bikes).find(({id}) => id === gearId)?.name ?? '🤷'
+  );
+};
+
+export {getGearEmoji};

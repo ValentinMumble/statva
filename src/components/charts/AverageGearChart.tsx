@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useActivities, useAthlete} from '../../hooks';
-import {formatSpeed, getOptions, getBikeEmoji} from '../../models';
+import {formatSpeed, getOptions, getGearEmoji} from '../../models';
 import {ActivityType} from '../../models/strava';
 
 const AverageGearChart = () => {
@@ -27,7 +27,7 @@ const AverageGearChart = () => {
 
   const sortedDesc = Object.fromEntries(Object.entries(averagePerGear).sort(([, a], [, b]) => b - a));
 
-  const labels = Object.keys(sortedDesc).map(gearId => getBikeEmoji(athlete?.bikes, gearId));
+  const labels = Object.keys(sortedDesc).map(gearId => getGearEmoji(athlete, ActivityType.Ride, gearId));
   const series = [
     {
       name: '🏁',

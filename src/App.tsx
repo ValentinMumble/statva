@@ -23,7 +23,7 @@ import {
   Tr,
   VStack,
 } from '@chakra-ui/react';
-import {SortType, SortDirection, getBikeEmoji, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES} from './models';
+import {SortType, SortDirection, getGearEmoji, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES} from './models';
 import {ActivityType} from './models/strava';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
 import {useActivities, useAthlete} from './hooks';
@@ -110,7 +110,7 @@ const App = () => {
               <Select width="120px" placeholder="🚲" value={gearId} onChange={handleGearChange}>
                 {athlete?.bikes.map(({id}) => (
                   <option key={id} value={id}>
-                    {getBikeEmoji(athlete.bikes, id)}
+                    {getGearEmoji(athlete, ActivityType.Ride, id)}
                   </option>
                 ))}
                 <option value="null">🤷</option>
@@ -147,8 +147,8 @@ const App = () => {
           </AccordionItem>
         </Accordion>
         <Table size="sm" variant="unstyled" whiteSpace="nowrap">
-          <Thead>
-            <Tr cursor="pointer">
+          <Thead position="sticky" top={0}>
+            <Tr cursor="pointer" bg="white">
               <Th />
               <Th padding="5px 0" textAlign="center" onClick={handleSortChange('date')}>
                 📅
