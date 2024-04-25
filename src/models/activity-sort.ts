@@ -30,7 +30,6 @@ const DEFAULT_SORTS: SortType[] = [
   'average_cadence',
   'average_heartrate',
   'average_speed',
-  'average_watts',
   'distance',
   'duration',
   'elevation',
@@ -38,6 +37,7 @@ const DEFAULT_SORTS: SortType[] = [
   'max_speed',
   'pr_count',
   'suffer_score',
+  'weighted_average_watts',
 ];
 
 const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: DetailedActivity, b: DetailedActivity) => {

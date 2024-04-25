@@ -32,6 +32,7 @@ const TAGS: Tag[] = [
   {
     label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
     isRelevant: ({total_elevation_gain}) => 0 < total_elevation_gain,
+    tooltip: ({total_elevation_gain, distance}) => `⚖️ ${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
     sortType: 'elevation',
     emoji: '⛰️',
     help: 'D+',
@@ -84,6 +85,7 @@ const TAGS: Tag[] = [
     label: ({weighted_average_watts}) =>
       undefined === weighted_average_watts ? null : `${Math.round(weighted_average_watts)} W`,
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
+    tooltip: ({average_watts}) => (undefined === average_watts ? null : `⚡️ ${Math.round(average_watts)} W`),
     sortType: 'weighted_average_watts',
     emoji: '🏋️',
     help: 'Weighted average power',
