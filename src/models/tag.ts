@@ -76,7 +76,10 @@ const TAGS: Tag[] = [
   {
     label: ({average_watts}) => (undefined === average_watts ? null : `${Math.round(average_watts)} W`),
     isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
-    tooltip: (activity, athlete) => `⚡️ Zone ${getPowerZone(activity, athlete?.ftp ?? 0)}`,
+    tooltip: ({weighted_average_watts, average_watts}, athlete) =>
+      undefined === weighted_average_watts
+        ? null
+        : `🏋️ ${Math.round(weighted_average_watts)} W 〰 Zone ${getPowerZone(average_watts ?? 0, athlete?.ftp ?? 0)}`,
     sortType: 'average_watts',
     emoji: '⚡️',
     help: 'Average power',
@@ -85,7 +88,10 @@ const TAGS: Tag[] = [
     label: ({weighted_average_watts}) =>
       undefined === weighted_average_watts ? null : `${Math.round(weighted_average_watts)} W`,
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
-    tooltip: ({average_watts}) => (undefined === average_watts ? null : `⚡️ ${Math.round(average_watts)} W`),
+    tooltip: ({average_watts, weighted_average_watts}, athlete) =>
+      undefined === average_watts
+        ? null
+        : `⚡️ ${Math.round(average_watts)} W 〰 Zone ${getPowerZone(weighted_average_watts ?? 0, athlete?.ftp ?? 0)}`,
     sortType: 'weighted_average_watts',
     emoji: '🏋️',
     help: 'Weighted average power',

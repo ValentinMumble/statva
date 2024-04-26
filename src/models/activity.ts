@@ -117,23 +117,23 @@ const getHeartZone = ({average_heartrate = 0}: DetailedActivity, maxHeartrate = 
   return 0;
 };
 
-const getPowerZone = ({average_watts = 0}: DetailedActivity, ftp: number): number => {
+const getPowerZone = (watts: number, ftp: number): number => {
   switch (true) {
-    case average_watts === 0:
+    case watts === 0:
       break;
-    case average_watts < 0.55 * ftp:
+    case watts < 0.55 * ftp:
       return 1;
-    case average_watts < 0.75 * ftp:
+    case watts < 0.75 * ftp:
       return 2;
-    case average_watts < 0.9 * ftp:
+    case watts < 0.9 * ftp:
       return 3;
-    case average_watts < 1.05 * ftp:
+    case watts < 1.05 * ftp:
       return 4;
-    case average_watts < 1.2 * ftp:
+    case watts < 1.2 * ftp:
       return 5;
-    case average_watts < 1.5 * ftp:
+    case watts < 1.5 * ftp:
       return 6;
-    case average_watts >= 1.5 * ftp:
+    case watts >= 1.5 * ftp:
       return 7;
   }
 

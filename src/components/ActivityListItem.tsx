@@ -23,7 +23,7 @@ const MONTH_COLORS = [
 const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: DetailedAthlete | null): string => {
   switch (bgOption) {
     case 'power-zone':
-      return POWER_COLORS[getPowerZone(activity, athlete?.ftp ?? 0)];
+      return POWER_COLORS[getPowerZone(activity.weighted_average_watts ?? 0, athlete?.ftp ?? 0)];
     case 'heart-zone':
       return HEART_COLORS[getHeartZone(activity)];
     case 'date':
