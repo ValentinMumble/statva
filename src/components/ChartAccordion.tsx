@@ -19,7 +19,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Activities / time 🛹',
-    component: <TypeMonthChart filter={{includedActivityTypes: [], withPrivate: false, withCommute: false}} />,
+    component: <TypeMonthChart filter={{includedActivityTypes: [], minTime: 30 * 60}} />,
   },
   {
     label: 'Moving / time ⏱️',

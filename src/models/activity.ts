@@ -18,6 +18,7 @@ type ActivityFilter = {
   years?: number[];
   withCommute?: boolean;
   withPrivate: boolean;
+  minTime?: number;
 };
 
 const getActivityIcon = (activityType: ActivityType) => {
