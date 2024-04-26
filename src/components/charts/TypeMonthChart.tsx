@@ -1,0 +1,102 @@
+import {useState} from 'react';
+import Chart from 'react-apexcharts';
+import {
+  FormControl,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Radio,
+  RadioGroup,
+} from '@chakra-ui/react';
+import {useActivities} from '../../hooks';
+import {ChartProps, generatePeriodKeys, getOptions, getWeekLabel, getWeekNumber} from '../../models';
+import {ActivityType} from '../../models/strava';
+
+const INITIAL_MONTH_COUNT = 15;
+const INITIAL_WEEK_COUNT = 26;
+
+type TypeMonthChartProps = Omit<ChartProps, 'data' | 'dataLabel' | 'formatter'> & {
+  timeframe?: 'month' | 'week';
+};
+
+const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}: TypeMonthChartProps) => {
+  const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
+  const [itemCount, setItemCount] = useState<number>(
+    'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
+  );
+  const [activities] = useActivities({
+    withCommute: true,
+    withPrivate: true,
+    sort: 'date',
+    sortDirection: 'asc',
+    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
+    ...filter,
+  });
+
+  const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
+    setTimeframe(newTimeframe);
+    setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
+  };
+
+  const dataPerPeriod = activities.reduce(
+    (periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
+      const date = new Date(activity.start_date);
+      const period =
+        'week' === timeframe
+          ? `${getWeekNumber(date)}/${date.getUTCFullYear()}`
+          : `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
+      const data = periodMap[period] ?? {};
+      periodMap[period] = {...data, [activity.sport_type]: (data[activity.sport_type] ?? 0) + 1};
+
+      return periodMap;
+    },
+    generatePeriodKeys(
+      new Date(activities.at(0)?.start_date ?? 0),
+      new Date(activities.at(-1)?.start_date ?? 0),
+      timeframe
+    )
+  );
+
+  const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
+  const labels = 'week' === timeframe ? Object.keys(sliced).map(getWeekLabel) : Object.keys(sliced);
+
+  const distinctTypes = Object.values(sliced).reduce(
+    (types: string[], entry: {[type: string]: number} | null) =>
+      null === entry ? types : [...new Set([...types, ...Object.keys(entry)])],
+    []
+  );
+
+  const series = distinctTypes.map(type => ({
+    name: type,
+    data: Object.values(sliced).map(value => value?.[type] ?? null),
+  }));
+
+  return (
+    <div>
+      <FormControl display="flex" alignItems="center" justifyContent="end" gap={4}>
+        <RadioGroup value={timeframe} display="flex" gap={4} onChange={handleTimeframeChange}>
+          <Radio value="month">Month</Radio>
+          <Radio value="week">Week</Radio>
+        </RadioGroup>
+        <NumberInput width="70px" size="xs" value={itemCount} onChange={(_, value) => setItemCount(value)}>
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
+      </FormControl>
+      <Chart
+        options={getOptions(labels, undefined, {chart: {stacked: true}})}
+        series={series}
+        type="bar"
+        height={400}
+        {...rest}
+      />
+    </div>
+  );
+};
+
+export {TypeMonthChart};
