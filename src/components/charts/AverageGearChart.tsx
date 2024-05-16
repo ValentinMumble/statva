@@ -12,15 +12,15 @@ const AverageGearChart = () => {
   const athlete = useAthlete();
 
   const dataPerGear = activities.reduce((gearMap: {[gearId: string]: number[]}, activity) => {
-    const [cumulativeSpeed, rideCount] = gearMap[activity.gear_id] ?? [0, 0];
-    gearMap[activity.gear_id] = [cumulativeSpeed + activity.average_speed, rideCount + 1];
+    const [cumulativeDistance, movingTime] = gearMap[activity.gear_id] ?? [0, 0];
+    gearMap[activity.gear_id] = [cumulativeDistance + activity.distance, movingTime + activity.moving_time];
 
     return gearMap;
   }, {});
 
   const averagePerGear = Object.keys(dataPerGear).reduce((gearMap: {[gearId: string]: number}, gearId) => {
-    const [cumulativeSpeed, rideCount] = dataPerGear[gearId];
-    gearMap[gearId] = cumulativeSpeed / rideCount;
+    const [cumulativeDistance, movingTime] = dataPerGear[gearId];
+    gearMap[gearId] = cumulativeDistance / movingTime;
 
     return gearMap;
   }, {});

@@ -5,7 +5,7 @@ import {ActivityType} from '../../models/strava';
 const MIN_DISTANCE_METERS = 30 * 1000;
 
 const options: ApexCharts.ApexOptions = {
-  colors: ['#8ac448', '#b18a83'],
+  colors: ['#8ac448', '#bfaf7d'],
   stroke: {
     curve: 'smooth',
     width: 3,
@@ -14,7 +14,7 @@ const options: ApexCharts.ApexOptions = {
     type: 'gradient',
     gradient: {
       type: 'vertical',
-      gradientToColors: ['#fd8f35', '#fd3549'],
+      gradientToColors: ['#fd8f35', '#fdc135'],
     },
   },
   chart: {
@@ -24,12 +24,12 @@ const options: ApexCharts.ApexOptions = {
   yaxis: [
     {
       max: 190,
-      min: 40,
+      min: 60,
     },
     {
       opposite: true,
-      min: 40,
-      max: 110,
+      min: 80,
+      max: 320,
     },
   ],
 };
@@ -44,16 +44,18 @@ const HeartChart = () => {
   });
 
   const rides = activities.filter(
-    ({average_heartrate, average_cadence, distance}) =>
-      (0 < (average_heartrate ?? 0) || 0 < (average_cadence ?? 0)) && MIN_DISTANCE_METERS < distance
+    ({average_heartrate, weighted_average_watts, distance}) =>
+      (0 < (average_heartrate ?? 0) || 0 < (weighted_average_watts ?? 0)) && MIN_DISTANCE_METERS < distance
   );
 
   const heartRateSerie = rides.map(({average_heartrate}) => (average_heartrate ? Math.round(average_heartrate) : null));
-  const cadenceSerie = rides.map(({average_cadence}) => (average_cadence ? Math.round(average_cadence) : null));
+  const powerSerie = rides.map(({weighted_average_watts}) =>
+    weighted_average_watts ? Math.round(weighted_average_watts) : null
+  );
   const labels = rides.map(({start_date}) => new Date(start_date).toLocaleDateString());
   const series = [
     {name: '🫀', data: heartRateSerie},
-    {name: '🎡', data: cadenceSerie},
+    {name: '⚡️', data: powerSerie},
   ];
 
   return (
