@@ -65,7 +65,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <ProgressChart search="N-Peloton" />,
   },
   {
-    label: 'Average 🫀 & 🎡',
+    label: 'Average 🫀 & ⚡️',
     component: <HeartChart />,
   },
 ];
