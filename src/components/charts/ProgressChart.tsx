@@ -16,7 +16,7 @@ const options: ApexCharts.ApexOptions = {
       max: 260,
     },
   ],
-  colors: ['#e09200', '#aba19c'],
+  colors: ['#aba19c', '#e09200'],
   stroke: {
     curve: 'smooth',
     width: 4,
@@ -43,7 +43,7 @@ const ProgressChart = ({search}: ProgressChartProps) => {
   });
 
   const averageSpeedSerie = activities.map(({average_speed}) => average_speed);
-  const averagePowerSerie = activities.map(({average_watts}) => average_watts ?? 0);
+  const averagePowerSerie = activities.map(({weighted_average_watts}) => weighted_average_watts ?? 0);
   const labels = activities.map(({start_date}) => new Date(start_date).toLocaleDateString());
   const series = [
     {name: '🏁', data: averageSpeedSerie},
