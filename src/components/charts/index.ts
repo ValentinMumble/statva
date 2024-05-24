@@ -1,4 +1,5 @@
 export * from './AverageGearChart';
+export * from './ChainChart';
 export * from './EddingtonChart';
 export * from './FTPChart';
 export * from './GearChart';
