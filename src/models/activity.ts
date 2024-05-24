@@ -62,6 +62,9 @@ const getMaxValue = (activities: DetailedActivity[], value: keyof DetailedActivi
 const getRidesBeforeMonth = (rides: DetailedActivity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
+const getRidesBetween = (rides: DetailedActivity[], from: Date, to: Date | null) =>
+  rides.filter(ride => new Date(ride.start_date) >= from && new Date(ride.start_date) < (to ?? new Date()));
+
 const eddingtonNumber = (rides: DetailedActivity[]) => {
   const ridesPerDay = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
     const dateString = new Date(activity.start_date).toDateString();
@@ -160,6 +163,7 @@ export {
   formatPaceOrSpeed,
   getActivityUrl,
   getRidesBeforeMonth,
+  getRidesBetween,
   getActivityIcon,
   getHeartZone,
   getMaxValue,
