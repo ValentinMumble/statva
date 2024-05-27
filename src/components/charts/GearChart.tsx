@@ -19,7 +19,7 @@ const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
   }, {});
 
   const sortedDesc = Object.fromEntries(Object.entries(dataPerGear).sort(([, a], [, b]) => b - a));
-  const labels = Object.keys(sortedDesc).map(gearId => getGearEmoji(athlete, ActivityType.Ride, gearId));
+  const labels = Object.keys(sortedDesc).map(gearId => getGearEmoji(athlete, gearId));
   const series = 'pie' === type ? Object.values(sortedDesc) : [{name: dataLabel, data: Object.values(sortedDesc)}];
 
   return (
