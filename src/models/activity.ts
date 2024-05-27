@@ -151,7 +151,7 @@ const formatPaceOrSpeed = (activity: DetailedActivity): string => {
       const minutes = Math.floor(secsPerKm / 60);
       const seconds = Math.round(secsPerKm - minutes * 60);
 
-      return `${minutes}:${seconds} /km`;
+      return `${minutes}:${seconds.toString().padStart(2, '0')} /km`;
     default:
       return formatSpeed(activity.average_speed);
   }
