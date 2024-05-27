@@ -2,6 +2,7 @@ import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {
   FormControl,
+  FormLabel,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -9,10 +10,10 @@ import {
   NumberInputStepper,
   Radio,
   RadioGroup,
+  Switch,
 } from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, getWeekLabel, getWeekNumber} from '../../models';
-import {ActivityType} from '../../models/strava';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
@@ -26,12 +27,13 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
+  const [withCommute, setWithCommute] = useState<boolean>(true);
+
   const [activities] = useActivities({
-    withCommute: true,
+    withCommute: withCommute,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
     ...filter,
   });
 
@@ -39,6 +41,8 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
     setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
+
+  const handleCommuteChange = () => setWithCommute(withCommute => !withCommute);
 
   const dataPerPeriod = activities.reduce(
     (periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
@@ -48,7 +52,8 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
           ? `${getWeekNumber(date)}/${date.getUTCFullYear()}`
           : `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
       const data = periodMap[period] ?? {};
-      periodMap[period] = {...data, [activity.sport_type]: (data[activity.sport_type] ?? 0) + 1};
+      const key = activity.commute ? 'Commute' : activity.sport_type;
+      periodMap[period] = {...data, [key]: (data[key] ?? 0) + 1};
 
       return periodMap;
     },
@@ -76,6 +81,10 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
   return (
     <div>
       <FormControl display="flex" alignItems="center" justifyContent="end" gap={4}>
+        <Switch id="commute-switch" size="sm" onChange={handleCommuteChange} isChecked={withCommute} />
+        <FormLabel fontWeight="unset" margin="0 0 0 -7px" htmlFor="commute-switch">
+          Commute
+        </FormLabel>
         <RadioGroup value={timeframe} display="flex" gap={4} onChange={handleTimeframeChange}>
           <Radio value="month">Month</Radio>
           <Radio value="week">Week</Radio>
