@@ -75,7 +75,7 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
             label={
               <>
                 {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
-                {getGearEmoji(athlete, activity.sport_type, activity.gear_id)}
+                {getGearEmoji(athlete, activity.gear_id)}
               </>
             }
           >

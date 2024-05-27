@@ -27,7 +27,7 @@ const AverageGearChart = () => {
 
   const sortedDesc = Object.fromEntries(Object.entries(averagePerGear).sort(([, a], [, b]) => b - a));
 
-  const labels = Object.keys(sortedDesc).map(gearId => getGearEmoji(athlete, ActivityType.Ride, gearId));
+  const labels = Object.keys(sortedDesc).map(gearId => getGearEmoji(athlete, gearId));
   const series = [
     {
       name: '🏁',

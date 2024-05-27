@@ -64,10 +64,7 @@ const WeekView = () => {
               const activity = lastWeeks[week][weekDay] ?? null;
 
               return activity ? (
-                <Tooltip
-                  key={weekDay}
-                  label={`${activity.name} 〰 ${getGearEmoji(athlete, activity.sport_type, activity.gear_id)}`}
-                >
+                <Tooltip key={weekDay} label={`${activity.name} 〰 ${getGearEmoji(athlete, activity.gear_id)}`}>
                   <Td>
                     <a target="_blank" href={getActivityUrl(activity)}>
                       {createElement(getActivityIcon(activity.sport_type))}
