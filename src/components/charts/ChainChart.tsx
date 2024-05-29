@@ -24,6 +24,8 @@ const ChainChart = ({}: ChainChartProps) => {
     gearId: 'b13440652',
   });
 
+  const points: PointAnnotations[] = [];
+
   const chainOdometer = EVENTS.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
     const nextEventDate = index === EVENTS.length - 1 ? null : EVENTS[index + 1].date;
     const periodDistance = getRidesBetween(activities, event.date, nextEventDate).reduce(
@@ -34,6 +36,18 @@ const ChainChart = ({}: ChainChartProps) => {
     const [total, current] = chainOdometer[event.chain] ?? [0, 0];
     chainOdometer[event.chain] =
       null === nextEventDate ? [total, current + periodDistance] : [total + periodDistance, current];
+
+    points.push({
+      x: event.chain,
+      y: total,
+      marker: {size: 0},
+      label: {
+        borderWidth: 0,
+        offsetY: 20,
+        text: `🔗`,
+        style: {background: 'transparent', fontSize: '20px'},
+      },
+    });
 
     return chainOdometer;
   }, {});
@@ -51,14 +65,15 @@ const ChainChart = ({}: ChainChartProps) => {
   ];
 
   return (
-    <div>
-      <Chart
-        options={getOptions(labels, value => formatDistance(value, 0), {chart: {stacked: true}})}
-        series={series}
-        type="bar"
-        height={400}
-      />
-    </div>
+    <Chart
+      options={getOptions(labels, value => formatDistance(value, 0), {
+        chart: {stacked: true},
+        annotations: {points},
+      })}
+      series={series}
+      type="bar"
+      height={400}
+    />
   );
 };
 
