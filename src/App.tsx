@@ -50,8 +50,6 @@ const App = () => {
     sortDirection,
   });
 
-  const gear = null === athlete ? [] : [...athlete.bikes, ...athlete.shoes];
-
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
@@ -110,11 +108,12 @@ const App = () => {
                 <option value="heart-zone">🫀</option>
               </Select>
               <Select width="120px" placeholder="⚙️" value={gearId} onChange={handleGearChange}>
-                {gear.map(({id}) => (
-                  <option key={id} value={id}>
-                    {getGearEmoji(athlete, id)}
-                  </option>
-                ))}
+                {null !== athlete &&
+                  [...athlete.bikes, ...athlete.shoes].map(({id}) => (
+                    <option key={id} value={id}>
+                      {getGearEmoji(athlete, id)}
+                    </option>
+                  ))}
                 <option value="null">🤷</option>
               </Select>
               <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
