@@ -19,7 +19,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
   },
   {
-    label: 'Chain rotation 🦈⛓️',
+    label: 'Chains rotation 🦈⛓️',
     component: <ChainChart />,
   },
   {

@@ -47,6 +47,7 @@ const TAGS: Tag[] = [
   {
     label: ({moving_time}) => formatDuration(moving_time),
     isRelevant: ({moving_time}) => 0 < moving_time,
+    tooltip: ({elapsed_time}) => `⏳ ${formatDuration(elapsed_time)}`,
     sortType: 'duration',
     emoji: '⏱️',
     help: 'Moving time',
