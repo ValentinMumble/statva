@@ -8,10 +8,10 @@ type ChainInstallEvent = {
 };
 
 const EVENTS: ChainInstallEvent[] = [
-  {chain: 'A', date: new Date('2023-11-15')},
-  {chain: 'B', date: new Date('2024-05-10')},
-  {chain: 'C', date: new Date('2024-05-22')},
-  {chain: 'B', date: new Date('2024-05-31')},
+  {chain: '🍌', date: new Date('2023-11-15')},
+  {chain: '🍒', date: new Date('2024-05-10')},
+  {chain: '🍋', date: new Date('2024-05-22')},
+  {chain: '🍒', date: new Date('2024-05-31')},
 ];
 
 type ChainChartProps = {};
