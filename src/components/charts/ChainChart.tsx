@@ -1,22 +1,11 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../../hooks';
+import {useActivities, useChainEvents} from '../../hooks';
 import {formatDistance, getOptions, getRidesBetween} from '../../models';
-
-type ChainInstallEvent = {
-  chain: string;
-  date: Date;
-};
-
-const EVENTS: ChainInstallEvent[] = [
-  {chain: '🍍', date: new Date('2023-11-15')},
-  {chain: '🍌', date: new Date('2024-05-10')},
-  {chain: '🍋', date: new Date('2024-05-22')},
-  {chain: '🍌', date: new Date('2024-05-31')},
-];
 
 type ChainChartProps = {};
 
 const ChainChart = ({}: ChainChartProps) => {
+  const events = useChainEvents();
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -27,8 +16,8 @@ const ChainChart = ({}: ChainChartProps) => {
 
   const points: PointAnnotations[] = [];
 
-  const chainOdometer = EVENTS.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
-    const nextEventDate = index === EVENTS.length - 1 ? null : EVENTS[index + 1].date;
+  const chainOdometer = events.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
+    const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
     const periodDistance = getRidesBetween(activities, event.date, nextEventDate).reduce(
       (sum, ride) => ride.distance + sum,
       0
