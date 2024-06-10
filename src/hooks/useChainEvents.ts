@@ -10,7 +10,7 @@ const useChainEvents = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const events = await (await fetch('/chain_events.json')).json();
+      const events = await (await fetch('../src/static/chain_events.json')).json();
 
       setChainEvents(events.map((event: ChainInstallEvent) => ({...event, date: new Date(event.date)})));
     };
