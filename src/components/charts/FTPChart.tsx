@@ -1,33 +1,5 @@
 import Chart from 'react-apexcharts';
-
-type FTPTest = {
-  date: Date;
-  weight: number;
-  ftp: number;
-};
-
-const FTP_TESTS: FTPTest[] = [
-  {
-    date: new Date('2023-10-15'),
-    weight: 75,
-    ftp: 234,
-  },
-  {
-    date: new Date('2024-01-03'),
-    weight: 72,
-    ftp: 252,
-  },
-  {
-    date: new Date('2024-04-13'),
-    weight: 74,
-    ftp: 256,
-  },
-  {
-    date: new Date('2024-05-02'),
-    weight: 74,
-    ftp: 266,
-  },
-];
+import {useFtpTests} from '../../hooks';
 
 const options: ApexCharts.ApexOptions = {
   yaxis: [
@@ -57,10 +29,11 @@ const options: ApexCharts.ApexOptions = {
 };
 
 const FTPChart = () => {
-  const labels = FTP_TESTS.map(({date}) => date.toLocaleDateString());
+  const ftpTests = useFtpTests();
+  const labels = ftpTests.map(({date}) => date.toLocaleDateString());
   const series = [
-    {name: 'W', data: FTP_TESTS.map(({ftp}) => ftp)},
-    {name: 'W/kg', data: FTP_TESTS.map(({ftp, weight}) => ftp / weight)},
+    {name: 'W', data: ftpTests.map(({ftp}) => ftp)},
+    {name: 'W/kg', data: ftpTests.map(({ftp, weight}) => ftp / weight)},
   ];
 
   return (

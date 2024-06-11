@@ -12,7 +12,7 @@ const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string 
   }
 
   const wholeHours = Math.floor(hours);
-  const minutes = Math.round((hours - wholeHours) * 60);
+  const minutes = Math.floor((hours - wholeHours) * 60);
 
   return `${wholeHours}h${minutes.toString().padStart(2, '0')}`;
 };
