@@ -12,8 +12,8 @@ import {
   RadioGroup,
   Switch,
 } from '@chakra-ui/react';
-import {useActivities} from '../../hooks';
-import {ChartProps, generatePeriodKeys, getOptions, getWeekLabel, getWeekNumber} from '../../models';
+import {useActivities, useLabels} from '../../hooks';
+import {ChartProps, generatePeriodKeys, getOptions, getWeekNumber} from '../../models';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
@@ -28,6 +28,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
   const [withCommute, setWithCommute] = useState<boolean>(true);
+  const getWeekLabel = useLabels();
 
   const [activities] = useActivities({
     withCommute: withCommute,

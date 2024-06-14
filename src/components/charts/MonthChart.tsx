@@ -10,8 +10,8 @@ import {
   Radio,
   RadioGroup,
 } from '@chakra-ui/react';
-import {useActivities} from '../../hooks';
-import {ChartProps, generatePeriodKeys, getOptions, getWeekLabel, getWeekNumber} from '../../models';
+import {useActivities, useLabels} from '../../hooks';
+import {ChartProps, generatePeriodKeys, getOptions, getWeekNumber} from '../../models';
 import {ActivityType} from '../../models/strava';
 
 const INITIAL_MONTH_COUNT = 15;
@@ -41,6 +41,7 @@ const MonthChart = ({
     includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
     ...filter,
   });
+  const getWeekLabel = useLabels();
 
   const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
     setTimeframe(newTimeframe);
