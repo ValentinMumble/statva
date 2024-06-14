@@ -57,6 +57,8 @@ const ChainChart = ({}: ChainChartProps) => {
   ];
 
   const avgFormatter = (_value: number, options: any) => {
+    if (0 !== options.seriesIndex) return '';
+
     const [total, current, eventCount] = Object.values(chainOdometer)[options.dataPointIndex];
 
     return `${formatDistance((total + current) / eventCount, 0)} avg`;
