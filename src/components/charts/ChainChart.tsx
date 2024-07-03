@@ -2,9 +2,7 @@ import Chart from 'react-apexcharts';
 import {useActivities, useChainEvents} from '../../hooks';
 import {formatDistance, getOptions, getRidesBetween} from '../../models';
 
-type ChainChartProps = {};
-
-const ChainChart = ({}: ChainChartProps) => {
+const ChainChart = () => {
   const events = useChainEvents();
   const [activities] = useActivities({
     withCommute: true,
@@ -14,8 +12,6 @@ const ChainChart = ({}: ChainChartProps) => {
     gearId: 'b13440652',
   });
 
-  const points: PointAnnotations[] = [];
-
   const chainOdometer = events.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
     const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
     const periodDistance = getRidesBetween(activities, event.date, nextEventDate).reduce(
@@ -23,53 +19,45 @@ const ChainChart = ({}: ChainChartProps) => {
       0
     );
 
-    const [total, current, eventCount] = chainOdometer[event.chain] ?? [0, 0, 0];
-    chainOdometer[event.chain] =
-      null === nextEventDate
-        ? [total, current + periodDistance, eventCount + 1]
-        : [total + periodDistance, current, eventCount + 1];
-
-    points.push({
-      x: event.chain,
-      y: total,
-      marker: {size: 0},
-      label: {
-        borderWidth: 0,
-        offsetY: 20,
-        text: `🔗`,
-        style: {background: 'transparent', fontSize: '20px'},
-      },
-    });
+    chainOdometer[event.chain] = [...(chainOdometer[event.chain] ?? []), periodDistance];
 
     return chainOdometer;
   }, {});
 
-  const labels = Object.keys(chainOdometer);
-  const series = [
-    {
-      name: 'Total',
-      data: Object.values(chainOdometer).map(([total]) => total),
-    },
-    {
-      name: 'Current',
-      data: Object.values(chainOdometer).map(([, current]) => current),
-    },
-  ];
+  const labels: string[] = [];
+  const series: ApexAxisChartSeries = [];
 
-  const avgFormatter = (_value: number, options: any) => {
-    if (0 !== options.seriesIndex) return '';
+  Object.entries(chainOdometer).forEach(([chain, distances], chainIndex) => {
+    const totalDistance = distances.reduce((total, current) => total + current, 0);
+    labels.push(`${chain} ${formatDistance(totalDistance / distances.length, 0)} avg`);
 
-    const [total, current, eventCount] = Object.values(chainOdometer)[options.dataPointIndex];
+    distances.forEach((distance, index) => {
+      const data = new Array(Object.keys(chainOdometer).length).fill(null);
+      data[chainIndex] = distance;
+      series.push({name: `${chain}${index + 1}`, data});
+    });
+  });
 
-    return `${formatDistance((total + current) / eventCount, 0)} avg`;
+  const totalFormatter = (value: string, options: any) => {
+    const isCurrentChain = options.dataPointIndex === Object.keys(chainOdometer).indexOf(events.at(-1)?.chain ?? '');
+
+    return `${isCurrentChain ? '🔗 ' : ''}${formatDistance(Number(value), 0)}`;
   };
 
   return (
     <Chart
       options={getOptions(labels, value => formatDistance(value, 0), {
         chart: {stacked: true},
-        annotations: {points},
-        dataLabels: {enabled: true, formatter: avgFormatter},
+        plotOptions: {
+          bar: {
+            dataLabels: {
+              total: {
+                enabled: true,
+                formatter: totalFormatter,
+              },
+            },
+          },
+        },
       })}
       series={series}
       type="bar"
