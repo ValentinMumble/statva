@@ -12,8 +12,8 @@ const MONTH_COLORS = [
   '#E2D8F780', // Lavender
   '#F7DCF180', // Light Purple
   '#EAF7D980', // Light Green
-  '#F7F6D880', // Pale Yellow
   '#F7E7E080', // Pale Pink
+  '#F7F6D880', // Pale Yellow
   '#F7E7D680', // Peach
   '#F7F0D780', // Light Orange
   '#D8EDF780', // Sky Blue
