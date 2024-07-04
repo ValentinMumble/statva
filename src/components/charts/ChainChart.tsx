@@ -58,6 +58,7 @@ const ChainChart = () => {
             },
           },
         },
+        legend: {show: false},
       })}
       series={series}
       type="bar"
