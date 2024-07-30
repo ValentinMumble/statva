@@ -1,9 +1,9 @@
 import Chart from 'react-apexcharts';
-import {useActivities, useChainEvents} from '../../hooks';
+import {useActivities, useEvents} from '../../hooks';
 import {formatDistance, getOptions, getRidesBetween} from '../../models';
 
 const ChainChart = () => {
-  const events = useChainEvents();
+  const events = useEvents('chain');
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
