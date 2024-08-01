@@ -1,7 +1,7 @@
 import {GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
 import {TbKayak, TbRun} from 'react-icons/tb';
-import {MdDirectionsWalk, MdHiking} from 'react-icons/md';
+import {MdCommute, MdDirectionsWalk, MdHiking} from 'react-icons/md';
 import {SortType, SortDirection, formatSpeed} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
 
@@ -21,7 +21,11 @@ type ActivityFilter = {
   minTime?: number;
 };
 
-const getActivityIcon = (activityType: ActivityType) => {
+const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
+  if (isCommute) {
+    return MdCommute;
+  }
+
   switch (activityType) {
     case ActivityType.AlpineSki:
       return GiSkier;
