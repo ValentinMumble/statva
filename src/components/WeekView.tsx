@@ -68,7 +68,7 @@ const WeekView = () => {
                 <Td key={weekDay}>
                   <Tooltip label={`${activity.name} 〰 ${getGearEmoji(athlete, activity.gear_id)}`}>
                     <a target="_blank" href={getActivityUrl(activity)}>
-                      {createElement(getActivityIcon(activity.sport_type))}
+                      {createElement(getActivityIcon(activity.sport_type, activity.commute))}
                     </a>
                   </Tooltip>
                 </Td>

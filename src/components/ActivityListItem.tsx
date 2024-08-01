@@ -63,7 +63,7 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
   return (
     <Tr onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
       <Td padding={0} textAlign="center" width="1px">
-        <Icon as={getActivityIcon(activity.sport_type)} />
+        <Icon as={getActivityIcon(activity.sport_type, activity.commute)} />
       </Td>
       <Td padding="4px 0px">
         <Text bg={getBgColor(bgOption, activity, athlete)} fontSize="1rem" borderRadius="8px" padding="4px 10px">

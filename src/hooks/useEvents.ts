@@ -19,7 +19,7 @@ const useEvents = (type?: string) => {
     fetchEvents();
   }, []);
 
-  return undefined === type ? events : events.filter(event => type === event.type);
+  return events.filter(event => undefined === type || type === event.type);
 };
 
 export {useEvents};
