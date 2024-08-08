@@ -15,12 +15,12 @@ import {formatDistance, formatDuration, formatElevation} from '../models';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
-    label: 'Distance / time 🗺️',
-    component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
+    label: 'Chain rotation ⛓️',
+    component: <ChainChart />,
   },
   {
-    label: 'Chains rotation 🦈⛓️',
-    component: <ChainChart />,
+    label: 'Distance / time 🗺️',
+    component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
   },
   {
     label: 'Activities / time 🛹',
