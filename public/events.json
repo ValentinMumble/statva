@@ -68,5 +68,10 @@
     "type": "battery",
     "chain": "",
     "date": "2024-07-24"
+  },
+  {
+    "type": "chain",
+    "chain": "🍋",
+    "date": "2024-08-07"
   }
 ]
