@@ -1,19 +1,27 @@
+import {ChangeEvent, useEffect, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {useActivities, useEvents} from '../../hooks';
-import {formatDistance, getOptions, getRidesBetween} from '../../models';
+import {FormControl, Select} from '@chakra-ui/react';
+import {ChainEvent, useActivities, useAthlete, useEvents} from '../../hooks';
+import {formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
 
 const ChainChart = () => {
-  const events = useEvents('chain');
+  const [gearId, setGearId] = useState<string>();
+  const athlete = useAthlete();
+  const events = useEvents<ChainEvent>('chain');
+  const relevantBikes = [...new Set(events.map(({bike}) => bike))];
+  const currentBikeEvents = events.filter(({bike}) => gearId === bike);
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    gearId: 'b13440652',
+    gearId,
   });
 
-  const chainOdometer = events.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
-    const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
+  const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) => setGearId(target.value);
+
+  const chainOdometer = currentBikeEvents.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
+    const nextEventDate = index === currentBikeEvents.length - 1 ? null : currentBikeEvents[index + 1].date;
     const periodDistance = getRidesBetween(activities, event.date, nextEventDate).reduce(
       (sum, ride) => ride.distance + sum,
       0
@@ -39,31 +47,48 @@ const ChainChart = () => {
   });
 
   const totalFormatter = (value: string, options: any) => {
-    const isCurrentChain = options.dataPointIndex === Object.keys(chainOdometer).indexOf(events.at(-1)?.chain ?? '');
+    const isCurrentChain =
+      options.dataPointIndex === Object.keys(chainOdometer).indexOf(currentBikeEvents.at(-1)?.chain ?? '');
 
     return `${isCurrentChain ? '🔗 ' : ''}${formatDistance(Number(value), 0)}`;
   };
 
+  useEffect(() => {
+    setGearId(relevantBikes[0]);
+  }, [relevantBikes.length]);
+
   return (
-    <Chart
-      options={getOptions(labels, value => formatDistance(value, 0), {
-        chart: {stacked: true},
-        plotOptions: {
-          bar: {
-            dataLabels: {
-              total: {
-                enabled: true,
-                formatter: totalFormatter,
+    <div>
+      <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px">
+        <Select size="sm" width="70px" value={gearId} onChange={handleGearChange}>
+          {null !== athlete &&
+            relevantBikes.map(id => (
+              <option key={id} value={id}>
+                {getGearEmoji(athlete, id)}
+              </option>
+            ))}
+        </Select>
+      </FormControl>
+      <Chart
+        options={getOptions(labels, value => formatDistance(value, 0), {
+          chart: {stacked: true},
+          plotOptions: {
+            bar: {
+              dataLabels: {
+                total: {
+                  enabled: true,
+                  formatter: totalFormatter,
+                },
               },
             },
           },
-        },
-        legend: {show: false},
-      })}
-      series={series}
-      type="bar"
-      height={400}
-    />
+          legend: {show: false},
+        })}
+        series={series}
+        type="bar"
+        height={400}
+      />
+    </div>
   );
 };
 
