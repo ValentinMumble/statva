@@ -6,7 +6,7 @@ const useFtp = (): ((date: Date) => number) => {
   return (date: Date) => {
     const relevantTests = tests.filter(test => test.date < date).sort((a, b) => b.date.getTime() - a.date.getTime());
 
-    return relevantTests[0]?.ftp ?? tests[0].ftp;
+    return relevantTests[0]?.ftp ?? tests.at(-1)?.ftp ?? 0;
   };
 };
 
