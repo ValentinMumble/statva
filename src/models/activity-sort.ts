@@ -14,6 +14,7 @@ type SortType =
   | 'elapsed_time'
   | 'elevation'
   | 'elevation_percent'
+  | 'intensity'
   | 'kilojoules'
   | 'kudos_count'
   | 'max_heartrate'
@@ -33,14 +34,20 @@ const DEFAULT_SORTS: SortType[] = [
   'distance',
   'duration',
   'elevation',
-  'kilojoules',
+  'intensity',
   'max_speed',
   'pr_count',
   'suffer_score',
   'weighted_average_watts',
 ];
 
-const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: DetailedActivity, b: DetailedActivity) => {
+const sortActivities = (
+  sortType: SortType,
+  sortDirection: SortDirection,
+  a: DetailedActivity,
+  b: DetailedActivity,
+  getFtp: (date: Date) => number
+) => {
   const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
 
   switch (sortType) {
@@ -70,6 +77,11 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Det
       return second.total_elevation_gain - first.total_elevation_gain;
     case 'elevation_percent':
       return second.total_elevation_gain / second.distance - first.total_elevation_gain / first.distance;
+    case 'intensity':
+      return (
+        (second.weighted_average_watts ?? 0) / getFtp(new Date(second.start_date)) -
+        (first.weighted_average_watts ?? 0) / getFtp(new Date(first.start_date))
+      );
     case 'kilojoules':
       return (second.kilojoules ?? 0) - (first.kilojoules ?? 0);
     case 'kudos_count':

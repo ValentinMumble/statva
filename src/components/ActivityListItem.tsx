@@ -1,7 +1,7 @@
 import {Icon, Skeleton, Tag, Td, Text, Tooltip, Tr} from '@chakra-ui/react';
 import {SortType, TAGS, getActivityIcon, getActivityUrl, getGearEmoji, getHeartZone, getPowerZone} from '../models';
 import {DetailedActivity, DetailedAthlete} from '../models/strava';
-import {useAthlete} from '../hooks';
+import {useAthlete, useFtp} from '../hooks';
 
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
@@ -41,6 +41,7 @@ type ActivityListItemProps = {
 
 const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: ActivityListItemProps) => {
   const athlete = useAthlete();
+  const getFtp = useFtp();
 
   if (null === activity) {
     return (
@@ -59,6 +60,8 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
       </Tr>
     );
   }
+
+  const ftp = getFtp(new Date(activity.start_date));
 
   return (
     <Tr onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
@@ -93,10 +96,10 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
           width="1%"
           opacity={tag.isRelevant(activity) ? 1 : 0.4}
         >
-          {null !== tag.label(activity) && (
+          {null !== tag.label(activity, ftp) && (
             <Tooltip label={tag.tooltip?.(activity, athlete)}>
               <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : undefined}>
-                {tag.label(activity)}
+                {tag.label(activity, ftp)}
               </Tag>
             </Tooltip>
           )}

@@ -2,6 +2,7 @@ import {useContext} from 'react';
 import {ActivityFilter, sortActivities} from '../models';
 import {DetailedActivity} from '../models/strava';
 import {ActivitiesContext} from '../providers';
+import {useFtp} from './useFtp';
 
 const useActivities = ({
   withCommute = true,
@@ -15,6 +16,7 @@ const useActivities = ({
   minTime,
 }: ActivityFilter): [DetailedActivity[], boolean] => {
   const [activities, isLoading] = useContext(ActivitiesContext);
+  const getFtp = useFtp();
 
   return [
     activities
@@ -25,7 +27,7 @@ const useActivities = ({
       .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
       .filter(({sport_type}) => 0 === includedActivityTypes.length || includedActivityTypes.includes(sport_type))
       .filter(({moving_time}) => undefined === minTime || moving_time >= minTime)
-      .sort((a, b) => sortActivities(sort, sortDirection, a, b)),
+      .sort((a, b) => sortActivities(sort, sortDirection, a, b, getFtp)),
     isLoading,
   ];
 };
