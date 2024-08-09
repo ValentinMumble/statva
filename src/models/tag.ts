@@ -12,7 +12,7 @@ import {
 import {DetailedActivity, DetailedAthlete} from './strava';
 
 type Tag = {
-  label: (activity: DetailedActivity) => string | number | null;
+  label: (activity: DetailedActivity, ftp: number) => string | number | null;
   isRelevant: (activity: DetailedActivity) => boolean;
   tooltip?: (activity: DetailedActivity, athlete: DetailedAthlete | null) => string | number | null;
   sortType: SortType;
@@ -110,6 +110,14 @@ const TAGS: Tag[] = [
     sortType: 'suffer_score',
     emoji: '🌶️',
     help: 'Suffer score',
+  },
+  {
+    label: ({weighted_average_watts}, ftp) =>
+      undefined === weighted_average_watts ? null : `${Math.round((weighted_average_watts / ftp) * 100)}%`,
+    isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
+    sortType: 'intensity',
+    emoji: '🔋',
+    help: 'Intensity',
   },
   {
     label: ({kilojoules}) => (undefined === kilojoules ? null : `${Math.round(kilojoules * KJ_TO_CAL_RATIO)} kcal`),
