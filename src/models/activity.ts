@@ -2,6 +2,7 @@ import {GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
 import {TbKayak, TbRun} from 'react-icons/tb';
 import {MdCommute, MdDirectionsWalk, MdHiking} from 'react-icons/md';
+import {GiMountainClimbing} from 'react-icons/gi';
 import {SortType, SortDirection, formatSpeed} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
 
@@ -38,6 +39,8 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
       return TbKayak;
     case ActivityType.Ride:
       return PiBicycle;
+    case ActivityType.RockClimbing:
+      return GiMountainClimbing;
     case ActivityType.Run:
       return TbRun;
     case ActivityType.Tennis:
