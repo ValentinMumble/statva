@@ -20,7 +20,7 @@ const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string 
 const formatDurationInDays = (durationInSeconds: number): string => {
   const hourCount = durationInSeconds / 60 / 60 / 24;
   const hoursRemaining = (hourCount % 24) - Math.floor(hourCount);
-  const suffix = 0.75 <= hoursRemaining ? '¾' : 0.5 <= hoursRemaining ? '½' : 0.25 <= hoursRemaining ? '¼' : '';
+  const suffix = 0.5 <= hoursRemaining ? '½' : '';
 
   return `${Math.floor(hourCount)}${suffix} days`;
 };

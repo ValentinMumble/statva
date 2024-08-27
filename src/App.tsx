@@ -149,7 +149,7 @@ const App = () => {
         </Accordion>
         <Table size="sm" variant="unstyled" whiteSpace="nowrap">
           <Thead position="sticky" top={0}>
-            <Tr cursor="pointer" bg="white">
+            <Tr cursor="pointer">
               <Th />
               <Th padding="5px 0" textAlign="center" onClick={handleSortChange('date')}>
                 📅
@@ -157,6 +157,15 @@ const App = () => {
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
                 <Th key={tag.sortType} onClick={handleSortChange(tag.sortType)} padding="5px 0" textAlign="center">
                   <Tooltip label={tag.help}>{tag.emoji}</Tooltip>
+                </Th>
+              ))}
+            </Tr>
+            <Tr>
+              <Th />
+              <Th padding="5px 0" textAlign="center" />
+              {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
+                <Th key={tag.sortType} padding="5px 0" textAlign="center" textTransform="inherit">
+                  {tag.total?.(activities)}
                 </Th>
               ))}
             </Tr>
