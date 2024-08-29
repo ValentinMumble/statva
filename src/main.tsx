@@ -4,11 +4,20 @@ import {App} from './App.tsx';
 import {ActivitiesProvider, AthleteProvider} from './providers';
 
 const config: ThemeConfig = {
-  initialColorMode: 'light',
+  initialColorMode: 'system',
   useSystemColorMode: true,
 };
 
-const theme = extendTheme({config});
+const theme = extendTheme({
+  semanticTokens: {
+    colors: {
+      'chakra-body-text': {
+        _dark: 'gray.200',
+      },
+    },
+  },
+  config,
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ChakraProvider theme={theme}>

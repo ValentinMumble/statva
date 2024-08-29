@@ -99,7 +99,12 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
         </NumberInput>
       </FormControl>
       <Chart
-        options={getOptions(labels, undefined, {chart: {stacked: true}})}
+        options={getOptions(labels, undefined, {
+          chart: {
+            stacked: true,
+            background: 'transparent',
+          },
+        })}
         series={series}
         type="bar"
         height={400}

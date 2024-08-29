@@ -9,7 +9,7 @@ import {
   FormControl,
 } from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
-import {eddingtonNumber, getRidesBeforeMonth} from '../../models';
+import {eddingtonNumber, getOptions, getRidesBeforeMonth} from '../../models';
 import {ActivityType} from '../../models/strava';
 
 const DEFAULT_ITEM_COUNT = 18;
@@ -22,11 +22,6 @@ const options: ApexCharts.ApexOptions = {
   },
   yaxis: {min: 10},
   fill: {type: 'gradient'},
-  markers: {size: [4]},
-  chart: {
-    toolbar: {show: false},
-    zoom: {enabled: false},
-  },
 };
 
 type EddingtonChartProps = {};
@@ -64,15 +59,7 @@ const EddingtonChart = ({}: EddingtonChartProps) => {
           </NumberInputStepper>
         </NumberInput>
       </FormControl>
-      <Chart
-        options={{
-          ...options,
-          labels,
-        }}
-        series={series}
-        type="line"
-        height={400}
-      />
+      <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />
     </div>
   );
 };

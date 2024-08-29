@@ -164,7 +164,7 @@ const App = () => {
               <Th />
               <Th padding="5px 0" textAlign="center" />
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
-                <Th key={tag.sortType} padding="5px 0" textAlign="center" textTransform="inherit">
+                <Th key={tag.sortType} padding="5px 0" textAlign="center" textTransform="inherit" fontWeight="inherit">
                   {tag.total?.(activities)}
                 </Th>
               ))}

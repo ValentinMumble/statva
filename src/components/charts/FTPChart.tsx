@@ -1,5 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useFtpTests} from '../../hooks';
+import {getOptions} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
   yaxis: [
@@ -21,11 +22,6 @@ const options: ApexCharts.ApexOptions = {
   ],
   colors: ['#e09200', '#ebcf6c'],
   fill: {type: 'gradient'},
-  markers: {size: [4]},
-  chart: {
-    toolbar: {show: false},
-    zoom: {enabled: false},
-  },
 };
 
 const FTPChart = () => {
@@ -36,17 +32,7 @@ const FTPChart = () => {
     {name: 'W/kg', data: ftpTests.map(({ftp, weight}) => ftp / weight)},
   ];
 
-  return (
-    <Chart
-      options={{
-        ...options,
-        labels,
-      }}
-      series={series}
-      type="line"
-      height={400}
-    />
-  );
+  return <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />;
 };
 
 export {FTPChart};

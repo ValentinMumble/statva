@@ -71,13 +71,17 @@ const ChainChart = () => {
       </FormControl>
       <Chart
         options={getOptions(labels, value => formatDistance(value, 0), {
-          chart: {stacked: true},
+          chart: {
+            stacked: true,
+            background: 'transparent',
+          },
           plotOptions: {
             bar: {
               dataLabels: {
                 total: {
                   enabled: true,
                   formatter: totalFormatter,
+                  style: {color: 'lightgray'},
                 },
               },
             },
