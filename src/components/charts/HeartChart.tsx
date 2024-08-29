@@ -1,6 +1,7 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../../hooks';
 import {ActivityType} from '../../models/strava';
+import {getOptions} from '../../models';
 
 const MIN_DISTANCE_METERS = 30 * 1000;
 
@@ -17,10 +18,7 @@ const options: ApexCharts.ApexOptions = {
       gradientToColors: ['#fd8f35', '#fdc135'],
     },
   },
-  chart: {
-    toolbar: {show: false},
-    zoom: {enabled: false},
-  },
+  markers: {size: [0]},
   yaxis: [
     {
       max: 190,
@@ -58,17 +56,7 @@ const HeartChart = () => {
     {name: '⚡️', data: powerSerie},
   ];
 
-  return (
-    <Chart
-      options={{
-        ...options,
-        labels,
-      }}
-      series={series}
-      type="line"
-      height={400}
-    />
-  );
+  return <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />;
 };
 
 export {HeartChart};

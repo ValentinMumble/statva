@@ -43,7 +43,7 @@ const WeekView = () => {
   const mondayFirst = arrayRotate(WEEKDAYS, -1);
 
   return (
-    <Table variant="striped" colorScheme="orange" size={['sm', 'md']}>
+    <Table variant="striped" size={['sm', 'md']}>
       <Thead>
         <Tr>
           <Th>
@@ -51,7 +51,7 @@ const WeekView = () => {
             <IconButton onClick={incrementWeekCount} marginLeft="8px" aria-label="More" size="xs" icon={<PiPlus />} />
           </Th>
           {mondayFirst.map(weekDay => (
-            <Th key={weekDay} background={weekDay === WEEKDAYS[new Date().getDay()] ? 'orange.100' : undefined}>
+            <Th key={weekDay} background={weekDay === WEEKDAYS[new Date().getDay()] ? 'gray.700' : undefined}>
               {weekDay.substring(0, 2)}
             </Th>
           ))}

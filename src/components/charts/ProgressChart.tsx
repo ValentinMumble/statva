@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../../hooks';
-import {formatSpeed} from '../../models';
+import {formatSpeed, getOptions} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
   yaxis: [
@@ -22,11 +22,6 @@ const options: ApexCharts.ApexOptions = {
     width: 4,
   },
   fill: {type: 'gradient'},
-  markers: {size: [4]},
-  chart: {
-    toolbar: {show: false},
-    zoom: {enabled: false},
-  },
 };
 
 type ProgressChartProps = {
@@ -50,17 +45,7 @@ const ProgressChart = ({search}: ProgressChartProps) => {
     {name: '⚡️', data: averagePowerSerie},
   ];
 
-  return (
-    <Chart
-      options={{
-        ...options,
-        labels,
-      }}
-      series={series}
-      type="line"
-      height={400}
-    />
-  );
+  return <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />;
 };
 
 export {ProgressChart};

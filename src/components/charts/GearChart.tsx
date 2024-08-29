@@ -35,6 +35,7 @@ const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
                 formatter: (_, {seriesIndex}) => labels[seriesIndex],
                 dropShadow: {enabled: false},
               },
+              stroke: {width: 0},
             }
           : {}
       )}
