@@ -3,6 +3,7 @@ const KJ_TO_CAL_RATIO = 1.114937039;
 const formatDistance = (distance: number, precision = 1): string => `${(distance / 1000).toFixed(precision)} km`;
 const formatElevation = (elevation: number): string => `${Math.round(elevation)} m`;
 const formatSpeed = (speed: number, precision = 1): string => `${(speed * 3.6).toFixed(precision)} km/h`;
+const formatPower = (power: number): string => `${Math.round(power)} W`;
 
 const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string => {
   const hours = durationInSeconds / 60 / 60;
@@ -79,6 +80,7 @@ export {
   formatDurationInDays,
   formatElevation,
   formatSpeed,
+  formatPower,
   generatePeriodKeys,
   getWeekNumber,
   KJ_TO_CAL_RATIO,

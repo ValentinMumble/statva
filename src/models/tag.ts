@@ -11,6 +11,8 @@ import {
   getTotalValue,
   formatDurationInDays,
   getMaxValue,
+  getAverageValue,
+  formatPower,
 } from '../models';
 import {DetailedActivity, DetailedAthlete} from './strava';
 
@@ -46,7 +48,10 @@ const TAGS: Tag[] = [
   {
     label: ({total_elevation_gain, distance}) => `${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
     isRelevant: ({total_elevation_gain, distance}) => 0 < total_elevation_gain / distance,
-    total: _activities => '', //TODO
+    total: activities =>
+      `${((getTotalValue(activities, 'total_elevation_gain') / getTotalValue(activities, 'distance')) * 100).toFixed(
+        2
+      )}%`,
     sortType: 'elevation_percent',
     emoji: '⚖️',
     help: 'D+ percentage',
@@ -72,14 +77,7 @@ const TAGS: Tag[] = [
     label: formatPaceOrSpeed,
     isRelevant: ({average_speed}) => 0 < average_speed,
     tooltip: ({average_speed}) => `🏁 ${formatSpeed(average_speed, 3)}`,
-    total: activities =>
-      // TODO extract getAvgValue()
-      formatSpeed(
-        activities.reduce(
-          (total, activity, _index, activities) => total + activity.average_speed / activities.length,
-          0
-        )
-      ),
+    total: activities => formatSpeed(getAverageValue(activities, 'average_speed')),
     sortType: 'average_speed',
     emoji: '🏁',
     help: 'Average speed',
@@ -93,34 +91,34 @@ const TAGS: Tag[] = [
     help: 'Max speed',
   },
   {
-    label: ({average_watts}) => (undefined === average_watts ? null : `${Math.round(average_watts)} W`),
+    label: ({average_watts}) => (undefined === average_watts ? null : formatPower(average_watts)),
     isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
     tooltip: ({weighted_average_watts, average_watts}, athlete) =>
       undefined === weighted_average_watts
         ? null
-        : `🏋️ ${Math.round(weighted_average_watts)} W 〰 Zone ${getPowerZone(average_watts ?? 0, athlete?.ftp ?? 0)}`,
-    total: _activities => '', //TODO
+        : `🏋️ ${formatPower(weighted_average_watts)} 〰 Zone ${getPowerZone(average_watts ?? 0, athlete?.ftp ?? 0)}`,
+    total: activities => formatPower(getAverageValue(activities, 'average_watts')),
     sortType: 'average_watts',
     emoji: '⚡️',
     help: 'Average power',
   },
   {
     label: ({weighted_average_watts}) =>
-      undefined === weighted_average_watts ? null : `${Math.round(weighted_average_watts)} W`,
+      undefined === weighted_average_watts ? null : formatPower(weighted_average_watts),
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
     tooltip: ({average_watts, weighted_average_watts}, athlete) =>
       undefined === average_watts
         ? null
-        : `⚡️ ${Math.round(average_watts)} W 〰 Zone ${getPowerZone(weighted_average_watts ?? 0, athlete?.ftp ?? 0)}`,
-    total: _activities => '', //TODO
+        : `⚡️ ${formatPower(average_watts)} 〰 Zone ${getPowerZone(weighted_average_watts ?? 0, athlete?.ftp ?? 0)}`,
+    total: activities => formatPower(getAverageValue(activities, 'weighted_average_watts')),
     sortType: 'weighted_average_watts',
     emoji: '🏋️',
     help: 'Weighted average power',
   },
   {
-    label: ({max_watts}) => (undefined === max_watts ? null : `${Math.round(max_watts)} W`),
+    label: ({max_watts}) => (undefined === max_watts ? null : formatPower(max_watts)),
     isRelevant: ({max_watts}) => 0 < (max_watts ?? 0),
-    total: activities => `${getMaxValue(activities, 'max_watts')} W`,
+    total: activities => formatPower(getMaxValue(activities, 'max_watts')),
     sortType: 'max_watts',
     emoji: '💥',
     help: 'Max power',
@@ -128,7 +126,7 @@ const TAGS: Tag[] = [
   {
     label: ({suffer_score}) => (undefined === suffer_score ? null : Math.round(suffer_score)),
     isRelevant: ({suffer_score}) => 0 < (suffer_score ?? 0),
-    total: _activities => '', //TODO
+    total: activities => Math.round(getAverageValue(activities, 'suffer_score')),
     sortType: 'suffer_score',
     emoji: '🌶️',
     help: 'Suffer score',
@@ -153,7 +151,7 @@ const TAGS: Tag[] = [
   {
     label: ({average_cadence}) => (undefined === average_cadence ? null : Math.round(average_cadence)),
     isRelevant: ({average_cadence}) => 0 < (average_cadence ?? 0),
-    total: _activities => '', //TODO
+    total: activities => Math.round(getAverageValue(activities, 'average_cadence')),
     sortType: 'average_cadence',
     emoji: '🎡',
     help: 'Average cadence',
@@ -162,7 +160,7 @@ const TAGS: Tag[] = [
     label: ({average_heartrate}) => (undefined === average_heartrate ? null : Math.round(average_heartrate)),
     isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),
     tooltip: activity => `🫀 Zone ${getHeartZone(activity)}`,
-    total: _activities => '', //TODO
+    total: activities => Math.round(getAverageValue(activities, 'average_heartrate')),
     sortType: 'average_heartrate',
     emoji: '🫀',
     help: 'Average heartrate',
@@ -178,7 +176,7 @@ const TAGS: Tag[] = [
   {
     label: ({average_temp}) => (undefined === average_temp ? null : `${Math.round(average_temp)} °C`),
     isRelevant: ({average_temp}) => undefined !== average_temp,
-    total: _activities => '', //TODO
+    total: activities => `${Math.round(getAverageValue(activities, 'average_temp'))} °C`,
     sortType: 'average_temp',
     emoji: '🌡️',
     help: 'Average temperature',
@@ -202,7 +200,7 @@ const TAGS: Tag[] = [
   {
     label: ({athlete_count}) => athlete_count,
     isRelevant: ({athlete_count}) => 1 < athlete_count,
-    total: _activities => '', //TODO
+    total: activities => Math.round(getAverageValue(activities, 'athlete_count')),
     sortType: 'athlete_count',
     emoji: '🧑‍🤝‍🧑',
     help: 'Athlete count',
