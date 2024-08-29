@@ -1,6 +1,6 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../../hooks';
-import {formatSpeed, getOptions} from '../../models';
+import {formatPower, formatSpeed, getOptions} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
   yaxis: [
@@ -11,7 +11,7 @@ const options: ApexCharts.ApexOptions = {
     },
     {
       opposite: true,
-      labels: {formatter: (value: number) => `${Math.round(value)} W`},
+      labels: {formatter: formatPower},
       min: 120,
       max: 260,
     },

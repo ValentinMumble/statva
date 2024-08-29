@@ -66,6 +66,11 @@ const getTotalValue = (activities: DetailedActivity[], value: keyof DetailedActi
 const getMaxValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
   Math.max(...activities.map(activity => (activity[value] ?? 0) as number));
 
+const getAverageValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
+  activities
+    .filter(activity => undefined !== activity[value])
+    .reduce((total, activity, _index, activities) => total + (activity[value] as number) / activities.length, 0);
+
 const getRidesBeforeMonth = (rides: DetailedActivity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
@@ -169,6 +174,7 @@ export {
   eddingtonNumber,
   formatPaceOrSpeed,
   getActivityUrl,
+  getAverageValue,
   getRidesBeforeMonth,
   getRidesBetween,
   getActivityIcon,
