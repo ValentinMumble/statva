@@ -20,7 +20,7 @@ const ActivityTypeFilter = ({types, onTypesChange}: ActivityTypeFilterProps) => 
 
   return (
     <HStack justifyContent="space-between">
-      <CheckboxGroup value={types} onChange={onTypesChange} colorScheme="orange">
+      <CheckboxGroup value={types} onChange={onTypesChange}>
         {uniqueTypes.map(type => (
           <Checkbox key={type} value={type} title={type}>
             <Icon onClick={handleIconClick(type)} as={getActivityIcon(type)} />

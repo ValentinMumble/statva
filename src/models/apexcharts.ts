@@ -24,6 +24,7 @@ const getOptions: (
   stroke: {curve: 'straight'},
   dataLabels: {enabled: false},
   markers: {size: [4]},
+  grid: {borderColor: '#FFFFFF30'},
   colors: [
     '#e0700090',
     '#a2d0cf90',

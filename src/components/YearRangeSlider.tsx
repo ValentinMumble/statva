@@ -27,8 +27,8 @@ const YearRangeSlider = ({value, onChange}: YearRangeSliderProps) => {
       max={BOUNDARIES.at(-1)}
       step={1}
     >
-      <RangeSliderTrack bg="orange.100">
-        <RangeSliderFilledTrack bg="orange.300" />
+      <RangeSliderTrack>
+        <RangeSliderFilledTrack />
       </RangeSliderTrack>
       <RangeSliderThumb boxSize={5} index={0} />
       <RangeSliderThumb boxSize={5} index={1} />

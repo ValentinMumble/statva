@@ -6,18 +6,18 @@ import {useAthlete, useFtp} from '../hooks';
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
 const MONTH_COLORS = [
-  '#F7D7D630', // Light Red
-  '#D6F7F130', // Light Blue
-  '#D9F7D930', // Mint
-  '#E2D8F730', // Lavender
-  '#F7DCF130', // Light Purple
-  '#EAF7D930', // Light Green
-  '#F7E7E030', // Pale Pink
-  '#F7F6D830', // Pale Yellow
-  '#F7E7D630', // Peach
-  '#F7F0D730', // Light Orange
-  '#D8EDF730', // Sky Blue
-  '#F7DCEB30', // Light Pink
+  '#C7F9CC20', // Pale Mint
+  '#FFE5B420', // Soft Peach
+  '#F3E8FF20', // Lavender Blush
+  '#D4F1F920', // Light Sky Blue
+  '#FFE4E120', // Misty Rose
+  '#B0E0E620', // Powder Blue
+  '#FFDDE420', // Pale Pink
+  '#E6E6FA20', // Light Lavender
+  '#FFFFF020', // Ivory
+  '#E0FFF920', // Light Seafoam
+  '#E3D7FF20', // Soft Lilac
+  '#FFFACD20', // Pale Lemon
 ];
 
 const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: DetailedAthlete | null): string => {

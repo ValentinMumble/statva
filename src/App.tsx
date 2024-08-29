@@ -136,7 +136,7 @@ const App = () => {
                       <span>{tag.emoji}</span>
                       <Switch
                         size="sm"
-                        colorScheme="orange"
+                        colorScheme="whiteAlpha"
                         onChange={handleSortToggle(tag.sortType)}
                         isChecked={displayedSorts.includes(tag.sortType)}
                       />
