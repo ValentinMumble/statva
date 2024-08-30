@@ -11,6 +11,7 @@ import {
   InputGroup,
   InputRightElement,
   Select,
+  Skeleton,
   Stack,
   Switch,
   Table,
@@ -165,7 +166,7 @@ const App = () => {
               <Th padding="5px 0" textAlign="center" />
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
                 <Th key={tag.sortType} padding="5px 0" textAlign="center" textTransform="inherit" fontWeight="inherit">
-                  {tag.total?.(activities)}
+                  {isLoading ? <Skeleton margin="0 5px">i</Skeleton> : tag.total?.(activities)}
                 </Th>
               ))}
             </Tr>

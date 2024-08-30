@@ -6,18 +6,18 @@ import {useAthlete, useFtp} from '../hooks';
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
 const MONTH_COLORS = [
-  '#C7F9CC20', // Pale Mint
-  '#FFE5B420', // Soft Peach
-  '#F3E8FF20', // Lavender Blush
-  '#D4F1F920', // Light Sky Blue
-  '#FFE4E120', // Misty Rose
-  '#B0E0E620', // Powder Blue
-  '#FFDDE420', // Pale Pink
-  '#E6E6FA20', // Light Lavender
-  '#FFFFF020', // Ivory
-  '#E0FFF920', // Light Seafoam
-  '#E3D7FF20', // Soft Lilac
-  '#FFFACD20', // Pale Lemon
+  '#FF000007', // Red
+  '#0000FF07', // Blue
+  '#00800007', // Green
+  '#FFFF0007', // Yellow
+  '#80008007', // Purple
+  '#FFA50007', // Orange
+  '#FFC0CB07', // Pink
+  '#A52A2A07', // Brown
+  '#80808007', // Gray
+  '#00FFFF07', // Cyan
+  '#FF634707', // Tomato (Red-Orange)
+  '#00FF7F07', // Spring Green
 ];
 
 const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: DetailedAthlete | null): string => {
@@ -92,11 +92,11 @@ const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: Activi
           textAlign="center"
           padding="0px 2px"
           width="1%"
-          opacity={tag.isRelevant(activity) ? 1 : 0.4}
+          opacity={tag.isRelevant(activity) ? 0.9 : 0.4}
         >
           {null !== tag.label(activity, ftp) && (
             <Tooltip label={tag.tooltip?.(activity, athlete)}>
-              <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : undefined}>
+              <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : 'facebook'}>
                 {tag.label(activity, ftp)}
               </Tag>
             </Tooltip>
