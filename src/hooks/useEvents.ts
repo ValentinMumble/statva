@@ -16,20 +16,21 @@ type TireEvent = Event & {
 
 type BatteryEvent = Event & {};
 
-const useEvents = <T>(type?: string) => {
+const useEvents = <T>(type?: string): [T[], () => void] => {
   const [events, setEvents] = useState<Event[]>([]);
 
+  const fetchEvents = async () => {
+    //TODO env var for server URL?
+    const events = await (await fetch('https://vumble.dev:3002/statva/events')).json();
+
+    setEvents(events.map((event: Event) => ({...event, date: new Date(event.date)})));
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      const events = await (await fetch('/events.json')).json();
-
-      setEvents(events.map((event: Event) => ({...event, date: new Date(event.date)})));
-    };
-
     fetchEvents();
   }, []);
 
-  return events.filter(event => undefined === type || type === event.type) as T[];
+  return [events.filter(event => undefined === type || type === event.type) as T[], fetchEvents];
 };
 
 export {useEvents};
