@@ -54,7 +54,12 @@ const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
     .fill(start)
     .map((x, y) => x + y * step);
 
-const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: 'month' | 'week') => {
+const generatePeriodKeys = (
+  firstDate: Date,
+  lastDate: Date,
+  timeframe: 'month' | 'week',
+  emptyValue: number | null = 0
+) => {
   const emptyValues: {[period: string]: any} = {};
 
   for (let year = firstDate.getFullYear(); year <= lastDate.getFullYear(); year++) {
@@ -65,7 +70,7 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: 'month' 
         : maxPeriod;
 
     for (let period = 1; period <= maxPeriod; period++) {
-      emptyValues[`${period}/${year}`] = null;
+      emptyValues[`${period}/${year}`] = emptyValue;
     }
   }
 
