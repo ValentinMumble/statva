@@ -3,11 +3,12 @@ import Chart from 'react-apexcharts';
 import {FormControl, Select} from '@chakra-ui/react';
 import {ChainEvent, useActivities, useAthlete, useEvents} from '../../hooks';
 import {formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
+import {AddEvent} from '../../components';
 
 const ChainChart = () => {
   const [gearId, setGearId] = useState<string>();
   const athlete = useAthlete();
-  const events = useEvents<ChainEvent>('chain');
+  const [events, refreshEvents] = useEvents<ChainEvent>('chain');
   const relevantBikes = [...new Set(events.map(({bike}) => bike))];
   const currentBikeEvents = events.filter(({bike}) => gearId === bike);
   const [activities] = useActivities({
@@ -92,6 +93,7 @@ const ChainChart = () => {
         type="bar"
         height={400}
       />
+      <AddEvent onAddEvent={refreshEvents} />
     </div>
   );
 };
