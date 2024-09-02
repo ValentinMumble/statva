@@ -28,7 +28,7 @@ const STATS: Stat[][] = [
     {
       label: '🗺️',
       helpText: 'Distance ridden',
-      number: activities => formatDistance(getTotalValue(activities, 'distance'), 0),
+      number: activities => formatDistance(getTotalValue(activities, 'distance')),
     },
     {
       label: '🎊',
@@ -39,16 +39,14 @@ const STATS: Stat[][] = [
             getTotalValue(
               activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear() - 1),
               'distance'
-            ),
-            0
+            )
           )}`}
         >
           {formatDistance(
             getTotalValue(
               activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
               'distance'
-            ),
-            0
+            )
           )}
         </Tooltip>
       ),
@@ -56,7 +54,7 @@ const STATS: Stat[][] = [
     {
       label: '⛰️',
       helpText: 'Total D+',
-      number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain'), 0),
+      number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
     },
     {
       label: '🥾',

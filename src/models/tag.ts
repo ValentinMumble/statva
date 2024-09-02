@@ -28,10 +28,10 @@ type Tag = {
 
 const TAGS: Tag[] = [
   {
-    label: ({distance}) => formatDistance(distance, 0),
+    label: ({distance}) => formatDistance(distance),
     isRelevant: ({distance}) => 0 < distance,
     tooltip: ({distance}) => `🗺️ ${formatDistance(distance, 2)}`,
-    total: activities => formatDistance(getTotalValue(activities, 'distance'), 0),
+    total: activities => formatDistance(getTotalValue(activities, 'distance')),
     sortType: 'distance',
     emoji: '🗺️',
     help: 'Distance',
@@ -40,7 +40,7 @@ const TAGS: Tag[] = [
     label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
     isRelevant: ({total_elevation_gain}) => 0 < total_elevation_gain,
     tooltip: ({total_elevation_gain, distance}) => `⚖️ ${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
-    total: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain'), 0),
+    total: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
     sortType: 'elevation',
     emoji: '⛰️',
     help: 'D+',
