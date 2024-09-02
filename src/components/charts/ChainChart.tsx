@@ -38,7 +38,7 @@ const ChainChart = () => {
 
   Object.entries(chainOdometer).forEach(([chain, distances], chainIndex) => {
     const totalDistance = distances.reduce((total, current) => total + current, 0);
-    labels.push(`${chain} ${formatDistance(totalDistance / distances.length, 0)} avg`);
+    labels.push(`${chain} ${formatDistance(totalDistance / distances.length)} avg`);
 
     distances.forEach((distance, index) => {
       const data = new Array(Object.keys(chainOdometer).length).fill(null);
@@ -62,12 +62,11 @@ const ChainChart = () => {
     <div>
       <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px">
         <Select size="sm" width="70px" value={gearId} onChange={handleGearChange}>
-          {null !== athlete &&
-            relevantBikes.map(id => (
-              <option key={id} value={id}>
-                {getGearEmoji(athlete, id)}
-              </option>
-            ))}
+          {relevantBikes.map(id => (
+            <option key={id} value={id}>
+              {getGearEmoji(athlete, id)}
+            </option>
+          ))}
         </Select>
       </FormControl>
       <Chart
