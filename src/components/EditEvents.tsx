@@ -1,5 +1,4 @@
 import {
-  Button,
   IconButton,
   Modal,
   ModalBody,
@@ -15,6 +14,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import {FaMinus} from 'react-icons/fa';
+import {FiDatabase} from 'react-icons/fi';
 import {isChainEvent, Event} from '../models';
 import {AddEvent} from './AddEvent';
 import {useEvents} from '../hooks';
@@ -47,9 +47,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
 
   return (
     <>
-      <Button size="sm" onClick={onOpen}>
-        Edit events
-      </Button>
+      <IconButton aria-label="Edit events" size="sm" onClick={onOpen} icon={<FiDatabase />} />
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>
