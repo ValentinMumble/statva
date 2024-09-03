@@ -8,8 +8,7 @@ const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ITEMS_PER_PAGE = 50;
 
-type Token = string;
-let token: Token | null = null;
+let token: string | null = null;
 
 const fetchAccessToken = async () => {
   if (null === token) {
@@ -37,7 +36,6 @@ const fetchAccessToken = async () => {
 
 const fetchAthlete = async (): Promise<DetailedAthlete> => {
   const accessToken = await fetchAccessToken();
-
   const response = await fetch(`${ATHLETE_ENDPOINT}?access_token=${accessToken}`);
 
   return await response.json();

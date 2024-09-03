@@ -1,9 +1,9 @@
 import {ChangeEvent, useEffect, useState} from 'react';
 import Chart from 'react-apexcharts';
 import {FormControl, Select} from '@chakra-ui/react';
-import {ChainEvent, useActivities, useAthlete, useEvents} from '../../hooks';
-import {formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
-import {AddEvent} from '../../components';
+import {useActivities, useAthlete, useEvents} from '../../hooks';
+import {ChainEvent, formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
+import {EditEvents} from '../../components';
 
 const ChainChart = () => {
   const [gearId, setGearId] = useState<string>();
@@ -58,9 +58,11 @@ const ChainChart = () => {
     setGearId(relevantBikes[0]);
   }, [relevantBikes.length]);
 
+  const chartOptions = getOptions(labels, value => formatDistance(value, 0));
+
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px">
+      <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px" gap="10px">
         <Select size="sm" width="70px" value={gearId} onChange={handleGearChange}>
           {relevantBikes.map(id => (
             <option key={id} value={id}>
@@ -68,12 +70,14 @@ const ChainChart = () => {
             </option>
           ))}
         </Select>
+        <EditEvents events={events} onEditEvents={refreshEvents} />
       </FormControl>
       <Chart
-        options={getOptions(labels, value => formatDistance(value, 0), {
+        options={{
+          ...chartOptions,
           chart: {
+            ...chartOptions.chart,
             stacked: true,
-            background: 'transparent',
           },
           plotOptions: {
             bar: {
@@ -87,12 +91,11 @@ const ChainChart = () => {
             },
           },
           legend: {show: false},
-        })}
+        }}
         series={series}
         type="bar"
         height={400}
       />
-      <AddEvent onAddEvent={refreshEvents} />
     </div>
   );
 };

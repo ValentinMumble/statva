@@ -1,22 +1,7 @@
 import {useEffect, useState} from 'react';
+import {Event} from '../models';
 
-type Event = {
-  type: string;
-  date: Date;
-};
-
-type ChainEvent = Event & {
-  chain: string;
-  bike: string;
-};
-
-type TireEvent = Event & {
-  tire: string;
-};
-
-type BatteryEvent = Event & {};
-
-const useEvents = <T>(type?: string): [T[], () => void] => {
+const useEvents = <T extends Event>(type?: string): [T[], () => void] => {
   const [events, setEvents] = useState<Event[]>([]);
 
   const fetchEvents = async () => {
@@ -34,4 +19,3 @@ const useEvents = <T>(type?: string): [T[], () => void] => {
 };
 
 export {useEvents};
-export type {BatteryEvent, ChainEvent, TireEvent};

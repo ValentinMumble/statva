@@ -77,6 +77,8 @@ const generatePeriodKeys = (
   return emptyValues;
 };
 
+const removeNull = (object: object): object => Object.fromEntries(Object.entries(object).filter(([_, v]) => v != null));
+
 export {
   arrayRotate,
   extractEmoji,
@@ -90,4 +92,5 @@ export {
   getWeekNumber,
   KJ_TO_CAL_RATIO,
   range,
+  removeNull,
 };
