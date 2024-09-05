@@ -12,7 +12,9 @@ type ChainEvent = Event & {
 
 type TireEvent = Event & {
   type: 'tire';
-  tire: string;
+  model: string;
+  brand: string;
+  width: number;
 };
 
 type BatteryEvent = Event & {

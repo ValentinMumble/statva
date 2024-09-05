@@ -62,7 +62,7 @@ const ChainChart = () => {
 
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px" gap="10px">
+      <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px" gap="8px">
         <Select size="sm" width="70px" value={gearId} onChange={handleGearChange}>
           {relevantBikes.map(id => (
             <option key={id} value={id}>
