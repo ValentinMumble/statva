@@ -3,4 +3,4 @@ export * from './useAthlete';
 export * from './useEvents';
 export * from './useFtp';
 export * from './useFtpTests';
-export * from './useLabels';
+export * from './useLabel';

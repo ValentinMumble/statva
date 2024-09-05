@@ -12,7 +12,7 @@ import {
   RadioGroup,
   Switch,
 } from '@chakra-ui/react';
-import {useActivities, useLabels} from '../../hooks';
+import {useActivities, useLabel} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, getWeekNumber} from '../../models';
 
 const INITIAL_MONTH_COUNT = 15;
@@ -28,7 +28,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
   const [withCommute, setWithCommute] = useState<boolean>(true);
-  const getWeekLabel = useLabels();
+  const label = useLabel();
 
   const [activities] = useActivities({
     withCommute: withCommute,
@@ -66,7 +66,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
   );
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = 'week' === timeframe ? Object.keys(sliced).map(getWeekLabel) : Object.keys(sliced);
+  const labels = 'week' === timeframe ? Object.keys(sliced).map(label) : Object.keys(sliced);
 
   const distinctTypes = Object.values(sliced).reduce(
     (types: string[], entry: {[type: string]: number} | null) =>

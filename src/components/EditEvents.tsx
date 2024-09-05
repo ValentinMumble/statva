@@ -1,4 +1,5 @@
 import {
+  Button,
   IconButton,
   Modal,
   ModalBody,
@@ -14,10 +15,9 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import {FaMinus} from 'react-icons/fa';
-import {FiDatabase} from 'react-icons/fi';
-import {isChainEvent, Event} from '../models';
+import {isChainEvent, Event, isTireEvent} from '../models';
 import {AddEvent} from './AddEvent';
-import {useEvents} from '../hooks';
+import {useEvents, useLabel} from '../hooks';
 
 type EditEventsProps = {
   events: Event[];
@@ -27,6 +27,7 @@ type EditEventsProps = {
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
   const {isOpen, onOpen, onClose} = useDisclosure();
   const toast = useToast();
+  const label = useLabel();
   const [events, refreshEvents] = useEvents();
   events.reverse();
 
@@ -36,7 +37,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
   };
 
   const handleRemove = (id: string) => async () => {
-    await fetch(`https://vumble.dev:3002/statva/events/${id}`, {method: 'DELETE'});
+    await fetch(`${import.meta.env.VITE_SERVER_URL}/events/${id}`, {method: 'DELETE'});
     refresh();
 
     toast({
@@ -47,13 +48,15 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
 
   return (
     <>
-      <IconButton aria-label="Edit events" size="sm" onClick={onOpen} icon={<FiDatabase />} />
+      <Button variant="ghost" size="sm" onClick={onOpen}>
+        🪭
+      </Button>
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>
           <ModalBody>
             <AddEvent onAddEvent={refresh} />
-            <Table size="sm" variant="striped">
+            <Table size="sm">
               <Thead>
                 <Tr>
                   <Th>Date</Th>
@@ -65,16 +68,26 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                 {events.map(event => (
                   <Tr key={event.id}>
                     <Td>{event.date.toLocaleDateString()}</Td>
-                    <Td>{event.type}</Td>
+                    <Td>{label(event.type)}</Td>
                     {isChainEvent(event) ? (
                       <>
                         <Td>{event.chain}</Td>
                       </>
+                    ) : isTireEvent(event) ? (
+                      <Td>
+                        {event.model} {event.width}
+                      </Td>
                     ) : (
                       <Td />
                     )}
                     <Td textAlign="end">
-                      <IconButton aria-label="Remove" icon={<FaMinus />} size="xs" onClick={handleRemove(event.id)} />
+                      <IconButton
+                        variant="ghost"
+                        aria-label="Remove"
+                        icon={<FaMinus />}
+                        size="xs"
+                        onClick={handleRemove(event.id)}
+                      />
                     </Td>
                   </Tr>
                 ))}

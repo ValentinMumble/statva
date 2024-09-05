@@ -1,7 +1,7 @@
 import {createElement, useState} from 'react';
 import {IconButton, Table, Tbody, Td, Th, Thead, Tooltip, Tr} from '@chakra-ui/react';
 import {PiPlus} from 'react-icons/pi';
-import {useActivities, useAthlete, useLabels} from '../hooks';
+import {useActivities, useAthlete, useLabel} from '../hooks';
 import {arrayRotate, getActivityIcon, getActivityUrl, getGearEmoji, getWeekNumber} from '../models';
 import {DetailedActivity} from '../models/strava';
 
@@ -17,7 +17,7 @@ const WeekView = () => {
     sortDirection: 'asc',
     includedActivityTypes: [],
   });
-  const getWeekLabel = useLabels();
+  const label = useLabel();
 
   const incrementWeekCount = () => setWeekCount(weekCount => weekCount + 1);
 
@@ -60,7 +60,7 @@ const WeekView = () => {
       <Tbody>
         {Object.keys(lastWeeks).map(week => (
           <Tr key={week}>
-            <Td>{getWeekLabel(week)}</Td>
+            <Td>{label(week)}</Td>
             {mondayFirst.map(weekDay => {
               const activity = lastWeeks[week][weekDay] ?? null;
 

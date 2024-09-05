@@ -4,7 +4,7 @@ type Labels = {
   [key: string]: string;
 };
 
-const useLabels = () => {
+const useLabel = () => {
   const [labels, setLabels] = useState<Labels>({});
 
   useEffect(() => {
@@ -20,4 +20,4 @@ const useLabels = () => {
   return (key: string) => labels[key] ?? key;
 };
 
-export {useLabels};
+export {useLabel};
