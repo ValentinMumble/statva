@@ -15,9 +15,9 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import {FaMinus} from 'react-icons/fa';
-import {isChainEvent, Event, isTireEvent} from '../models';
+import {isChainEvent, Event, isTireEvent, getGearEmoji} from '../models';
 import {AddEvent} from './AddEvent';
-import {useEvents, useLabel} from '../hooks';
+import {useAthlete, useEvents, useLabels} from '../hooks';
 
 type EditEventsProps = {
   events: Event[];
@@ -27,7 +27,8 @@ type EditEventsProps = {
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
   const {isOpen, onOpen, onClose} = useDisclosure();
   const toast = useToast();
-  const label = useLabel();
+  const [label] = useLabels();
+  const athlete = useAthlete();
   const [events, refreshEvents] = useEvents();
   events.reverse();
 
@@ -61,6 +62,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                 <Tr>
                   <Th>Date</Th>
                   <Th>Type</Th>
+                  <Th>Bike</Th>
                   <Th>Chain</Th>
                 </Tr>
               </Thead>
@@ -71,14 +73,19 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                     <Td>{label(event.type)}</Td>
                     {isChainEvent(event) ? (
                       <>
+                        <Td>{getGearEmoji(athlete, event.bike)}</Td>
                         <Td>{event.chain}</Td>
                       </>
                     ) : isTireEvent(event) ? (
-                      <Td>
-                        {event.model} {event.width}
-                      </Td>
+                      <>
+                        <Td>{event.model}</Td>
+                        <Td>{event.width} mm</Td>
+                      </>
                     ) : (
-                      <Td />
+                      <>
+                        <Td />
+                        <Td />
+                      </>
                     )}
                     <Td textAlign="end">
                       <IconButton

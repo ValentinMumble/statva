@@ -24,6 +24,7 @@ export enum ActivityType {
   Surfing = 'Surfing',
   Swim = 'Swim',
   Tennis = 'Tennis',
+  TrailRun = 'TrailRun',
   VirtualRide = 'VirtualRide',
   Walk = 'Walk',
   WeightTraining = 'WeightTraining',

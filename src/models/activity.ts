@@ -8,7 +8,13 @@ import {ActivityType, DetailedActivity} from './strava';
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
-const DEFAULT_TYPES = [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide, ActivityType.Run];
+const DEFAULT_TYPES = [
+  ActivityType.Ride,
+  ActivityType.GravelRide,
+  ActivityType.VirtualRide,
+  ActivityType.Run,
+  ActivityType.TrailRun,
+];
 
 type ActivityFilter = {
   search?: string;
@@ -42,6 +48,7 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
     case ActivityType.RockClimbing:
       return GiMountainClimbing;
     case ActivityType.Run:
+    case ActivityType.TrailRun:
       return TbRun;
     case ActivityType.Tennis:
       return PiTennisBallBold;

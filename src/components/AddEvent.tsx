@@ -1,7 +1,7 @@
 import {ChangeEvent, useState} from 'react';
 import {HStack, IconButton, Input, Select, useToast} from '@chakra-ui/react';
 import {FaPlus} from 'react-icons/fa';
-import {useAthlete, useLabel} from '../hooks';
+import {useAthlete, useLabels} from '../hooks';
 import {getGearEmoji, removeNull} from '../models';
 
 const EVENT_TYPES = ['chain', 'battery'];
@@ -17,7 +17,7 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
   const [bike, setBike] = useState<string | null>(null);
   const athlete = useAthlete();
   const toast = useToast();
-  const label = useLabel();
+  const [label] = useLabels();
 
   const resetForm = () => {
     setChain(null);

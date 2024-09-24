@@ -94,7 +94,7 @@ const App = () => {
               <InputGroup>
                 <Input
                   disabled={isLoading}
-                  placeholder="Search"
+                  placeholder={import.meta.env.DEV ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
                   autoFocus={true}
                   value={search}
                   onChange={handleSearchChange}
