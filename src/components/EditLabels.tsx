@@ -60,6 +60,7 @@ const EditLabels = () => {
                 ))}
               </Tbody>
             </Table>
+            <Button onClick={handleSave}>Save</Button>
           </ModalBody>
         </ModalContent>
       </Modal>
