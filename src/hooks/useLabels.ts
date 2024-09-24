@@ -4,7 +4,7 @@ type Labels = {
   [key: string]: string;
 };
 
-const useLabel = () => {
+const useLabels = (): [(key: string) => string, Labels] => {
   const [labels, setLabels] = useState<Labels>({});
 
   useEffect(() => {
@@ -17,7 +17,8 @@ const useLabel = () => {
     fetchLabels();
   }, []);
 
-  return (key: string) => labels[key] ?? key;
+  return [(key: string) => labels[key] ?? key, labels];
 };
 
-export {useLabel};
+export {useLabels};
+export type {Labels};

@@ -3,6 +3,7 @@ export * from './ActivityListItem';
 export * from './ActivityTypeFilter';
 export * from './ChartAccordion';
 export * from './EditEvents';
+export * from './EditLabels';
 export * from './Stats';
 export * from './WeekView';
 export * from './YearRangeSlider';

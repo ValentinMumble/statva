@@ -4,6 +4,7 @@ import {FormControl, Select} from '@chakra-ui/react';
 import {useActivities, useAthlete, useEvents} from '../../hooks';
 import {ChainEvent, formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
 import {EditEvents} from '../../components';
+import {EditLabels} from '../EditLabels';
 
 const ChainChart = () => {
   const [gearId, setGearId] = useState<string>();
@@ -71,6 +72,7 @@ const ChainChart = () => {
           ))}
         </Select>
         <EditEvents events={events} onEditEvents={refreshEvents} />
+        <EditLabels />
       </FormControl>
       <Chart
         options={{
