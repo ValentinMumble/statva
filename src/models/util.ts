@@ -36,6 +36,7 @@ const getWeekNumber = (date: Date): number => {
   // Calculate full weeks to nearest Thursday
   return Math.ceil(((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
 };
+
 const extractEmoji = (text: string): string =>
   text
     .match(/\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/g)

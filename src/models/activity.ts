@@ -171,10 +171,16 @@ const formatPaceOrSpeed = (activity: DetailedActivity): string => {
   switch (activity.sport_type) {
     case ActivityType.Run:
       const secsPerKm = (activity.moving_time / activity.distance) * 1000;
-      const minutes = Math.floor(secsPerKm / 60);
-      const seconds = Math.round(secsPerKm - minutes * 60);
+      const minutesPerKm = Math.floor(secsPerKm / 60);
+      const secondsPerKm = Math.round(secsPerKm - minutesPerKm * 60);
 
-      return `${minutes}:${seconds.toString().padStart(2, '0')} /km`;
+      return `${minutesPerKm}:${secondsPerKm.toString().padStart(2, '0')} /km`;
+    case ActivityType.Swim:
+      const secsPer100m = (activity.moving_time / activity.distance) * 100;
+      const minutesPer100m = Math.floor(secsPer100m / 60);
+      const secondsPer100m = Math.round(secsPer100m - minutesPer100m * 60);
+
+      return `${minutesPer100m}:${secondsPer100m.toString().padStart(2, '0')} /100m`;
     default:
       return formatSpeed(activity.average_speed);
   }
