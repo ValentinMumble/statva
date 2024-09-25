@@ -2,6 +2,7 @@ import {GiSkier} from 'react-icons/gi';
 import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
 import {TbKayak, TbRun} from 'react-icons/tb';
 import {MdCommute, MdDirectionsWalk, MdHiking} from 'react-icons/md';
+import {FaSwimmer} from 'react-icons/fa';
 import {GiMountainClimbing} from 'react-icons/gi';
 import {SortType, SortDirection, formatSpeed} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
@@ -9,11 +10,12 @@ import {ActivityType, DetailedActivity} from './strava';
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
 const DEFAULT_TYPES = [
-  ActivityType.Ride,
   ActivityType.GravelRide,
-  ActivityType.VirtualRide,
+  ActivityType.Ride,
   ActivityType.Run,
+  ActivityType.Swim,
   ActivityType.TrailRun,
+  ActivityType.VirtualRide,
 ];
 
 type ActivityFilter = {
@@ -50,6 +52,8 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
     case ActivityType.Run:
     case ActivityType.TrailRun:
       return TbRun;
+    case ActivityType.Swim:
+      return FaSwimmer;
     case ActivityType.Tennis:
       return PiTennisBallBold;
     case ActivityType.VirtualRide:
