@@ -14,7 +14,7 @@ import {
   getAverageValue,
   formatPower,
 } from '../models';
-import {DetailedActivity, DetailedAthlete} from './strava';
+import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
 
 type Tag = {
   label: (activity: DetailedActivity, ftp: number) => string | number | null;
@@ -28,7 +28,7 @@ type Tag = {
 
 const TAGS: Tag[] = [
   {
-    label: ({distance}) => formatDistance(distance),
+    label: ({distance, type}) => (ActivityType.Swim === type ? formatElevation(distance) : formatDistance(distance)),
     isRelevant: ({distance}) => 0 < distance,
     tooltip: ({distance}) => `🗺️ ${formatDistance(distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'distance')),
