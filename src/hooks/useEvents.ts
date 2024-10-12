@@ -5,9 +5,12 @@ const useEvents = <T extends Event>(type?: string): [T[], () => void] => {
   const [events, setEvents] = useState<Event[]>([]);
 
   const fetchEvents = async () => {
-    const events = await (await fetch(`${import.meta.env.VITE_SERVER_URL}/events`)).json();
+    const rawEvents = await (await fetch(`${import.meta.env.VITE_SERVER_URL}/events`)).json();
 
-    setEvents(events.map((event: Event) => ({...event, date: new Date(event.date)})));
+    const events = rawEvents.map((event: Event) => ({...event, date: new Date(event.date)})) as Event[];
+    events.sort((a, b) => (a.date < b.date ? -1 : 1));
+
+    setEvents(events);
   };
 
   useEffect(() => {
