@@ -4,7 +4,7 @@ import {FaPlus} from 'react-icons/fa';
 import {useAthlete, useLabels} from '../hooks';
 import {getGearEmoji, removeNull} from '../models';
 
-const EVENT_TYPES = ['chain', 'battery'];
+const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
 
 type AddEventProps = {
   onAddEvent: () => void;
@@ -49,7 +49,7 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
 
     toast({
       status: 'success',
-      description: `Event added ${chain}`,
+      description: `Event added ${label(type)}`,
     });
     resetForm();
     onAddEvent();
