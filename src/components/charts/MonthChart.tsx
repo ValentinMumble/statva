@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {ChangeEvent, useState} from 'react';
 import Chart from 'react-apexcharts';
 import {
   FormControl,
@@ -9,13 +9,16 @@ import {
   NumberInputStepper,
   Radio,
   RadioGroup,
+  Select,
+  Spacer,
 } from '@chakra-ui/react';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, generatePeriodKeys, getOptions, getWeekNumber} from '../../models';
+import {ChartProps, generatePeriodKeys, getOptions, getTypes, getWeekNumber} from '../../models';
 import {ActivityType} from '../../models/strava';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
+const TYPES = ['Ride', 'Run', 'Swim'];
 
 type MonthChartProps = ChartProps & {
   timeframe?: 'month' | 'week';
@@ -30,6 +33,7 @@ const MonthChart = ({
   ...rest
 }: MonthChartProps) => {
   const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
+  const [type, setType] = useState<string>(TYPES[0]);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
@@ -38,11 +42,12 @@ const MonthChart = ({
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
+    includedActivityTypes: getTypes(type as ActivityType),
     ...filter,
   });
   const [label] = useLabels();
 
+  const handleTypeChange = ({target}: ChangeEvent<HTMLSelectElement>) => setType(target.value);
   const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
     setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
@@ -65,7 +70,15 @@ const MonthChart = ({
 
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" gap={4}>
+      <FormControl display="flex" alignItems="center" justifyContent="end" gap={4} padding="0 15px">
+        <Select size="sm" width="70px" value={type} onChange={handleTypeChange}>
+          {TYPES.map(type => (
+            <option key={type} value={type}>
+              {label(type)}
+            </option>
+          ))}
+        </Select>
+        <Spacer />
         <RadioGroup value={timeframe} display="flex" gap={4} onChange={handleTimeframeChange}>
           <Radio value="month">Month</Radio>
           <Radio value="week">Week</Radio>

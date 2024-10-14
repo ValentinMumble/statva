@@ -68,7 +68,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
   const labels = 'week' === timeframe ? Object.keys(sliced).map(label) : Object.keys(sliced);
 
-  const distinctTypes = Object.values(sliced).reduce(
+  const distinctTypes: string[] = Object.values(sliced).reduce(
     (types: string[], entry: {[type: string]: number} | null) =>
       null === entry ? types : [...new Set([...types, ...Object.keys(entry)])],
     []

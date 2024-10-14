@@ -1,19 +1,10 @@
 import {useState} from 'react';
 import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, VStack, Skeleton} from '@chakra-ui/react';
 import {useActivities, useAthlete} from '../hooks';
-import {STATS} from '../models';
+import {getTypes, STATS} from '../models';
 import {ActivityType} from '../models/strava';
 
 const TYPES = ['Ride', 'Run', 'Swim'];
-
-const getTypes = (type: ActivityType): ActivityType[] => {
-  switch (type) {
-    case ActivityType.Ride:
-      return [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
-    default:
-      return [type];
-  }
-};
 
 const Stats = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
