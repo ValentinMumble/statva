@@ -22,7 +22,7 @@ const STATS: {[key: string]: Stat[][]} = {
   Ride: [
     [
       {
-        label: '🚲',
+        label: '🚴',
         helpText: 'Ride count',
         number: activities => activities.length,
       },

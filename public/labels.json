@@ -21,5 +21,8 @@
   "chain": "🔗",
   "battery": "🔋",
   "tire": "🛞",
-  "brake_pad": "🧇"
+  "brake_pad": "🧇",
+  "Ride": "🚴",
+  "Run": "🏃",
+  "Swim": "🏊"
 }

@@ -30,6 +30,15 @@ type ActivityFilter = {
   minTime?: number;
 };
 
+const getTypes = (type: ActivityType): ActivityType[] => {
+  switch (type) {
+    case ActivityType.Ride:
+      return [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
+    default:
+      return [type];
+  }
+};
+
 const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
   if (isCommute) {
     return MdCommute;
@@ -199,5 +208,6 @@ export {
   getMaxValue,
   getPowerZone,
   getTotalValue,
+  getTypes,
 };
 export type {ActivityFilter};
