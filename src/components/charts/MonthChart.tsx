@@ -18,7 +18,7 @@ import {ActivityType} from '../../models/strava';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
-const TYPES = ['Ride', 'Run', 'Swim'];
+const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
 type MonthChartProps = ChartProps & {
   timeframe?: 'month' | 'week';

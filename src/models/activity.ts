@@ -14,6 +14,7 @@ const DEFAULT_TYPES = [
   ActivityType.Ride,
   ActivityType.Run,
   ActivityType.Swim,
+  ActivityType.Tennis,
   ActivityType.TrailRun,
   ActivityType.VirtualRide,
 ];

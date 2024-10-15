@@ -4,7 +4,7 @@ import {useActivities, useAthlete} from '../hooks';
 import {getTypes, STATS} from '../models';
 import {ActivityType} from '../models/strava';
 
-const TYPES = ['Ride', 'Run', 'Swim'];
+const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
 const Stats = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
