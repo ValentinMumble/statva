@@ -22,7 +22,7 @@ const STATS: {[key: string]: Stat[][]} = {
   Ride: [
     [
       {
-        label: '🚴',
+        label: '🚲',
         helpText: 'Ride count',
         number: activities => activities.length,
       },
@@ -126,7 +126,7 @@ const STATS: {[key: string]: Stat[][]} = {
   Run: [
     [
       {
-        label: '🏃',
+        label: '👟',
         helpText: 'Run count',
         number: activities => activities.length,
       },
@@ -149,7 +149,7 @@ const STATS: {[key: string]: Stat[][]} = {
   Swim: [
     [
       {
-        label: '🏊',
+        label: '🩲',
         helpText: 'Swim count',
         number: activities => activities.length,
       },
@@ -171,6 +171,24 @@ const STATS: {[key: string]: Stat[][]} = {
         label: '🍕',
         helpText: 'Calories burned',
         number: activities => Math.round(getTotalValue(activities, 'kilojoules') * KJ_TO_CAL_RATIO),
+      },
+    ],
+  ],
+  Tennis: [
+    [
+      {
+        label: '🎾',
+        helpText: 'Tennis sessions',
+        number: activities => activities.length,
+      },
+      {
+        label: '⏱️',
+        helpText: 'Spent playing',
+        number: activities => (
+          <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
+            {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
+          </Tooltip>
+        ),
       },
     ],
   ],
