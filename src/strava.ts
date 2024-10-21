@@ -1,12 +1,13 @@
 import {DetailedActivity, DetailedAthlete} from './models/strava';
 
-const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
-const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
-const refreshToken = import.meta.env.VITE_STRAVA_REFRESH_TOKEN;
-
+const USE_LOCAL_ACTIVITIES = true;
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ITEMS_PER_PAGE = 50;
+
+const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
+const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
+const refreshToken = import.meta.env.VITE_STRAVA_REFRESH_TOKEN;
 
 let token: string | null = null;
 
@@ -42,8 +43,8 @@ const fetchAthlete = async (): Promise<DetailedAthlete> => {
 };
 
 const fetchActivities = async (page: number): Promise<DetailedActivity[]> => {
-  if (import.meta.env.DEV) {
-    return await(await fetch('/local_activities.json')).json();
+  if (import.meta.env.DEV && USE_LOCAL_ACTIVITIES) {
+    return await (await fetch('/local_activities.json')).json();
   }
 
   const accessToken = await fetchAccessToken();

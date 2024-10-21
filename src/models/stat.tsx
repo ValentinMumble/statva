@@ -167,11 +167,6 @@ const STATS: {[key: string]: Stat[][]} = {
           </Tooltip>
         ),
       },
-      {
-        label: '🍕',
-        helpText: 'Calories burned',
-        number: activities => Math.round(getTotalValue(activities, 'kilojoules') * KJ_TO_CAL_RATIO),
-      },
     ],
   ],
   Tennis: [

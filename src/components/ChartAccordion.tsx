@@ -10,6 +10,7 @@ import {
   FTPChart,
   TypeMonthChart,
   ChainChart,
+  EventChart,
 } from './charts';
 import {formatDistance, formatDuration, formatElevation} from '../models';
 
@@ -19,8 +20,12 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <ChainChart />,
   },
   {
+    label: 'Event odometer 📟',
+    component: <EventChart />,
+  },
+  {
     label: 'Distance / time 🗺️',
-    component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} />,
+    component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 1)} />,
   },
   {
     label: 'Activities / time 🛹',
