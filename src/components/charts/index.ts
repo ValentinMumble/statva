@@ -1,6 +1,7 @@
 export * from './AverageGearChart';
 export * from './ChainChart';
 export * from './EddingtonChart';
+export * from './EventChart';
 export * from './FTPChart';
 export * from './GearChart';
 export * from './HeartChart';
