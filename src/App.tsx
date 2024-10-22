@@ -78,13 +78,13 @@ const App = () => {
     );
 
   return (
-    <Stack padding={[2, 7]} alignItems="start" gap={5} direction={['column-reverse', 'row']}>
-      <VStack align="stretch" flexBasis="38%" gap={7} width={['100vw', null]}>
+    <Stack padding="0 20px" alignItems="start" gap={5} direction={['column-reverse', 'row']}>
+      <VStack align="stretch" flexBasis="38%" gap={7} width={['100vw', null]} height="100vh" overflowY="scroll">
         <Stats />
         <ChartAccordion />
         <WeekView />
       </VStack>
-      <VStack align="stretch" flexBasis="62%">
+      <VStack align="stretch" flexBasis="62%" height="100vh" overflowY="scroll">
         <Accordion allowMultiple={true}>
           <AccordionItem border="none">
             <HStack gap="10px">
