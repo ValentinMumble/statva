@@ -12,7 +12,7 @@ import {
   ChainChart,
   EventChart,
 } from './charts';
-import {formatDistance, formatDuration, formatElevation} from '../models';
+import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
@@ -45,6 +45,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
         type="area"
       />
     ),
+  },
+  {
+    label: 'Calories / time 🍕',
+    component: <MonthChart data="kilojoules" dataLabel="🍕" formatter={formatCalories} />,
   },
   {
     label: 'FTP / time ⚡️',

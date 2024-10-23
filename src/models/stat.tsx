@@ -8,7 +8,7 @@ import {
   getMaxValue,
   eddingtonNumber,
   formatDuration,
-  KJ_TO_CAL_RATIO,
+  formatCalories,
 } from '../models';
 import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
 
@@ -77,8 +77,8 @@ const STATS: {[key: string]: Stat[][]} = {
       },
       {
         label: '🍕',
-        helpText: 'Calories burned',
-        number: activities => Math.round(getTotalValue(activities, 'kilojoules') * KJ_TO_CAL_RATIO),
+        helpText: 'Burned',
+        number: activities => formatCalories(getTotalValue(activities, 'kilojoules')),
       },
       {
         label: '🏁',

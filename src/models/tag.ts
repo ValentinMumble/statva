@@ -6,13 +6,13 @@ import {
   formatSpeed,
   getHeartZone,
   getPowerZone,
-  KJ_TO_CAL_RATIO,
   formatPaceOrSpeed,
   getTotalValue,
   formatDurationInDays,
   getMaxValue,
   getAverageValue,
   formatPower,
+  formatCalories,
 } from '../models';
 import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
 
@@ -141,7 +141,7 @@ const TAGS: Tag[] = [
     help: 'Intensity',
   },
   {
-    label: ({kilojoules}) => (undefined === kilojoules ? null : `${Math.round(kilojoules * KJ_TO_CAL_RATIO)} kcal`),
+    label: ({kilojoules}) => (undefined === kilojoules ? null : formatCalories(kilojoules)),
     isRelevant: ({kilojoules}) => 0 < (kilojoules ?? 0),
     total: activities => Math.round(getTotalValue(activities, 'kilojoules')),
     sortType: 'kilojoules',
