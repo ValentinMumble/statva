@@ -27,7 +27,7 @@ import {
 import {SortType, SortDirection, getGearEmoji, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES} from './models';
 import {ActivityType} from './models/strava';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
-import {useActivities, useAthlete} from './hooks';
+import {useActivities, useAthlete, useFtp} from './hooks';
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
@@ -41,6 +41,7 @@ const App = () => {
   const [bgOption, setBgOption] = useState<string>('date');
 
   const athlete = useAthlete();
+  const getFtp = useFtp();
   const [activities, refetch] = useActivities({
     search,
     includedActivityTypes: types,
@@ -180,7 +181,14 @@ const App = () => {
           <Tbody>
             {isLoading ? (
               [...new Array(20)].map((_, index) => (
-                <ActivityListItem key={index} activity={null} bgOption={bgOption} enabledSorts={displayedSorts} />
+                <ActivityListItem
+                  key={index}
+                  athlete={athlete}
+                  getFtp={getFtp}
+                  activity={null}
+                  bgOption={bgOption}
+                  enabledSorts={displayedSorts}
+                />
               ))
             ) : 0 === activities.length ? (
               <Tr>
@@ -190,6 +198,8 @@ const App = () => {
               activities.map(activity => (
                 <ActivityListItem
                   key={activity.id}
+                  athlete={athlete}
+                  getFtp={getFtp}
                   activity={activity}
                   activeSort={activeSort}
                   bgOption={bgOption}
