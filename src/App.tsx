@@ -51,7 +51,7 @@ const App = () => {
     sortDirection,
   });
 
-  const handleRefetch = () => refetch(1);
+  const handleRefetch = () => refetch(1, false, 20);
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);

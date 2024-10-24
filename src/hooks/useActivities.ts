@@ -14,7 +14,10 @@ const useActivities = ({
   gearId,
   years = [],
   minTime,
-}: ActivityFilter): [DetailedActivity[] | null, (page: number) => Promise<void>] => {
+}: ActivityFilter): [
+  DetailedActivity[] | null,
+  (page: number, fetchNext?: boolean, items?: number) => Promise<void>
+] => {
   const [activities, refetch] = useContext(ActivitiesContext);
   const getFtp = useFtp();
 

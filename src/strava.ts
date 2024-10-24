@@ -42,7 +42,7 @@ const fetchAthlete = async (): Promise<DetailedAthlete> => {
   return await response.json();
 };
 
-const fetchActivities = async (page: number): Promise<DetailedActivity[]> => {
+const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<DetailedActivity[]> => {
   if (import.meta.env.DEV && USE_LOCAL_ACTIVITIES) {
     return await (await fetch('/local_activities.json')).json();
   }
@@ -50,7 +50,7 @@ const fetchActivities = async (page: number): Promise<DetailedActivity[]> => {
   const accessToken = await fetchAccessToken();
 
   const response = await fetch(
-    `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
+    `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${items}`
   );
 
   return await response.json();
