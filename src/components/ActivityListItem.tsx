@@ -1,7 +1,6 @@
 import {Icon, Skeleton, Tag, Td, Text, Tooltip, Tr} from '@chakra-ui/react';
 import {SortType, TAGS, getActivityIcon, getActivityUrl, getGearEmoji, getHeartZone, getPowerZone} from '../models';
 import {DetailedActivity, DetailedAthlete} from '../models/strava';
-import {useAthlete, useFtp} from '../hooks';
 
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
@@ -33,17 +32,16 @@ const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: Detai
 };
 
 type ActivityListItemProps = {
+  athlete: DetailedAthlete | null;
   activity: DetailedActivity | null;
   activeSort?: SortType;
   enabledSorts: SortType[];
   bgOption: string;
+  getFtp: (date: Date) => number;
 };
 
-const ActivityListItem = ({activity, activeSort, enabledSorts, bgOption}: ActivityListItemProps) => {
-  const athlete = useAthlete();
-  const getFtp = useFtp();
-
-  if (null === activity) {
+const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
+  if (null === activity || null === athlete) {
     return (
       <Tr>
         <Td padding="8px" width="1px">
