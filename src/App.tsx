@@ -41,7 +41,7 @@ const App = () => {
   const [bgOption, setBgOption] = useState<string>('date');
 
   const athlete = useAthlete();
-  const [activities, isLoading] = useActivities({
+  const [activities, refetch] = useActivities({
     search,
     includedActivityTypes: types,
     sort: activeSort,
@@ -51,6 +51,7 @@ const App = () => {
     sortDirection,
   });
 
+  const handleRefetch = () => refetch(1);
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
@@ -77,6 +78,8 @@ const App = () => {
         : [...displayedSorts, sortType]
     );
 
+  const isLoading = null === activities;
+
   return (
     <Stack padding="0 20px" alignItems="start" gap={5} direction={['column-reverse', 'row']}>
       <VStack align="stretch" flexBasis="38%" gap={7} width={['100vw', null]} height="100vh" overflowY="scroll">
@@ -87,7 +90,10 @@ const App = () => {
       <VStack align="stretch" flexBasis="62%" height="100vh" overflowY="scroll">
         <Accordion allowMultiple={true}>
           <AccordionItem border="none">
-            <HStack gap="10px">
+            <HStack gap="5px">
+              <Button variant="ghost" onClick={handleRefetch}>
+                🔄
+              </Button>
               <Button variant="ghost" onClick={handleSortDirectionToggle}>
                 {'asc' === sortDirection ? '⬆️' : '⬇️'}
               </Button>
@@ -100,7 +106,7 @@ const App = () => {
                   onChange={handleSearchChange}
                 />
                 <InputRightElement marginRight="5px">
-                  <Tag>{activities.length}</Tag>
+                  <Tag>{activities?.length ?? 0}</Tag>
                 </InputRightElement>
               </InputGroup>
               <Select width="120px" value={bgOption} onChange={handleBgOptionChange}>

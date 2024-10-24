@@ -36,10 +36,10 @@ const EddingtonChart = ({}: EddingtonChartProps) => {
     includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
   });
 
-  const dataPerMonth = activities.reduce((eddingtonByMonth: {[monthYear: string]: number}, activity) => {
+  const dataPerMonth = (activities ?? []).reduce((eddingtonByMonth: {[monthYear: string]: number}, activity) => {
     const date = new Date(activity.start_date);
     const monthYear = `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
-    eddingtonByMonth[monthYear] = eddingtonNumber(getRidesBeforeMonth(activities, date))[0];
+    eddingtonByMonth[monthYear] = eddingtonNumber(getRidesBeforeMonth(activities ?? [], date))[0];
 
     return eddingtonByMonth;
   }, {});

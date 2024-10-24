@@ -11,7 +11,7 @@ type ActivityTypeFilterProps = {
 
 const ActivityTypeFilter = ({types, onTypesChange}: ActivityTypeFilterProps) => {
   const [activities] = useActivities({withPrivate: true});
-  const uniqueTypes = [...new Set([...DEFAULT_TYPES, ...activities.map(({sport_type}) => sport_type).sort()])];
+  const uniqueTypes = [...new Set([...DEFAULT_TYPES, ...(activities ?? []).map(({sport_type}) => sport_type).sort()])];
 
   const handleIconClick = (type: ActivityType) => (event: MouseEvent) => {
     onTypesChange([type]);

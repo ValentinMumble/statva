@@ -45,7 +45,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
 
   const handleCommuteChange = () => setWithCommute(withCommute => !withCommute);
 
-  const dataPerPeriod = activities.reduce(
+  const dataPerPeriod = (activities ?? []).reduce(
     (periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
       const date = new Date(activity.start_date);
       const period =
@@ -59,8 +59,8 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
       return periodMap;
     },
     generatePeriodKeys(
-      new Date(activities.at(0)?.start_date ?? 0),
-      new Date(activities.at(-1)?.start_date ?? 0),
+      new Date((activities ?? []).at(0)?.start_date ?? 0),
+      new Date((activities ?? []).at(-1)?.start_date ?? 0),
       timeframe
     )
   );
