@@ -3,7 +3,7 @@ import {DetailedActivity, DetailedAthlete} from './models/strava';
 const USE_LOCAL_ACTIVITIES = true;
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
-const ITEMS_PER_PAGE = 50;
+const ITEMS_PER_PAGE = 100;
 
 const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
 const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
