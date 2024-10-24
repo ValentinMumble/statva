@@ -53,7 +53,7 @@ const MonthChart = ({
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
 
-  const dataPerPeriod = activities.reduce((periodMap: {[period: string]: number}, activity) => {
+  const dataPerPeriod = (activities ?? []).reduce((periodMap: {[period: string]: number}, activity) => {
     const date = new Date(activity.start_date);
     const period =
       'week' === timeframe
@@ -62,7 +62,7 @@ const MonthChart = ({
     periodMap[period] = (periodMap[period] ?? 0) + (typeof data === 'number' ? data : (activity[data] as number));
 
     return periodMap;
-  }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe));
+  }, generatePeriodKeys(new Date((activities ?? []).at(0)?.start_date ?? 0), new Date((activities ?? []).at(-1)?.start_date ?? 0), timeframe));
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
   const labels = 'week' === timeframe ? Object.keys(sliced).map(label) : Object.keys(sliced);

@@ -41,7 +41,7 @@ const HeartChart = () => {
     includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
   });
 
-  const rides = activities.filter(
+  const rides = (activities ?? []).filter(
     ({average_heartrate, weighted_average_watts, distance}) =>
       (0 < (average_heartrate ?? 0) || 0 < (weighted_average_watts ?? 0)) && MIN_DISTANCE_METERS < distance
   );

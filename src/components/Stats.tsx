@@ -10,14 +10,14 @@ const Stats = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
 
   const athlete = useAthlete();
-  const [activities, isActivityLoading] = useActivities({
+  const [activities] = useActivities({
     withPrivate: true,
     includedActivityTypes: getTypes(TYPES[typeIndex] as ActivityType),
   });
 
   const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);
 
-  const isLoading = null === athlete || isActivityLoading;
+  const isLoading = null === athlete || null === activities;
 
   return (
     <VStack alignItems="stretch" onClick={toggleTypeChange}>

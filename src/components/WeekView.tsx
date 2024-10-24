@@ -21,7 +21,7 @@ const WeekView = () => {
 
   const incrementWeekCount = () => setWeekCount(weekCount => weekCount + 1);
 
-  const dataPerWeek = activities.reduce(
+  const dataPerWeek = (activities ?? []).reduce(
     (weekMap: {[weekId: string]: {[weekday: string]: DetailedActivity}}, activity) => {
       const date = new Date(activity.start_date);
       const weekId = `${getWeekNumber(date)}/${date.getUTCFullYear()}`;

@@ -11,7 +11,7 @@ const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
   });
   const athlete = useAthlete();
 
-  const dataPerGear = activities.reduce((gearMap: {[gearId: string]: number}, activity) => {
+  const dataPerGear = (activities ?? []).reduce((gearMap: {[gearId: string]: number}, activity) => {
     gearMap[activity.gear_id] =
       (gearMap[activity.gear_id] ?? 0) + (typeof data === 'number' ? data : (activity[data] as number));
 

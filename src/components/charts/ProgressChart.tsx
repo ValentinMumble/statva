@@ -37,9 +37,9 @@ const ProgressChart = ({search}: ProgressChartProps) => {
     sortDirection: 'asc',
   });
 
-  const averageSpeedSerie = activities.map(({average_speed}) => average_speed);
-  const averagePowerSerie = activities.map(({weighted_average_watts}) => weighted_average_watts ?? null);
-  const labels = activities.map(({start_date}) => new Date(start_date).toLocaleDateString());
+  const averageSpeedSerie = (activities ?? []).map(({average_speed}) => average_speed);
+  const averagePowerSerie = (activities ?? []).map(({weighted_average_watts}) => weighted_average_watts ?? null);
+  const labels = (activities ?? []).map(({start_date}) => new Date(start_date).toLocaleDateString());
   const series = [
     {name: '🏁', data: averageSpeedSerie},
     {name: '⚡️', data: averagePowerSerie},

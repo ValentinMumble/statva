@@ -11,7 +11,7 @@ const AverageGearChart = () => {
   });
   const athlete = useAthlete();
 
-  const dataPerGear = activities.reduce((gearMap: {[gearId: string]: number[]}, activity) => {
+  const dataPerGear = (activities ?? []).reduce((gearMap: {[gearId: string]: number[]}, activity) => {
     const [cumulativeDistance, movingTime] = gearMap[activity.gear_id] ?? [0, 0];
     gearMap[activity.gear_id] = [cumulativeDistance + activity.distance, movingTime + activity.moving_time];
 
