@@ -1,5 +1,6 @@
 import {MouseEvent} from 'react';
-import {Checkbox, CheckboxGroup, HStack, Icon} from '@chakra-ui/react';
+import {CheckboxGroup, HStack, Icon} from '@chakra-ui/react';
+import {Checkbox} from '../components/ui';
 import {ActivityType} from '../models/strava';
 import {useActivities} from '../hooks';
 import {DEFAULT_TYPES, getActivityIcon} from '../models';
@@ -18,9 +19,11 @@ const ActivityTypeFilter = ({types, onTypesChange}: ActivityTypeFilterProps) => 
     event.preventDefault();
   };
 
+  const handleTypeChange = (value: any) => onTypesChange(value); //TODO
+
   return (
     <HStack justifyContent="space-between">
-      <CheckboxGroup value={types} onChange={onTypesChange}>
+      <CheckboxGroup value={types} onChange={handleTypeChange}>
         {uniqueTypes.map(type => (
           <Checkbox key={type} value={type} title={type}>
             <Icon onClick={handleIconClick(type)} as={getActivityIcon(type)} />

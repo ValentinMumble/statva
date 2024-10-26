@@ -1,10 +1,10 @@
 import {ChangeEvent, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {FormControl, Radio, RadioGroup, Select} from '@chakra-ui/react';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 import {formatDistance, getEventLabel, getOptions, getRidesBetween} from '../../models';
 import {DetailedActivity} from '../../models/strava';
 import {EditEvents} from '../../components';
+import {NativeSelectField, NativeSelectRoot, Radio, RadioGroup} from '../ui';
 
 const EVENT_TYPES = ['tire', 'brake_pad', 'battery'];
 const SUPER6 = 'b13440652';
@@ -23,7 +23,7 @@ const EventChart = () => {
   });
 
   const handleEventTypeChange = ({target}: ChangeEvent<HTMLSelectElement>) => setEventType(target.value);
-  const handleDataChange = (data: keyof DetailedActivity) => setData(data);
+  const handleDataChange = (details: any) => setData(details.value); //todo
 
   const odometer = events.reduce((odometer: {[id: string]: number[]}, event, index) => {
     const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
@@ -56,20 +56,22 @@ const EventChart = () => {
 
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px" gap="8px">
-        <RadioGroup value={data} display="flex" gap={4} onChange={handleDataChange}>
+      <div>
+        <RadioGroup value={data} display="flex" gap={4} onValueChange={handleDataChange}>
           <Radio value="distance">🗺️</Radio>
           <Radio value="total_elevation_gain">⛰️</Radio>
         </RadioGroup>
-        <Select size="sm" width="70px" value={eventType} onChange={handleEventTypeChange}>
-          {EVENT_TYPES.map(eventType => (
-            <option key={eventType} value={eventType}>
-              {label(eventType)}
-            </option>
-          ))}
-        </Select>
+        <NativeSelectRoot>
+          <NativeSelectField width="70px" value={eventType} onChange={handleEventTypeChange}>
+            {EVENT_TYPES.map(eventType => (
+              <option key={eventType} value={eventType}>
+                {label(eventType)}
+              </option>
+            ))}
+          </NativeSelectField>
+        </NativeSelectRoot>
         <EditEvents events={events} onEditEvents={refreshEvents} />
-      </FormControl>
+      </div>
       <Chart
         options={{
           ...chartOptions,

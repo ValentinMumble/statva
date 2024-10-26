@@ -1,6 +1,7 @@
-import {Icon, Skeleton, Tag, Td, Text, Tooltip, Tr} from '@chakra-ui/react';
+import {Icon, Skeleton, Table, Text} from '@chakra-ui/react';
 import {SortType, TAGS, getActivityIcon, getActivityUrl, getGearEmoji, getHeartZone, getPowerZone} from '../models';
 import {DetailedActivity, DetailedAthlete} from '../models/strava';
+import {Tooltip, Tag} from '../components/ui';
 
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
@@ -43,35 +44,35 @@ type ActivityListItemProps = {
 const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
   if (null === activity || null === athlete) {
     return (
-      <Tr>
-        <Td padding="8px" width="1px">
+      <Table.Row>
+        <Table.Cell padding="8px" width="1px">
           <Skeleton>i</Skeleton>
-        </Td>
-        <Td padding="4px">
+        </Table.Cell>
+        <Table.Cell padding="4px">
           <Skeleton>name</Skeleton>
-        </Td>
+        </Table.Cell>
         {enabledSorts.map(sort => (
-          <Td key={sort} padding="4px" width={`${Math.random() * 60}px`}>
+          <Table.Cell key={sort} padding="4px" width={`${Math.random() * 60}px`}>
             <Skeleton>tag</Skeleton>
-          </Td>
+          </Table.Cell>
         ))}
-      </Tr>
+      </Table.Row>
     );
   }
 
   const ftp = getFtp(new Date(activity.start_date));
 
   return (
-    <Tr onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
-      <Td padding={0} textAlign="center" width="1px">
-        <Icon as={getActivityIcon(activity.sport_type, activity.commute)} />
-      </Td>
-      <Td padding="4px 0px">
+    <Table.Row onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
+      <Table.Cell padding={0} textAlign="center" width="1px">
+        {/* <Icon as={getActivityIcon(activity.sport_type, activity.commute)} /> */}
+      </Table.Cell>
+      <Table.Cell padding="4px 0px">
         <Text bg={getBgColor(bgOption, activity, athlete)} fontSize="1rem" borderRadius="8px" padding="4px 10px">
           <Tooltip
-            hasArrow={true}
-            placement="right"
-            label={
+            showArrow={true}
+            // placement="right"
+            content={
               <>
                 {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
                 {getGearEmoji(athlete, activity.gear_id)}
@@ -83,9 +84,9 @@ const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption
             </a>
           </Tooltip>
         </Text>
-      </Td>
+      </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => (
-        <Td
+        <Table.Cell
           key={tag.sortType}
           textAlign="center"
           padding="0px 2px"
@@ -93,15 +94,15 @@ const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption
           opacity={tag.isRelevant(activity) ? 0.9 : 0.4}
         >
           {null !== tag.label(activity, ftp) && (
-            <Tooltip label={tag.tooltip?.(activity, athlete)}>
+            <Tooltip content={tag.tooltip?.(activity, athlete)}>
               <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : 'facebook'}>
                 {tag.label(activity, ftp)}
               </Tag>
             </Tooltip>
           )}
-        </Td>
+        </Table.Cell>
       ))}
-    </Tr>
+    </Table.Row>
   );
 };
 

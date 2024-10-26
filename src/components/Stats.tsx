@@ -1,8 +1,9 @@
 import {useState} from 'react';
-import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, VStack, Skeleton} from '@chakra-ui/react';
+import {VStack, Skeleton, HStack} from '@chakra-ui/react';
 import {useActivities, useAthlete} from '../hooks';
 import {getTypes, STATS} from '../models';
 import {ActivityType} from '../models/strava';
+import {StatHelpText, StatLabel, StatRoot, StatValueText} from '../components/ui';
 
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
@@ -22,21 +23,21 @@ const Stats = () => {
   return (
     <VStack alignItems="stretch" onClick={toggleTypeChange}>
       {STATS[TYPES[typeIndex]].map((statGroup, index) => (
-        <StatGroup key={index}>
+        <HStack key={index}>
           {statGroup.map(stat => (
-            <Stat key={stat.label} size={['sm']}>
+            <StatRoot key={stat.label} size={['sm']}>
               <StatLabel>{stat.label}</StatLabel>
               {isLoading ? (
                 <Skeleton width="70%">
-                  <StatNumber>Loading</StatNumber>
+                  <StatHelpText>Loading</StatHelpText>
                 </Skeleton>
               ) : (
-                <StatNumber fontSize="1.2em">{stat.number(activities, athlete)}</StatNumber>
+                <StatValueText fontSize="1.2em">{stat.number(activities, athlete)}</StatValueText>
               )}
               <StatHelpText fontSize={['sm']}>{stat.helpText}</StatHelpText>
-            </Stat>
+            </StatRoot>
           ))}
-        </StatGroup>
+        </HStack>
       ))}
     </VStack>
   );

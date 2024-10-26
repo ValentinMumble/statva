@@ -1,10 +1,10 @@
 import {ChangeEvent, useEffect, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {FormControl, Select} from '@chakra-ui/react';
 import {useActivities, useAthlete, useEvents} from '../../hooks';
 import {ChainEvent, formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
 import {EditEvents} from '../../components';
 import {EditLabels} from '../EditLabels';
+import {NativeSelectField, NativeSelectRoot} from '../../components/ui';
 
 const ChainChart = () => {
   const [gearId, setGearId] = useState<string>();
@@ -63,17 +63,19 @@ const ChainChart = () => {
 
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" paddingEnd="6px" gap="8px">
-        <Select size="sm" width="70px" value={gearId} onChange={handleGearChange}>
-          {relevantBikes.map(id => (
-            <option key={id} value={id}>
-              {getGearEmoji(athlete, id)}
-            </option>
-          ))}
-        </Select>
+      <div>
+        <NativeSelectRoot>
+          <NativeSelectField width="70px" value={gearId} onChange={handleGearChange}>
+            {relevantBikes.map(id => (
+              <option key={id} value={id}>
+                {getGearEmoji(athlete, id)}
+              </option>
+            ))}
+          </NativeSelectField>
+        </NativeSelectRoot>
         <EditEvents events={events} onEditEvents={refreshEvents} />
         <EditLabels />
-      </FormControl>
+      </div>
       <Chart
         options={{
           ...chartOptions,

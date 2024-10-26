@@ -1,23 +1,9 @@
-import {
-  Button,
-  IconButton,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalOverlay,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  useDisclosure,
-  useToast,
-} from '@chakra-ui/react';
+import {Button, IconButton, Table, useDisclosure} from '@chakra-ui/react';
 import {FaMinus} from 'react-icons/fa';
 import {isChainEvent, Event, isTireEvent, getGearEmoji} from '../models';
 import {AddEvent} from './AddEvent';
 import {useAthlete, useEvents, useLabels} from '../hooks';
+import {DialogBackdrop, DialogContent, DialogRoot} from '../components/ui';
 
 type EditEventsProps = {
   events: Event[];
@@ -25,8 +11,7 @@ type EditEventsProps = {
 };
 
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
-  const {isOpen, onOpen, onClose} = useDisclosure();
-  const toast = useToast();
+  const {open, onOpen, onClose} = useDisclosure();
   const [label] = useLabels();
   const athlete = useAthlete();
   const [events, refreshEvents] = useEvents();
@@ -41,10 +26,10 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
     await fetch(`${import.meta.env.VITE_SERVER_URL}/events/${id}`, {method: 'DELETE'});
     refresh();
 
-    toast({
-      status: 'success',
-      description: 'Event removed',
-    });
+    // toast({
+    //   status: 'success',
+    //   description: 'Event removed',
+    // });
   };
 
   return (
@@ -52,57 +37,51 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
       <Button variant="ghost" size="sm" onClick={onOpen}>
         🪭
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalBody>
-            <AddEvent onAddEvent={refresh} />
-            <Table size="sm">
-              <Thead>
-                <Tr>
-                  <Th>Date</Th>
-                  <Th>Type</Th>
-                  <Th>Bike</Th>
-                  <Th>Chain</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {events.map(event => (
-                  <Tr key={event.id}>
-                    <Td>{event.date.toLocaleDateString()}</Td>
-                    <Td>{label(event.type)}</Td>
-                    {isChainEvent(event) ? (
-                      <>
-                        <Td>{getGearEmoji(athlete, event.bike)}</Td>
-                        <Td>{event.chain}</Td>
-                      </>
-                    ) : isTireEvent(event) ? (
-                      <>
-                        <Td>{event.model}</Td>
-                        <Td>{event.width} mm</Td>
-                      </>
-                    ) : (
-                      <>
-                        <Td />
-                        <Td />
-                      </>
-                    )}
-                    <Td textAlign="end">
-                      <IconButton
-                        variant="ghost"
-                        aria-label="Remove"
-                        icon={<FaMinus />}
-                        size="xs"
-                        onClick={handleRemove(event.id)}
-                      />
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <DialogRoot open={open} onOpenChange={onClose} size="xl">
+        <DialogBackdrop />
+        <DialogContent>
+          <AddEvent onAddEvent={refresh} />
+          <Table.Root size="sm">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>Date</Table.ColumnHeader>
+                <Table.ColumnHeader>Type</Table.ColumnHeader>
+                <Table.ColumnHeader>Bike</Table.ColumnHeader>
+                <Table.ColumnHeader>Chain</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {events.map(event => (
+                <Table.Row key={event.id}>
+                  <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
+                  <Table.Cell>{label(event.type)}</Table.Cell>
+                  {isChainEvent(event) ? (
+                    <>
+                      <Table.Cell>{getGearEmoji(athlete, event.bike)}</Table.Cell>
+                      <Table.Cell>{event.chain}</Table.Cell>
+                    </>
+                  ) : isTireEvent(event) ? (
+                    <>
+                      <Table.Cell>{event.model}</Table.Cell>
+                      <Table.Cell>{event.width} mm</Table.Cell>
+                    </>
+                  ) : (
+                    <>
+                      <Table.Cell />
+                      <Table.Cell />
+                    </>
+                  )}
+                  <Table.Cell textAlign="end">
+                    <IconButton variant="ghost" aria-label="Remove" size="xs" onClick={handleRemove(event.id)}>
+                      <FaMinus />
+                    </IconButton>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </DialogContent>
+      </DialogRoot>
     </>
   );
 };

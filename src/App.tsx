@@ -1,29 +1,6 @@
 import {ChangeEvent, useState} from 'react';
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Button,
-  HStack,
-  Input,
-  InputGroup,
-  InputRightElement,
-  Select,
-  Skeleton,
-  Stack,
-  Switch,
-  Table,
-  Tag,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tooltip,
-  Tr,
-  VStack,
-} from '@chakra-ui/react';
+import {HStack, Input, Stack, Table, VStack} from '@chakra-ui/react';
+import {Tooltip, Button, InputGroup, NativeSelectRoot, Tag, NativeSelectField, Switch, Skeleton} from './components/ui';
 import {SortType, SortDirection, getGearEmoji, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES} from './models';
 import {ActivityType} from './models/strava';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
@@ -89,96 +66,101 @@ const App = () => {
         <WeekView />
       </VStack>
       <VStack align="stretch" flexBasis="62%" height="100vh" overflowY="scroll">
-        <Accordion allowMultiple={true}>
-          <AccordionItem border="none">
-            <HStack gap="5px">
-              <Button variant="ghost" onClick={handleRefetch}>
-                🔄
-              </Button>
-              <Button variant="ghost" onClick={handleSortDirectionToggle}>
-                {'asc' === sortDirection ? '⬆️' : '⬇️'}
-              </Button>
-              <InputGroup>
-                <Input
-                  disabled={isLoading}
-                  placeholder={import.meta.env.DEV ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
-                  autoFocus={true}
-                  value={search}
-                  onChange={handleSearchChange}
-                />
-                <InputRightElement marginRight="5px">
-                  <Tag>{activities?.length ?? 0}</Tag>
-                </InputRightElement>
-              </InputGroup>
-              <Select width="120px" value={bgOption} onChange={handleBgOptionChange}>
-                <option value="date">📅</option>
-                <option value="power-zone">⚡️</option>
-                <option value="heart-zone">🫀</option>
-              </Select>
-              <Select width="120px" placeholder="⚙️" value={gearId} onChange={handleGearChange}>
-                {null !== athlete &&
-                  [...athlete.bikes, ...athlete.shoes].map(({id}) => (
-                    <option key={id} value={id}>
-                      {getGearEmoji(athlete, id)}
-                    </option>
-                  ))}
-                <option value="null">🤷</option>
-              </Select>
-              <Button variant="ghost" isActive={withPrivate} onClick={handlePrivateToggle}>
-                🔒
-              </Button>
-              <Button variant="ghost" onClick={handleSearchClear}>
-                🗑️
-              </Button>
-              <AccordionButton width="unset">
-                <AccordionIcon />
-              </AccordionButton>
-            </HStack>
-            <AccordionPanel>
-              <ActivityTypeFilter types={types} onTypesChange={setTypes} />
-              <YearRangeSlider value={yearRange} onChange={setYearRange} />
-              <HStack justifyContent="space-between">
-                {TAGS.map(tag => (
-                  <Tooltip key={tag.sortType} label={tag.help}>
-                    <VStack cursor="pointer" onClick={handleSortToggle(tag.sortType)}>
-                      <span>{tag.emoji}</span>
-                      <Switch
-                        size="sm"
-                        colorScheme="whiteAlpha"
-                        onChange={handleSortToggle(tag.sortType)}
-                        isChecked={displayedSorts.includes(tag.sortType)}
-                      />
-                    </VStack>
-                  </Tooltip>
+        <HStack gap="5px">
+          <Button variant="ghost" onClick={handleRefetch}>
+            🔄
+          </Button>
+          <Button variant="ghost" onClick={handleSortDirectionToggle}>
+            {'asc' === sortDirection ? '⬆️' : '⬇️'}
+          </Button>
+          <InputGroup endElement={<Tag>{activities?.length ?? 0}</Tag>}>
+            <Input
+              disabled={isLoading}
+              placeholder={import.meta.env.DEV ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
+              autoFocus={true}
+              value={search}
+              onChange={handleSearchChange}
+            />
+          </InputGroup>
+          <NativeSelectRoot>
+            <NativeSelectField width="120px" value={bgOption} onChange={handleBgOptionChange}>
+              <option value="date">📅</option>
+              <option value="power-zone">⚡️</option>
+              <option value="heart-zone">🫀</option>
+            </NativeSelectField>
+          </NativeSelectRoot>
+          <NativeSelectRoot>
+            <NativeSelectField width="120px" placeholder="⚙️" value={gearId} onChange={handleGearChange}>
+              {null !== athlete &&
+                [...athlete.bikes, ...athlete.shoes].map(({id}) => (
+                  <option key={id} value={id}>
+                    {getGearEmoji(athlete, id)}
+                  </option>
                 ))}
-              </HStack>
-            </AccordionPanel>
-          </AccordionItem>
-        </Accordion>
-        <Table size="sm" variant="unstyled" whiteSpace="nowrap">
-          <Thead position="sticky" top={0}>
-            <Tr cursor="pointer">
-              <Th />
-              <Th padding="5px 0" textAlign="center" onClick={handleSortChange('date')}>
+              <option value="null">🤷</option>
+            </NativeSelectField>
+          </NativeSelectRoot>
+          <Button variant={withPrivate ? 'ghost' : 'outline'} onClick={handlePrivateToggle}>
+            🔒
+          </Button>
+          <Button variant="ghost" onClick={handleSearchClear}>
+            🗑️
+          </Button>
+        </HStack>
+        {/* <ActivityTypeFilter types={types} onTypesChange={setTypes} /> */}
+        <YearRangeSlider value={yearRange} onChange={setYearRange} />
+        <HStack justifyContent="space-between">
+          {TAGS.map(tag => (
+            <Tooltip key={tag.sortType} content={tag.help}>
+              <VStack cursor="pointer" onClick={handleSortToggle(tag.sortType)}>
+                <span>{tag.emoji}</span>
+                <Switch
+                  size="sm"
+                  colorScheme="whiteAlpha"
+                  onChange={handleSortToggle(tag.sortType)}
+                  checked={displayedSorts.includes(tag.sortType)}
+                />
+              </VStack>
+            </Tooltip>
+          ))}
+        </HStack>
+        <Table.Root size="sm" whiteSpace="nowrap">
+          <Table.Header position="sticky" top={0}>
+            <Table.Row cursor="pointer">
+              <Table.ColumnHeader />
+              <Table.ColumnHeader padding="5px 0" textAlign="center" onClick={handleSortChange('date')}>
                 📅
-              </Th>
+              </Table.ColumnHeader>
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
-                <Th key={tag.sortType} onClick={handleSortChange(tag.sortType)} padding="5px 0" textAlign="center">
-                  <Tooltip label={tag.help}>{tag.emoji}</Tooltip>
-                </Th>
+                <Tooltip content={tag.help}>
+                  <Table.ColumnHeader
+                    key={tag.sortType}
+                    onClick={handleSortChange(tag.sortType)}
+                    padding="5px 0"
+                    textAlign="center"
+                  >
+                    {tag.emoji}
+                  </Table.ColumnHeader>
+                </Tooltip>
               ))}
-            </Tr>
-            <Tr>
-              <Th />
-              <Th />
+            </Table.Row>
+            <Table.Row>
+              <Table.ColumnHeader />
+              <Table.ColumnHeader />
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
-                <Th key={tag.sortType} padding="5px 0" textAlign="center" textTransform="inherit" fontWeight="inherit">
+                <Table.ColumnHeader
+                  key={tag.sortType}
+                  padding="5px 0"
+                  textAlign="center"
+                  textTransform="inherit"
+                  fontWeight="inherit"
+                >
                   {isLoading ? <Skeleton margin="0 5px">i</Skeleton> : tag.total?.(activities)}
-                </Th>
+                </Table.ColumnHeader>
               ))}
-            </Tr>
-          </Thead>
-          <Tbody>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {isLoading ? (
               [...new Array(20)].map((_, index) => (
                 <ActivityListItem
@@ -191,9 +173,9 @@ const App = () => {
                 />
               ))
             ) : 0 === activities.length ? (
-              <Tr>
-                <Td>No activities...</Td>
-              </Tr>
+              <Table.Row>
+                <Table.Cell>No activities...</Table.Cell>
+              </Table.Row>
             ) : (
               activities.map(activity => (
                 <ActivityListItem
@@ -207,8 +189,8 @@ const App = () => {
                 />
               ))
             )}
-          </Tbody>
-        </Table>
+          </Table.Body>
+        </Table.Root>
       </VStack>
     </Stack>
   );
