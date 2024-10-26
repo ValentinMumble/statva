@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {StatArrow, Text, Tooltip} from '@chakra-ui/react';
+import {Text} from '@chakra-ui/react';
 import {
   formatDistance,
   getTotalValue,
@@ -11,6 +11,7 @@ import {
   formatCalories,
 } from '../models';
 import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
+import {StatUpTrend, Tooltip} from '../components/ui';
 
 type Stat = {
   label: string;
@@ -34,25 +35,26 @@ const STATS: {[key: string]: Stat[][]} = {
       {
         label: '🎊',
         helpText: 'This year',
-        number: activities => (
-          <Tooltip
-            label={`Last year: ${formatDistance(
-              getTotalValue(
-                activities.filter(
-                  ({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear() - 1
-                ),
-                'distance'
-              )
-            )}`}
-          >
-            {formatDistance(
-              getTotalValue(
-                activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
-                'distance'
-              )
-            )}
-          </Tooltip>
-        ),
+        number: activities =>
+          // <Tooltip
+          //   content={`Last year: ${formatDistance(
+          //     getTotalValue(
+          //       activities.filter(
+          //         ({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear() - 1
+          //       ),
+          //       'distance'
+          //     )
+          //   )}`}
+          // >
+          //   {
+          formatDistance(
+            getTotalValue(
+              activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+              'distance'
+            )
+          ),
+          // }
+          // </Tooltip>
       },
       {
         label: '⛰️',
@@ -66,15 +68,15 @@ const STATS: {[key: string]: Stat[][]} = {
       },
     ],
     [
-      {
-        label: '⏱️',
-        helpText: 'Spent riding',
-        number: activities => (
-          <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
-            {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
-          </Tooltip>
-        ),
-      },
+      // {
+      //   label: '⏱️',
+      //   helpText: 'Spent riding',
+      //   number: activities => (
+      //     <Tooltip content={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
+      //       {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
+      //     </Tooltip>
+      //   ),
+      // },
       {
         label: '🍕',
         helpText: 'Burned',
@@ -95,7 +97,7 @@ const STATS: {[key: string]: Stat[][]} = {
         label: '⚡️',
         helpText: 'FTP: W 〰 W/kg',
         number: (_, athlete) => (
-          <Tooltip label={`${athlete.weight} kg`}>
+          <Tooltip content={`${athlete.weight} kg`}>
             <span>
               {athlete.ftp} 〰 {(athlete.ftp / athlete.weight).toFixed(1)}
             </span>
@@ -109,11 +111,11 @@ const STATS: {[key: string]: Stat[][]} = {
           const [eddington, next] = eddingtonNumber(activities);
 
           return (
-            <Tooltip label={`${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`}>
+            <Tooltip content={`${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`}>
               <span>
                 {eddington}
                 <Text marginLeft={2} fontSize="14px" as="b">
-                  <StatArrow type="increase" marginLeft={5} />
+                  <StatUpTrend marginLeft={5} />
                   {next}
                 </Text>
               </span>
@@ -139,7 +141,7 @@ const STATS: {[key: string]: Stat[][]} = {
         label: '⏱️',
         helpText: 'Spent running',
         number: activities => (
-          <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
+          <Tooltip content={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
             {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
           </Tooltip>
         ),
@@ -162,7 +164,7 @@ const STATS: {[key: string]: Stat[][]} = {
         label: '⏱️',
         helpText: 'Spent swimming',
         number: activities => (
-          <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
+          <Tooltip content={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
             {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
           </Tooltip>
         ),
@@ -180,7 +182,7 @@ const STATS: {[key: string]: Stat[][]} = {
         label: '⏱️',
         helpText: 'Spent playing',
         number: activities => (
-          <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
+          <Tooltip content={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
             {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
           </Tooltip>
         ),

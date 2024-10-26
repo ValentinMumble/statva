@@ -1,31 +1,31 @@
 import ReactDOM from 'react-dom/client';
-import {ChakraProvider, ColorModeScript, ThemeConfig, extendTheme} from '@chakra-ui/react';
 import {App} from './App.tsx';
 import {ActivitiesProvider, AthleteProvider} from './providers';
+import {Provider} from './components/ui/provider';
 
-const config: ThemeConfig = {
-  initialColorMode: 'system',
-  useSystemColorMode: true,
-};
+// const config: ThemeConfig = {
+//   initialColorMode: 'system',
+//   useSystemColorMode: true,
+// };
 
-const theme = extendTheme({
-  semanticTokens: {
-    colors: {
-      'chakra-body-text': {
-        _dark: 'gray.200',
-      },
-    },
-  },
-  config,
-});
+// const theme = extendTheme({
+//   semanticTokens: {
+//     colors: {
+//       'chakra-body-text': {
+//         _dark: 'gray.200',
+//       },
+//     },
+//   },
+//   config,
+// });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <ChakraProvider theme={theme}>
+  <Provider>
     <AthleteProvider>
       <ActivitiesProvider>
-        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+        {/* <ColorModeScript initialColorMode={theme.config.initialColorMode} /> */}
         <App />
       </ActivitiesProvider>
     </AthleteProvider>
-  </ChakraProvider>
+  </Provider>
 );

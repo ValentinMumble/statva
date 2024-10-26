@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {Accordion, AccordionItem, AccordionButton, Box, AccordionIcon, AccordionPanel} from '@chakra-ui/react';
+import {AccordionItem, Box} from '@chakra-ui/react';
 import {
   ProgressChart,
   MonthChart,
@@ -13,6 +13,7 @@ import {
   EventChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
+import {AccordionItemContent, AccordionItemTrigger, AccordionRoot} from '../components/ui';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
@@ -86,19 +87,18 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
 
 const ChartAccordion = () => {
   return (
-    <Accordion defaultIndex={[0]} allowMultiple={true}>
+    <AccordionRoot multiple={true}>
       {ACCORDION_ITEMS.map(item => (
-        <AccordionItem key={item.label}>
-          <AccordionButton>
+        <AccordionItem key={item.label} value="todo">
+          <AccordionItemTrigger>
             <Box as="b" flex="1" textAlign="left">
               {item.label}
             </Box>
-            <AccordionIcon />
-          </AccordionButton>
-          <AccordionPanel padding={0}>{item.component}</AccordionPanel>
+          </AccordionItemTrigger>
+          <AccordionItemContent padding={0}>{item.component}</AccordionItemContent>
         </AccordionItem>
       ))}
-    </Accordion>
+    </AccordionRoot>
   );
 };
 

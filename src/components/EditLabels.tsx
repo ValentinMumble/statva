@@ -1,23 +1,10 @@
 import {useEffect, useState} from 'react';
-import {
-  Button,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalOverlay,
-  Table,
-  Tbody,
-  Td,
-  Tr,
-  useDisclosure,
-  useToast,
-} from '@chakra-ui/react';
+import {Button, Input, Table, useDisclosure} from '@chakra-ui/react';
 import {Labels, useLabels} from '../hooks';
+import {DialogBackdrop, DialogContent, DialogRoot} from './ui';
 
 const EditLabels = () => {
-  const {isOpen, onOpen, onClose} = useDisclosure();
-  const toast = useToast();
+  const {open, onOpen, onClose} = useDisclosure();
   const [, initialLabels] = useLabels();
   const [labels, setLabels] = useState<Labels>(initialLabels);
 
@@ -27,10 +14,10 @@ const EditLabels = () => {
       body: JSON.stringify(labels),
     });
 
-    toast({
-      status: 'success',
-      description: 'Event removed',
-    });
+    // toast({
+    //   status: 'success',
+    //   description: 'Event removed',
+    // }); //todo
   };
 
   useEffect(() => {
@@ -42,28 +29,26 @@ const EditLabels = () => {
       <Button variant="ghost" size="sm" onClick={onOpen}>
         🏷️
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalBody>
-            <Table size="sm">
-              <Tbody>
-                {Object.entries(labels).map(([key, value]) => (
-                  <Tr key={key}>
-                    <Td>
-                      <Input size="sm" value={key} />
-                    </Td>
-                    <Td>
-                      <Input size="sm" value={value} />
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-            <Button onClick={handleSave}>Save</Button>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <DialogRoot open={open} onOpenChange={onClose} size="xl">
+        <DialogBackdrop />
+        <DialogContent>
+          <Table.Root size="sm">
+            <Table.Body>
+              {Object.entries(labels).map(([key, value]) => (
+                <Table.Row key={key}>
+                  <Table.Cell>
+                    <Input size="sm" value={key} />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Input size="sm" value={value} />
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+          <Button onClick={handleSave}>Save</Button>
+        </DialogContent>
+      </DialogRoot>
     </>
   );
 };

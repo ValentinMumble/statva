@@ -1,8 +1,9 @@
 import {ChangeEvent, useState} from 'react';
-import {HStack, IconButton, Input, Select, useToast} from '@chakra-ui/react';
+import {HStack, IconButton, Input} from '@chakra-ui/react';
 import {FaPlus} from 'react-icons/fa';
 import {useAthlete, useLabels} from '../hooks';
 import {getGearEmoji, removeNull} from '../models';
+import {NativeSelectField, NativeSelectRoot} from './ui';
 
 const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
 
@@ -16,7 +17,6 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
   const [chain, setChain] = useState<string | null>(null);
   const [bike, setBike] = useState<string | null>(null);
   const athlete = useAthlete();
-  const toast = useToast();
   const [label] = useLabels();
 
   const resetForm = () => {
@@ -47,10 +47,10 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
       body: JSON.stringify(removeNull(event)),
     });
 
-    toast({
-      status: 'success',
-      description: `Event added ${label(type)}`,
-    });
+    // toast({
+    //   status: 'success',
+    //   description: `Event added ${label(type)}`,
+    // });
     resetForm();
     onAddEvent();
   };
@@ -68,33 +68,30 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
   return (
     <HStack margin="20px 10px" gap="20px">
       <Input type="date" size="sm" value={date} onChange={handleDateChange} />
-      <Select size="sm" value={type} onChange={handleTypeChange}>
-        {EVENT_TYPES.map(type => (
-          <option key={type} value={type}>
-            {label(type)}
-          </option>
-        ))}
-      </Select>
+      <NativeSelectRoot>
+        <NativeSelectField value={type} onChange={handleTypeChange}>
+          {EVENT_TYPES.map(type => (
+            <option key={type} value={type}>
+              {label(type)}
+            </option>
+          ))}
+        </NativeSelectField>
+      </NativeSelectRoot>
       {'chain' === type && (
-        <>
-          <Select size="sm" placeholder="🚲" value={bike ?? ''} onChange={handleBikeChange}>
+        <NativeSelectRoot>
+          <NativeSelectField placeholder="🚲" value={bike ?? ''} onChange={handleBikeChange}>
             {athlete?.bikes.map(({id}) => (
               <option key={id} value={id}>
                 {getGearEmoji(athlete, id)}
               </option>
             ))}
-          </Select>
+          </NativeSelectField>
           <Input size="sm" placeholder="🔗" value={chain ?? ''} onChange={handleChainChange} />
-        </>
+        </NativeSelectRoot>
       )}
-      <IconButton
-        variant="ghost"
-        aria-label="Add"
-        isDisabled={!isFormValid()}
-        icon={<FaPlus />}
-        size="xs"
-        onClick={handleAdd}
-      />
+      <IconButton variant="ghost" aria-label="Add" disabled={!isFormValid()} size="xs" onClick={handleAdd}>
+        <FaPlus />
+      </IconButton>
     </HStack>
   );
 };
