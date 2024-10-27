@@ -35,6 +35,8 @@ const getTypes = (type: ActivityType): ActivityType[] => {
   switch (type) {
     case ActivityType.Ride:
       return [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
+    case ActivityType.Run:
+      return [ActivityType.Run, ActivityType.TrailRun];
     default:
       return [type];
   }
