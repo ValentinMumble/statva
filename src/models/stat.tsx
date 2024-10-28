@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {StatArrow, Text, Tooltip} from '@chakra-ui/react';
+import {Progress, StatArrow, Text, Tooltip} from '@chakra-ui/react';
 import {
   formatDistance,
   getTotalValue,
@@ -14,7 +14,7 @@ import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
 
 type Stat = {
   label: string;
-  helpText: string;
+  helpText: (activities: DetailedActivity[]) => ReactNode;
   number: (activities: DetailedActivity[], athlete: DetailedAthlete) => ReactNode;
 };
 
@@ -23,17 +23,33 @@ const STATS: {[key: string]: Stat[][]} = {
     [
       {
         label: '🚲',
-        helpText: 'Ride count',
+        helpText: () => 'Ride count',
         number: activities => activities.length,
       },
       {
         label: '🗺️',
-        helpText: 'Distance ridden',
+        helpText: () => 'Distance ridden',
         number: activities => formatDistance(getTotalValue(activities, 'distance')),
       },
       {
         label: '🎊',
-        helpText: 'This year',
+        helpText: activities => (
+          <Tooltip label="This year">
+            <Progress
+              margin="8px 20px 0 0"
+              colorScheme="green"
+              size="sm"
+              value={Math.floor(
+                (getTotalValue(
+                  activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+                  'distance'
+                ) /
+                  10000000) *
+                  100
+              )}
+            />
+          </Tooltip>
+        ),
         number: activities => (
           <Tooltip
             label={`Last year: ${formatDistance(
@@ -56,19 +72,19 @@ const STATS: {[key: string]: Stat[][]} = {
       },
       {
         label: '⛰️',
-        helpText: 'Total D+',
+        helpText: () => 'Total D+',
         number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
       },
       {
         label: '🥾',
-        helpText: 'Gran Fondos',
+        helpText: () => 'Gran Fondos',
         number: activities => activities.filter(({distance}) => distance >= 100 * 1000).length,
       },
     ],
     [
       {
         label: '⏱️',
-        helpText: 'Spent riding',
+        helpText: () => 'Spent riding',
         number: activities => (
           <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
             {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
@@ -77,12 +93,12 @@ const STATS: {[key: string]: Stat[][]} = {
       },
       {
         label: '🍕',
-        helpText: 'Burned',
+        helpText: () => 'Burned',
         number: activities => formatCalories(getTotalValue(activities, 'kilojoules')),
       },
       {
         label: '🏁',
-        helpText: 'Max avg speed',
+        helpText: () => 'Max avg speed',
         number: activities =>
           formatSpeed(
             getMaxValue(
@@ -93,7 +109,7 @@ const STATS: {[key: string]: Stat[][]} = {
       },
       {
         label: '⚡️',
-        helpText: 'FTP: W 〰 W/kg',
+        helpText: () => 'FTP: W 〰 W/kg',
         number: (_, athlete) => (
           <Tooltip label={`${athlete.weight} kg`}>
             <span>
@@ -104,7 +120,7 @@ const STATS: {[key: string]: Stat[][]} = {
       },
       {
         label: '🧸',
-        helpText: 'Eddington №',
+        helpText: () => 'Eddington №',
         number: activities => {
           const [eddington, next] = eddingtonNumber(activities);
 
@@ -127,17 +143,17 @@ const STATS: {[key: string]: Stat[][]} = {
     [
       {
         label: '👟',
-        helpText: 'Run count',
+        helpText: () => 'Run count',
         number: activities => activities.length,
       },
       {
         label: '🗺️',
-        helpText: 'Distance run',
+        helpText: () => 'Distance run',
         number: activities => formatDistance(getTotalValue(activities, 'distance')),
       },
       {
         label: '⏱️',
-        helpText: 'Spent running',
+        helpText: () => 'Spent running',
         number: activities => (
           <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
             {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
@@ -150,17 +166,17 @@ const STATS: {[key: string]: Stat[][]} = {
     [
       {
         label: '🩲',
-        helpText: 'Swim count',
+        helpText: () => 'Swim count',
         number: activities => activities.length,
       },
       {
         label: '🗺️',
-        helpText: 'Distance swum',
+        helpText: () => 'Distance swum',
         number: activities => formatDistance(getTotalValue(activities, 'distance')),
       },
       {
         label: '⏱️',
-        helpText: 'Spent swimming',
+        helpText: () => 'Spent swimming',
         number: activities => (
           <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
             {formatDurationInDays(getTotalValue(activities, 'moving_time'))}
@@ -173,12 +189,12 @@ const STATS: {[key: string]: Stat[][]} = {
     [
       {
         label: '🎾',
-        helpText: 'Tennis sessions',
+        helpText: () => 'Tennis sessions',
         number: activities => activities.length,
       },
       {
         label: '⏱️',
-        helpText: 'Spent playing',
+        helpText: () => 'Spent playing',
         number: activities => (
           <Tooltip label={formatDuration(getTotalValue(activities, 'moving_time'), true)}>
             {formatDurationInDays(getTotalValue(activities, 'moving_time'))}

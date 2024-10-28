@@ -10,9 +10,12 @@ const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
 const refreshToken = import.meta.env.VITE_STRAVA_REFRESH_TOKEN;
 
 let token: string | null = null;
+let tokenTimestamp: number = 0;
+
+const isTokenExpired = () => tokenTimestamp + 6 * 3600 * 1000 < Date.now();
 
 const fetchAccessToken = async () => {
-  if (null === token) {
+  if (null === token || isTokenExpired()) {
     const body = JSON.stringify({
       client_id: clientId,
       client_secret: clientSecret,
@@ -30,6 +33,7 @@ const fetchAccessToken = async () => {
     });
 
     token = (await response.json()).access_token;
+    tokenTimestamp = Date.now();
   }
 
   return token;
