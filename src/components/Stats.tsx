@@ -33,7 +33,7 @@ const Stats = () => {
               ) : (
                 <StatNumber fontSize="1.2em">{stat.number(activities, athlete)}</StatNumber>
               )}
-              <StatHelpText fontSize={['sm']}>{stat.helpText}</StatHelpText>
+              <StatHelpText fontSize={['sm']}>{stat.helpText(activities ?? [])}</StatHelpText>
             </Stat>
           ))}
         </StatGroup>
