@@ -126,14 +126,6 @@ const TAGS: Tag[] = [
     help: 'Max power',
   },
   {
-    label: ({suffer_score}) => (undefined === suffer_score ? null : Math.round(suffer_score)),
-    isRelevant: ({suffer_score}) => 0 < (suffer_score ?? 0),
-    total: activities => Math.round(getAverageValue(activities, 'suffer_score')),
-    sortType: 'suffer_score',
-    emoji: '🌶️',
-    help: 'Suffer score',
-  },
-  {
     label: ({weighted_average_watts}, ftp) =>
       undefined === weighted_average_watts ? null : `${Math.round((weighted_average_watts / ftp) * 100)}%`,
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
@@ -141,22 +133,6 @@ const TAGS: Tag[] = [
     sortType: 'intensity',
     emoji: '🔋',
     help: 'Intensity',
-  },
-  {
-    label: ({kilojoules}) => (undefined === kilojoules ? null : formatCalories(kilojoules)),
-    isRelevant: ({kilojoules}) => 0 < (kilojoules ?? 0),
-    total: activities => Math.round(getTotalValue(activities, 'kilojoules')),
-    sortType: 'kilojoules',
-    emoji: '🍕',
-    help: 'Calories burned',
-  },
-  {
-    label: ({average_cadence}) => (undefined === average_cadence ? null : Math.round(average_cadence)),
-    isRelevant: ({average_cadence}) => 0 < (average_cadence ?? 0),
-    total: activities => Math.round(getAverageValue(activities, 'average_cadence')),
-    sortType: 'average_cadence',
-    emoji: '🎡',
-    help: 'Average cadence',
   },
   {
     label: ({average_heartrate}) => (undefined === average_heartrate ? null : Math.round(average_heartrate)),
@@ -174,6 +150,30 @@ const TAGS: Tag[] = [
     sortType: 'max_heartrate',
     emoji: '💓',
     help: 'Max heartrate',
+  },
+  {
+    label: ({suffer_score}) => (undefined === suffer_score ? null : Math.round(suffer_score)),
+    isRelevant: ({suffer_score}) => 0 < (suffer_score ?? 0),
+    total: activities => Math.round(getAverageValue(activities, 'suffer_score')),
+    sortType: 'suffer_score',
+    emoji: '🌶️',
+    help: 'Suffer score',
+  },
+  {
+    label: ({kilojoules}) => (undefined === kilojoules ? null : formatCalories(kilojoules)),
+    isRelevant: ({kilojoules}) => 0 < (kilojoules ?? 0),
+    total: activities => Math.round(getTotalValue(activities, 'kilojoules')),
+    sortType: 'kilojoules',
+    emoji: '🍕',
+    help: 'Calories burned',
+  },
+  {
+    label: ({average_cadence}) => (undefined === average_cadence ? null : Math.round(average_cadence)),
+    isRelevant: ({average_cadence}) => 0 < (average_cadence ?? 0),
+    total: activities => Math.round(getAverageValue(activities, 'average_cadence')),
+    sortType: 'average_cadence',
+    emoji: '🎡',
+    help: 'Average cadence',
   },
   {
     label: ({average_temp}) => (undefined === average_temp ? null : `${Math.round(average_temp)} °C`),
