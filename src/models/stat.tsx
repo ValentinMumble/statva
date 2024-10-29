@@ -23,7 +23,7 @@ const STATS: {[key: string]: Stat[][]} = {
     [
       {
         label: '🚲',
-        helpText: () => 'Ride count',
+        helpText: () => 'Rides',
         number: activities => activities.length,
       },
       {
@@ -93,8 +93,8 @@ const STATS: {[key: string]: Stat[][]} = {
       },
       {
         label: '🍕',
-        helpText: () => 'Burned',
-        number: activities => formatCalories(getTotalValue(activities, 'kilojoules')),
+        helpText: () => 'Calories burned',
+        number: activities => formatCalories(getTotalValue(activities, 'kilojoules'), false),
       },
       {
         label: '🏁',
@@ -143,7 +143,7 @@ const STATS: {[key: string]: Stat[][]} = {
     [
       {
         label: '👟',
-        helpText: () => 'Run count',
+        helpText: () => 'Runs',
         number: activities => activities.length,
       },
       {
@@ -160,13 +160,18 @@ const STATS: {[key: string]: Stat[][]} = {
           </Tooltip>
         ),
       },
+      {
+        label: '🍕',
+        helpText: () => 'Calories burned',
+        number: activities => formatCalories(getTotalValue(activities, 'kilojoules'), false),
+      },
     ],
   ],
   Swim: [
     [
       {
         label: '🩲',
-        helpText: () => 'Swim count',
+        helpText: () => 'Swimming sessions',
         number: activities => activities.length,
       },
       {
