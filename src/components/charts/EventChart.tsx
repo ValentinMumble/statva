@@ -1,19 +1,20 @@
-import {ChangeEvent, useState} from 'react';
+import {useState} from 'react';
 import Chart from 'react-apexcharts';
+import {createListCollection, Group, SelectValueChangeDetails} from '@chakra-ui/react';
+import {Radio, RadioGroup, SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText} from '../ui';
+import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 import {formatDistance, getEventLabel, getOptions, getRidesBetween} from '../../models';
 import {DetailedActivity} from '../../models/strava';
-import {EditEvents} from '../../components';
-import {NativeSelectField, NativeSelectRoot, Radio, RadioGroup} from '../ui';
 
 const EVENT_TYPES = ['tire', 'brake_pad', 'battery'];
 const SUPER6 = 'b13440652';
 
 const EventChart = () => {
   const [data, setData] = useState<keyof DetailedActivity>('distance');
-  const [eventType, setEventType] = useState<string>('tire');
+  const [eventTypes, setEventTypes] = useState<string[]>(['tire']);
   const [label] = useLabels();
-  const [events, refreshEvents] = useEvents(eventType);
+  const [events, refreshEvents] = useEvents(eventTypes[0]);
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -22,8 +23,8 @@ const EventChart = () => {
     gearId: SUPER6,
   });
 
-  const handleEventTypeChange = ({target}: ChangeEvent<HTMLSelectElement>) => setEventType(target.value);
   const handleDataChange = (details: any) => setData(details.value); //todo
+  const handleEventTypeChange = ({value}: SelectValueChangeDetails) => setEventTypes(value);
 
   const odometer = events.reduce((odometer: {[id: string]: number[]}, event, index) => {
     const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
@@ -53,25 +54,36 @@ const EventChart = () => {
   });
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
+  const eventTypeCollection = createListCollection({
+    items: EVENT_TYPES.map(eventType => ({value: eventType, label: label(eventType)})),
+  });
 
   return (
-    <div>
-      <div>
+    <>
+      <Group width="full" justifyContent="end">
         <RadioGroup value={data} display="flex" gap={4} onValueChange={handleDataChange}>
           <Radio value="distance">🗺️</Radio>
           <Radio value="total_elevation_gain">⛰️</Radio>
         </RadioGroup>
-        <NativeSelectRoot>
-          <NativeSelectField width="70px" value={eventType} onChange={handleEventTypeChange}>
-            {EVENT_TYPES.map(eventType => (
-              <option key={eventType} value={eventType}>
-                {label(eventType)}
-              </option>
+        <SelectRoot
+          width="70px"
+          collection={eventTypeCollection}
+          value={eventTypes}
+          onValueChange={handleEventTypeChange}
+        >
+          <SelectTrigger>
+            <SelectValueText />
+          </SelectTrigger>
+          <SelectContent>
+            {eventTypeCollection.items.map(eventType => (
+              <SelectItem item={eventType} key={eventType.value}>
+                {eventType.label}
+              </SelectItem>
             ))}
-          </NativeSelectField>
-        </NativeSelectRoot>
+          </SelectContent>
+        </SelectRoot>
         <EditEvents events={events} onEditEvents={refreshEvents} />
-      </div>
+      </Group>
       <Chart
         options={{
           ...chartOptions,
@@ -96,7 +108,7 @@ const EventChart = () => {
         type="bar"
         height={400}
       />
-    </div>
+    </>
   );
 };
 

@@ -16,7 +16,7 @@ const YearRangeSlider = ({value, onChange}: YearRangeSliderProps) => {
       margin="5px 15px 30px"
       width="calc(100% - 30px)"
       value={value}
-      onValueChange={e => onChange(e.value)}
+      onValueChange={({value}) => onChange(value)}
       min={BOUNDARIES.at(0)}
       max={BOUNDARIES.at(-1)}
       step={1}

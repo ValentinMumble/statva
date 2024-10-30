@@ -1,10 +1,20 @@
-import {ChangeEvent, useState} from 'react';
+import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Spacer} from '@chakra-ui/react';
+import {createListCollection, Group, SelectValueChangeDetails} from '@chakra-ui/react';
+import {
+  NumberInputField,
+  NumberInputRoot,
+  Radio,
+  RadioGroup,
+  SelectContent,
+  SelectItem,
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
+} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, getTypes, getWeekNumber} from '../../models';
 import {ActivityType} from '../../models/strava';
-import {NativeSelectField, NativeSelectRoot, NumberInputField, NumberInputRoot, Radio, RadioGroup} from '../ui';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
@@ -23,7 +33,7 @@ const MonthChart = ({
   ...rest
 }: MonthChartProps) => {
   const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
-  const [type, setType] = useState<string>(TYPES[0]);
+  const [types, setTypes] = useState<string[]>([TYPES[0]]);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
@@ -32,12 +42,12 @@ const MonthChart = ({
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: getTypes(type as ActivityType),
+    includedActivityTypes: getTypes(types[0] as ActivityType),
     ...filter,
   });
   const [label] = useLabels();
 
-  const handleTypeChange = ({target}: ChangeEvent<HTMLSelectElement>) => setType(target.value);
+  const handleTypeChange = ({value}: SelectValueChangeDetails) => setTypes(value);
   const handleTimeframeChange = (newTimeframe: string) => {
     setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
@@ -58,19 +68,25 @@ const MonthChart = ({
   const labels = 'week' === timeframe ? Object.keys(sliced).map(label) : Object.keys(sliced);
   const series = [{name: dataLabel, data: Object.values(sliced)}];
 
+  const typeCollection = createListCollection({
+    items: TYPES.map(type => ({value: type, label: label(type)})),
+  });
+
   return (
-    <div>
-      <div>
-        <NativeSelectRoot>
-          <NativeSelectField width="70px" value={type} onChange={handleTypeChange}>
-            {TYPES.map(type => (
-              <option key={type} value={type}>
-                {label(type)}
-              </option>
+    <>
+      <Group width="full" justifyContent="end">
+        <SelectRoot width="70px" collection={typeCollection} value={types} onValueChange={handleTypeChange}>
+          <SelectTrigger>
+            <SelectValueText />
+          </SelectTrigger>
+          <SelectContent>
+            {typeCollection.items.map(type => (
+              <SelectItem item={type} key={type.value}>
+                {type.label}
+              </SelectItem>
             ))}
-          </NativeSelectField>
-        </NativeSelectRoot>
-        <Spacer />
+          </SelectContent>
+        </SelectRoot>
         <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={e => handleTimeframeChange(e.value)}>
           <Radio value="month">Month</Radio>
           <Radio value="week">Week</Radio>
@@ -83,9 +99,9 @@ const MonthChart = ({
         >
           <NumberInputField />
         </NumberInputRoot>
-      </div>
+      </Group>
       <Chart options={getOptions(labels, formatter)} series={series} type="bar" height={400} {...rest} />
-    </div>
+    </>
   );
 };
 

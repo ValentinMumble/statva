@@ -127,7 +127,7 @@ const TAGS: Tag[] = [
     label: ({weighted_average_watts}, ftp) =>
       undefined === weighted_average_watts ? null : `${Math.round((weighted_average_watts / ftp) * 100)}%`,
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
-    total: _activities => '', //TODO
+    total: _activities => '?', //TODO
     sortType: 'intensity',
     emoji: '🔋',
     help: 'Intensity',

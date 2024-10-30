@@ -1,26 +1,27 @@
-import {ChangeEvent, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {useActivities, useAthlete, useEvents} from '../../hooks';
-import {ChainEvent, formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
+import {createListCollection, Group, SelectValueChangeDetails, SelectValueText} from '@chakra-ui/react';
+import {SelectRoot, SelectContent, SelectItem, SelectTrigger} from '../../components/ui';
 import {EditEvents} from '../../components';
+import {ChainEvent, formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
+import {useActivities, useAthlete, useEvents} from '../../hooks';
 import {EditLabels} from '../EditLabels';
-import {NativeSelectField, NativeSelectRoot} from '../../components/ui';
 
 const ChainChart = () => {
-  const [gearId, setGearId] = useState<string>();
+  const [gearIds, setGearIds] = useState<string[]>([]);
   const athlete = useAthlete();
   const [events, refreshEvents] = useEvents<ChainEvent>('chain');
   const relevantBikes = [...new Set(events.map(({bike}) => bike))];
-  const currentBikeEvents = events.filter(({bike}) => gearId === bike);
+  const currentBikeEvents = events.filter(({bike}) => gearIds.includes(bike));
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    gearId,
+    gearId: gearIds[0],
   });
 
-  const handleGearChange = ({target}: ChangeEvent<HTMLSelectElement>) => setGearId(target.value);
+  const handleGearChange = ({value}: SelectValueChangeDetails) => setGearIds(value);
 
   const chainOdometer = currentBikeEvents.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
     const nextEventDate = index === currentBikeEvents.length - 1 ? null : currentBikeEvents[index + 1].date;
@@ -55,27 +56,33 @@ const ChainChart = () => {
     return `${isCurrentChain ? '🔗 ' : ''}${formatDistance(Number(value), 0)}`;
   };
 
+  const chartOptions = getOptions(labels, value => formatDistance(value, 0));
+  const bikeCollection = createListCollection({
+    items: relevantBikes.map(bike => ({value: bike, label: getGearEmoji(athlete, bike)})),
+  });
+
   useEffect(() => {
-    setGearId(relevantBikes[0]);
+    setGearIds([relevantBikes[0]]);
   }, [relevantBikes.length]);
 
-  const chartOptions = getOptions(labels, value => formatDistance(value, 0));
-
   return (
-    <div>
-      <div>
-        <NativeSelectRoot>
-          <NativeSelectField width="70px" value={gearId} onChange={handleGearChange}>
-            {relevantBikes.map(id => (
-              <option key={id} value={id}>
-                {getGearEmoji(athlete, id)}
-              </option>
+    <>
+      <Group width="full" justifyContent="end">
+        <SelectRoot width="70px" collection={bikeCollection} value={gearIds} onValueChange={handleGearChange}>
+          <SelectTrigger>
+            <SelectValueText placeholder="⚙️" />
+          </SelectTrigger>
+          <SelectContent>
+            {bikeCollection.items.map(bike => (
+              <SelectItem item={bike} key={bike.value}>
+                {bike.label}
+              </SelectItem>
             ))}
-          </NativeSelectField>
-        </NativeSelectRoot>
+          </SelectContent>
+        </SelectRoot>
         <EditEvents events={events} onEditEvents={refreshEvents} />
         <EditLabels />
-      </div>
+      </Group>
       <Chart
         options={{
           ...chartOptions,
@@ -100,7 +107,7 @@ const ChainChart = () => {
         type="bar"
         height={400}
       />
-    </div>
+    </>
   );
 };
 

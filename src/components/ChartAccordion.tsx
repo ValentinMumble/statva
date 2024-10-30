@@ -89,7 +89,7 @@ const ChartAccordion = () => {
   const [value, setValue] = useState<string[]>([ACCORDION_ITEMS[0].label]);
 
   return (
-    <AccordionRoot multiple={true} value={value} onValueChange={e => setValue(e.value)}>
+    <AccordionRoot multiple={true} value={value} onValueChange={({value}) => setValue(value)}>
       {ACCORDION_ITEMS.map(item => (
         <AccordionItem key={item.label} value={item.label}>
           <AccordionItemTrigger>

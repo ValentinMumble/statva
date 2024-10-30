@@ -50,7 +50,7 @@ const ActivityIcon = ({activityType, isCommute = false, ...rest}: ActivityIconPr
   const ActivityIconType = getActivityIcon(activityType, isCommute);
 
   return (
-    <Icon {...rest} ref={null}>
+    <Icon {...rest}>
       <ActivityIconType />
     </Icon>
   );

@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {IconButton, Table} from '@chakra-ui/react';
-import {PiPlus} from 'react-icons/pi';
+import {TbPlus} from 'react-icons/tb';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon} from '../components';
 import {useActivities, useAthlete, useLabels} from '../hooks';
@@ -47,17 +47,18 @@ const WeekView = () => {
   return (
     <Table.Root size={['sm', 'md']}>
       <Table.Header>
-        <Table.Row>
+        <Table.Row textAlign="center">
           <Table.ColumnHeader>
             Week
-            <IconButton onClick={incrementWeekCount} marginLeft="8px" aria-label="More" size="xs">
-              <PiPlus />
+            <IconButton variant="ghost" onClick={incrementWeekCount} marginLeft="10px">
+              <TbPlus />
             </IconButton>
           </Table.ColumnHeader>
           {mondayFirst.map(weekDay => (
             <Table.ColumnHeader
               key={weekDay}
-              background={weekDay === WEEKDAYS[new Date().getDay()] ? 'gray.700' : undefined}
+              background={weekDay === WEEKDAYS[new Date().getDay()] ? 'gray.900' : undefined}
+              textAlign="center"
             >
               {weekDay.substring(0, 2)}
             </Table.ColumnHeader>
@@ -72,15 +73,17 @@ const WeekView = () => {
               const activity = lastWeeks[week][weekDay] ?? null;
 
               return activity ? (
-                <Table.Cell key={weekDay}>
+                <Table.Cell key={weekDay} textAlign="center">
                   <Tooltip content={`${activity.name} 〰 ${getGearEmoji(athlete, activity.gear_id)}`}>
                     <a target="_blank" href={getActivityUrl(activity)}>
-                        <ActivityIcon activityType={activity.type} isCommute={activity.commute} />
+                      <ActivityIcon activityType={activity.type} isCommute={activity.commute} />
                     </a>
                   </Tooltip>
                 </Table.Cell>
               ) : (
-                <Table.Cell key={weekDay}>-</Table.Cell>
+                <Table.Cell key={weekDay} textAlign="center">
+                  -
+                </Table.Cell>
               );
             })}
           </Table.Row>
