@@ -1,10 +1,11 @@
-import {createElement, useState} from 'react';
+import {useState} from 'react';
 import {IconButton, Table} from '@chakra-ui/react';
 import {PiPlus} from 'react-icons/pi';
+import {Tooltip} from '../components/ui';
+import {ActivityIcon} from '../components';
 import {useActivities, useAthlete, useLabels} from '../hooks';
-import {arrayRotate, getActivityIcon, getActivityUrl, getGearEmoji, getWeekNumber} from '../models';
+import {arrayRotate, getActivityUrl, getGearEmoji, getWeekNumber} from '../models';
 import {DetailedActivity} from '../models/strava';
-import {Tooltip} from './ui';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -74,7 +75,7 @@ const WeekView = () => {
                 <Table.Cell key={weekDay}>
                   <Tooltip content={`${activity.name} 〰 ${getGearEmoji(athlete, activity.gear_id)}`}>
                     <a target="_blank" href={getActivityUrl(activity)}>
-                      {createElement(getActivityIcon(activity.sport_type, activity.commute))}
+                        <ActivityIcon activityType={activity.type} isCommute={activity.commute} />
                     </a>
                   </Tooltip>
                 </Table.Cell>

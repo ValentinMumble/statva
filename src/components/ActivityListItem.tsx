@@ -1,23 +1,24 @@
-import {Icon, Skeleton, Table, Text} from '@chakra-ui/react';
-import {SortType, TAGS, getActivityIcon, getActivityUrl, getGearEmoji, getHeartZone, getPowerZone} from '../models';
-import {DetailedActivity, DetailedAthlete} from '../models/strava';
+import {Box, Skeleton, Table} from '@chakra-ui/react';
 import {Tooltip, Tag} from '../components/ui';
+import {ActivityIcon} from '../components';
+import {SortType, TAGS, getActivityUrl, getGearEmoji, getHeartZone, getPowerZone} from '../models';
+import {DetailedActivity, DetailedAthlete} from '../models/strava';
 
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
 const MONTH_COLORS = [
-  '#FF000008', // Red
-  '#0000FF08', // Blue
-  '#00800008', // Green
-  '#FFFF0008', // Yellow
-  '#80008008', // Purple
-  '#FFA50008', // Orange
-  '#FFC0CB08', // Pink
-  '#A52A2A08', // Brown
-  '#80808008', // Gray
-  '#00FFFF08', // Cyan
-  '#FF634708', // Tomato (Red-Orange)
-  '#00FF7F08', // Spring Green
+  '#FF000010', // Red
+  '#0000FF10', // Blue
+  '#00800010', // Green
+  '#FFFF0010', // Yellow
+  '#80008010', // Purple
+  '#FFA50010', // Orange
+  '#FFC0CB10', // Pink
+  '#A52A2A10', // Brown
+  '#80808010', // Gray
+  '#00FFFF10', // Cyan
+  '#FF634710', // Tomato (Red-Orange)
+  '#00FF7F10', // Spring Green
 ];
 
 const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: DetailedAthlete | null): string => {
@@ -42,10 +43,11 @@ type ActivityListItemProps = {
 };
 
 const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
+  //TODO check skeleton, extract to compoonent ?
   if (null === activity || null === athlete) {
     return (
       <Table.Row>
-        <Table.Cell padding="8px" width="1px">
+        <Table.Cell>
           <Skeleton>i</Skeleton>
         </Table.Cell>
         <Table.Cell padding="4px">
@@ -64,14 +66,13 @@ const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption
 
   return (
     <Table.Row onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
-      <Table.Cell padding={0} textAlign="center" width="1px">
-        {/* <Icon as={getActivityIcon(activity.sport_type, activity.commute)} /> */}
+      <Table.Cell>
+        <ActivityIcon activityType={activity.type} isCommute={activity.commute} />
       </Table.Cell>
-      <Table.Cell padding="4px 0px">
-        <Text bg={getBgColor(bgOption, activity, athlete)} fontSize="1rem" borderRadius="8px" padding="4px 10px">
+      <Table.Cell padding="2px">
+        <Box bg={getBgColor(bgOption, activity, athlete)} borderRadius="8px" padding="2px 10px">
           <Tooltip
-            showArrow={true}
-            // placement="right"
+            positioning={{placement: 'right-end'}}
             content={
               <>
                 {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
@@ -83,21 +84,13 @@ const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption
               {activity.name}
             </a>
           </Tooltip>
-        </Text>
+        </Box>
       </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => (
-        <Table.Cell
-          key={tag.sortType}
-          textAlign="center"
-          padding="0px 2px"
-          width="1%"
-          opacity={tag.isRelevant(activity) ? 0.9 : 0.4}
-        >
+        <Table.Cell key={tag.sortType} textAlign="center" opacity={tag.isRelevant(activity) ? 0.9 : 0.4}>
           {null !== tag.label(activity, ftp) && (
             <Tooltip content={tag.tooltip?.(activity, athlete)}>
-              <Tag size="sm" colorScheme={activeSort === tag.sortType ? 'orange' : 'facebook'}>
-                {tag.label(activity, ftp)}
-              </Tag>
+              <Tag variant={activeSort === tag.sortType ? 'outline' : 'subtle'}>{tag.label(activity, ftp)}</Tag>
             </Tooltip>
           )}
         </Table.Cell>

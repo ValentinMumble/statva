@@ -36,7 +36,6 @@ const DEFAULT_SORTS: SortType[] = [
   'elevation',
   'intensity',
   'max_speed',
-  'pr_count',
   'suffer_score',
   'weighted_average_watts',
 ];

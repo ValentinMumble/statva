@@ -8,11 +8,11 @@ const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
 
 type TypeMonthChartProps = Omit<ChartProps, 'data' | 'dataLabel' | 'formatter'> & {
-  timeframe?: 'month' | 'week';
+  timeframe?: string;
 };
 
 const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}: TypeMonthChartProps) => {
-  const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
+  const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
@@ -27,7 +27,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
     ...filter,
   });
 
-  const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
+  const handleTimeframeChange = (newTimeframe: string) => {
     setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
@@ -73,7 +73,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
       <div>
         <Switch id="commute-switch" size="sm" onChange={handleCommuteChange} checked={withCommute} />
         Commute
-        <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={handleTimeframeChange}>
+        <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={e => handleTimeframeChange(e.value)}>
           <Radio value="month">Month</Radio>
           <Radio value="week">Week</Radio>
         </RadioGroup>
