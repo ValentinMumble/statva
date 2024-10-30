@@ -6,6 +6,7 @@ import {
   HStack,
   IconButton,
   Input,
+  SegmentGroupValueChangeDetails,
   SelectValueChangeDetails,
   Stack,
   Table,
@@ -24,6 +25,7 @@ import {
   SelectContent,
   SelectItem,
   Tag,
+  SegmentedControl,
 } from './components/ui';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
 import {SortType, SortDirection, getGearEmoji, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES} from './models';
@@ -57,7 +59,7 @@ const App = () => {
   const [displayedSorts, setDisplayedSorts] = useState<SortType[]>(DEFAULT_SORTS);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearIds, setGearIds] = useState<string[]>([]);
-  const [bgOptions, setBgOptions] = useState<string[]>(['date']);
+  const [bgOption, setBgOption] = useState<string>('date');
   const [yearRange, setYearRange] = useState<number[]>([]);
 
   const athlete = useAthlete();
@@ -85,14 +87,14 @@ const App = () => {
     setDisplayedSorts(DEFAULT_SORTS);
     setSortDirection('desc');
     setGearIds([]);
-    setBgOptions(['date']);
+    setBgOption('date');
     setYearRange([]);
   };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
 
   const handleGearChange = ({value}: SelectValueChangeDetails) => setGearIds(value);
-  const handleBgOptionChange = ({value}: SelectValueChangeDetails) => setBgOptions(value);
+  const handleBgOptionChange = ({value}: SegmentGroupValueChangeDetails) => setBgOption(value);
 
   const handleSortToggle = (sortType: SortType) => () =>
     setDisplayedSorts(displayedSorts =>
@@ -148,18 +150,7 @@ const App = () => {
                 onChange={handleSearchChange}
               />
             </InputGroup>
-            <SelectRoot width="90px" collection={BG_COLLECTION} value={bgOptions} onValueChange={handleBgOptionChange}>
-              <SelectTrigger>
-                <SelectValueText placeholder="Select bg" />
-              </SelectTrigger>
-              <SelectContent>
-                {BG_COLLECTION.items.map(bg => (
-                  <SelectItem item={bg} key={bg.value}>
-                    {bg.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </SelectRoot>
+            <SegmentedControl value={bgOption} onValueChange={handleBgOptionChange} items={BG_COLLECTION.items} />
             <SelectRoot width="90px" collection={gearCollection} value={gearIds} onValueChange={handleGearChange}>
               <SelectTrigger clearable={true}>
                 <SelectValueText placeholder="⚙️" />
@@ -246,7 +237,7 @@ const App = () => {
                   athlete={athlete}
                   getFtp={getFtp}
                   activity={null}
-                  bgOption={bgOptions[0]}
+                  bgOption={bgOption}
                   enabledSorts={displayedSorts}
                 />
               ))
@@ -262,7 +253,7 @@ const App = () => {
                   getFtp={getFtp}
                   activity={activity}
                   activeSort={activeSort}
-                  bgOption={bgOptions[0]}
+                  bgOption={bgOption}
                   enabledSorts={displayedSorts}
                 />
               ))
