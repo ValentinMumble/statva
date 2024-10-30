@@ -1,16 +1,9 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  FormControl,
-} from '@chakra-ui/react';
 import {useActivities} from '../../hooks';
 import {eddingtonNumber, getOptions, getRidesBeforeMonth} from '../../models';
 import {ActivityType} from '../../models/strava';
+import {NumberInputField, NumberInputRoot} from '../../components/ui';
 
 const DEFAULT_ITEM_COUNT = 18;
 
@@ -50,15 +43,16 @@ const EddingtonChart = ({}: EddingtonChartProps) => {
 
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" gap={4}>
-        <NumberInput width="70px" size="xs" value={itemCount} onChange={(_, value) => setItemCount(value)}>
+      <div>
+        <NumberInputRoot
+          width="70px"
+          size="xs"
+          value={itemCount.toString()}
+          onValueChange={details => setItemCount(details.valueAsNumber)}
+        >
           <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-      </FormControl>
+        </NumberInputRoot>
+      </div>
       <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />
     </div>
   );

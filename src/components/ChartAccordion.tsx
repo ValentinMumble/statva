@@ -1,5 +1,5 @@
-import {ReactNode} from 'react';
-import {Accordion, AccordionItem, AccordionButton, Box, AccordionIcon, AccordionPanel} from '@chakra-ui/react';
+import {ReactNode, useState} from 'react';
+import {AccordionItem, Box} from '@chakra-ui/react';
 import {
   ProgressChart,
   MonthChart,
@@ -13,6 +13,7 @@ import {
   EventChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
+import {AccordionItemContent, AccordionItemTrigger, AccordionRoot} from '../components/ui';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
@@ -85,20 +86,23 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
 ];
 
 const ChartAccordion = () => {
+  const [value, setValue] = useState<string[]>([ACCORDION_ITEMS[0].label]);
+
   return (
-    <Accordion defaultIndex={[0]} allowMultiple={true}>
+    <AccordionRoot multiple={true} value={value} onValueChange={e => setValue(e.value)}>
       {ACCORDION_ITEMS.map(item => (
-        <AccordionItem key={item.label}>
-          <AccordionButton>
+        <AccordionItem key={item.label} value={item.label}>
+          <AccordionItemTrigger>
             <Box as="b" flex="1" textAlign="left">
               {item.label}
             </Box>
-            <AccordionIcon />
-          </AccordionButton>
-          <AccordionPanel padding={0}>{item.component}</AccordionPanel>
+          </AccordionItemTrigger>
+          <AccordionItemContent padding={0} fontSize=".8em">
+            {item.component}
+          </AccordionItemContent>
         </AccordionItem>
       ))}
-    </Accordion>
+    </AccordionRoot>
   );
 };
 

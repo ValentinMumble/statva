@@ -37,8 +37,7 @@ const TAGS: Tag[] = [
     help: 'Distance',
   },
   {
-    label: ({total_elevation_gain, type}) =>
-      ActivityType.Swim === type ? null : formatElevation(total_elevation_gain),
+    label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
     isRelevant: ({total_elevation_gain}) => 0 < total_elevation_gain,
     tooltip: ({total_elevation_gain, distance}) => `⚖️ ${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
     total: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
@@ -47,8 +46,7 @@ const TAGS: Tag[] = [
     help: 'D+',
   },
   {
-    label: ({total_elevation_gain, distance, type}) =>
-      ActivityType.Swim === type ? null : `${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
+    label: ({total_elevation_gain, distance}) => `${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
     isRelevant: ({total_elevation_gain, distance}) => 0 < total_elevation_gain / distance,
     total: activities =>
       `${((getTotalValue(activities, 'total_elevation_gain') / getTotalValue(activities, 'distance')) * 100).toFixed(
@@ -85,7 +83,7 @@ const TAGS: Tag[] = [
     help: 'Average speed',
   },
   {
-    label: ({max_speed, type}) => (ActivityType.Swim === type ? null : formatSpeed(max_speed)),
+    label: ({max_speed}) => formatSpeed(max_speed),
     isRelevant: ({max_speed}) => 0 < max_speed,
     total: activities => formatSpeed(getMaxValue(activities, 'max_speed')),
     sortType: 'max_speed',
@@ -134,6 +132,7 @@ const TAGS: Tag[] = [
     emoji: '🔋',
     help: 'Intensity',
   },
+
   {
     label: ({average_heartrate}) => (undefined === average_heartrate ? null : Math.round(average_heartrate)),
     isRelevant: ({average_heartrate}) => 0 < (average_heartrate ?? 0),

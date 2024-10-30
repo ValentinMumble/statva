@@ -1,9 +1,3 @@
-import {GiSkier} from 'react-icons/gi';
-import {PiBicycle, PiBicycleFill, PiGameControllerBold, PiQuestionBold, PiTennisBallBold} from 'react-icons/pi';
-import {TbKayak, TbRun} from 'react-icons/tb';
-import {MdCommute, MdDirectionsWalk, MdHiking} from 'react-icons/md';
-import {FaSwimmer} from 'react-icons/fa';
-import {GiMountainClimbing} from 'react-icons/gi';
 import {SortType, SortDirection, formatSpeed} from '../models';
 import {ActivityType, DetailedActivity} from './strava';
 
@@ -35,45 +29,8 @@ const getTypes = (type: ActivityType): ActivityType[] => {
   switch (type) {
     case ActivityType.Ride:
       return [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
-    case ActivityType.Run:
-      return [ActivityType.Run, ActivityType.TrailRun];
     default:
       return [type];
-  }
-};
-
-const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
-  if (isCommute) {
-    return MdCommute;
-  }
-
-  switch (activityType) {
-    case ActivityType.AlpineSki:
-      return GiSkier;
-    case ActivityType.GravelRide:
-      return PiBicycleFill;
-    case ActivityType.Hike:
-      return MdHiking;
-    case ActivityType.Canoeing:
-    case ActivityType.Kayaking:
-      return TbKayak;
-    case ActivityType.Ride:
-      return PiBicycle;
-    case ActivityType.RockClimbing:
-      return GiMountainClimbing;
-    case ActivityType.Run:
-    case ActivityType.TrailRun:
-      return TbRun;
-    case ActivityType.Swim:
-      return FaSwimmer;
-    case ActivityType.Tennis:
-      return PiTennisBallBold;
-    case ActivityType.VirtualRide:
-      return PiGameControllerBold;
-    case ActivityType.Walk:
-      return MdDirectionsWalk;
-    default:
-      return PiQuestionBold;
   }
 };
 
@@ -206,7 +163,6 @@ export {
   getAverageValue,
   getRidesBeforeMonth,
   getRidesBetween,
-  getActivityIcon,
   getHeartZone,
   getMaxValue,
   getPowerZone,

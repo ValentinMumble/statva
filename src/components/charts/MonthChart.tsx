@@ -1,27 +1,17 @@
 import {ChangeEvent, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {
-  FormControl,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Radio,
-  RadioGroup,
-  Select,
-  Spacer,
-} from '@chakra-ui/react';
+import {Spacer} from '@chakra-ui/react';
 import {useActivities, useLabels} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, getTypes, getWeekNumber} from '../../models';
 import {ActivityType} from '../../models/strava';
+import {NativeSelectField, NativeSelectRoot, NumberInputField, NumberInputRoot, Radio, RadioGroup} from '../ui';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
 type MonthChartProps = ChartProps & {
-  timeframe?: 'month' | 'week';
+  timeframe?: string;
 };
 
 const MonthChart = ({
@@ -32,7 +22,7 @@ const MonthChart = ({
   timeframe: initialTimeframe = 'month',
   ...rest
 }: MonthChartProps) => {
-  const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
+  const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
   const [type, setType] = useState<string>(TYPES[0]);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
@@ -48,7 +38,7 @@ const MonthChart = ({
   const [label] = useLabels();
 
   const handleTypeChange = ({target}: ChangeEvent<HTMLSelectElement>) => setType(target.value);
-  const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
+  const handleTimeframeChange = (newTimeframe: string) => {
     setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
@@ -70,27 +60,30 @@ const MonthChart = ({
 
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" gap={4} padding="0 15px">
-        <Select size="sm" width="70px" value={type} onChange={handleTypeChange}>
-          {TYPES.map(type => (
-            <option key={type} value={type}>
-              {label(type)}
-            </option>
-          ))}
-        </Select>
+      <div>
+        <NativeSelectRoot>
+          <NativeSelectField width="70px" value={type} onChange={handleTypeChange}>
+            {TYPES.map(type => (
+              <option key={type} value={type}>
+                {label(type)}
+              </option>
+            ))}
+          </NativeSelectField>
+        </NativeSelectRoot>
         <Spacer />
-        <RadioGroup value={timeframe} display="flex" gap={4} onChange={handleTimeframeChange}>
+        <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={e => handleTimeframeChange(e.value)}>
           <Radio value="month">Month</Radio>
           <Radio value="week">Week</Radio>
         </RadioGroup>
-        <NumberInput width="70px" size="xs" value={itemCount} onChange={(_, value) => setItemCount(value)}>
+        <NumberInputRoot
+          width="70px"
+          size="xs"
+          value={itemCount.toString()}
+          onValueChange={details => setItemCount(details.valueAsNumber)}
+        >
           <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-      </FormControl>
+        </NumberInputRoot>
+      </div>
       <Chart options={getOptions(labels, formatter)} series={series} type="bar" height={400} {...rest} />
     </div>
   );

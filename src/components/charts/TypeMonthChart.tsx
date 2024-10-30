@@ -1,29 +1,18 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {
-  FormControl,
-  FormLabel,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Radio,
-  RadioGroup,
-  Switch,
-} from '@chakra-ui/react';
 import {useActivities, useLabels} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, getWeekNumber} from '../../models';
+import {NumberInputField, NumberInputRoot, Radio, RadioGroup, Switch} from '../ui';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
 
 type TypeMonthChartProps = Omit<ChartProps, 'data' | 'dataLabel' | 'formatter'> & {
-  timeframe?: 'month' | 'week';
+  timeframe?: string;
 };
 
 const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}: TypeMonthChartProps) => {
-  const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
+  const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
   );
@@ -38,7 +27,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
     ...filter,
   });
 
-  const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
+  const handleTimeframeChange = (newTimeframe: string) => {
     setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
@@ -81,23 +70,22 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
 
   return (
     <div>
-      <FormControl display="flex" alignItems="center" justifyContent="end" gap={4}>
-        <Switch id="commute-switch" size="sm" onChange={handleCommuteChange} isChecked={withCommute} />
-        <FormLabel fontWeight="unset" margin="0 0 0 -7px" htmlFor="commute-switch">
-          Commute
-        </FormLabel>
-        <RadioGroup value={timeframe} display="flex" gap={4} onChange={handleTimeframeChange}>
+      <div>
+        <Switch id="commute-switch" size="sm" onChange={handleCommuteChange} checked={withCommute} />
+        Commute
+        <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={e => handleTimeframeChange(e.value)}>
           <Radio value="month">Month</Radio>
           <Radio value="week">Week</Radio>
         </RadioGroup>
-        <NumberInput width="70px" size="xs" value={itemCount} onChange={(_, value) => setItemCount(value)}>
+        <NumberInputRoot
+          width="70px"
+          size="xs"
+          value={itemCount.toString()}
+          onValueChange={details => setItemCount(details.valueAsNumber)}
+        >
           <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-      </FormControl>
+        </NumberInputRoot>
+      </div>
       <Chart
         options={getOptions(labels, undefined, {
           chart: {

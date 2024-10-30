@@ -1,11 +1,5 @@
-import {
-  RangeSlider,
-  RangeSliderTrack,
-  RangeSliderFilledTrack,
-  RangeSliderThumb,
-  RangeSliderMark,
-} from '@chakra-ui/react';
 import {range} from '../models';
+import {Slider} from '../components/ui';
 
 const BOUNDARIES = [2015, new Date().getFullYear()];
 
@@ -18,26 +12,16 @@ const YearRangeSlider = ({value, onChange}: YearRangeSliderProps) => {
   value = 0 === value.length ? BOUNDARIES : value;
 
   return (
-    <RangeSlider
+    <Slider
       margin="5px 15px 30px"
       width="calc(100% - 30px)"
       value={value}
-      onChange={onChange}
+      onValueChange={e => onChange(e.value)}
       min={BOUNDARIES.at(0)}
       max={BOUNDARIES.at(-1)}
       step={1}
-    >
-      <RangeSliderTrack>
-        <RangeSliderFilledTrack />
-      </RangeSliderTrack>
-      <RangeSliderThumb boxSize={5} index={0} />
-      <RangeSliderThumb boxSize={5} index={1} />
-      {range(BOUNDARIES.at(0), BOUNDARIES.at(-1)).map(year => (
-        <RangeSliderMark mt={3} ml={-5} key={year} value={year}>
-          {year}
-        </RangeSliderMark>
-      ))}
-    </RangeSlider>
+      marks={range(BOUNDARIES.at(0), BOUNDARIES.at(-1))}
+    />
   );
 };
 

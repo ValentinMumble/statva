@@ -1,8 +1,10 @@
-import {createElement, useState} from 'react';
-import {IconButton, Table, Tbody, Td, Th, Thead, Tooltip, Tr} from '@chakra-ui/react';
+import {useState} from 'react';
+import {IconButton, Table} from '@chakra-ui/react';
 import {PiPlus} from 'react-icons/pi';
+import {Tooltip} from '../components/ui';
+import {ActivityIcon} from '../components';
 import {useActivities, useAthlete, useLabels} from '../hooks';
-import {arrayRotate, getActivityIcon, getActivityUrl, getGearEmoji, getWeekNumber} from '../models';
+import {arrayRotate, getActivityUrl, getGearEmoji, getWeekNumber} from '../models';
 import {DetailedActivity} from '../models/strava';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -43,43 +45,48 @@ const WeekView = () => {
   const mondayFirst = arrayRotate(WEEKDAYS, -1);
 
   return (
-    <Table variant="striped" size={['sm', 'md']}>
-      <Thead>
-        <Tr>
-          <Th>
+    <Table.Root size={['sm', 'md']}>
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeader>
             Week
-            <IconButton onClick={incrementWeekCount} marginLeft="8px" aria-label="More" size="xs" icon={<PiPlus />} />
-          </Th>
+            <IconButton onClick={incrementWeekCount} marginLeft="8px" aria-label="More" size="xs">
+              <PiPlus />
+            </IconButton>
+          </Table.ColumnHeader>
           {mondayFirst.map(weekDay => (
-            <Th key={weekDay} background={weekDay === WEEKDAYS[new Date().getDay()] ? 'gray.700' : undefined}>
+            <Table.ColumnHeader
+              key={weekDay}
+              background={weekDay === WEEKDAYS[new Date().getDay()] ? 'gray.700' : undefined}
+            >
               {weekDay.substring(0, 2)}
-            </Th>
+            </Table.ColumnHeader>
           ))}
-        </Tr>
-      </Thead>
-      <Tbody>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {Object.keys(lastWeeks).map(week => (
-          <Tr key={week}>
-            <Td>{label(week)}</Td>
+          <Table.Row key={week}>
+            <Table.Cell>{label(week)}</Table.Cell>
             {mondayFirst.map(weekDay => {
               const activity = lastWeeks[week][weekDay] ?? null;
 
               return activity ? (
-                <Td key={weekDay}>
-                  <Tooltip label={`${activity.name} 〰 ${getGearEmoji(athlete, activity.gear_id)}`}>
+                <Table.Cell key={weekDay}>
+                  <Tooltip content={`${activity.name} 〰 ${getGearEmoji(athlete, activity.gear_id)}`}>
                     <a target="_blank" href={getActivityUrl(activity)}>
-                      {createElement(getActivityIcon(activity.sport_type, activity.commute))}
+                        <ActivityIcon activityType={activity.type} isCommute={activity.commute} />
                     </a>
                   </Tooltip>
-                </Td>
+                </Table.Cell>
               ) : (
-                <Td key={weekDay}>-</Td>
+                <Table.Cell key={weekDay}>-</Table.Cell>
               );
             })}
-          </Tr>
+          </Table.Row>
         ))}
-      </Tbody>
-    </Table>
+      </Table.Body>
+    </Table.Root>
   );
 };
 
