@@ -219,7 +219,7 @@ const App = () => {
                 </IconButton>
               </Table.ColumnHeader>
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
-                <Table.ColumnHeader key={tag.sortType} fontSize=".8em" padding="6px 0">
+                <Table.ColumnHeader key={tag.sortType} padding="6px 0">
                   {isLoading ? (
                     <Skeleton margin="0 5px">i</Skeleton>
                   ) : (
@@ -228,7 +228,7 @@ const App = () => {
                 </Table.ColumnHeader>
               ))}
             </Table.Row>
-            <Table.Row cursor="pointer">
+            <Table.Row cursor="pointer" fontSize=".8em">
               <Table.ColumnHeader />
               <Table.ColumnHeader onClick={handleSortChange('date')}>📅</Table.ColumnHeader>
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (

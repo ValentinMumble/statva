@@ -67,7 +67,7 @@ const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption
   return (
     <Table.Row onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
       <Table.Cell>
-        <ActivityIcon activityType={activity.type} isCommute={activity.commute} />
+        <ActivityIcon activityType={activity.sport_type} isCommute={activity.commute} />
       </Table.Cell>
       <Table.Cell padding="2px">
         <Box bg={getBgColor(bgOption, activity, athlete)} borderRadius="8px" padding="2px 10px">

@@ -76,7 +76,7 @@ const WeekView = () => {
                 <Table.Cell key={weekDay} textAlign="center">
                   <Tooltip content={`${activity.name} 〰 ${getGearEmoji(athlete, activity.gear_id)}`}>
                     <a target="_blank" href={getActivityUrl(activity)}>
-                      <ActivityIcon activityType={activity.type} isCommute={activity.commute} />
+                      <ActivityIcon activityType={activity.sport_type} isCommute={activity.commute} />
                     </a>
                   </Tooltip>
                 </Table.Cell>
