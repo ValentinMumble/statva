@@ -11,7 +11,7 @@ const INITIAL_WEEK_COUNT = 26;
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
 type MonthChartProps = ChartProps & {
-  timeframe?: 'month' | 'week';
+  timeframe?: string;
 };
 
 const MonthChart = ({
@@ -22,7 +22,7 @@ const MonthChart = ({
   timeframe: initialTimeframe = 'month',
   ...rest
 }: MonthChartProps) => {
-  const [timeframe, setTimeframe] = useState<'month' | 'week'>(initialTimeframe);
+  const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
   const [type, setType] = useState<string>(TYPES[0]);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
@@ -38,7 +38,7 @@ const MonthChart = ({
   const [label] = useLabels();
 
   const handleTypeChange = ({target}: ChangeEvent<HTMLSelectElement>) => setType(target.value);
-  const handleTimeframeChange = (newTimeframe: 'month' | 'week') => {
+  const handleTimeframeChange = (newTimeframe: string) => {
     setTimeframe(newTimeframe);
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
@@ -71,7 +71,7 @@ const MonthChart = ({
           </NativeSelectField>
         </NativeSelectRoot>
         <Spacer />
-        <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={handleTimeframeChange}>
+        <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={e => handleTimeframeChange(e.value)}>
           <Radio value="month">Month</Radio>
           <Radio value="week">Week</Radio>
         </RadioGroup>

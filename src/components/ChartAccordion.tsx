@@ -1,4 +1,4 @@
-import {ReactNode} from 'react';
+import {ReactNode, useState} from 'react';
 import {AccordionItem, Box} from '@chakra-ui/react';
 import {
   ProgressChart,
@@ -86,16 +86,20 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
 ];
 
 const ChartAccordion = () => {
+  const [value, setValue] = useState<string[]>([ACCORDION_ITEMS[0].label]);
+
   return (
-    <AccordionRoot multiple={true}>
+    <AccordionRoot multiple={true} value={value} onValueChange={e => setValue(e.value)}>
       {ACCORDION_ITEMS.map(item => (
-        <AccordionItem key={item.label} value="todo">
+        <AccordionItem key={item.label} value={item.label}>
           <AccordionItemTrigger>
             <Box as="b" flex="1" textAlign="left">
               {item.label}
             </Box>
           </AccordionItemTrigger>
-          <AccordionItemContent padding={0}>{item.component}</AccordionItemContent>
+          <AccordionItemContent padding={0} fontSize=".8em">
+            {item.component}
+          </AccordionItemContent>
         </AccordionItem>
       ))}
     </AccordionRoot>

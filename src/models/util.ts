@@ -4,7 +4,8 @@ const formatDistance = (distance: number, precision = 0): string => `${(distance
 const formatElevation = (elevation: number): string => `${Math.round(elevation)} m`;
 const formatSpeed = (speed: number, precision = 1): string => `${(speed * 3.6).toFixed(precision)} km/h`;
 const formatPower = (power: number): string => `${Math.round(power)} W`;
-const formatCalories = (kilojoules: number) => `${Math.round(kilojoules * KJ_TO_CAL_RATIO)} kcal`;
+const formatCalories = (kilojoules: number, withSymbol = true) =>
+  `${Math.round(kilojoules * KJ_TO_CAL_RATIO)}${withSymbol ? ' kcal' : ''}`;
 
 const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string => {
   const hours = durationInSeconds / 60 / 60;
@@ -56,12 +57,7 @@ const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
     .fill(start)
     .map((x, y) => x + y * step);
 
-const generatePeriodKeys = (
-  firstDate: Date,
-  lastDate: Date,
-  timeframe: 'month' | 'week',
-  emptyValue: number | null = 0
-) => {
+const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: string, emptyValue: number | null = 0) => {
   const emptyValues: {[period: string]: any} = {};
 
   for (let year = firstDate.getFullYear(); year <= lastDate.getFullYear(); year++) {
