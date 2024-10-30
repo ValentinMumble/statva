@@ -1,5 +1,5 @@
 import {ReactNode, useState} from 'react';
-import {AccordionItem, Box} from '@chakra-ui/react';
+import {AccordionItem} from '@chakra-ui/react';
 import {
   ProgressChart,
   MonthChart,
@@ -92,11 +92,7 @@ const ChartAccordion = () => {
     <AccordionRoot multiple={true} value={value} onValueChange={({value}) => setValue(value)}>
       {ACCORDION_ITEMS.map(item => (
         <AccordionItem key={item.label} value={item.label}>
-          <AccordionItemTrigger>
-            <Box as="b" flex="1" textAlign="left">
-              {item.label}
-            </Box>
-          </AccordionItemTrigger>
+          <AccordionItemTrigger outline="none">{item.label}</AccordionItemTrigger>
           <AccordionItemContent padding={0} fontSize=".8em">
             {item.component}
           </AccordionItemContent>

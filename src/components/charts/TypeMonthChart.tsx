@@ -2,7 +2,8 @@ import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {useActivities, useLabels} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, getWeekNumber} from '../../models';
-import {NumberInputField, NumberInputRoot, Radio, RadioGroup, Switch} from '../ui';
+import {NumberInputField, NumberInputRoot, SegmentedControl, Switch} from '../ui';
+import {Group} from '@chakra-ui/react';
 
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
@@ -70,13 +71,15 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
 
   return (
     <div>
-      <div>
+      <Group width="full" justifyContent="end" gap="20px">
         <Switch id="commute-switch" size="sm" onChange={handleCommuteChange} checked={withCommute} />
         Commute
-        <RadioGroup value={timeframe} display="flex" gap={4} onValueChange={e => handleTimeframeChange(e.value)}>
-          <Radio value="month">Month</Radio>
-          <Radio value="week">Week</Radio>
-        </RadioGroup>
+        <SegmentedControl
+          size="sm"
+          value={timeframe}
+          onValueChange={({value}) => handleTimeframeChange(value)}
+          items={['month', 'week']}
+        />
         <NumberInputRoot
           width="70px"
           size="xs"
@@ -85,7 +88,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
         >
           <NumberInputField />
         </NumberInputRoot>
-      </div>
+      </Group>
       <Chart
         options={getOptions(labels, undefined, {
           chart: {

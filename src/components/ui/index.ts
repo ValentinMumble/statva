@@ -6,6 +6,7 @@ export * from './input-group';
 export * from './native-select';
 export * from './number-input';
 export * from './radio';
+export * from './segmented-control';
 export * from './select';
 export * from './skeleton';
 export * from './slider';
