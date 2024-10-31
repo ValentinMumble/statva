@@ -1,9 +1,9 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {createListCollection, Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {NumberInputField, NumberInputRoot, SegmentedControl} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, generatePeriodKeys, getOptions, getTypes, getWeekNumber} from '../../models';
+import {ChartProps, generatePeriodKeys, getOptions, getTypes, getWeekNumber, labelCollection} from '../../models';
 import {ActivityType} from '../../models/strava';
 
 const INITIAL_MONTH_COUNT = 15;
@@ -58,19 +58,20 @@ const MonthChart = ({
   const labels = 'week' === timeframe ? Object.keys(sliced).map(label) : Object.keys(sliced);
   const series = [{name: dataLabel, data: Object.values(sliced)}];
 
-  const typeCollection = createListCollection({
-    items: TYPES.map(type => ({value: type, label: label(type)})),
-  });
-
   return (
     <>
       <Group width="full" justifyContent="end" gap="20px">
-        <SegmentedControl value={type} size="sm" onValueChange={handleTypeChange} items={typeCollection.items} />
+        <SegmentedControl
+          value={type}
+          size="sm"
+          onValueChange={handleTypeChange}
+          items={labelCollection(TYPES, label).items}
+        />
         <SegmentedControl
           value={timeframe}
           size="sm"
           onValueChange={({value}) => handleTimeframeChange(value)}
-          items={['month', 'week']}
+          items={labelCollection(['month', 'week'], label).items}
         />
         <NumberInputRoot
           width="70px"

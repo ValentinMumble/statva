@@ -24,6 +24,7 @@ type Tag = {
   sortType: SortType;
   emoji: string;
   help: string;
+  excludedTypes?: ActivityType[];
 };
 
 const TAGS: Tag[] = [
@@ -35,6 +36,7 @@ const TAGS: Tag[] = [
     sortType: 'distance',
     emoji: '🗺️',
     help: 'Distance',
+    excludedTypes: [ActivityType.Tennis],
   },
   {
     label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
@@ -44,6 +46,7 @@ const TAGS: Tag[] = [
     sortType: 'elevation',
     emoji: '⛰️',
     help: 'D+',
+    excludedTypes: [ActivityType.Swim, ActivityType.Tennis],
   },
   {
     label: ({total_elevation_gain, distance}) => `${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
@@ -55,6 +58,7 @@ const TAGS: Tag[] = [
     sortType: 'elevation_percent',
     emoji: '⚖️',
     help: 'D+ percentage',
+    excludedTypes: [ActivityType.Swim, ActivityType.Tennis],
   },
   {
     label: ({moving_time}) => formatDuration(moving_time),
@@ -81,6 +85,7 @@ const TAGS: Tag[] = [
     sortType: 'average_speed',
     emoji: '🏁',
     help: 'Average speed',
+    excludedTypes: [ActivityType.Tennis],
   },
   {
     label: ({max_speed}) => formatSpeed(max_speed),
@@ -89,6 +94,7 @@ const TAGS: Tag[] = [
     sortType: 'max_speed',
     emoji: '🚀',
     help: 'Max speed',
+    excludedTypes: [ActivityType.Tennis],
   },
   {
     label: ({average_watts}) => (undefined === average_watts ? null : formatPower(average_watts)),

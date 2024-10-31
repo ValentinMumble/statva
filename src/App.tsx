@@ -1,5 +1,6 @@
 import {ChangeEvent, useState} from 'react';
 import {
+  Button,
   Collapsible,
   createListCollection,
   Group,
@@ -14,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import {BsDatabaseDown} from 'react-icons/bs';
 import {HiArrowDown, HiArrowUp, HiOutlineLockClosed, HiOutlineLockOpen} from 'react-icons/hi2';
+import {MdClear, MdFilterList} from 'react-icons/md';
 import {
   Tooltip,
   InputGroup,
@@ -28,27 +30,21 @@ import {
   SegmentedControl,
 } from './components/ui';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
-import {SortType, SortDirection, getGearEmoji, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES} from './models';
+import {
+  SortType,
+  SortDirection,
+  getGearEmoji,
+  range,
+  TAGS,
+  DEFAULT_SORTS,
+  DEFAULT_TYPES,
+  labelCollection,
+} from './models';
 import {ActivityType} from './models/strava';
-import {useActivities, useAthlete, useFtp} from './hooks';
-import {MdClear, MdFilterList} from 'react-icons/md';
+import {useActivities, useAthlete, useFtp, useLabels} from './hooks';
 
-const BG_COLLECTION = createListCollection({
-  items: [
-    {
-      value: 'date',
-      label: '📅',
-    },
-    {
-      value: 'power-zone',
-      label: '⚡️',
-    },
-    {
-      value: 'heart-zone',
-      label: '🫀',
-    },
-  ],
-});
+const DISPLAYED_ITEMS = 75;
+const BG_COLLECTION = ['date', 'power-zone', 'heart-zone'];
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
@@ -61,7 +57,9 @@ const App = () => {
   const [gearIds, setGearIds] = useState<string[]>([]);
   const [bgOption, setBgOption] = useState<string>('date');
   const [yearRange, setYearRange] = useState<number[]>([]);
+  const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
 
+  const [label] = useLabels();
   const athlete = useAthlete();
   const getFtp = useFtp();
   const [activities, refetch] = useActivities({
@@ -92,9 +90,9 @@ const App = () => {
   };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
-
   const handleGearChange = ({value}: SelectValueChangeDetails) => setGearIds(value);
   const handleBgOptionChange = ({value}: SegmentGroupValueChangeDetails) => setBgOption(value);
+  const handleDisplayMoreItems = () => setDisplayedItems(displayedItems => displayedItems + DISPLAYED_ITEMS);
 
   const handleSortToggle = (sortType: SortType) => () =>
     setDisplayedSorts(displayedSorts =>
@@ -103,8 +101,6 @@ const App = () => {
         : [...displayedSorts, sortType]
     );
 
-  const isLoading = null === activities;
-
   const gearCollection = createListCollection({
     items: [...(athlete?.bikes ?? []), ...(athlete?.shoes ?? [])].map(({id}) => ({
       value: id,
@@ -112,6 +108,8 @@ const App = () => {
     })),
   });
   gearCollection.items.push({value: 'null', label: '🤷'});
+
+  const isLoading = null === activities;
 
   return (
     <Stack padding="0 20px" gap="20px" direction={['column-reverse', 'row']}>
@@ -150,7 +148,11 @@ const App = () => {
                 onChange={handleSearchChange}
               />
             </InputGroup>
-            <SegmentedControl value={bgOption} onValueChange={handleBgOptionChange} items={BG_COLLECTION.items} />
+            <SegmentedControl
+              value={bgOption}
+              onValueChange={handleBgOptionChange}
+              items={labelCollection(BG_COLLECTION, label).items}
+            />
             <SelectRoot width="90px" collection={gearCollection} value={gearIds} onValueChange={handleGearChange}>
               <SelectTrigger clearable={true}>
                 <SelectValueText placeholder="⚙️" />
@@ -243,20 +245,32 @@ const App = () => {
               ))
             ) : 0 === activities.length ? (
               <Table.Row>
-                <Table.Cell>No activities...</Table.Cell>
+                <Table.Cell>No activities... 🏜️</Table.Cell>
               </Table.Row>
             ) : (
-              activities.map(activity => (
-                <ActivityListItem
-                  key={activity.id}
-                  athlete={athlete}
-                  getFtp={getFtp}
-                  activity={activity}
-                  activeSort={activeSort}
-                  bgOption={bgOption}
-                  enabledSorts={displayedSorts}
-                />
-              ))
+              activities
+                .slice(0, displayedItems)
+                .map(activity => (
+                  <ActivityListItem
+                    key={activity.id}
+                    athlete={athlete}
+                    getFtp={getFtp}
+                    activity={activity}
+                    activeSort={activeSort}
+                    bgOption={bgOption}
+                    enabledSorts={displayedSorts}
+                  />
+                ))
+            )}
+            {(activities?.length ?? 0) > displayedItems && (
+              <Table.Row>
+                <Table.Cell />
+                <Table.Cell textAlign="center" padding="20px">
+                  <Button variant="subtle" onClick={handleDisplayMoreItems}>
+                    More
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
             )}
           </Table.Body>
         </Table.Root>

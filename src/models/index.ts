@@ -1,6 +1,7 @@
 export * from './activity';
 export * from './activity-sort';
 export * from './apexcharts';
+export * from './collection';
 export * from './event';
 export * from './gear';
 export * from './tag';

@@ -88,7 +88,7 @@ const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption
       </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => (
         <Table.Cell key={tag.sortType} textAlign="center" opacity={tag.isRelevant(activity) ? 0.9 : 0.4}>
-          {null !== tag.label(activity, ftp) && (
+          {null !== tag.label(activity, ftp) && !tag.excludedTypes?.includes(activity.sport_type) && (
             <Tooltip content={tag.tooltip?.(activity, athlete)}>
               <Tag variant={activeSort === tag.sortType ? 'outline' : 'subtle'}>{tag.label(activity, ftp)}</Tag>
             </Tooltip>

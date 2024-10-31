@@ -1,10 +1,10 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {createListCollection, Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import { Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {SegmentedControl} from '../ui';
 import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
-import {formatDistance, getEventLabel, getOptions, getRidesBetween} from '../../models';
+import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection} from '../../models';
 import {DetailedActivity} from '../../models/strava';
 
 const EVENT_TYPES = ['tire', 'brake_pad', 'battery'];
@@ -55,20 +55,21 @@ const EventChart = () => {
   });
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
-  const eventTypeCollection = createListCollection({
-    items: EVENT_TYPES.map(type => ({value: type, label: label(type)})),
-  });
-  const dataCollection = createListCollection({items: DATA_TYPES.map(type => ({value: type, label: label(type)}))});
 
   return (
     <>
       <Group width="full" justifyContent="end" gap="20px">
-        <SegmentedControl size="sm" value={data} onValueChange={handleDataChange} items={dataCollection.items} />
+        <SegmentedControl
+          size="sm"
+          value={data}
+          onValueChange={handleDataChange}
+          items={labelCollection(DATA_TYPES, label).items}
+        />
         <SegmentedControl
           size="sm"
           value={eventType}
           onValueChange={handleEventTypeChange}
-          items={eventTypeCollection.items}
+          items={labelCollection(EVENT_TYPES, label).items}
         />
         <EditEvents events={events} onEditEvents={refreshEvents} />
       </Group>
