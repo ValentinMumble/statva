@@ -29,7 +29,7 @@ import {ActivityType} from './models/strava';
 import {useActivities, useAthlete, useFtp, useLabels} from './hooks';
 
 const DISPLAYED_ITEMS = 75;
-const BG_COLLECTION = ['date', 'power-zone', 'heart-zone'];
+const BG_COLLECTION = ['date', 'average_watts', 'average_heartrate'];
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
@@ -155,7 +155,7 @@ const App = () => {
               {TAGS.map(tag => (
                 <Tooltip key={tag.sortType} content={tag.help}>
                   <VStack cursor="pointer" onClick={handleSortToggle(tag.sortType)}>
-                    <span>{tag.emoji}</span>
+                    <span>{label(tag.sortType)}</span>
                     <Switch size="xs" checked={displayedSorts.includes(tag.sortType)} />
                   </VStack>
                 </Tooltip>
@@ -165,29 +165,28 @@ const App = () => {
         </Collapsible.Root>
         <Table.Root unstyled={true}>
           <Table.Header position="sticky" top={0}>
-            <Table.Row>
+            <Table.Row fontSize=".8em" cursor="pointer">
               <Table.ColumnHeader />
               <Table.ColumnHeader>
-                <IconButton variant="ghost" size="xs" onClick={handleSortDirectionToggle}>
-                  {'asc' === sortDirection ? <HiArrowUp /> : <HiArrowDown />}
-                </IconButton>
+                <VStack>
+                  <span onClick={handleSortDirectionToggle}>
+                    {'asc' === sortDirection ? <HiArrowUp /> : <HiArrowDown />}
+                  </span>
+                  <span onClick={handleSortChange('date')}>📅</span>
+                </VStack>
               </Table.ColumnHeader>
               {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
-                <Table.ColumnHeader key={tag.sortType} padding="6px 0">
+                <Table.ColumnHeader key={tag.sortType} onClick={handleSortChange(tag.sortType)}>
                   {isLoading ? (
                     <Skeleton margin="0 5px">i</Skeleton>
                   ) : (
-                    <Tag variant="subtle">{tag.total?.(activities)}</Tag>
+                    <VStack>
+                      <Tag colorPalette={tag.sortType === activeSort ? 'orange' : 'gray'} variant="subtle">
+                        {tag.total?.(activities)}
+                      </Tag>
+                      {label(tag.sortType)}
+                    </VStack>
                   )}
-                </Table.ColumnHeader>
-              ))}
-            </Table.Row>
-            <Table.Row cursor="pointer" fontSize=".8em">
-              <Table.ColumnHeader />
-              <Table.ColumnHeader onClick={handleSortChange('date')}>📅</Table.ColumnHeader>
-              {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
-                <Table.ColumnHeader key={tag.sortType} title={tag.help} onClick={handleSortChange(tag.sortType)}>
-                  {tag.emoji}
                 </Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -217,7 +216,6 @@ const App = () => {
                     athlete={athlete}
                     getFtp={getFtp}
                     activity={activity}
-                    activeSort={activeSort}
                     bgOption={bgOption}
                     enabledSorts={displayedSorts}
                   />

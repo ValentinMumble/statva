@@ -23,9 +23,9 @@ const MONTH_COLORS = [
 
 const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: DetailedAthlete | null): string => {
   switch (bgOption) {
-    case 'power-zone':
+    case 'average_watts':
       return POWER_COLORS[getPowerZone(activity.weighted_average_watts ?? 0, athlete?.ftp ?? 0)];
-    case 'heart-zone':
+    case 'average_heartrate':
       return HEART_COLORS[getHeartZone(activity)];
     case 'date':
     default:
@@ -36,13 +36,12 @@ const getBgColor = (bgOption: string, activity: DetailedActivity, athlete: Detai
 type ActivityListItemProps = {
   athlete: DetailedAthlete | null;
   activity: DetailedActivity | null;
-  activeSort?: SortType;
   enabledSorts: SortType[];
   bgOption: string;
   getFtp: (date: Date) => number;
 };
 
-const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
+const ActivityListItem = ({athlete, activity, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
   //TODO check skeleton, extract to component ?
   if (null === activity || null === athlete) {
     return (
@@ -89,8 +88,8 @@ const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => (
         <Table.Cell key={tag.sortType} textAlign="center" opacity={tag.isRelevant(activity) ? 0.9 : 0.4}>
           {null !== tag.label(activity, ftp) && !tag.excludedTypes?.includes(activity.sport_type) && (
-            <Tooltip content={tag.tooltip?.(activity, athlete)}>
-              <Tag variant={activeSort === tag.sortType ? 'outline' : 'subtle'}>{tag.label(activity, ftp)}</Tag>
+            <Tooltip portalled={true} content={tag.tooltip?.(activity, athlete)}>
+              <Tag variant="subtle">{tag.label(activity, ftp)}</Tag>
             </Tooltip>
           )}
         </Table.Cell>

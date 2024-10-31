@@ -12,7 +12,6 @@ type SortType =
   | 'distance'
   | 'duration'
   | 'elapsed_time'
-  | 'elevation'
   | 'elevation_percent'
   | 'intensity'
   | 'kilojoules'
@@ -23,6 +22,7 @@ type SortType =
   | 'photo_count'
   | 'pr_count'
   | 'suffer_score'
+  | 'total_elevation_gain'
   | 'weighted_average_watts';
 
 type SortDirection = 'asc' | 'desc';
@@ -33,7 +33,7 @@ const DEFAULT_SORTS: SortType[] = [
   'average_speed',
   'distance',
   'duration',
-  'elevation',
+  'total_elevation_gain',
   'intensity',
   'max_speed',
   'suffer_score',
@@ -72,8 +72,6 @@ const sortActivities = (
       return second.moving_time - first.moving_time;
     case 'elapsed_time':
       return second.elapsed_time - first.elapsed_time;
-    case 'elevation':
-      return second.total_elevation_gain - first.total_elevation_gain;
     case 'elevation_percent':
       return second.total_elevation_gain / second.distance - first.total_elevation_gain / first.distance;
     case 'intensity':
@@ -97,6 +95,8 @@ const sortActivities = (
       return second.pr_count - first.pr_count;
     case 'suffer_score':
       return (second.suffer_score ?? 0) - (first.suffer_score ?? 0);
+    case 'total_elevation_gain':
+      return second.total_elevation_gain - first.total_elevation_gain;
     case 'weighted_average_watts':
       return (second.weighted_average_watts ?? 0) - (first.weighted_average_watts ?? 0);
   }
