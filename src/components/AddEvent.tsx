@@ -1,9 +1,10 @@
 import {ChangeEvent, useState} from 'react';
-import {HStack, IconButton, Input} from '@chakra-ui/react';
+import {Group, IconButton, Input, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {FaPlus} from 'react-icons/fa';
+import {SegmentedControl} from '../components/ui';
+import {GearSelect} from '../components';
 import {useAthlete, useLabels} from '../hooks';
-import {getGearEmoji, removeNull} from '../models';
-import {NativeSelectField, NativeSelectRoot} from './ui';
+import {labelCollection, removeNull} from '../models';
 
 const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
 
@@ -24,14 +25,14 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
     setBike(null);
   };
 
-  const handleTypeChange = ({target}: ChangeEvent<HTMLSelectElement>) => {
-    setType(target.value);
+  const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) => {
+    setType(value);
     resetForm();
   };
 
   const handleDateChange = ({target}: ChangeEvent<HTMLInputElement>) => setDate(target.value);
   const handleChainChange = ({target}: ChangeEvent<HTMLInputElement>) => setChain(target.value);
-  const handleBikeChange = ({target}: ChangeEvent<HTMLSelectElement>) => setBike(target.value);
+  const handleBikeChange = (bikes: string[]) => setBike(bikes[0]);
 
   const handleAdd = async () => {
     const event = {
@@ -66,33 +67,30 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
   };
 
   return (
-    <HStack margin="20px 10px" gap="20px">
-      <Input type="date" size="sm" value={date} onChange={handleDateChange} />
-      <NativeSelectRoot>
-        <NativeSelectField value={type} onChange={handleTypeChange}>
-          {EVENT_TYPES.map(type => (
-            <option key={type} value={type}>
-              {label(type)}
-            </option>
-          ))}
-        </NativeSelectField>
-      </NativeSelectRoot>
+    <Group justifyContent="space-between">
+      <Input type="date" size="sm" width="200px" value={date} onChange={handleDateChange} />
+      <SegmentedControl
+        value={type}
+        size="sm"
+        onValueChange={handleTypeChange}
+        items={labelCollection(EVENT_TYPES, label).items}
+      />
       {'chain' === type && (
-        <NativeSelectRoot>
-          <NativeSelectField placeholder="🚲" value={bike ?? ''} onChange={handleBikeChange}>
-            {athlete?.bikes.map(({id}) => (
-              <option key={id} value={id}>
-                {getGearEmoji(athlete, id)}
-              </option>
-            ))}
-          </NativeSelectField>
-          <Input size="sm" placeholder="🔗" value={chain ?? ''} onChange={handleChainChange} />
-        </NativeSelectRoot>
+        <>
+          <GearSelect
+            athlete={athlete}
+            selectedGear={null === bike ? [] : [bike]}
+            onSelectedGearChange={handleBikeChange}
+            selectContentProps={{portalled: false}}
+            selectRootProps={{size: 'sm'}}
+          />
+          <Input size="sm" width="200px" placeholder="🔗" value={chain ?? ''} onChange={handleChainChange} />
+        </>
       )}
       <IconButton variant="ghost" aria-label="Add" disabled={!isFormValid()} size="xs" onClick={handleAdd}>
         <FaPlus />
       </IconButton>
-    </HStack>
+    </Group>
   );
 };
 

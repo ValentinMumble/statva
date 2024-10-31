@@ -39,15 +39,16 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
       </Button>
       <DialogRoot open={open} onOpenChange={onClose} size="xl">
         <DialogBackdrop />
-        <DialogContent>
+        <DialogContent padding="20px" gap="20px">
           <AddEvent onAddEvent={refresh} />
-          <Table.Root size="sm">
+          <Table.Root size="sm" striped={true}>
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader>Date</Table.ColumnHeader>
                 <Table.ColumnHeader>Type</Table.ColumnHeader>
                 <Table.ColumnHeader>Bike</Table.ColumnHeader>
                 <Table.ColumnHeader>Chain</Table.ColumnHeader>
+                <Table.ColumnHeader />
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -72,7 +73,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                     </>
                   )}
                   <Table.Cell textAlign="end">
-                    <IconButton variant="ghost" aria-label="Remove" size="xs" onClick={handleRemove(event.id)}>
+                    <IconButton variant="ghost" title="Remove" size="xs" onClick={handleRemove(event.id)}>
                       <FaMinus />
                     </IconButton>
                   </Table.Cell>

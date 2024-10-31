@@ -43,7 +43,7 @@ type ActivityListItemProps = {
 };
 
 const ActivityListItem = ({athlete, activity, activeSort, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
-  //TODO check skeleton, extract to compoonent ?
+  //TODO check skeleton, extract to component ?
   if (null === activity || null === athlete) {
     return (
       <Table.Row>

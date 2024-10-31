@@ -130,7 +130,7 @@ const App = () => {
               onValueChange={handleBgOptionChange}
               items={labelCollection(BG_COLLECTION, label).items}
             />
-            <GearSelect athlete={athlete} selectedGear={gearIds} onSelectedGearChange={setGearIds} />
+            <GearSelect athlete={athlete} selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
             <IconButton variant="ghost" onClick={handlePrivateToggle} title="With private">
               {withPrivate ? <HiOutlineLockClosed /> : <HiOutlineLockOpen />}
             </IconButton>

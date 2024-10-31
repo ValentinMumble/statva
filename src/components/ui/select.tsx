@@ -127,3 +127,4 @@ export const SelectItemGroup = forwardRef<HTMLDivElement, SelectItemGroupProps>(
 
 export const SelectLabel = ChakraSelect.Label
 export const SelectItemText = ChakraSelect.ItemText
+export type {SelectContentProps};

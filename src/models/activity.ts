@@ -100,7 +100,7 @@ const getHeartZone = ({average_heartrate = 0}: DetailedActivity, maxHeartrate = 
       break;
     case average_heartrate < 0.59 * maxHeartrate:
       return 1;
-    case average_heartrate < 0.8 * maxHeartrate: // 0.78
+    case average_heartrate < 0.78 * maxHeartrate:
       return 2;
     case average_heartrate < 0.87 * maxHeartrate:
       return 3;

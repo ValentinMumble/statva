@@ -1,5 +1,12 @@
-import {createListCollection, SelectValueChangeDetails} from '@chakra-ui/react';
-import {SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText} from '../components/ui';
+import {createListCollection, SelectValueChangeDetails, SelectRootProps} from '@chakra-ui/react';
+import {
+  SelectContent,
+  SelectItem,
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
+  SelectContentProps,
+} from '../components/ui';
 import {getGearEmoji} from '../models';
 import {DetailedAthlete} from '../models/strava';
 
@@ -7,9 +14,19 @@ type GearSelectProps = {
   athlete: DetailedAthlete | null;
   selectedGear: string[];
   onSelectedGearChange: (selectedGear: string[]) => void;
+  clearable?: boolean;
+  selectContentProps?: SelectContentProps;
+  selectRootProps?: Partial<SelectRootProps>;
 };
 
-const GearSelect = ({athlete, selectedGear, onSelectedGearChange}: GearSelectProps) => {
+const GearSelect = ({
+  athlete,
+  selectedGear,
+  onSelectedGearChange,
+  selectContentProps,
+  selectRootProps,
+  clearable = false,
+}: GearSelectProps) => {
   const handleGearChange = ({value}: SelectValueChangeDetails) => onSelectedGearChange(value);
 
   const gearCollection = createListCollection({
@@ -21,11 +38,17 @@ const GearSelect = ({athlete, selectedGear, onSelectedGearChange}: GearSelectPro
   gearCollection.items.push({value: 'null', label: '🤷'});
 
   return (
-    <SelectRoot width="90px" collection={gearCollection} value={selectedGear} onValueChange={handleGearChange}>
-      <SelectTrigger clearable={true}>
+    <SelectRoot
+      width="90px"
+      collection={gearCollection}
+      value={selectedGear}
+      onValueChange={handleGearChange}
+      {...selectRootProps}
+    >
+      <SelectTrigger clearable={clearable}>
         <SelectValueText placeholder="⚙️" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent {...selectContentProps}>
         {gearCollection.items.map(gear => (
           <SelectItem item={gear} key={gear.value}>
             {gear.label}
