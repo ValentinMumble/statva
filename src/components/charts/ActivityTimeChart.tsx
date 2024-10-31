@@ -8,11 +8,11 @@ import {Group} from '@chakra-ui/react';
 const INITIAL_MONTH_COUNT = 15;
 const INITIAL_WEEK_COUNT = 26;
 
-type TypeMonthChartProps = Omit<ChartProps, 'data' | 'dataLabel' | 'formatter'> & {
+type ActivityTimeChartProps = Omit<ChartProps, 'data' | 'dataLabel' | 'formatter'> & {
   timeframe?: string;
 };
 
-const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}: TypeMonthChartProps) => {
+const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}: ActivityTimeChartProps) => {
   const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
   const [itemCount, setItemCount] = useState<number>(
     'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
@@ -33,7 +33,7 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
     setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
   };
 
-  const handleCommuteChange = () => setWithCommute(withCommute => !withCommute);
+  const toggleWithCommute = () => setWithCommute(withCommute => !withCommute);
 
   const dataPerPeriod = (activities ?? []).reduce(
     (periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
@@ -72,8 +72,9 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
   return (
     <div>
       <Group width="full" justifyContent="end" gap="20px">
-        <Switch id="commute-switch" size="sm" onChange={handleCommuteChange} checked={withCommute} />
-        Commute
+        <Switch size="sm" checked={withCommute} onCheckedChange={toggleWithCommute}>
+          Commute
+        </Switch>
         <SegmentedControl
           size="sm"
           value={timeframe}
@@ -105,4 +106,4 @@ const TypeMonthChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}
   );
 };
 
-export {TypeMonthChart};
+export {ActivityTimeChart};

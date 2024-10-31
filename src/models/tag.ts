@@ -94,7 +94,7 @@ const TAGS: Tag[] = [
     sortType: 'max_speed',
     emoji: '🚀',
     help: 'Max speed',
-    excludedTypes: [ActivityType.Tennis],
+    excludedTypes: [ActivityType.Tennis, ActivityType.Swim],
   },
   {
     label: ({average_watts}) => (undefined === average_watts ? null : formatPower(average_watts)),

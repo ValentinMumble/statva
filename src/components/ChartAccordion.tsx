@@ -8,7 +8,7 @@ import {
   AverageGearChart,
   HeartChart,
   FTPChart,
-  TypeMonthChart,
+  ActivityTimeChart,
   ChainChart,
   EventChart,
 } from './charts';
@@ -30,7 +30,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Activities / time 🛹',
-    component: <TypeMonthChart />,
+    component: <ActivityTimeChart />,
   },
   {
     label: 'Moving / time ⏱️',

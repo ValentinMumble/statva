@@ -2,13 +2,11 @@ import {ChangeEvent, useState} from 'react';
 import {
   Button,
   Collapsible,
-  createListCollection,
   Group,
   HStack,
   IconButton,
   Input,
   SegmentGroupValueChangeDetails,
-  SelectValueChangeDetails,
   Stack,
   Table,
   VStack,
@@ -16,30 +14,17 @@ import {
 import {BsDatabaseDown} from 'react-icons/bs';
 import {HiArrowDown, HiArrowUp, HiOutlineLockClosed, HiOutlineLockOpen} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
+import {Tooltip, InputGroup, Switch, Skeleton, Tag, SegmentedControl} from './components/ui';
 import {
-  Tooltip,
-  InputGroup,
-  Switch,
-  Skeleton,
-  SelectTrigger,
-  SelectRoot,
-  SelectValueText,
-  SelectContent,
-  SelectItem,
-  Tag,
-  SegmentedControl,
-} from './components/ui';
-import {ActivityListItem, ActivityTypeFilter, ChartAccordion, Stats, WeekView, YearRangeSlider} from './components';
-import {
-  SortType,
-  SortDirection,
-  getGearEmoji,
-  range,
-  TAGS,
-  DEFAULT_SORTS,
-  DEFAULT_TYPES,
-  labelCollection,
-} from './models';
+  ActivityListItem,
+  ActivityTypeFilter,
+  ChartAccordion,
+  GearSelect,
+  Stats,
+  WeekView,
+  YearRangeSlider,
+} from './components';
+import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES, labelCollection} from './models';
 import {ActivityType} from './models/strava';
 import {useActivities, useAthlete, useFtp, useLabels} from './hooks';
 
@@ -87,10 +72,10 @@ const App = () => {
     setGearIds([]);
     setBgOption('date');
     setYearRange([]);
+    setDisplayedItems(DISPLAYED_ITEMS);
   };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
-  const handleGearChange = ({value}: SelectValueChangeDetails) => setGearIds(value);
   const handleBgOptionChange = ({value}: SegmentGroupValueChangeDetails) => setBgOption(value);
   const handleDisplayMoreItems = () => setDisplayedItems(displayedItems => displayedItems + DISPLAYED_ITEMS);
 
@@ -100,14 +85,6 @@ const App = () => {
         ? displayedSorts.filter(sort => sort !== sortType)
         : [...displayedSorts, sortType]
     );
-
-  const gearCollection = createListCollection({
-    items: [...(athlete?.bikes ?? []), ...(athlete?.shoes ?? [])].map(({id}) => ({
-      value: id,
-      label: getGearEmoji(athlete, id),
-    })),
-  });
-  gearCollection.items.push({value: 'null', label: '🤷'});
 
   const isLoading = null === activities;
 
@@ -126,8 +103,8 @@ const App = () => {
         <ChartAccordion />
         <WeekView />
       </VStack>
-      <VStack align="stretch" flexBasis="62%" height="100vh" overflowY="scroll">
-        <Collapsible.Root open={filtersOpen} onOpenChange={e => setFiltersOpen(e.open)}>
+      <VStack align="stretch" flexBasis="62%" height="100vh" overflow="scroll">
+        <Collapsible.Root open={filtersOpen} onOpenChange={({open}) => setFiltersOpen(open)}>
           <Group width="full">
             <InputGroup
               flex={1}
@@ -153,18 +130,7 @@ const App = () => {
               onValueChange={handleBgOptionChange}
               items={labelCollection(BG_COLLECTION, label).items}
             />
-            <SelectRoot width="90px" collection={gearCollection} value={gearIds} onValueChange={handleGearChange}>
-              <SelectTrigger clearable={true}>
-                <SelectValueText placeholder="⚙️" />
-              </SelectTrigger>
-              <SelectContent>
-                {gearCollection.items.map(gear => (
-                  <SelectItem item={gear} key={gear.value}>
-                    {gear.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </SelectRoot>
+            <GearSelect athlete={athlete} selectedGear={gearIds} onSelectedGearChange={setGearIds} />
             <IconButton variant="ghost" onClick={handlePrivateToggle} title="With private">
               {withPrivate ? <HiOutlineLockClosed /> : <HiOutlineLockOpen />}
             </IconButton>
@@ -190,12 +156,7 @@ const App = () => {
                 <Tooltip key={tag.sortType} content={tag.help}>
                   <VStack cursor="pointer" onClick={handleSortToggle(tag.sortType)}>
                     <span>{tag.emoji}</span>
-                    <Switch
-                      size="sm"
-                      colorScheme="whiteAlpha"
-                      onChange={handleSortToggle(tag.sortType)}
-                      checked={displayedSorts.includes(tag.sortType)}
-                    />
+                    <Switch size="xs" checked={displayedSorts.includes(tag.sortType)} />
                   </VStack>
                 </Tooltip>
               ))}
