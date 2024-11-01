@@ -85,15 +85,26 @@ const ActivityListItem = ({athlete, activity, enabledSorts, bgOption, getFtp}: A
           </Tooltip>
         </Box>
       </Table.Cell>
-      {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => (
-        <Table.Cell key={tag.sortType} textAlign="center" opacity={tag.isRelevant(activity) ? 0.9 : 0.4}>
-          {null !== tag.label(activity, ftp) && !tag.excludedTypes?.includes(activity.sport_type) && (
-            <Tooltip portalled={true} content={tag.tooltip?.(activity, athlete)}>
-              <Tag variant="subtle">{tag.label(activity, ftp)}</Tag>
-            </Tooltip>
-          )}
-        </Table.Cell>
-      ))}
+      {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => {
+        const label = tag.label(activity, ftp);
+        const tooltip = tag.tooltip?.(activity, athlete) ?? null;
+
+        if (null === label || tag.excludedTypes?.includes(activity.sport_type)) {
+          <Table.Cell key={tag.sortType} />;
+        }
+
+        return (
+          <Table.Cell key={tag.sortType} textAlign="center" opacity={tag.isRelevant(activity) ? 0.9 : 0.4}>
+            {null === tooltip ? (
+              <Tag variant="subtle">{label}</Tag>
+            ) : (
+              <Tooltip portalled={true} content={tooltip}>
+                <Tag variant="subtle">{label}</Tag>
+              </Tooltip>
+            )}
+          </Table.Cell>
+        );
+      })}
     </Table.Row>
   );
 };

@@ -73,6 +73,14 @@ const sortActivities = (
     case 'elapsed_time':
       return second.elapsed_time - first.elapsed_time;
     case 'elevation_percent':
+      if (0 === first.distance) {
+        return Infinity;
+      }
+
+      if (0 === second.distance) {
+        return -Infinity;
+      }
+
       return second.total_elevation_gain / second.distance - first.total_elevation_gain / first.distance;
     case 'intensity':
       return (
