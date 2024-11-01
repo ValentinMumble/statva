@@ -4,13 +4,13 @@ import {ActivityType, DetailedActivity} from './strava';
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
 const DEFAULT_TYPES = [
-  ActivityType.GravelRide,
   ActivityType.Ride,
+  ActivityType.GravelRide,
+  ActivityType.VirtualRide,
   ActivityType.Run,
+  ActivityType.TrailRun,
   ActivityType.Swim,
   ActivityType.Tennis,
-  ActivityType.TrailRun,
-  ActivityType.VirtualRide,
 ];
 
 type ActivityFilter = {

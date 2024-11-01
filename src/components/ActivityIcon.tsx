@@ -1,23 +1,31 @@
 import {Icon, IconProps} from '@chakra-ui/react';
-import {FaSwimmer} from 'react-icons/fa';
-import {GiSkier, GiMountainClimbing} from 'react-icons/gi';
-import {MdCommute, MdHiking, MdDirectionsWalk} from 'react-icons/md';
-import {PiBicycleFill, PiBicycle, PiTennisBallBold, PiGameControllerBold, PiQuestionBold} from 'react-icons/pi';
-import {TbKayak, TbRun} from 'react-icons/tb';
+import {GiMountainClimbing} from 'react-icons/gi';
+import {PiBicycleFill, PiBicycle, PiTennisBallBold, PiQuestionBold} from 'react-icons/pi';
+import {
+  TbBrandZwift,
+  TbBusStop,
+  TbKayak,
+  TbRun,
+  TbSkiJumping,
+  TbSwimming,
+  TbTreadmill,
+  TbTrekking,
+  TbWalk,
+} from 'react-icons/tb';
 import {ActivityType} from '../models/strava';
 
 const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
   if (isCommute) {
-    return MdCommute;
+    return TbBusStop;
   }
 
   switch (activityType) {
     case ActivityType.AlpineSki:
-      return GiSkier;
+      return TbSkiJumping;
     case ActivityType.GravelRide:
       return PiBicycleFill;
     case ActivityType.Hike:
-      return MdHiking;
+      return TbTrekking;
     case ActivityType.Canoeing:
     case ActivityType.Kayaking:
       return TbKayak;
@@ -25,17 +33,18 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
       return PiBicycle;
     case ActivityType.RockClimbing:
       return GiMountainClimbing;
-    case ActivityType.Run:
     case ActivityType.TrailRun:
+      return TbTreadmill;
+    case ActivityType.Run:
       return TbRun;
     case ActivityType.Swim:
-      return FaSwimmer;
+      return TbSwimming;
     case ActivityType.Tennis:
       return PiTennisBallBold;
     case ActivityType.VirtualRide:
-      return PiGameControllerBold;
+      return TbBrandZwift;
     case ActivityType.Walk:
-      return MdDirectionsWalk;
+      return TbWalk;
     default:
       return PiQuestionBold;
   }

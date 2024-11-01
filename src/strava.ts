@@ -1,6 +1,6 @@
 import {DetailedActivity, DetailedAthlete} from './models/strava';
 
-const USE_LOCAL_ACTIVITIES = true;
+const USE_LOCAL_ACTIVITIES = false;
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ITEMS_PER_PAGE = 100;

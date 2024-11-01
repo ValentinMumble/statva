@@ -148,9 +148,11 @@ const App = () => {
               </IconButton>
             </Collapsible.Trigger>
           </Group>
-          <Collapsible.Content padding="20px 0">
-            <ActivityTypeFilter types={types} onTypesChange={setTypes} />
-            <YearRangeSlider value={yearRange} onChange={setYearRange} />
+          <Collapsible.Content padding="20px 0" display="flex" flexDirection="column" gap="30px">
+            <HStack paddingRight="20px" gap="40px">
+              <ActivityTypeFilter types={types} onTypesChange={setTypes} />
+              <YearRangeSlider value={yearRange} onChange={setYearRange} />
+            </HStack>
             <HStack justifyContent="space-between">
               {TAGS.map(tag => (
                 <Tooltip key={tag.sortType} content={tag.help}>

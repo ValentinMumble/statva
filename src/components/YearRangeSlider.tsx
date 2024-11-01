@@ -2,6 +2,7 @@ import {range} from '../models';
 import {Slider} from '../components/ui';
 
 const BOUNDARIES = [2015, new Date().getFullYear()];
+const EXCLUDED_YEARS = [2020, 2021, 2022];
 
 type YearRangeSliderProps = {
   value: number[];
@@ -13,14 +14,15 @@ const YearRangeSlider = ({value, onChange}: YearRangeSliderProps) => {
 
   return (
     <Slider
-      margin="5px 15px 30px"
-      width="calc(100% - 30px)"
+      width="full"
+      size="sm"
       value={value}
-      onValueChange={({value}) => onChange(value)}
+      onValueChangeEnd={({value}) => onChange(value)}
       min={BOUNDARIES.at(0)}
       max={BOUNDARIES.at(-1)}
-      step={1}
-      marks={range(BOUNDARIES.at(0), BOUNDARIES.at(-1))}
+      marks={range(BOUNDARIES.at(0), BOUNDARIES.at(-1))
+        .filter(year => !EXCLUDED_YEARS.includes(year))
+        .map(year => ({label: year, value: year}))}
     />
   );
 };
