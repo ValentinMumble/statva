@@ -90,7 +90,7 @@ const ActivityListItem = ({athlete, activity, enabledSorts, bgOption, getFtp}: A
         const tooltip = tag.tooltip?.(activity, athlete) ?? null;
 
         if (null === label || tag.excludedTypes?.includes(activity.sport_type)) {
-          <Table.Cell key={tag.sortType} />;
+          return <Table.Cell key={tag.sortType} />;
         }
 
         return (
