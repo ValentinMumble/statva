@@ -3,15 +3,21 @@ import Chart from 'react-apexcharts';
 import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {NumberInputField, NumberInputRoot, SegmentedControl} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, generatePeriodKeys, getOptions, getTypes, getWeekNumber, labelCollection} from '../../models';
+import {
+  ChartProps,
+  generatePeriodKeys,
+  getOptions,
+  getTypes,
+  labelCollection,
+  Timeframe,
+  TIMEFRAMES,
+} from '../../models';
 import {ActivityType} from '../../models/strava';
 
-const INITIAL_MONTH_COUNT = 15;
-const INITIAL_WEEK_COUNT = 26;
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
 type MonthChartProps = ChartProps & {
-  timeframe?: string;
+  timeframe?: Timeframe;
 };
 
 const MonthChart = ({
@@ -22,11 +28,9 @@ const MonthChart = ({
   timeframe: initialTimeframe = 'month',
   ...rest
 }: MonthChartProps) => {
-  const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
+  const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
   const [type, setType] = useState<string>(TYPES[0]);
-  const [itemCount, setItemCount] = useState<number>(
-    'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
-  );
+  const [itemCount, setItemCount] = useState<number>(TIMEFRAMES[initialTimeframe].initialItemCount);
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -38,24 +42,21 @@ const MonthChart = ({
   const [label] = useLabels();
 
   const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) => setType(value);
-  const handleTimeframeChange = (newTimeframe: string) => {
+  const handleTimeframeChange = (newTimeframe: Timeframe) => {
     setTimeframe(newTimeframe);
-    setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
+    setItemCount(TIMEFRAMES[newTimeframe].initialItemCount);
   };
 
   const dataPerPeriod = (activities ?? []).reduce((periodMap: {[period: string]: number}, activity) => {
     const date = new Date(activity.start_date);
-    const period =
-      'week' === timeframe
-        ? `${getWeekNumber(date)}/${date.getUTCFullYear()}`
-        : `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
-    periodMap[period] = (periodMap[period] ?? 0) + (typeof data === 'number' ? data : (activity[data] as number));
+    const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
+    periodMap[periodKey] = (periodMap[periodKey] ?? 0) + (typeof data === 'number' ? data : (activity[data] as number));
 
     return periodMap;
   }, generatePeriodKeys(new Date((activities ?? []).at(0)?.start_date ?? 0), new Date((activities ?? []).at(-1)?.start_date ?? 0), timeframe));
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = 'week' === timeframe ? Object.keys(sliced).map(label) : Object.keys(sliced);
+  const labels = Object.keys(sliced).map(label);
   const series = [{name: dataLabel, data: Object.values(sliced)}];
 
   return (
@@ -70,8 +71,8 @@ const MonthChart = ({
         <SegmentedControl
           value={timeframe}
           size="sm"
-          onValueChange={({value}) => handleTimeframeChange(value)}
-          items={labelCollection(['month', 'week'], label).items}
+          onValueChange={({value}) => handleTimeframeChange(value as Timeframe)}
+          items={labelCollection(Object.keys(TIMEFRAMES), label).items}
         />
         <NumberInputRoot
           width="70px"

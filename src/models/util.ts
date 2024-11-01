@@ -57,23 +57,6 @@ const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
     .fill(start)
     .map((x, y) => x + y * step);
 
-const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: string, emptyValue: number | null = 0) => {
-  const emptyValues: {[period: string]: any} = {};
-
-  for (let year = firstDate.getFullYear(); year <= lastDate.getFullYear(); year++) {
-    let maxPeriod = 'month' === timeframe ? 12 : 52;
-    maxPeriod =
-      year === lastDate.getUTCFullYear()
-        ? Math.min('month' === timeframe ? lastDate.getUTCMonth() + 1 : getWeekNumber(lastDate), maxPeriod)
-        : maxPeriod;
-
-    for (let period = 1; period <= maxPeriod; period++) {
-      emptyValues[`${period}/${year}`] = emptyValue;
-    }
-  }
-
-  return emptyValues;
-};
 
 const removeNull = (object: object): object => Object.fromEntries(Object.entries(object).filter(([_, v]) => v != null));
 
@@ -87,7 +70,6 @@ export {
   formatElevation,
   formatSpeed,
   formatPower,
-  generatePeriodKeys,
   getWeekNumber,
   KJ_TO_CAL_RATIO,
   range,

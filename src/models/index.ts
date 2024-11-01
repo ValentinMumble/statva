@@ -5,4 +5,5 @@ export * from './collection';
 export * from './event';
 export * from './gear';
 export * from './tag';
+export * from './timeframe';
 export * from './util';

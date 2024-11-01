@@ -1,22 +1,18 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, generatePeriodKeys, getOptions, getWeekNumber} from '../../models';
-import {NumberInputField, NumberInputRoot, SegmentedControl, Switch} from '../ui';
+import {ChartProps, generatePeriodKeys, getOptions, labelCollection, Timeframe, TIMEFRAMES} from '../../models';
+import {Checkbox, NumberInputField, NumberInputRoot, SegmentedControl} from '../ui';
 import {Group} from '@chakra-ui/react';
-
-const INITIAL_MONTH_COUNT = 15;
-const INITIAL_WEEK_COUNT = 26;
+import {TbBusStop} from 'react-icons/tb';
 
 type ActivityTimeChartProps = Omit<ChartProps, 'data' | 'dataLabel' | 'formatter'> & {
-  timeframe?: string;
+  timeframe?: Timeframe;
 };
 
 const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...rest}: ActivityTimeChartProps) => {
-  const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
-  const [itemCount, setItemCount] = useState<number>(
-    'month' === initialTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT
-  );
+  const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
+  const [itemCount, setItemCount] = useState<number>(TIMEFRAMES[initialTimeframe].initialItemCount);
   const [withCommute, setWithCommute] = useState<boolean>(true);
   const [label] = useLabels();
 
@@ -28,9 +24,9 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
     ...filter,
   });
 
-  const handleTimeframeChange = (newTimeframe: string) => {
+  const handleTimeframeChange = (newTimeframe: Timeframe) => {
     setTimeframe(newTimeframe);
-    setItemCount('month' === newTimeframe ? INITIAL_MONTH_COUNT : INITIAL_WEEK_COUNT);
+    setItemCount(TIMEFRAMES[newTimeframe].initialItemCount);
   };
 
   const toggleWithCommute = () => setWithCommute(withCommute => !withCommute);
@@ -38,13 +34,10 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
   const dataPerPeriod = (activities ?? []).reduce(
     (periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
       const date = new Date(activity.start_date);
-      const period =
-        'week' === timeframe
-          ? `${getWeekNumber(date)}/${date.getUTCFullYear()}`
-          : `${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
-      const data = periodMap[period] ?? {};
+      const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
+      const data = periodMap[periodKey] ?? {};
       const key = activity.commute ? 'Commute' : activity.sport_type;
-      periodMap[period] = {...data, [key]: (data[key] ?? 0) + 1};
+      periodMap[periodKey] = {...data, [key]: (data[key] ?? 0) + 1};
 
       return periodMap;
     },
@@ -56,7 +49,7 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
   );
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = 'week' === timeframe ? Object.keys(sliced).map(label) : Object.keys(sliced);
+  const labels = Object.keys(sliced).map(label);
 
   const distinctTypes: string[] = Object.values(sliced).reduce(
     (types: string[], entry: {[type: string]: number} | null) =>
@@ -72,14 +65,18 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
   return (
     <div>
       <Group width="full" justifyContent="end" gap="20px">
-        <Switch size="sm" checked={withCommute} onCheckedChange={toggleWithCommute}>
-          Commute
-        </Switch>
+        <Checkbox
+          title="Commute"
+          size="lg"
+          checked={withCommute}
+          onCheckedChange={toggleWithCommute}
+          icon={<TbBusStop />}
+        />
         <SegmentedControl
           size="sm"
           value={timeframe}
-          onValueChange={({value}) => handleTimeframeChange(value)}
-          items={['month', 'week']}
+          onValueChange={({value}) => handleTimeframeChange(value as Timeframe)}
+          items={labelCollection(Object.keys(TIMEFRAMES), label).items}
         />
         <NumberInputRoot
           width="70px"
