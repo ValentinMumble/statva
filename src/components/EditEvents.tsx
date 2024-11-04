@@ -38,7 +38,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
 
   return (
     <DialogRoot size="xl">
-      <DialogTrigger>
+      <DialogTrigger asChild={true}>
         <Button variant="ghost" size="sm" title="Edit events">
           🪭
         </Button>

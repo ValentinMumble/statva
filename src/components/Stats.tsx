@@ -1,8 +1,10 @@
 import {ReactNode, useState} from 'react';
-import {VStack, Skeleton, HStack} from '@chakra-ui/react';
+import {VStack, HStack} from '@chakra-ui/react';
 import {
   ProgressBar,
   ProgressRoot,
+  Skeleton,
+  SkeletonText,
   StatHelpText,
   StatLabel,
   StatRoot,
@@ -211,9 +213,9 @@ const Stats = () => {
             if (isLoading) {
               return (
                 <StatRoot key={index}>
-                  <Skeleton width="70%">
-                    <StatHelpText>Loading</StatHelpText>
-                  </Skeleton>
+                  <Skeleton width="40%">l</Skeleton>
+                  <Skeleton width="80%">l</Skeleton>
+                  <SkeletonText width="70%" noOfLines={1} />
                 </StatRoot>
               );
             }

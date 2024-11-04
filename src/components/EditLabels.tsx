@@ -51,7 +51,7 @@ const EditLabels = () => {
 
   return (
     <DialogRoot size="xl">
-      <DialogTrigger>
+      <DialogTrigger asChild={true}>
         <Button title="Edit labels" variant="ghost" size="sm">
           🏷️
         </Button>

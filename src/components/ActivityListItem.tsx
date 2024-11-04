@@ -44,7 +44,6 @@ type ActivityListItemProps = {
 const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
   const [label] = useLabels();
 
-  //TODO check skeleton, extract to component ?
   if (null === activity) {
     return (
       <Table.Row>
@@ -55,7 +54,7 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
           <Skeleton>name</Skeleton>
         </Table.Cell>
         {enabledSorts.map(sort => (
-          <Table.Cell key={sort} padding="4px" width={`${Math.random() * 60}px`}>
+          <Table.Cell key={sort} padding="4px" width="60px">
             <Skeleton>tag</Skeleton>
           </Table.Cell>
         ))}
