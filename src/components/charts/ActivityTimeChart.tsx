@@ -49,7 +49,7 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
   );
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = Object.keys(sliced).map(label);
+  const labels = Object.keys(sliced).map(key => label(key));
 
   const distinctTypes: string[] = Object.values(sliced).reduce(
     (types: string[], entry: {[type: string]: number} | null) =>

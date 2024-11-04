@@ -3,7 +3,7 @@ import {Group, IconButton, Input, SegmentGroupValueChangeDetails} from '@chakra-
 import {FaPlus} from 'react-icons/fa';
 import {SegmentedControl} from '../components/ui';
 import {GearSelect} from '../components';
-import {useAthlete, useLabels} from '../hooks';
+import {useLabels} from '../hooks';
 import {labelCollection, removeNull} from '../models';
 
 const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
@@ -17,7 +17,6 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [chain, setChain] = useState<string | null>(null);
   const [bike, setBike] = useState<string | null>(null);
-  const athlete = useAthlete();
   const [label] = useLabels();
 
   const resetForm = () => {
@@ -78,7 +77,6 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
       {'chain' === type && (
         <>
           <GearSelect
-            athlete={athlete}
             selectedGear={null === bike ? [] : [bike]}
             onSelectedGearChange={handleBikeChange}
             selectContentProps={{portalled: false}}

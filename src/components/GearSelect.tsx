@@ -1,4 +1,4 @@
-import {createListCollection, SelectValueChangeDetails, SelectRootProps} from '@chakra-ui/react';
+import {SelectValueChangeDetails, SelectRootProps} from '@chakra-ui/react';
 import {
   SelectContent,
   SelectItem,
@@ -7,11 +7,10 @@ import {
   SelectValueText,
   SelectContentProps,
 } from '../components/ui';
-import {getGearEmoji} from '../models';
-import {DetailedAthlete} from '../models/strava';
+import {GEAR, labelCollection} from '../models';
+import {useLabels} from '../hooks';
 
 type GearSelectProps = {
-  athlete: DetailedAthlete | null;
   selectedGear: string[];
   onSelectedGearChange: (selectedGear: string[]) => void;
   clearable?: boolean;
@@ -20,26 +19,22 @@ type GearSelectProps = {
 };
 
 const GearSelect = ({
-  athlete,
   selectedGear,
   onSelectedGearChange,
   selectContentProps,
   selectRootProps,
   clearable = false,
 }: GearSelectProps) => {
+  const [label] = useLabels();
+
   const handleGearChange = ({value}: SelectValueChangeDetails) => onSelectedGearChange(value);
 
-  const gearCollection = createListCollection({
-    items: [...(athlete?.bikes ?? []), ...(athlete?.shoes ?? [])].map(({id}) => ({
-      value: id,
-      label: getGearEmoji(athlete, id),
-    })),
-  });
+  const gearCollection = labelCollection(Object.keys(GEAR), label);
   gearCollection.items.push({value: 'null', label: '🤷'});
 
   return (
     <SelectRoot
-      width="90px"
+      width="150px"
       collection={gearCollection}
       value={selectedGear}
       onValueChange={handleGearChange}

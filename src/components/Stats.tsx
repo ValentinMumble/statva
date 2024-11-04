@@ -38,6 +38,7 @@ const STATS: {[key: string]: Stat[][]} = {
       {
         label: '🎊',
         helpText: 'This year',
+        //TODO
         // info: activities =>
         //   `Last year: ${formatDistance(
         //     getTotalValue(
@@ -90,7 +91,7 @@ const STATS: {[key: string]: Stat[][]} = {
       {
         label: '⚡️',
         helpText: 'FTP: W 〰 W/kg',
-        // info: `${athlete.weight} kg`,
+        // todo info: `${athlete.weight} kg`,
         number: (_, athlete) => `${athlete.ftp} 〰 ${(athlete.ftp / athlete.weight).toFixed(1)}`,
       },
       {

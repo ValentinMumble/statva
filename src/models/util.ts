@@ -39,11 +39,6 @@ const getWeekNumber = (date: Date): number => {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
 };
 
-const extractEmoji = (text: string): string =>
-  text
-    .match(/\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/g)
-    ?.join('') ?? '';
-
 const arrayRotate = (originalArray: any[], count: number): typeof originalArray => {
   const array = [...originalArray];
   const length = array.length;
@@ -57,12 +52,10 @@ const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
     .fill(start)
     .map((x, y) => x + y * step);
 
-
 const removeNull = (object: object): object => Object.fromEntries(Object.entries(object).filter(([_, v]) => v != null));
 
 export {
   arrayRotate,
-  extractEmoji,
   formatCalories,
   formatDistance,
   formatDuration,

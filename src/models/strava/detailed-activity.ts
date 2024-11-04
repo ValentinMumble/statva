@@ -23,7 +23,7 @@ export interface DetailedActivity {
   end_latlng: number[];
   external_id: string;
   flagged: boolean;
-  gear_id: string;
+  gear_id: string | null;
   has_kudoed: boolean;
   kilojoules?: number;
   kudos_count: number;

@@ -1,7 +1,8 @@
 import {useEffect, useState} from 'react';
 import {Button, Input, Table, useDisclosure} from '@chakra-ui/react';
-import {Labels, useLabels} from '../hooks';
-import {DialogBackdrop, DialogContent, DialogRoot} from './ui';
+import {DialogBackdrop, DialogContent, DialogRoot} from '../components/ui';
+import {Labels} from '../models';
+import {useLabels} from '../hooks';
 
 const EditLabels = () => {
   const {open, onOpen, onClose} = useDisclosure();

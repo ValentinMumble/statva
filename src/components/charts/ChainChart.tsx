@@ -1,15 +1,15 @@
 import {useEffect, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {createListCollection, Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {SegmentedControl} from '../../components/ui';
 import {EditEvents} from '../../components';
-import {ChainEvent, formatDistance, getGearEmoji, getOptions, getRidesBetween} from '../../models';
-import {useActivities, useAthlete, useEvents} from '../../hooks';
+import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection} from '../../models';
+import {useActivities, useEvents, useLabels} from '../../hooks';
 import {EditLabels} from '../EditLabels';
 
 const ChainChart = () => {
   const [gearId, setGearId] = useState<string>('');
-  const athlete = useAthlete();
+  const [label] = useLabels();
   const [events, refreshEvents] = useEvents<ChainEvent>('chain');
   const relevantBikes = [...new Set(events.map(({bike}) => bike))];
   const currentBikeEvents = events.filter(({bike}) => gearId === bike);
@@ -49,7 +49,7 @@ const ChainChart = () => {
     });
   });
 
-  const totalFormatter = (value: string, options: any) => {
+  const totalFormatter = (value: string, options: {dataPointIndex: number}) => {
     const isCurrentChain =
       options.dataPointIndex === Object.keys(chainOdometer).indexOf(currentBikeEvents.at(-1)?.chain ?? '');
 
@@ -57,9 +57,7 @@ const ChainChart = () => {
   };
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
-  const bikeCollection = createListCollection({
-    items: relevantBikes.map(bike => ({value: bike, label: getGearEmoji(athlete, bike)})),
-  });
+  const bikeCollection = labelCollection(relevantBikes, label, true);
 
   useEffect(() => {
     setGearId(relevantBikes[0]);

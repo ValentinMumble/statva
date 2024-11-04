@@ -1,8 +1,8 @@
 import {Button, IconButton, Table, useDisclosure} from '@chakra-ui/react';
 import {FaMinus} from 'react-icons/fa';
-import {isChainEvent, Event, isTireEvent, getGearEmoji} from '../models';
+import {isChainEvent, Event, isTireEvent} from '../models';
 import {AddEvent} from './AddEvent';
-import {useAthlete, useEvents, useLabels} from '../hooks';
+import {useEvents, useLabels} from '../hooks';
 import {DialogBackdrop, DialogContent, DialogRoot} from '../components/ui';
 
 type EditEventsProps = {
@@ -13,7 +13,6 @@ type EditEventsProps = {
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
   const {open, onOpen, onClose} = useDisclosure();
   const [label] = useLabels();
-  const athlete = useAthlete();
   const [events, refreshEvents] = useEvents();
   events.reverse();
 
@@ -26,6 +25,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
     await fetch(`${import.meta.env.VITE_SERVER_URL}/events/${id}`, {method: 'DELETE'});
     refresh();
 
+    //TODO
     // toast({
     //   status: 'success',
     //   description: 'Event removed',
@@ -58,7 +58,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                   <Table.Cell>{label(event.type)}</Table.Cell>
                   {isChainEvent(event) ? (
                     <>
-                      <Table.Cell>{getGearEmoji(athlete, event.bike)}</Table.Cell>
+                      <Table.Cell>{label(event.bike, true)}</Table.Cell>
                       <Table.Cell>{event.chain}</Table.Cell>
                     </>
                   ) : isTireEvent(event) ? (

@@ -14,12 +14,12 @@ import {
   formatPower,
   formatCalories,
 } from '../models';
-import {ActivityType, DetailedActivity, DetailedAthlete} from './strava';
+import {ActivityType, DetailedActivity} from './strava';
 
 type Tag = {
   label: (activity: DetailedActivity, ftp: number) => string | number | null;
   isRelevant: (activity: DetailedActivity) => boolean;
-  tooltip?: (activity: DetailedActivity, athlete: DetailedAthlete | null) => string | number | null;
+  tooltip?: (activity: DetailedActivity, ftp: number) => string | number | null;
   total: (activities: DetailedActivity[]) => string | number;
   sortType: SortType;
   help: string;
@@ -91,10 +91,10 @@ const TAGS: Tag[] = [
   {
     label: ({average_watts}) => (undefined === average_watts ? null : formatPower(average_watts)),
     isRelevant: ({average_watts}) => 0 < (average_watts ?? 0),
-    tooltip: ({weighted_average_watts, average_watts}, athlete) =>
+    tooltip: ({weighted_average_watts, average_watts}, ftp) =>
       undefined === weighted_average_watts
         ? null
-        : `🏋️ ${formatPower(weighted_average_watts)} 〰 Zone ${getPowerZone(average_watts ?? 0, athlete?.ftp ?? 0)}`,
+        : `🏋️ ${formatPower(weighted_average_watts)} 〰 Zone ${getPowerZone(average_watts ?? 0, ftp)}`,
     total: activities => formatPower(getAverageValue(activities, 'average_watts')),
     sortType: 'average_watts',
     help: 'Average power',
@@ -103,10 +103,10 @@ const TAGS: Tag[] = [
     label: ({weighted_average_watts}) =>
       undefined === weighted_average_watts ? null : formatPower(weighted_average_watts),
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
-    tooltip: ({average_watts, weighted_average_watts}, athlete) =>
+    tooltip: ({average_watts, weighted_average_watts}, ftp) =>
       undefined === average_watts
         ? null
-        : `⚡️ ${formatPower(average_watts)} 〰 Zone ${getPowerZone(weighted_average_watts ?? 0, athlete?.ftp ?? 0)}`,
+        : `⚡️ ${formatPower(average_watts)} 〰 Zone ${getPowerZone(weighted_average_watts ?? 0, ftp)}`,
     total: activities => formatPower(getAverageValue(activities, 'weighted_average_watts')),
     sortType: 'weighted_average_watts',
     help: 'Weighted average power',

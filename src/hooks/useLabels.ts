@@ -1,10 +1,7 @@
 import {useEffect, useState} from 'react';
+import {extractEmoji, GetLabel, Labels} from '../models';
 
-type Labels = {
-  [key: string]: string;
-};
-
-const useLabels = (): [(key: string) => string, Labels] => {
+const useLabels = (): [GetLabel, Labels] => {
   const [labels, setLabels] = useState<Labels>({});
 
   useEffect(() => {
@@ -17,8 +14,11 @@ const useLabels = (): [(key: string) => string, Labels] => {
     fetchLabels();
   }, []);
 
-  return [(key: string) => labels[key] ?? key, labels];
+  return [
+    (key, emojiOnly = false) =>
+      null === key ? '🤷' : emojiOnly ? extractEmoji(labels[key] ?? key) : labels[key] ?? key,
+    labels,
+  ];
 };
 
 export {useLabels};
-export type {Labels};

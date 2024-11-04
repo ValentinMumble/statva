@@ -26,7 +26,7 @@ import {
 } from './components';
 import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES, labelCollection} from './models';
 import {ActivityType} from './models/strava';
-import {useActivities, useAthlete, useFtp, useLabels} from './hooks';
+import {useActivities, useFtp, useLabels} from './hooks';
 
 const DISPLAYED_ITEMS = 75;
 const BG_COLLECTION = ['date', 'average_watts', 'average_heartrate'];
@@ -45,7 +45,6 @@ const App = () => {
   const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
 
   const [label] = useLabels();
-  const athlete = useAthlete();
   const getFtp = useFtp();
   const [activities, refetch] = useActivities({
     search,
@@ -122,7 +121,7 @@ const App = () => {
               onValueChange={handleBgOptionChange}
               items={labelCollection(BG_COLLECTION, label).items}
             />
-            <GearSelect athlete={athlete} selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
+            <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
             <IconButton variant="ghost" onClick={handlePrivateToggle} title="With private">
               {withPrivate ? <HiOutlineLockClosed /> : <HiOutlineLockOpen />}
             </IconButton>
@@ -190,7 +189,6 @@ const App = () => {
               [...new Array(20)].map((_, index) => (
                 <ActivityListItem
                   key={index}
-                  athlete={athlete}
                   getFtp={getFtp}
                   activity={null}
                   bgOption={bgOption}
@@ -207,7 +205,6 @@ const App = () => {
                 .map(activity => (
                   <ActivityListItem
                     key={activity.id}
-                    athlete={athlete}
                     getFtp={getFtp}
                     activity={activity}
                     bgOption={bgOption}
