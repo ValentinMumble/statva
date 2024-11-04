@@ -6,7 +6,7 @@ import {Checkbox, NumberInputField, NumberInputRoot, SegmentedControl} from '../
 import {Group} from '@chakra-ui/react';
 import {TbBusStop} from 'react-icons/tb';
 
-type ActivityTimeChartProps = Omit<ChartProps, 'data' | 'dataLabel' | 'formatter'> & {
+type ActivityTimeChartProps = Omit<ChartProps, 'data' | 'formatter'> & {
   timeframe?: Timeframe;
 };
 

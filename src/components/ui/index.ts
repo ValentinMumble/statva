@@ -5,6 +5,7 @@ export * from './dialog';
 export * from './input-group';
 export * from './native-select';
 export * from './number-input';
+export * from './progress';
 export * from './provider';
 export * from './radio';
 export * from './segmented-control';

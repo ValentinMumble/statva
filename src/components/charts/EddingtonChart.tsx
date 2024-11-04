@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {useActivities} from '../../hooks';
-import {eddingtonNumber, getOptions, getRidesBeforeMonth} from '../../models';
+import {eddingtonNumber, getOptions, getRidesBeforeMonth, getTypes} from '../../models';
 import {ActivityType} from '../../models/strava';
 import {NumberInputField, NumberInputRoot} from '../../components/ui';
 
@@ -26,7 +26,7 @@ const EddingtonChart = ({}: EddingtonChartProps) => {
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
+    includedActivityTypes: getTypes(ActivityType.Ride),
   });
 
   const dataPerMonth = (activities ?? []).reduce((eddingtonByMonth: {[monthYear: string]: number}, activity) => {

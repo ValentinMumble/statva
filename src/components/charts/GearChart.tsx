@@ -1,28 +1,27 @@
 import Chart from 'react-apexcharts';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, getOptions} from '../../models';
+import {ChartProps, getOptions, getTypes} from '../../models';
 import {ActivityType} from '../../models/strava';
 
-const GearChart = ({data, dataLabel, formatter, type, ...rest}: ChartProps) => {
+const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
-    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
+    includedActivityTypes: getTypes(ActivityType.Ride),
   });
   const [label] = useLabels();
 
   const dataPerGear = (activities ?? []).reduce((gearMap: {[gearId: string]: number}, activity) => {
     if (null === activity.gear_id) return gearMap;
 
-    gearMap[activity.gear_id] =
-      (gearMap[activity.gear_id] ?? 0) + (typeof data === 'number' ? data : (activity[data] as number));
+    gearMap[activity.gear_id] = (gearMap[activity.gear_id] ?? 0) + (activity[data] as number);
 
     return gearMap;
   }, {});
 
   const sortedDesc = Object.fromEntries(Object.entries(dataPerGear).sort(([, a], [, b]) => b - a));
   const labels = Object.keys(sortedDesc).map(gearId => label(gearId, true));
-  const series = 'pie' === type ? Object.values(sortedDesc) : [{name: dataLabel, data: Object.values(sortedDesc)}];
+  const series = 'pie' === type ? Object.values(sortedDesc) : [{name: label(data), data: Object.values(sortedDesc)}];
 
   return (
     <Chart

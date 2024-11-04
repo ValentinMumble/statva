@@ -20,14 +20,7 @@ type MonthChartProps = ChartProps & {
   timeframe?: Timeframe;
 };
 
-const MonthChart = ({
-  data,
-  dataLabel,
-  formatter,
-  filter,
-  timeframe: initialTimeframe = 'month',
-  ...rest
-}: MonthChartProps) => {
+const MonthChart = ({data, formatter, filter, timeframe: initialTimeframe = 'month', ...rest}: MonthChartProps) => {
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
   const [type, setType] = useState<string>(TYPES[0]);
   const [itemCount, setItemCount] = useState<number>(TIMEFRAMES[initialTimeframe].initialItemCount);
@@ -50,14 +43,14 @@ const MonthChart = ({
   const dataPerPeriod = (activities ?? []).reduce((periodMap: {[period: string]: number}, activity) => {
     const date = new Date(activity.start_date);
     const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
-    periodMap[periodKey] = (periodMap[periodKey] ?? 0) + (typeof data === 'number' ? data : (activity[data] as number));
+    periodMap[periodKey] = (periodMap[periodKey] ?? 0) + (activity[data] as number);
 
     return periodMap;
   }, generatePeriodKeys(new Date((activities ?? []).at(0)?.start_date ?? 0), new Date((activities ?? []).at(-1)?.start_date ?? 0), timeframe));
 
   const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
   const labels = Object.keys(sliced).map(key => label(key));
-  const series = [{name: dataLabel, data: Object.values(sliced)}];
+  const series = [{name: label(data), data: Object.values(sliced)}];
 
   return (
     <>

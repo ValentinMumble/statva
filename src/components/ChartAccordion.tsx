@@ -25,8 +25,8 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <EventChart />,
   },
   {
-    label: 'Distance / time 🗺️',
-    component: <MonthChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 1)} />,
+    label: 'Distance / time 📍',
+    component: <MonthChart data="distance" formatter={value => formatDistance(value, 1)} />,
   },
   {
     label: 'Activities / time 🛹',
@@ -34,22 +34,15 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Moving / time ⏱️',
-    component: <MonthChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} />,
+    component: <MonthChart data="moving_time" formatter={formatDuration} />,
   },
   {
     label: 'D+ / time ⛰️',
-    component: (
-      <MonthChart
-        data="total_elevation_gain"
-        dataLabel="⛰️"
-        formatter={value => formatDistance(value, 1)}
-        type="area"
-      />
-    ),
+    component: <MonthChart data="total_elevation_gain" formatter={value => formatDistance(value, 1)} type="area" />,
   },
   {
     label: 'Calories / time 🍕',
-    component: <MonthChart data="kilojoules" dataLabel="🍕" formatter={formatCalories} />,
+    component: <MonthChart data="kilojoules" formatter={formatCalories} />,
   },
   {
     label: 'FTP / time ⚡️',
@@ -61,15 +54,15 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Distance / bike 🚲',
-    component: <GearChart data="distance" dataLabel="🗺️" formatter={value => formatDistance(value, 0)} type="pie" />,
+    component: <GearChart data="distance" formatter={value => formatDistance(value, 0)} type="pie" />,
   },
   {
     label: 'Time / bike ⏱️',
-    component: <GearChart data="moving_time" dataLabel="⏱️" formatter={formatDuration} type="pie" />,
+    component: <GearChart data="moving_time" formatter={formatDuration} type="pie" />,
   },
   {
     label: 'D+ / bike ⛰️',
-    component: <GearChart data="total_elevation_gain" dataLabel="⛰️" formatter={formatElevation} type="pie" />,
+    component: <GearChart data="total_elevation_gain" formatter={formatElevation} type="pie" />,
   },
   {
     label: 'Average speed / bike 🏁',

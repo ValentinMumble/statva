@@ -10,7 +10,6 @@ type SortType =
   | 'average_watts'
   | 'date'
   | 'distance'
-  | 'duration'
   | 'elapsed_time'
   | 'elevation_percent'
   | 'intensity'
@@ -19,6 +18,7 @@ type SortType =
   | 'max_heartrate'
   | 'max_speed'
   | 'max_watts'
+  | 'moving_time'
   | 'photo_count'
   | 'pr_count'
   | 'suffer_score'
@@ -32,10 +32,10 @@ const DEFAULT_SORTS: SortType[] = [
   'average_heartrate',
   'average_speed',
   'distance',
-  'duration',
   'total_elevation_gain',
   'intensity',
   'max_speed',
+  'moving_time',
   'suffer_score',
   'weighted_average_watts',
 ];
@@ -68,8 +68,6 @@ const sortActivities = (
       return first.start_date < second.start_date ? 1 : -1;
     case 'distance':
       return second.distance - first.distance;
-    case 'duration':
-      return second.moving_time - first.moving_time;
     case 'elapsed_time':
       return second.elapsed_time - first.elapsed_time;
     case 'elevation_percent':
@@ -97,6 +95,8 @@ const sortActivities = (
       return second.max_speed - first.max_speed;
     case 'max_watts':
       return (second.max_watts ?? 0) - (first.max_watts ?? 0);
+    case 'moving_time':
+      return second.moving_time - first.moving_time;
     case 'photo_count':
       return second.total_photo_count - first.total_photo_count;
     case 'pr_count':

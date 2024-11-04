@@ -1,11 +1,21 @@
 import {ReactNode, useState} from 'react';
-import {VStack, Skeleton, HStack, Text} from '@chakra-ui/react';
-import {StatHelpText, StatLabel, StatRoot, StatUpTrend, StatValueText, Tooltip} from '../components/ui';
+import {VStack, Skeleton, HStack} from '@chakra-ui/react';
+import {
+  ProgressBar,
+  ProgressRoot,
+  StatHelpText,
+  StatLabel,
+  StatRoot,
+  StatUpTrend,
+  StatValueText,
+  Tooltip,
+} from '../components/ui';
 import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
   formatCalories,
   formatDistance,
+  formatDuration,
   formatDurationInDays,
   formatSpeed,
   getMaxValue,
@@ -15,158 +25,167 @@ import {
 import {ActivityType, DetailedActivity, DetailedAthlete} from '../models/strava';
 
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
+const YEAR_GOAL_KM = 10000;
 
-type Stat = {
-  label: string;
-  helpText: string;
-  number: (activities: DetailedActivity[], athlete: DetailedAthlete) => ReactNode;
+type Stat = (
+  activities: DetailedActivity[],
+  athlete: DetailedAthlete
+) => {
+  label: ReactNode;
+  helpText: ReactNode;
+  value: ReactNode;
+  info?: ReactNode;
 };
 
 const STATS: {[key: string]: Stat[][]} = {
   Ride: [
     [
-      {
+      activities => ({
         label: '🚲',
         helpText: 'Rides',
-        number: activities => activities.length,
-      },
-      {
-        label: '🗺️',
+        value: activities.length,
+      }),
+      activities => ({
+        label: '📍',
         helpText: 'Distance ridden',
-        number: activities => formatDistance(getTotalValue(activities, 'distance')),
-      },
-      {
-        label: '🎊',
-        helpText: 'This year',
-        //TODO
-        // info: activities =>
-        //   `Last year: ${formatDistance(
-        //     getTotalValue(
-        //       activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear() - 1),
-        //       'distance'
-        //     )
-        //   )}`,
-        number: activities =>
-          formatDistance(
+        value: formatDistance(getTotalValue(activities, 'distance')),
+      }),
+      activities => {
+        const yearTotal = getTotalValue(
+          activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+          'distance'
+        );
+        const yearProgress = (yearTotal / 1000 / YEAR_GOAL_KM) * 100;
+
+        return {
+          label: '🎊',
+          helpText: (
+            <ProgressRoot
+              colorPalette={100 <= yearProgress ? 'green' : 'orange'}
+              value={yearProgress}
+              marginRight="15px"
+            >
+              <ProgressBar />
+            </ProgressRoot>
+          ),
+          info: `Last year: ${formatDistance(
             getTotalValue(
-              activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+              activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear() - 1),
               'distance'
             )
-          ),
+          )}`,
+          value: formatDistance(yearTotal),
+        };
       },
-      {
+      activities => ({
         label: '⛰️',
         helpText: 'Total D+',
-        number: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
-      },
-      {
+        value: formatDistance(getTotalValue(activities, 'total_elevation_gain')),
+      }),
+      activities => ({
         label: '🥾',
         helpText: 'Gran Fondos',
-        number: activities => activities.filter(({distance}) => distance >= 100 * 1000).length,
-      },
+        value: activities.filter(({distance}) => distance >= 100 * 1000).length,
+      }),
     ],
     [
-      {
+      activities => ({
         label: '⏱️',
         helpText: 'Spent riding',
-        // info: formatDuration(getTotalValue(activities, 'moving_time'), true)
-        number: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
-      },
-      {
+        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
+        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
+      }),
+      activities => ({
         label: '🍕',
         helpText: 'Calories burned',
-        number: activities => formatCalories(getTotalValue(activities, 'kilojoules'), false),
-      },
-      {
+        value: formatCalories(getTotalValue(activities, 'kilojoules'), false),
+      }),
+      activities => ({
         label: '🏁',
         helpText: 'Max avg speed',
-        number: activities =>
-          formatSpeed(
-            getMaxValue(
-              activities.filter(({type}) => ![ActivityType.VirtualRide].includes(type)),
-              'average_speed'
-            )
-          ),
-      },
-      {
+        value: formatSpeed(
+          getMaxValue(
+            activities.filter(({type}) => ![ActivityType.VirtualRide].includes(type)),
+            'average_speed'
+          )
+        ),
+      }),
+      (_, athlete) => ({
         label: '⚡️',
         helpText: 'FTP: W 〰 W/kg',
-        // todo info: `${athlete.weight} kg`,
-        number: (_, athlete) => `${athlete.ftp} 〰 ${(athlete.ftp / athlete.weight).toFixed(1)}`,
-      },
-      {
-        label: '🧸',
-        helpText: 'Eddington №',
-        number: activities => {
-          const [eddington, next] = eddingtonNumber(activities);
+        info: `${athlete.weight} kg`,
+        value: `${athlete.ftp} 〰 ${(athlete.ftp / athlete.weight).toFixed(1)}`,
+      }),
+      activities => {
+        const [eddington, next] = eddingtonNumber(activities);
 
-          return (
-            <Tooltip content={`${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`}>
-              <span>
-                {eddington}
-                <Text marginLeft={2} fontSize="14px" as="b">
-                  <StatUpTrend marginLeft={5}>{next}</StatUpTrend>
-                </Text>
-              </span>
-            </Tooltip>
-          );
-        },
+        return {
+          label: '🧸',
+          helpText: 'Eddington №',
+          info: `${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`,
+          value: (
+            <span>
+              {eddington}
+              <StatUpTrend marginLeft={5}>{next}</StatUpTrend>
+            </span>
+          ),
+        };
       },
     ],
   ],
   Run: [
     [
-      {
+      activities => ({
         label: '👟',
         helpText: 'Runs',
-        number: activities => activities.length,
-      },
-      {
-        label: '🗺️',
+        value: activities.length,
+      }),
+      activities => ({
+        label: '📍',
         helpText: 'Distance run',
-        number: activities => formatDistance(getTotalValue(activities, 'distance')),
-      },
-      {
+        value: formatDistance(getTotalValue(activities, 'distance')),
+      }),
+      activities => ({
         label: '⏱️',
         helpText: 'Spent running',
-        // info: formatDuration(getTotalValue(activities, 'moving_time'), true),
-        number: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
-      },
+        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
+        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
+      }),
     ],
   ],
   Swim: [
     [
-      {
+      activities => ({
         label: '🩲',
         helpText: 'Sessions',
-        number: activities => activities.length,
-      },
-      {
-        label: '🗺️',
+        value: activities.length,
+      }),
+      activities => ({
+        label: '📍',
         helpText: 'Distance swum',
-        number: activities => formatDistance(getTotalValue(activities, 'distance')),
-      },
-      {
+        value: formatDistance(getTotalValue(activities, 'distance')),
+      }),
+      activities => ({
         label: '⏱️',
         helpText: 'Spent swimming',
-        // info: formatDuration(getTotalValue(activities, 'moving_time'), true)
-        number: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
-      },
+        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
+        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
+      }),
     ],
   ],
   Tennis: [
     [
-      {
+      activities => ({
         label: '🎾',
         helpText: 'Sessions',
-        number: activities => activities.length.toString(),
-      },
-      {
+        value: activities.length.toString(),
+      }),
+      activities => ({
         label: '⏱️',
         helpText: 'Spent playing',
-        // info: formatDuration(getTotalValue(activities, 'moving_time'), true)
-        number: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
-      },
+        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
+        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
+      }),
     ],
   ],
 };
@@ -185,22 +204,37 @@ const Stats = () => {
   const isLoading = null === athlete || null === activities;
 
   return (
-    <VStack alignItems="stretch" onClick={toggleTypeChange}>
+    <VStack alignItems="stretch">
       {STATS[TYPES[typeIndex]].map((statGroup, index) => (
         <HStack key={index}>
-          {statGroup.map(stat => (
-            <StatRoot key={stat.label}>
-              <StatLabel fontSize="1.2em">{stat.label}</StatLabel>
-              {isLoading ? (
-                <Skeleton width="70%">
-                  <StatHelpText>Loading</StatHelpText>
-                </Skeleton>
-              ) : (
-                <StatValueText fontSize="1.3em">{stat.number(activities, athlete)}</StatValueText>
-              )}
-              <StatHelpText fontSize=".8em">{stat.helpText}</StatHelpText>
-            </StatRoot>
-          ))}
+          {statGroup.map((stat, index) => {
+            if (isLoading) {
+              return (
+                <StatRoot key={index}>
+                  <Skeleton width="70%">
+                    <StatHelpText>Loading</StatHelpText>
+                  </Skeleton>
+                </StatRoot>
+              );
+            }
+
+            const {label, value, helpText, info} = stat(activities, athlete);
+            const statContent = (
+              <StatRoot key={index} onClick={toggleTypeChange}>
+                <StatLabel fontSize="1.2em">{label}</StatLabel>
+                <StatValueText fontSize="1.3em">{value}</StatValueText>
+                <StatHelpText fontSize=".8em">{helpText}</StatHelpText>
+              </StatRoot>
+            );
+
+            return info ? (
+              <Tooltip key={index} content={info}>
+                {statContent}
+              </Tooltip>
+            ) : (
+              statContent
+            );
+          })}
         </HStack>
       ))}
     </VStack>

@@ -1,7 +1,7 @@
 import Chart from 'react-apexcharts';
 import {useActivities} from '../../hooks';
 import {ActivityType} from '../../models/strava';
-import {getOptions} from '../../models';
+import {getOptions, getTypes} from '../../models';
 
 const MIN_DISTANCE_METERS = 30 * 1000;
 
@@ -38,7 +38,7 @@ const HeartChart = () => {
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide],
+    includedActivityTypes: getTypes(ActivityType.Ride),
   });
 
   const rides = (activities ?? []).filter(

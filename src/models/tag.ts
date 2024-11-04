@@ -30,7 +30,7 @@ const TAGS: Tag[] = [
   {
     label: ({distance, type}) => (ActivityType.Swim === type ? formatElevation(distance) : formatDistance(distance)),
     isRelevant: ({distance}) => 0 < distance,
-    tooltip: ({distance}) => `🗺️ ${formatDistance(distance, 2)}`,
+    tooltip: ({distance}) => `📍 ${formatDistance(distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'distance')),
     sortType: 'distance',
     help: 'Distance',
@@ -61,7 +61,7 @@ const TAGS: Tag[] = [
     isRelevant: ({moving_time}) => 0 < moving_time,
     tooltip: ({elapsed_time}) => `⏳ ${formatDuration(elapsed_time)}`,
     total: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
-    sortType: 'duration',
+    sortType: 'moving_time',
     help: 'Moving time',
   },
   {
