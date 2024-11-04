@@ -1,56 +1,92 @@
 import {useEffect, useState} from 'react';
-import {Button, Input, Table, useDisclosure} from '@chakra-ui/react';
-import {DialogBackdrop, DialogContent, DialogRoot} from '../components/ui';
+import {Button, Editable, EditableValueChangeDetails, Table} from '@chakra-ui/react';
+import {
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+  toaster,
+} from '../components/ui';
 import {Labels} from '../models';
 import {useLabels} from '../hooks';
 
 const EditLabels = () => {
-  const {open, onOpen, onClose} = useDisclosure();
   const [, initialLabels] = useLabels();
   const [labels, setLabels] = useState<Labels>(initialLabels);
 
-  const handleSave = () => async () => {
-    await fetch(`${import.meta.env.VITE_SERVER_URL}/labels`, {
-      method: 'POST',
-      body: JSON.stringify(labels),
-    });
+  const handleKeyChange =
+    (oldKey: string, newValue: string) =>
+    ({value}: EditableValueChangeDetails) => {
+      setLabels(labels => {
+        const newLabels = {...labels, [value]: newValue};
+        delete newLabels[oldKey];
 
-    // toast({
-    //   status: 'success',
-    //   description: 'Event removed',
-    // }); //todo
+        return newLabels;
+      });
+    };
+
+  const handleValueChange =
+    (key: string) =>
+    ({value}: EditableValueChangeDetails) => {
+      setLabels(labels => ({...labels, [key]: value}));
+    };
+
+  const handleSave = async () => {
+    //TODO implement this
+    // await fetch(`${import.meta.env.VITE_SERVER_URL}/labels`, {
+    //   method: 'POST',
+    //   body: JSON.stringify(labels),
+    // });
+
+    toaster.create({title: '🏷️ Labels saved'});
   };
 
   useEffect(() => {
     setLabels(initialLabels);
   }, [initialLabels]);
 
+  const isDirty = JSON.stringify(initialLabels) !== JSON.stringify(labels);
+
   return (
-    <>
-      <Button variant="ghost" size="sm" onClick={onOpen}>
-        🏷️
-      </Button>
-      <DialogRoot open={open} onOpenChange={onClose} size="xl">
-        <DialogBackdrop />
-        <DialogContent>
+    <DialogRoot size="xl">
+      <DialogTrigger>
+        <Button title="Edit labels" variant="ghost" size="sm">
+          🏷️
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
+          <DialogTitle>Labels</DialogTitle>
+          <Button disabled={!isDirty} variant="solid" onClick={handleSave}>
+            Save
+          </Button>
+        </DialogHeader>
+        <DialogBody>
           <Table.Root size="sm">
             <Table.Body>
               {Object.entries(labels).map(([key, value]) => (
                 <Table.Row key={key}>
                   <Table.Cell>
-                    <Input size="sm" value={key} />
+                    <Editable.Root value={key} onValueChange={handleKeyChange(key, value)}>
+                      <Editable.Preview />
+                      <Editable.Input />
+                    </Editable.Root>
                   </Table.Cell>
                   <Table.Cell>
-                    <Input size="sm" value={value} />
+                    <Editable.Root value={value} onValueChange={handleValueChange(key)}>
+                      <Editable.Preview />
+                      <Editable.Input />
+                    </Editable.Root>
                   </Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>
           </Table.Root>
-          <Button onClick={handleSave}>Save</Button>
-        </DialogContent>
-      </DialogRoot>
-    </>
+        </DialogBody>
+      </DialogContent>
+    </DialogRoot>
   );
 };
 

@@ -1,58 +1,65 @@
-import {Button, IconButton, Table, useDisclosure} from '@chakra-ui/react';
+import {Button, IconButton, Table} from '@chakra-ui/react';
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+  toaster,
+} from '../components/ui';
 import {FaMinus} from 'react-icons/fa';
 import {isChainEvent, Event, isTireEvent} from '../models';
-import {AddEvent} from './AddEvent';
+import {AddEvent} from '../components';
 import {useEvents, useLabels} from '../hooks';
-import {DialogBackdrop, DialogContent, DialogRoot} from '../components/ui';
+
+const HEADERS = ['Date', 'Type', 'Bike', 'Chain', ''];
 
 type EditEventsProps = {
-  events: Event[];
   onEditEvents: () => void;
 };
 
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
-  const {open, onOpen, onClose} = useDisclosure();
   const [label] = useLabels();
   const [events, refreshEvents] = useEvents();
-  events.reverse();
 
   const refresh = () => {
     onEditEvents();
     refreshEvents();
   };
 
-  const handleRemove = (id: string) => async () => {
-    await fetch(`${import.meta.env.VITE_SERVER_URL}/events/${id}`, {method: 'DELETE'});
+  const handleRemove = (event: Event) => async () => {
+    await fetch(`${import.meta.env.VITE_SERVER_URL}/events/${event.id}`, {method: 'DELETE'});
     refresh();
 
-    //TODO
-    // toast({
-    //   status: 'success',
-    //   description: 'Event removed',
-    // });
+    toaster.create({title: `${label(event.type)} Event removed`});
   };
 
   return (
-    <>
-      <Button variant="ghost" size="sm" onClick={onOpen}>
-        🪭
-      </Button>
-      <DialogRoot open={open} onOpenChange={onClose} size="xl">
-        <DialogBackdrop />
-        <DialogContent padding="20px" gap="20px">
+    <DialogRoot size="xl">
+      <DialogTrigger>
+        <Button variant="ghost" size="sm" title="Edit events">
+          🪭
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogCloseTrigger />
+        <DialogHeader>
+          <DialogTitle>Events</DialogTitle>
+        </DialogHeader>
+        <DialogBody display="flex" flexDirection="column" gap="20px">
           <AddEvent onAddEvent={refresh} />
           <Table.Root size="sm" striped={true}>
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeader>Date</Table.ColumnHeader>
-                <Table.ColumnHeader>Type</Table.ColumnHeader>
-                <Table.ColumnHeader>Bike</Table.ColumnHeader>
-                <Table.ColumnHeader>Chain</Table.ColumnHeader>
-                <Table.ColumnHeader />
+                {HEADERS.map(header => (
+                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+                ))}
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {events.map(event => (
+              {events.reverse().map(event => (
                 <Table.Row key={event.id}>
                   <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
                   <Table.Cell>{label(event.type)}</Table.Cell>
@@ -73,7 +80,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                     </>
                   )}
                   <Table.Cell textAlign="end">
-                    <IconButton variant="ghost" title="Remove" size="xs" onClick={handleRemove(event.id)}>
+                    <IconButton variant="ghost" title="Remove event" size="xs" onClick={handleRemove(event)}>
                       <FaMinus />
                     </IconButton>
                   </Table.Cell>
@@ -81,9 +88,9 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
               ))}
             </Table.Body>
           </Table.Root>
-        </DialogContent>
-      </DialogRoot>
-    </>
+        </DialogBody>
+      </DialogContent>
+    </DialogRoot>
   );
 };
 

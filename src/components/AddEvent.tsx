@@ -1,7 +1,7 @@
 import {ChangeEvent, useState} from 'react';
 import {Group, IconButton, Input, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {FaPlus} from 'react-icons/fa';
-import {SegmentedControl} from '../components/ui';
+import {SegmentedControl, toaster} from '../components/ui';
 import {GearSelect} from '../components';
 import {useLabels} from '../hooks';
 import {labelCollection, removeNull} from '../models';
@@ -47,10 +47,7 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
       body: JSON.stringify(removeNull(event)),
     });
 
-    // toast({
-    //   status: 'success',
-    //   description: `Event added ${label(type)}`,
-    // });
+    toaster.create({title: `${label(event.type)} Event added`});
     resetForm();
     onAddEvent();
   };
@@ -85,7 +82,7 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
           <Input size="sm" width="200px" placeholder="🔗" value={chain ?? ''} onChange={handleChainChange} />
         </>
       )}
-      <IconButton variant="ghost" aria-label="Add" disabled={!isFormValid()} size="xs" onClick={handleAdd}>
+      <IconButton variant="ghost" title="Add event" disabled={!isFormValid()} size="xs" onClick={handleAdd}>
         <FaPlus />
       </IconButton>
     </Group>

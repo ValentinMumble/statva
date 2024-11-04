@@ -71,7 +71,7 @@ const EventChart = () => {
           onValueChange={handleEventTypeChange}
           items={labelCollection(EVENT_TYPES, label).items}
         />
-        <EditEvents events={events} onEditEvents={refreshEvents} />
+        <EditEvents onEditEvents={refreshEvents} />
       </Group>
       <Chart
         options={{

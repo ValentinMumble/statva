@@ -67,7 +67,7 @@ const ChainChart = () => {
     <>
       <Group width="full" justifyContent="end" gap="20px">
         <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
-        <EditEvents events={events} onEditEvents={refreshEvents} />
+        <EditEvents onEditEvents={refreshEvents} />
         <EditLabels />
       </Group>
       <Chart
