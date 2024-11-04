@@ -59,8 +59,11 @@ const ActivityIcon = ({activityType, isCommute = false, ...rest}: ActivityIconPr
   const ActivityIconType = getActivityIcon(activityType, isCommute);
 
   return (
+    // The span is to prevent React whining about passing a ref to the react-icon component
     <Icon {...rest}>
-      <ActivityIconType />
+      <span>
+        <ActivityIconType />
+      </span>
     </Icon>
   );
 };

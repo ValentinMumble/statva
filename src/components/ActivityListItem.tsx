@@ -94,13 +94,15 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
           return <Table.Cell key={tag.sortType} />;
         }
 
+        const tagContent = <Tag variant="subtle">{label}</Tag>;
+
         return (
           <Table.Cell key={tag.sortType} textAlign="center" opacity={tag.isRelevant(activity) ? 0.9 : 0.4}>
             {null === tooltip ? (
-              <Tag variant="subtle">{label}</Tag>
+              tagContent
             ) : (
               <Tooltip portalled={true} content={tooltip}>
-                <Tag variant="subtle">{label}</Tag>
+                {tagContent}
               </Tooltip>
             )}
           </Table.Cell>

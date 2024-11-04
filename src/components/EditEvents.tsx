@@ -16,6 +16,12 @@ import {useEvents, useLabels} from '../hooks';
 
 const HEADERS = ['Date', 'Type', 'Bike', 'Chain', ''];
 
+const rowProps: Partial<Table.RowProps> = {
+  width: '100%',
+  display: 'table',
+  tableLayout: 'fixed',
+};
+
 type EditEventsProps = {
   onEditEvents: () => void;
 };
@@ -50,9 +56,9 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
         </DialogHeader>
         <DialogBody display="flex" flexDirection="column" gap="20px">
           <AddEvent onAddEvent={refresh} />
-          <Table.Root size="sm">
-            <Table.Header>
-              <Table.Row>
+          <Table.Root size="sm" display="block" height="70vh" overflow="scroll">
+            <Table.Header position="sticky" top={0}>
+              <Table.Row {...rowProps}>
                 {HEADERS.map(header => (
                   <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
                 ))}
@@ -60,7 +66,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
             </Table.Header>
             <Table.Body>
               {events.reverse().map(event => (
-                <Table.Row key={event.id}>
+                <Table.Row key={event.id} {...rowProps}>
                   <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
                   <Table.Cell>{label(event.type)}</Table.Cell>
                   {isChainEvent(event) ? (

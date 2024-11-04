@@ -101,7 +101,7 @@ const App = () => {
               flex={1}
               endElement={
                 <>
-                  <IconButton variant="ghost" size="xs" onClick={handleSearchClear}>
+                  <IconButton title="Clear" variant="ghost" size="xs" onClick={handleSearchClear}>
                     <MdClear />
                   </IconButton>
                   {activities?.length ?? 0}
