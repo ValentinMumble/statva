@@ -159,7 +159,7 @@ const STATS: {[key: string]: Stat[][]} = {
       {
         label: '🎾',
         helpText: 'Sessions',
-        number: activities => activities.length,
+        number: activities => activities.length.toString(),
       },
       {
         label: '⏱️',

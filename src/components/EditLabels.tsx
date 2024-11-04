@@ -59,7 +59,7 @@ const EditLabels = () => {
       <DialogContent>
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
           <DialogTitle>Labels</DialogTitle>
-          <Button disabled={!isDirty} variant="solid" onClick={handleSave}>
+          <Button disabled={!isDirty} onClick={handleSave}>
             Save
           </Button>
         </DialogHeader>

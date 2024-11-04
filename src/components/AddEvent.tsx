@@ -1,6 +1,6 @@
 import {ChangeEvent, useState} from 'react';
 import {Group, IconButton, Input, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
-import {FaPlus} from 'react-icons/fa';
+import {FiPlus} from 'react-icons/fi';
 import {SegmentedControl, toaster} from '../components/ui';
 import {GearSelect} from '../components';
 import {useLabels} from '../hooks';
@@ -82,8 +82,8 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
           <Input size="sm" width="200px" placeholder="🔗" value={chain ?? ''} onChange={handleChainChange} />
         </>
       )}
-      <IconButton variant="ghost" title="Add event" disabled={!isFormValid()} size="xs" onClick={handleAdd}>
-        <FaPlus />
+      <IconButton title="Add event" disabled={!isFormValid()} size="xs" onClick={handleAdd}>
+        <FiPlus />
       </IconButton>
     </Group>
   );

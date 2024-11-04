@@ -9,7 +9,7 @@ import {
   DialogTrigger,
   toaster,
 } from '../components/ui';
-import {FaMinus} from 'react-icons/fa';
+import {FiMinus} from 'react-icons/fi';
 import {isChainEvent, Event, isTireEvent} from '../models';
 import {AddEvent} from '../components';
 import {useEvents, useLabels} from '../hooks';
@@ -50,7 +50,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
         </DialogHeader>
         <DialogBody display="flex" flexDirection="column" gap="20px">
           <AddEvent onAddEvent={refresh} />
-          <Table.Root size="sm" striped={true}>
+          <Table.Root size="sm">
             <Table.Header>
               <Table.Row>
                 {HEADERS.map(header => (
@@ -81,7 +81,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                   )}
                   <Table.Cell textAlign="end">
                     <IconButton variant="ghost" title="Remove event" size="xs" onClick={handleRemove(event)}>
-                      <FaMinus />
+                      <FiMinus />
                     </IconButton>
                   </Table.Cell>
                 </Table.Row>

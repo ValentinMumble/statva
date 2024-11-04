@@ -157,7 +157,7 @@ const App = () => {
           </Collapsible.Content>
         </Collapsible.Root>
         <Table.Root unstyled={true}>
-          <Table.Header position="sticky" top={0}>
+          <Table.Header>
             <Table.Row fontSize=".8em" cursor="pointer">
               <Table.ColumnHeader />
               <Table.ColumnHeader>
