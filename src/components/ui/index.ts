@@ -17,4 +17,5 @@ export * from './stepper-input';
 export * from './switch';
 export * from './tag';
 export * from './toaster';
+export * from './toggle';
 export * from './tooltip';

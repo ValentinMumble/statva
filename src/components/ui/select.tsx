@@ -97,17 +97,20 @@ export const SelectValueText = forwardRef<
   )
 })
 
-export const SelectRoot = forwardRef<HTMLDivElement, ChakraSelect.RootProps>(
-  function SelectRoot(props, ref) {
-    return (
-      <ChakraSelect.Root
-        {...props}
-        ref={ref}
-        positioning={{ sameWidth: true, ...props.positioning }}
-      />
-    )
-  },
-)
+export const SelectRoot = forwardRef<HTMLDivElement, ChakraSelect.RootProps>(function SelectRoot(props, ref) {
+  return (
+    <ChakraSelect.Root {...props} ref={ref} positioning={{sameWidth: true, ...props.positioning}}>
+      {props.asChild ? (
+        props.children
+      ) : (
+        <>
+          <ChakraSelect.HiddenSelect />
+          {props.children}
+        </>
+      )}
+    </ChakraSelect.Root>
+  );
+}) as ChakraSelect.RootComponent;
 
 interface SelectItemGroupProps extends ChakraSelect.ItemGroupProps {
   label: React.ReactNode
