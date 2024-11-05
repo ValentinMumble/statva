@@ -9,7 +9,7 @@ import {
   DialogTrigger,
   toaster,
 } from '../components/ui';
-import {FiMinus} from 'react-icons/fi';
+import {LuMinus} from 'react-icons/lu';
 import {isChainEvent, Event, isTireEvent} from '../models';
 import {AddEvent} from '../components';
 import {useEvents, useLabels} from '../hooks';
@@ -65,7 +65,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {events.reverse().map(event => (
+              {(events ?? []).reverse().map(event => (
                 <Table.Row key={event.id} {...rowProps}>
                   <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
                   <Table.Cell>{label(event.type)}</Table.Cell>
@@ -87,7 +87,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                   )}
                   <Table.Cell textAlign="end">
                     <IconButton variant="ghost" title="Remove event" size="xs" onClick={handleRemove(event)}>
-                      <FiMinus />
+                      <LuMinus />
                     </IconButton>
                   </Table.Cell>
                 </Table.Row>

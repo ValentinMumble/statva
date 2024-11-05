@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, SegmentGroupValueChangeDetails, Text} from '@chakra-ui/react';
 import {SegmentedControl} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection} from '../../models';
@@ -11,8 +11,8 @@ const ChainChart = () => {
   const [gearId, setGearId] = useState<string>('');
   const [label] = useLabels();
   const [events, refreshEvents] = useEvents<ChainEvent>('chain');
-  const relevantBikes = [...new Set(events.map(({bike}) => bike))];
-  const currentBikeEvents = events.filter(({bike}) => gearId === bike);
+  const relevantBikes = [...new Set((events ?? []).map(({bike}) => bike))];
+  const currentBikeEvents = (events ?? []).filter(({bike}) => gearId === bike);
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -62,6 +62,14 @@ const ChainChart = () => {
   useEffect(() => {
     setGearId(relevantBikes[0]);
   }, [relevantBikes.length]);
+
+  if (null === events) {
+    return (
+      <Text textAlign="center" marginBottom="20px" textStyle="md">
+        No events... 🏜️
+      </Text>
+    );
+  }
 
   return (
     <>

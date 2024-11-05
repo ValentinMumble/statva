@@ -13,6 +13,7 @@ export * from './select';
 export * from './skeleton';
 export * from './slider';
 export * from './stat';
+export * from './stepper-input';
 export * from './switch';
 export * from './tag';
 export * from './toaster';

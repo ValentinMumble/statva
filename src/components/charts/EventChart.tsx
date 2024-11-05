@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import { Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, SegmentGroupValueChangeDetails, Text} from '@chakra-ui/react';
 import {SegmentedControl} from '../ui';
 import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
@@ -27,19 +27,22 @@ const EventChart = () => {
   const handleDataChange = ({value}: SegmentGroupValueChangeDetails) => setData(value as keyof DetailedActivity);
   const handleEventTypeChange = ({value}: SegmentGroupValueChangeDetails) => setEventType(value);
 
-  const odometer = events.reduce((odometer: {[id: string]: number[]}, event, index) => {
-    const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
-    const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
-      (sum, ride) => (ride[data] as number) + sum,
-      0
-    );
+  const odometer =
+    null === events
+      ? {}
+      : events.reduce((odometer: {[id: string]: number[]}, event, index) => {
+          const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
+          const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
+            (sum, ride) => (ride[data] as number) + sum,
+            0
+          );
 
-    const eventId = `${event.date.toLocaleDateString()} ${getEventLabel(event)}`;
+          const eventId = `${event.date.toLocaleDateString()} ${getEventLabel(event)}`;
 
-    odometer[eventId] = [...(odometer[eventId] ?? []), periodTotal];
+          odometer[eventId] = [...(odometer[eventId] ?? []), periodTotal];
 
-    return odometer;
-  }, {});
+          return odometer;
+        }, {});
 
   const labels: string[] = [];
   const series: ApexAxisChartSeries = [];
@@ -55,6 +58,14 @@ const EventChart = () => {
   });
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
+
+  if (null === events) {
+    return (
+      <Text textAlign="center" marginBottom="20px" textStyle="md">
+        No events... 🏜️
+      </Text>
+    );
+  }
 
   return (
     <>

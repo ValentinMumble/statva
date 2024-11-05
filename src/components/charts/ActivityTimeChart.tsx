@@ -2,7 +2,7 @@ import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {useActivities, useLabels} from '../../hooks';
 import {ChartProps, generatePeriodKeys, getOptions, labelCollection, Timeframe, TIMEFRAMES} from '../../models';
-import {Checkbox, NumberInputField, NumberInputRoot, SegmentedControl} from '../ui';
+import {Checkbox, SegmentedControl, StepperInput} from '../ui';
 import {Group} from '@chakra-ui/react';
 import {TbBusStop} from 'react-icons/tb';
 
@@ -78,14 +78,11 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
           onValueChange={({value}) => handleTimeframeChange(value as Timeframe)}
           items={labelCollection(Object.keys(TIMEFRAMES), label).items}
         />
-        <NumberInputRoot
-          width="70px"
+        <StepperInput
           size="xs"
           value={itemCount.toString()}
-          onValueChange={details => setItemCount(details.valueAsNumber)}
-        >
-          <NumberInputField />
-        </NumberInputRoot>
+          onValueChange={({valueAsNumber}) => setItemCount(valueAsNumber)}
+        />
       </Group>
       <Chart
         options={getOptions(labels, undefined, {

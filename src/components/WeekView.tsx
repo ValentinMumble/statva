@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {IconButton, Table} from '@chakra-ui/react';
-import {TbPlus} from 'react-icons/tb';
+import {LuPlus} from 'react-icons/lu';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon} from '../components';
 import {useActivities, useLabels} from '../hooks';
@@ -44,13 +44,13 @@ const WeekView = () => {
   const mondayFirst = arrayRotate(WEEKDAYS, -1);
 
   return (
-    <Table.Root size={['sm', 'md']}>
+    <Table.Root>
       <Table.Header>
-        <Table.Row textAlign="center">
+        <Table.Row>
           <Table.ColumnHeader>
             Week
-            <IconButton variant="ghost" onClick={incrementWeekCount} marginLeft="10px">
-              <TbPlus />
+            <IconButton title="More" variant="ghost" onClick={incrementWeekCount} marginLeft="10px">
+              <LuPlus />
             </IconButton>
           </Table.ColumnHeader>
           {mondayFirst.map(weekDay => (

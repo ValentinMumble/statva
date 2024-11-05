@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
-import {NumberInputField, NumberInputRoot, SegmentedControl} from '../ui';
+import {SegmentedControl, StepperInput} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
 import {
   ChartProps,
@@ -67,14 +67,11 @@ const MonthChart = ({data, formatter, filter, timeframe: initialTimeframe = 'mon
           onValueChange={({value}) => handleTimeframeChange(value as Timeframe)}
           items={labelCollection(Object.keys(TIMEFRAMES), label).items}
         />
-        <NumberInputRoot
-          width="70px"
+        <StepperInput
           size="xs"
           value={itemCount.toString()}
-          onValueChange={details => setItemCount(details.valueAsNumber)}
-        >
-          <NumberInputField />
-        </NumberInputRoot>
+          onValueChange={({valueAsNumber}) => setItemCount(valueAsNumber)}
+        />
       </Group>
       <Chart options={getOptions(labels, formatter)} series={series} type="bar" height={400} {...rest} />
     </>
