@@ -16,7 +16,6 @@ const WeekView = () => {
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: [],
   });
   const [label] = useLabels();
 
@@ -73,7 +72,7 @@ const WeekView = () => {
 
               return activity ? (
                 <Table.Cell key={weekDay} textAlign="center">
-                  <Tooltip content={`${activity.name} 〰 ${label(activity.gear_id, true)}`}>
+                  <Tooltip content={`${activity.name} 〰 ${label(activity.gear_id ?? activity.sport_type, true)}`}>
                     <a target="_blank" href={getActivityUrl(activity)}>
                       <ActivityIcon activityType={activity.sport_type} isCommute={activity.commute} />
                     </a>

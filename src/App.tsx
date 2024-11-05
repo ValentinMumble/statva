@@ -24,7 +24,7 @@ import {
   WeekView,
   YearRangeSlider,
 } from './components';
-import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, DEFAULT_TYPES, labelCollection} from './models';
+import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection} from './models';
 import {ActivityType} from './models/strava';
 import {useActivities, useFtp, useLabels} from './hooks';
 
@@ -35,7 +35,7 @@ const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
-  const [types, setTypes] = useState<ActivityType[]>(DEFAULT_TYPES);
+  const [types, setTypes] = useState<ActivityType[] | null>(null);
   const [activeSort, setActiveSort] = useState<SortType>('date');
   const [displayedSorts, setDisplayedSorts] = useState<SortType[]>(DEFAULT_SORTS);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -48,7 +48,7 @@ const App = () => {
   const getFtp = useFtp();
   const [activities, refetch] = useActivities({
     search,
-    includedActivityTypes: types,
+    includedActivityTypes: types ?? undefined,
     sort: activeSort,
     withPrivate,
     gearId: gearIds[0],
@@ -64,7 +64,7 @@ const App = () => {
     setFiltersOpen(false);
     setWithPrivate(false);
     setSearch('');
-    setTypes(DEFAULT_TYPES);
+    setTypes(null);
     setActiveSort('date');
     setDisplayedSorts(DEFAULT_SORTS);
     setSortDirection('desc');

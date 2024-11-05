@@ -10,7 +10,7 @@ const useActivities = ({
   search = '',
   sort = 'date',
   sortDirection = 'desc',
-  includedActivityTypes = [],
+  includedActivityTypes,
   gearId,
   years = [],
   minTime,
@@ -30,7 +30,7 @@ const useActivities = ({
           .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
           .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))
           .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
-          .filter(({sport_type}) => 0 === includedActivityTypes.length || includedActivityTypes.includes(sport_type))
+          .filter(({sport_type}) => undefined === includedActivityTypes || includedActivityTypes.includes(sport_type))
           .filter(({moving_time}) => undefined === minTime || moving_time >= minTime)
           .sort((a, b) => sortActivities(sort, sortDirection, a, b, getFtp)),
     refetch,

@@ -2,18 +2,17 @@ import {MouseEvent} from 'react';
 import {CheckboxGroup} from '@chakra-ui/react';
 import {Checkbox} from '../components/ui';
 import {ActivityIcon} from '../components';
-import {DEFAULT_TYPES} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities} from '../hooks';
 
 type ActivityTypeFilterProps = {
-  types: ActivityType[];
+  types: ActivityType[] | null;
   onTypesChange: (newTypes: ActivityType[]) => void;
 };
 
 const ActivityTypeFilter = ({types, onTypesChange}: ActivityTypeFilterProps) => {
   const [activities] = useActivities({withPrivate: true});
-  const uniqueTypes = [...new Set([...DEFAULT_TYPES, ...(activities ?? []).map(({sport_type}) => sport_type)])];
+  const uniqueTypes = [...new Set((activities ?? []).map(({sport_type}) => sport_type))];
 
   const handleTypeChange = (values: string[]) => onTypesChange(values as ActivityType[]);
   const handleIconClick = (type: ActivityType) => (event: MouseEvent) => {
@@ -22,7 +21,12 @@ const ActivityTypeFilter = ({types, onTypesChange}: ActivityTypeFilterProps) => 
   };
 
   return (
-    <CheckboxGroup value={types} onValueChange={handleTypeChange} display="flex" flexDirection="row">
+    <CheckboxGroup
+      value={null === types ? uniqueTypes : types}
+      onValueChange={handleTypeChange}
+      display="flex"
+      flexDirection="row"
+    >
       {uniqueTypes.map(type => (
         <Checkbox
           key={type}

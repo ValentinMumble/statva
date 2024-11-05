@@ -57,7 +57,7 @@ const STATS: {[key: string]: Stat[][]} = {
           activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
           'distance'
         );
-        const yearProgress = (yearTotal / 1000 / YEAR_GOAL_KM) * 100;
+        const yearProgress = Math.min(100, (yearTotal / 1000 / YEAR_GOAL_KM) * 100);
 
         return {
           label: '🎊',

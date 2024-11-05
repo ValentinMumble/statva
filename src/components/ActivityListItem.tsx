@@ -75,8 +75,8 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
             positioning={{placement: 'right-end'}}
             content={
               <>
-                {new Date(activity.start_date).toLocaleDateString()}&nbsp;&nbsp;
-                {label(activity.gear_id, true)}
+                {new Date(activity.start_date).toLocaleDateString()} 〰
+                {label(activity.gear_id ?? activity.sport_type, true)}
               </>
             }
           >

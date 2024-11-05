@@ -3,16 +3,6 @@ import {ActivityType, DetailedActivity} from './strava';
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
-const DEFAULT_TYPES = [
-  ActivityType.Ride,
-  ActivityType.GravelRide,
-  ActivityType.VirtualRide,
-  ActivityType.Run,
-  ActivityType.TrailRun,
-  ActivityType.Swim,
-  ActivityType.Tennis,
-];
-
 type ActivityFilter = {
   search?: string;
   sort?: SortType;
@@ -156,7 +146,6 @@ const formatPaceOrSpeed = (activity: DetailedActivity): string => {
 };
 
 export {
-  DEFAULT_TYPES,
   eddingtonNumber,
   formatPaceOrSpeed,
   getActivityUrl,
