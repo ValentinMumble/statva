@@ -10,9 +10,11 @@ const useEvents = <T extends Event>(type?: string): [T[] | null, () => void] => 
       url: import.meta.env.VITE_KV_REST_API_URL,
       token: import.meta.env.VITE_KV_REST_API_TOKEN,
     });
-    console.log(await redis.get('foo'));
 
-    const rawEvents = await (await fetch(`${import.meta.env.VITE_SERVER_URL}/events`)).json();
+    const rawEvents = await redis.get<Event[]>('events');
+
+    if (null === rawEvents) return;
+
     const events = rawEvents.map((event: Event) => ({...event, date: new Date(event.date)})) as Event[];
     events.sort((a, b) => (a.date < b.date ? -1 : 1));
 
