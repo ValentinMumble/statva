@@ -57,7 +57,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
         <DialogBody display="flex" flexDirection="column" gap="20px">
           <AddEvent onAddEvent={refresh} />
           <Table.Root size="sm" display="block" height="70vh" overflow="scroll">
-            <Table.Header position="sticky" top={0}>
+            <Table.Header position="sticky" top={0} zIndex={-1}>
               <Table.Row {...rowProps}>
                 {HEADERS.map(header => (
                   <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>

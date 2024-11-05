@@ -10,21 +10,14 @@ import {
 import {GEAR, labelCollection} from '../models';
 import {useLabels} from '../hooks';
 
-type GearSelectProps = {
+type GearSelectProps = Omit<SelectRootProps, 'collection'> & {
   selectedGear: string[];
   onSelectedGearChange: (selectedGear: string[]) => void;
   clearable?: boolean;
   selectContentProps?: SelectContentProps;
-  selectRootProps?: Partial<SelectRootProps>;
 };
 
-const GearSelect = ({
-  selectedGear,
-  onSelectedGearChange,
-  selectContentProps,
-  selectRootProps,
-  clearable = false,
-}: GearSelectProps) => {
+const GearSelect = ({selectedGear, onSelectedGearChange, selectContentProps, clearable, ...rest}: GearSelectProps) => {
   const [label] = useLabels();
 
   const handleGearChange = ({value}: SelectValueChangeDetails) => onSelectedGearChange(value);
@@ -35,10 +28,10 @@ const GearSelect = ({
   return (
     <SelectRoot
       width="150px"
-      collection={gearCollection}
       value={selectedGear}
       onValueChange={handleGearChange}
-      {...selectRootProps}
+      collection={gearCollection}
+      {...rest}
     >
       <SelectTrigger clearable={clearable}>
         <SelectValueText placeholder="⚙️" />

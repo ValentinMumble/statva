@@ -74,10 +74,10 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
       {'chain' === type && (
         <>
           <GearSelect
+            size="sm"
             selectedGear={null === bike ? [] : [bike]}
             onSelectedGearChange={handleBikeChange}
             selectContentProps={{portalled: false}}
-            selectRootProps={{size: 'sm'}}
           />
           <Input size="sm" width="200px" placeholder="🔗" value={chain ?? ''} onChange={handleChainChange} />
         </>
