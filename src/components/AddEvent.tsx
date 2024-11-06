@@ -4,7 +4,8 @@ import {LuPlus} from 'react-icons/lu';
 import {SegmentedControl, toaster} from '../components/ui';
 import {GearSelect} from '../components';
 import {useLabels} from '../hooks';
-import {labelCollection, removeNull} from '../models';
+import {Event, labelCollection, removeNull} from '../models';
+import {addEvent} from '../redis';
 
 const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
 
@@ -34,18 +35,15 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
   const handleBikeChange = (bikes: string[]) => setBike(bikes[0]);
 
   const handleAdd = async () => {
-    const event = {
+    const event = removeNull({
+      id: self.crypto.randomUUID(),
       type,
       date,
       chain,
       bike,
-    };
+    }) as Event;
 
-    await fetch(`${import.meta.env.VITE_SERVER_URL}/events`, {
-      headers: {'Content-Type': 'application/json'},
-      method: 'POST',
-      body: JSON.stringify(removeNull(event)),
-    });
+    await addEvent(event);
 
     toaster.create({title: `${label(event.type)} Event added`});
     resetForm();

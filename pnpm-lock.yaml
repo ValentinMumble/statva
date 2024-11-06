@@ -14,9 +14,6 @@ importers:
       '@upstash/redis':
         specifier: ^1.34.3
         version: 1.34.3
-      '@vercel/edge-config':
-        specifier: ^1.4.0
-        version: 1.4.0
       '@vercel/speed-insights':
         specifier: ^1.0.14
         version: 1.0.14(react@18.3.1)
@@ -822,18 +819,6 @@ packages:
 
   '@vercel/build-utils@8.4.12':
     resolution: {integrity: sha512-pIH0b965wJhd1otROVPndfZenPKFVoYSaRjtSKVOT/oNBT13ifq86UVjb5ZjoVfqUI2TtSTP+68kBqLPeoq30g==}
-
-  '@vercel/edge-config-fs@0.1.0':
-    resolution: {integrity: sha512-NRIBwfcS0bUoUbRWlNGetqjvLSwgYH/BqKqDN7vK1g32p7dN96k0712COgaz6VFizAm9b0g6IG6hR6+hc0KCPg==}
-
-  '@vercel/edge-config@1.4.0':
-    resolution: {integrity: sha512-69Wg5gw9DzwnyUmnjToSeLRm1nm8mCPgN0kflX8EHRHyqvzH80wPem5A8rI2LXPb2Y9tJNoqN3vXPcQhS2Wh5g==}
-    engines: {node: '>=14.6'}
-    peerDependencies:
-      '@opentelemetry/api': ^1.7.0
-    peerDependenciesMeta:
-      '@opentelemetry/api':
-        optional: true
 
   '@vercel/nft@0.27.5':
     resolution: {integrity: sha512-b2A7M+4yMHdWKY7xCC+kBEcnMrpaSE84CnuauTjhKKoCEeej0byJMAB8h/RBVnw/HdZOAFVcxR0Izr3LL24FwA==}
@@ -2949,12 +2934,6 @@ snapshots:
       crypto-js: 4.2.0
 
   '@vercel/build-utils@8.4.12': {}
-
-  '@vercel/edge-config-fs@0.1.0': {}
-
-  '@vercel/edge-config@1.4.0':
-    dependencies:
-      '@vercel/edge-config-fs': 0.1.0
 
   '@vercel/nft@0.27.5':
     dependencies:

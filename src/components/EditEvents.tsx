@@ -13,6 +13,7 @@ import {LuMinus} from 'react-icons/lu';
 import {isChainEvent, Event, isTireEvent} from '../models';
 import {AddEvent} from '../components';
 import {useEvents, useLabels} from '../hooks';
+import {deleteEvent} from '../redis';
 
 const HEADERS = ['Date', 'Type', 'Bike', 'Chain', ''];
 
@@ -36,7 +37,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
   };
 
   const handleRemove = (event: Event) => async () => {
-    await fetch(`${import.meta.env.VITE_SERVER_URL}/events/${event.id}`, {method: 'DELETE'});
+    await deleteEvent(event.id);
     refresh();
 
     toaster.create({title: `${label(event.type)} Event removed`});
