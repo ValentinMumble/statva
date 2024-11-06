@@ -53,7 +53,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
       <DialogContent>
         <DialogCloseTrigger />
         <DialogHeader>
-          <DialogTitle>Events</DialogTitle>
+          <DialogTitle>{events?.length ?? 0} events 🪭</DialogTitle>
         </DialogHeader>
         <DialogBody display="flex" flexDirection="column" gap="20px">
           <AddEvent onAddEvent={refresh} />

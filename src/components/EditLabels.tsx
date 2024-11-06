@@ -54,7 +54,7 @@ const EditLabels = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
-          <DialogTitle>{Object.keys(labels).length} labels</DialogTitle>
+          <DialogTitle>{Object.keys(labels).length} labels 🏷️</DialogTitle>
           <DialogCloseTrigger />
         </DialogHeader>
         <DialogBody>
@@ -70,7 +70,7 @@ const EditLabels = () => {
                 <Table.Cell>
                   <Editable.Root
                     submitMode="enter"
-                    placeholder="New label"
+                    placeholder="🏷️"
                     value={newLabel}
                     disabled={'' === newKey}
                     onValueChange={({value}) => setNewLabel(value)}
