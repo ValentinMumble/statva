@@ -42,7 +42,7 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
     maxPeriod = year === lastDate.getUTCFullYear() ? TIMEFRAMES[timeframe].getDatePeriod(lastDate) : maxPeriod;
 
     for (let period = 1; period <= maxPeriod; period++) {
-      //todo different method for timeframes
+      //TODO different method for timeframes
       emptyValues[`${TIMEFRAMES[timeframe].prefix}${period}/${year}`] = emptyValue;
     }
   }

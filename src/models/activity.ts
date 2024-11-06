@@ -15,6 +15,8 @@ type ActivityFilter = {
   minTime?: number;
 };
 
+type GetFtp = (date: Date) => number;
+
 const getTypes = (type: ActivityType): ActivityType[] => {
   switch (type) {
     case ActivityType.Ride:
@@ -158,4 +160,4 @@ export {
   getTotalValue,
   getTypes,
 };
-export type {ActivityFilter};
+export type {ActivityFilter, GetFtp};

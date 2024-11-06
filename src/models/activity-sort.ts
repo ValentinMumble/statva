@@ -1,3 +1,4 @@
+import {GetFtp} from './activity';
 import {DetailedActivity} from './strava';
 
 type SortType =
@@ -45,7 +46,7 @@ const sortActivities = (
   sortDirection: SortDirection,
   a: DetailedActivity,
   b: DetailedActivity,
-  getFtp: (date: Date) => number
+  getFtp: GetFtp
 ) => {
   const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
 

@@ -6,6 +6,7 @@ const formatSpeed = (speed: number, precision = 1): string => `${(speed * 3.6).t
 const formatPower = (power: number): string => `${Math.round(power)} W`;
 const formatCalories = (kilojoules: number, withSymbol = true) =>
   `${Math.round(kilojoules * KJ_TO_CAL_RATIO)}${withSymbol ? ' kcal' : ''}`;
+const formatPercent = (ratio: number, precision = 0): string => `${(ratio * 100).toFixed(precision)}%`;
 
 const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string => {
   const hours = durationInSeconds / 60 / 60;
@@ -62,6 +63,7 @@ export {
   formatDurationInDays,
   formatElevation,
   formatSpeed,
+  formatPercent,
   formatPower,
   getWeekNumber,
   KJ_TO_CAL_RATIO,

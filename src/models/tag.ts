@@ -13,6 +13,8 @@ import {
   getAverageValue,
   formatPower,
   formatCalories,
+  GetFtp,
+  formatPercent,
 } from '../models';
 import {ActivityType, DetailedActivity} from './strava';
 
@@ -20,7 +22,7 @@ type Tag = {
   label: (activity: DetailedActivity, ftp: number) => string | number | null;
   isRelevant: (activity: DetailedActivity) => boolean;
   tooltip?: (activity: DetailedActivity, ftp: number) => string | number | null;
-  total: (activities: DetailedActivity[]) => string | number;
+  total: (activities: DetailedActivity[], getFtp: GetFtp) => string | number;
   sortType: SortType;
   help: string;
   excludedTypes?: ActivityType[];
@@ -39,19 +41,17 @@ const TAGS: Tag[] = [
   {
     label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
     isRelevant: ({total_elevation_gain}) => 0 < total_elevation_gain,
-    tooltip: ({total_elevation_gain, distance}) => `⚖️ ${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
+    tooltip: ({total_elevation_gain, distance}) => `⚖️ ${formatPercent(total_elevation_gain / distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
     sortType: 'total_elevation_gain',
     help: 'D+',
     excludedTypes: [ActivityType.Swim, ActivityType.Tennis],
   },
   {
-    label: ({total_elevation_gain, distance}) => `${((total_elevation_gain / distance) * 100).toFixed(2)}%`,
+    label: ({total_elevation_gain, distance}) => formatPercent(total_elevation_gain / distance, 2),
     isRelevant: ({total_elevation_gain, distance}) => 0 < total_elevation_gain / distance,
     total: activities =>
-      `${((getTotalValue(activities, 'total_elevation_gain') / getTotalValue(activities, 'distance')) * 100).toFixed(
-        2
-      )}%`,
+      formatPercent(getTotalValue(activities, 'total_elevation_gain') / getTotalValue(activities, 'distance'), 2),
     sortType: 'elevation_percent',
     help: 'D+ percentage',
     excludedTypes: [ActivityType.Swim, ActivityType.Tennis],
@@ -120,9 +120,19 @@ const TAGS: Tag[] = [
   },
   {
     label: ({weighted_average_watts}, ftp) =>
-      undefined === weighted_average_watts ? null : `${Math.round((weighted_average_watts / ftp) * 100)}%`,
+      undefined === weighted_average_watts ? null : formatPercent(weighted_average_watts / ftp),
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
-    total: _activities => '?', //TODO
+    total: (activities, getFtp) =>
+      formatPercent(
+        activities
+          .filter(activity => undefined !== activity.weighted_average_watts)
+          .reduce(
+            (total, activity, _index, activities) =>
+              total +
+              (activity.weighted_average_watts ?? 0) / getFtp(new Date(activity.start_date)) / activities.length,
+            0
+          )
+      ),
     sortType: 'intensity',
     help: 'Intensity',
   },

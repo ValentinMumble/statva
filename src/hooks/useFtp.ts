@@ -1,6 +1,7 @@
+import {GetFtp} from '../models';
 import {useFtpTests} from './useFtpTests';
 
-const useFtp = (): ((date: Date) => number) => {
+const useFtp = (): GetFtp => {
   const tests = useFtpTests();
 
   return (date: Date) => {

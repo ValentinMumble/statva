@@ -1,7 +1,7 @@
 import {Box, Skeleton, Table} from '@chakra-ui/react';
 import {Tooltip, Tag} from '../components/ui';
 import {ActivityIcon} from '../components';
-import {SortType, TAGS,  getActivityUrl, getHeartZone, getPowerZone} from '../models';
+import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone} from '../models';
 import {DetailedActivity} from '../models/strava';
 import {useLabels} from '../hooks';
 
@@ -38,7 +38,7 @@ type ActivityListItemProps = {
   activity: DetailedActivity | null;
   enabledSorts: SortType[];
   bgOption: string;
-  getFtp: (date: Date) => number;
+  getFtp: GetFtp;
 };
 
 const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {

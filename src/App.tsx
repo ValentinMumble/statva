@@ -175,7 +175,7 @@ const App = () => {
                   ) : (
                     <VStack>
                       <Tag colorPalette={tag.sortType === activeSort ? 'orange' : 'gray'} variant="subtle">
-                        {tag.total?.(activities)}
+                        {tag.total(activities, getFtp)}
                       </Tag>
                       {label(tag.sortType)}
                     </VStack>
