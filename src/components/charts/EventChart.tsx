@@ -48,6 +48,7 @@ const EventChart = () => {
   const series: ApexAxisChartSeries = [];
 
   Object.entries(odometer).forEach(([eventLabel, totals], eventIndex) => {
+    // Remove date + space
     labels.push(eventLabel.slice(11));
 
     totals.forEach(total => {
