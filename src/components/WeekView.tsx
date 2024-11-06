@@ -4,7 +4,7 @@ import {LuPlus} from 'react-icons/lu';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon} from '../components';
 import {useActivities, useLabels} from '../hooks';
-import {arrayRotate, getActivityUrl, getWeekNumber} from '../models';
+import {arrayRotate, getActivityUrl, TIMEFRAMES} from '../models';
 import {DetailedActivity} from '../models/strava';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -24,7 +24,7 @@ const WeekView = () => {
   const dataPerWeek = (activities ?? []).reduce(
     (weekMap: {[weekId: string]: {[weekday: string]: DetailedActivity}}, activity) => {
       const date = new Date(activity.start_date);
-      const weekId = `${getWeekNumber(date)}/${date.getUTCFullYear()}`;
+      const weekId = TIMEFRAMES['week'].getPeriodKey(date);
       const weekday = WEEKDAYS[date.getDay()];
       const currentActivityTime = weekMap[weekId]?.[weekday]?.moving_time ?? 0;
 
