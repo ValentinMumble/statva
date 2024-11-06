@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Group, SegmentGroupValueChangeDetails, Text} from '@chakra-ui/react';
-import {SegmentedControl} from '../ui';
+import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {SegmentedControl, Skeleton} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection} from '../../models';
@@ -60,11 +60,7 @@ const EventChart = () => {
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
 
   if (null === events) {
-    return (
-      <Text textAlign="center" marginBottom="20px" textStyle="md">
-        No events... 🏜️
-      </Text>
-    );
+    return <Skeleton height="200px" />;
   }
 
   return (

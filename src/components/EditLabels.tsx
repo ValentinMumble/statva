@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
-import {Button, Editable, EditableValueChangeDetails, Table} from '@chakra-ui/react';
+import {Button, Editable, EditableValueChangeDetails, IconButton, Table} from '@chakra-ui/react';
+import {LuMinus} from 'react-icons/lu';
 import {
   DialogBody,
   DialogContent,
@@ -12,20 +13,15 @@ import {
 import {Labels} from '../models';
 import {useLabels} from '../hooks';
 
+const rowProps: Partial<Table.RowProps> = {
+  width: '100%',
+  display: 'table',
+  tableLayout: 'fixed',
+};
+
 const EditLabels = () => {
   const [, initialLabels] = useLabels();
   const [labels, setLabels] = useState<Labels>(initialLabels);
-
-  const handleKeyChange =
-    (oldKey: string, newValue: string) =>
-    ({value}: EditableValueChangeDetails) => {
-      setLabels(labels => {
-        const newLabels = {...labels, [value]: newValue};
-        delete newLabels[oldKey];
-
-        return newLabels;
-      });
-    };
 
   const handleValueChange =
     (key: string) =>
@@ -33,21 +29,13 @@ const EditLabels = () => {
       setLabels(labels => ({...labels, [key]: value}));
     };
 
-  const handleSave = async () => {
-    //TODO implement this
-    // await fetch(`${import.meta.env.VITE_SERVER_URL}/labels`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(labels),
-    // });
-
-    toaster.create({title: '🏷️ Labels saved'});
+  const handleRemove = (key: string) => async () => {
+    toaster.create({title: `${key} removed (//TODO not implemented)`});
   };
 
   useEffect(() => {
     setLabels(initialLabels);
   }, [initialLabels]);
-
-  const isDirty = JSON.stringify(initialLabels) !== JSON.stringify(labels);
 
   return (
     <DialogRoot size="xl">
@@ -59,26 +47,23 @@ const EditLabels = () => {
       <DialogContent>
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
           <DialogTitle>Labels</DialogTitle>
-          <Button disabled={!isDirty} onClick={handleSave}>
-            Save
-          </Button>
         </DialogHeader>
         <DialogBody>
-          <Table.Root size="sm">
+          <Table.Root size="sm" display="block" height="70vh" overflow="scroll">
             <Table.Body>
               {Object.entries(labels).map(([key, value]) => (
-                <Table.Row key={key}>
-                  <Table.Cell>
-                    <Editable.Root value={key} onValueChange={handleKeyChange(key, value)}>
-                      <Editable.Preview />
-                      <Editable.Input />
-                    </Editable.Root>
-                  </Table.Cell>
+                <Table.Row key={key} {...rowProps}>
+                  <Table.Cell>{key}</Table.Cell>
                   <Table.Cell>
                     <Editable.Root value={value} onValueChange={handleValueChange(key)}>
                       <Editable.Preview />
                       <Editable.Input />
                     </Editable.Root>
+                  </Table.Cell>
+                  <Table.Cell textAlign="end">
+                    <IconButton variant="ghost" title="Remove label" size="xs" onClick={handleRemove(key)}>
+                      <LuMinus />
+                    </IconButton>
                   </Table.Cell>
                 </Table.Row>
               ))}
