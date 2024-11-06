@@ -1,4 +1,5 @@
 import {Button, IconButton, Table} from '@chakra-ui/react';
+import {LuMinus} from 'react-icons/lu';
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -9,7 +10,6 @@ import {
   DialogTrigger,
   toaster,
 } from '../components/ui';
-import {LuMinus} from 'react-icons/lu';
 import {isChainEvent, Event, isTireEvent} from '../models';
 import {AddEvent} from '../components';
 import {useEvents, useLabels} from '../hooks';

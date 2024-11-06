@@ -5,7 +5,7 @@ type Timeframe = 'day' | 'month' | 'week';
 type TimeframeData = {
   initialItemCount: number;
   maxValue: number;
-  prefix: string;
+  separator: string;
   getDatePeriod: (date: Date) => number;
   getPeriodKey: (date: Date) => string;
 };
@@ -14,36 +14,44 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
   day: {
     initialItemCount: 30,
     maxValue: 365,
-    prefix: 'd',
-    getDatePeriod: date => date.getUTCDay(),
-    getPeriodKey: date => date.toLocaleDateString(),
+    separator: '/',
+    getDatePeriod: date => date.getUTCDate(),
+    getPeriodKey: date => date.toLocaleDateString('en-ZA'),
   },
   week: {
     initialItemCount: 26,
     maxValue: 52,
-    prefix: '',
+    separator: '-',
     getDatePeriod: date => getWeekNumber(date),
-    getPeriodKey: date => `${getWeekNumber(date)}/${date.getUTCFullYear()}`,
+    getPeriodKey: date => `${date.getUTCFullYear()}${TIMEFRAMES.week.separator}${getWeekNumber(date)}`,
   },
   month: {
     initialItemCount: 15,
     maxValue: 12,
-    prefix: 'm',
+    separator: '/',
     getDatePeriod: date => date.getUTCMonth() + 1,
-    getPeriodKey: date => `m${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`,
+    getPeriodKey: date => `${date.getUTCFullYear()}${TIMEFRAMES.month.separator}${date.getUTCMonth() + 1}`,
   },
 };
 
 const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
   const emptyValues: {[period: string]: any} = {};
+  const {maxValue, getDatePeriod, separator} = TIMEFRAMES[timeframe];
 
   for (let year = firstDate.getUTCFullYear(); year <= lastDate.getUTCFullYear(); year++) {
-    let maxPeriod = TIMEFRAMES[timeframe].maxValue;
-    maxPeriod = year === lastDate.getUTCFullYear() ? TIMEFRAMES[timeframe].getDatePeriod(lastDate) : maxPeriod;
+    let maxPeriod = maxValue;
+    maxPeriod = year === lastDate.getUTCFullYear() ? getDatePeriod(lastDate) : maxPeriod;
 
-    for (let period = 1; period <= maxPeriod; period++) {
-      //TODO different method for timeframes
-      emptyValues[`${TIMEFRAMES[timeframe].prefix}${period}/${year}`] = emptyValue;
+    if ('day' === timeframe) {
+      for (let month = 1; month <= TIMEFRAMES['month'].maxValue; month++) {
+        for (let day = 1; day <= maxPeriod; day++) {
+          emptyValues[`${year}${separator}${month}${separator}${day}`] = emptyValue;
+        }
+      }
+    } else {
+      for (let period = 1; period <= maxPeriod; period++) {
+        emptyValues[`${year}${separator}${period}`] = emptyValue;
+      }
     }
   }
 
