@@ -44,10 +44,10 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
     }) as Event;
 
     await addEvent(event);
-
-    toaster.create({title: `${label(event.type)} Event added`});
     resetForm();
     onAddEvent();
+
+    toaster.create({title: `${label(event.type)} Event added`});
   };
 
   const isFormValid = (): boolean => {

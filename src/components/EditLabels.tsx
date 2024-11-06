@@ -1,8 +1,9 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {Button, Editable, EditableValueChangeDetails, IconButton, Table} from '@chakra-ui/react';
 import {LuMinus} from 'react-icons/lu';
 import {
   DialogBody,
+  DialogCloseTrigger,
   DialogContent,
   DialogHeader,
   DialogRoot,
@@ -10,8 +11,8 @@ import {
   DialogTrigger,
   toaster,
 } from '../components/ui';
-import {Labels} from '../models';
 import {useLabels} from '../hooks';
+import {deleteLabel, setLabel} from '../redis';
 
 const rowProps: Partial<Table.RowProps> = {
   width: '100%',
@@ -20,22 +21,29 @@ const rowProps: Partial<Table.RowProps> = {
 };
 
 const EditLabels = () => {
-  const [, initialLabels] = useLabels();
-  const [labels, setLabels] = useState<Labels>(initialLabels);
+  const [newKey, setNewKey] = useState<string>('');
+  const [newLabel, setNewLabel] = useState<string>('');
+  const [, labels, refreshLabels] = useLabels();
 
-  const handleValueChange =
+  const handleLabelSave =
     (key: string) =>
-    ({value}: EditableValueChangeDetails) => {
-      setLabels(labels => ({...labels, [key]: value}));
+    async ({value}: EditableValueChangeDetails) => {
+      if (value === labels[key]) return;
+
+      await setLabel(key, value);
+      refreshLabels();
+      setNewKey('');
+      setNewLabel('');
+
+      toaster.create({title: `🆙 ${key} updated`});
     };
 
   const handleRemove = (key: string) => async () => {
-    toaster.create({title: `${key} removed (//TODO not implemented)`});
-  };
+    await deleteLabel(key);
+    refreshLabels();
 
-  useEffect(() => {
-    setLabels(initialLabels);
-  }, [initialLabels]);
+    toaster.create({title: `🗑️ ${key} removed`});
+  };
 
   return (
     <DialogRoot size="xl">
@@ -46,16 +54,39 @@ const EditLabels = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
-          <DialogTitle>Labels</DialogTitle>
+          <DialogTitle>{Object.keys(labels).length} labels</DialogTitle>
+          <DialogCloseTrigger />
         </DialogHeader>
         <DialogBody>
-          <Table.Root size="sm" display="block" height="70vh" overflow="scroll">
+          <Table.Root size="sm" display="block" height="75vh" overflow="scroll">
             <Table.Body>
+              <Table.Row {...rowProps}>
+                <Table.Cell>
+                  <Editable.Root placeholder="New key" value={newKey} onValueChange={({value}) => setNewKey(value)}>
+                    <Editable.Preview />
+                    <Editable.Input />
+                  </Editable.Root>
+                </Table.Cell>
+                <Table.Cell>
+                  <Editable.Root
+                    submitMode="enter"
+                    placeholder="New label"
+                    value={newLabel}
+                    disabled={'' === newKey}
+                    onValueChange={({value}) => setNewLabel(value)}
+                    onValueCommit={handleLabelSave(newKey)}
+                  >
+                    <Editable.Preview />
+                    <Editable.Input />
+                  </Editable.Root>
+                </Table.Cell>
+                <Table.Cell />
+              </Table.Row>
               {Object.entries(labels).map(([key, value]) => (
                 <Table.Row key={key} {...rowProps}>
                   <Table.Cell>{key}</Table.Cell>
                   <Table.Cell>
-                    <Editable.Root value={value} onValueChange={handleValueChange(key)}>
+                    <Editable.Root defaultValue={value} submitMode="enter" onValueCommit={handleLabelSave(key)}>
                       <Editable.Preview />
                       <Editable.Input />
                     </Editable.Root>
