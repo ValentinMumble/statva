@@ -19,16 +19,15 @@ const ClipboardIcon = forwardRef<
   )
 })
 
-const ClipboardCopyText = forwardRef<
-  HTMLDivElement,
-  ChakraClipboard.IndicatorProps
->(function ClipboardCopyText(props, ref) {
-  return (
-    <ChakraClipboard.Indicator copied="Copied" {...props} ref={ref}>
-      Copy
-    </ChakraClipboard.Indicator>
-  )
-})
+const ClipboardCopyText = forwardRef<HTMLDivElement, ChakraClipboard.IndicatorProps & {text?: string}>(
+  function ClipboardCopyText(props, ref) {
+    return (
+      <ChakraClipboard.Indicator copied="Copied" {...props} ref={ref}>
+        {props.text ?? 'Copy'}
+      </ChakraClipboard.Indicator>
+    );
+  }
+);
 
 export const ClipboardLabel = forwardRef<
   HTMLLabelElement,
@@ -46,18 +45,19 @@ export const ClipboardLabel = forwardRef<
   )
 })
 
-export const ClipboardButton = forwardRef<HTMLButtonElement, ButtonProps>(
-  function ClipboardButton(props, ref) {
-    return (
-      <ChakraClipboard.Trigger asChild>
-        <Button ref={ref} size="sm" variant="surface" {...props}>
-          <ClipboardIcon />
-          <ClipboardCopyText />
-        </Button>
-      </ChakraClipboard.Trigger>
-    )
-  },
-)
+export const ClipboardButton = forwardRef<HTMLButtonElement, ButtonProps & {text?: string}>(function ClipboardButton(
+  props,
+  ref
+) {
+  return (
+    <ChakraClipboard.Trigger asChild>
+      <Button ref={ref} size="sm" variant="outline" {...props}>
+        <ClipboardIcon />
+        <ClipboardCopyText text={props.text} />
+      </Button>
+    </ChakraClipboard.Trigger>
+  );
+});
 
 export const ClipboardLink = forwardRef<HTMLButtonElement, ButtonProps>(
   function ClipboardLink(props, ref) {

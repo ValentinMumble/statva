@@ -2,8 +2,9 @@ import {useState} from 'react';
 import {Button, Editable, EditableValueChangeDetails, IconButton, Table} from '@chakra-ui/react';
 import {LuMinus} from 'react-icons/lu';
 import {
+  ClipboardButton,
+  ClipboardRoot,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogHeader,
   DialogRoot,
@@ -55,7 +56,9 @@ const EditLabels = () => {
       <DialogContent>
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
           <DialogTitle>{Object.keys(labels).length} labels 🏷️</DialogTitle>
-          <DialogCloseTrigger />
+          <ClipboardRoot value={JSON.stringify(labels)}>
+            <ClipboardButton text="Backup" />
+          </ClipboardRoot>
         </DialogHeader>
         <DialogBody>
           <Table.Root size="sm" display="block" height="75vh" overflow="scroll">

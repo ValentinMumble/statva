@@ -1,6 +1,7 @@
 export * from './accordion';
 export * from './button';
 export * from './checkbox';
+export * from './clipboard';
 export * from './dialog';
 export * from './input-group';
 export * from './native-select';
