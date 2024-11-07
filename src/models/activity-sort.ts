@@ -1,4 +1,4 @@
-import {GetFtp} from './activity';
+import {GetFtp} from '../models';
 import {DetailedActivity} from './strava';
 
 type SortType =

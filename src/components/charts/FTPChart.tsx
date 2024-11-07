@@ -1,5 +1,5 @@
 import Chart from 'react-apexcharts';
-import {useFtpTests} from '../../hooks';
+import {useFtp} from '../../hooks';
 import {formatPower, getOptions} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
@@ -25,7 +25,7 @@ const options: ApexCharts.ApexOptions = {
 };
 
 const FTPChart = () => {
-  const ftpTests = useFtpTests();
+  const [, ftpTests] = useFtp();
   const labels = ftpTests.map(({date}) => date.toLocaleDateString());
   const series = [
     {name: 'W', data: ftpTests.map(({ftp}) => ftp)},

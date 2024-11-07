@@ -2,6 +2,7 @@ export * from './activity';
 export * from './activity-sort';
 export * from './apexcharts';
 export * from './event';
+export * from './ftp';
 export * from './gear';
 export * from './label';
 export * from './tag';

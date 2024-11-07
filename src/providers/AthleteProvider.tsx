@@ -1,30 +1,29 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
-import {DetailedAthlete} from '../models/strava';
 import {fetchAthlete} from '../strava';
+import {FTPTest} from '../models';
+import {DetailedAthlete} from '../models/strava';
+import {getFTPTests} from '../redis';
 
-const AthleteContext = createContext<[DetailedAthlete | null, boolean]>([null, true]);
+const AthleteContext = createContext<[DetailedAthlete | null, FTPTest[]]>([null, []]);
 
 type AthleteProviderProps = {
   children?: ReactNode;
 };
 
 const AthleteProvider = ({children}: AthleteProviderProps) => {
-  const [isLoading, setLoading] = useState<boolean>(true);
   const [athlete, setAthlete] = useState<DetailedAthlete | null>(null);
+  const [ftpTests, setFtpTests] = useState<FTPTest[]>([]);
 
   useEffect(() => {
-    const doFetchAthlete = async () => {
-      setLoading(true);
-      const athlete = await fetchAthlete();
-
-      setAthlete(athlete);
-      setLoading(false);
+    const fetchData = async () => {
+      setAthlete(await fetchAthlete());
+      setFtpTests(await getFTPTests());
     };
 
-    doFetchAthlete();
+    fetchData();
   }, []);
 
-  return <AthleteContext.Provider value={[athlete, isLoading]}>{children}</AthleteContext.Provider>;
+  return <AthleteContext.Provider value={[athlete, ftpTests]}>{children}</AthleteContext.Provider>;
 };
 
 export {AthleteProvider, AthleteContext};

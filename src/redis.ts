@@ -1,8 +1,9 @@
 import {Redis} from '@upstash/redis';
-import {Event, Labels} from './models';
+import {Event, FTPTest, Labels} from './models';
 
 const EVENTS_KEY = 'events';
 const LABELS_KEY = 'labels';
+const FTP_TESTS_KEY = 'ftp_tests';
 
 const client = () =>
   new Redis({
@@ -17,6 +18,16 @@ const getEvents = async (): Promise<Event[] | null> => {
 
   return Object.values(rawEvents)
     .map(event => ({...event, date: new Date(event.date)}))
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+};
+
+const getFTPTests = async (): Promise<FTPTest[]> => {
+  const ftpTests = await client().hgetall<Record<string, FTPTest>>(FTP_TESTS_KEY);
+
+  if (null === ftpTests) return [];
+
+  return Object.values(ftpTests)
+    .map(ftpTest => ({...ftpTest, date: new Date(ftpTest.date)}))
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 };
 
@@ -43,4 +54,4 @@ const getLabels = async (): Promise<Labels> => {
   return Object.fromEntries(Object.entries(labels ?? {}).sort(([keyA], [keyB]) => collator.compare(keyA, keyB)));
 };
 
-export {addEvent, setLabel, deleteEvent, deleteLabel, getEvents, getLabels};
+export {addEvent, setLabel, deleteEvent, deleteLabel, getEvents, getLabels, getFTPTests};

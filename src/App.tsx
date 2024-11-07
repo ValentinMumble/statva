@@ -45,7 +45,7 @@ const App = () => {
   const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
 
   const [label] = useLabels();
-  const getFtp = useFtp();
+  const [getFtp] = useFtp();
   const [activities, refetch] = useActivities({
     search,
     includedActivityTypes: types ?? undefined,
