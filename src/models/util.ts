@@ -55,8 +55,18 @@ const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
 
 const removeNull = (object: object) => Object.fromEntries(Object.entries(object).filter(([_, v]) => v != null));
 
+const backup = (array: {id: string}[]): string =>
+  JSON.stringify(
+    array.reduce((map: {[key: string]: {id: string}}, item) => {
+      map[item.id] = item;
+
+      return map;
+    }, {})
+  );
+
 export {
   arrayRotate,
+  backup,
   formatCalories,
   formatDistance,
   formatDuration,

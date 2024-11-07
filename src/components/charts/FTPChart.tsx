@@ -3,7 +3,7 @@ import Chart from 'react-apexcharts';
 import {Button, Group, Input} from '@chakra-ui/react';
 import {ClipboardIconButton, ClipboardRoot, NumberInputField, NumberInputRoot} from '../../components/ui';
 import {useFtp} from '../../hooks';
-import {formatPower, FTPTest, getOptions} from '../../models';
+import {backup, formatPower, FTPTest, getOptions} from '../../models';
 import {upsertFTPTest} from '../../redis';
 
 const options: ApexCharts.ApexOptions = {
@@ -72,7 +72,7 @@ const FTPChart = () => {
         <Button size="sm" variant="outline" disabled={!canSubmit} onClick={handleAdd}>
           Add
         </Button>
-        <ClipboardRoot value={JSON.stringify(ftpTests)}>
+        <ClipboardRoot value={backup(ftpTests)}>
           <ClipboardIconButton />
         </ClipboardRoot>
       </Group>

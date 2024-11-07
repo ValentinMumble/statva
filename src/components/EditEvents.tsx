@@ -11,7 +11,7 @@ import {
   DialogTrigger,
   toaster,
 } from '../components/ui';
-import {isChainEvent, Event, isTireEvent} from '../models';
+import {isChainEvent, Event, isTireEvent, backup} from '../models';
 import {AddEvent} from '../components';
 import {useEvents, useLabels} from '../hooks';
 import {deleteEvent} from '../redis';
@@ -54,7 +54,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
       <DialogContent>
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
           <DialogTitle>{events?.length ?? 0} events 🪭</DialogTitle>
-          <ClipboardRoot value={JSON.stringify(events)}>
+          <ClipboardRoot value={backup(events ?? [])}>
             <ClipboardButton text="Backup" />
           </ClipboardRoot>
         </DialogHeader>
