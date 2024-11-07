@@ -2,8 +2,8 @@ import {useContext} from 'react';
 import {FTPTest, GetFtp} from '../models';
 import {AthleteContext} from '../providers';
 
-const useFtp = (): [GetFtp, FTPTest[]] => {
-  const [, tests] = useContext(AthleteContext);
+const useFtp = (): [GetFtp, FTPTest[], () => Promise<void>] => {
+  const [, tests, refresh] = useContext(AthleteContext);
 
   return [
     (date: Date) => {
@@ -12,6 +12,7 @@ const useFtp = (): [GetFtp, FTPTest[]] => {
       return relevantTests[0]?.ftp ?? tests.at(-1)?.ftp ?? 0;
     },
     tests,
+    refresh,
   ];
 };
 

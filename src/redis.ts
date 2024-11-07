@@ -21,6 +21,29 @@ const getEvents = async (): Promise<Event[] | null> => {
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 };
 
+const upsertEvent = async (event: Event) => {
+  await client().hset(EVENTS_KEY, {[event.id]: event});
+};
+
+const deleteEvent = async (eventId: string) => {
+  await client().hdel(EVENTS_KEY, eventId);
+};
+
+const getLabels = async (): Promise<Labels> => {
+  const labels = await client().hgetall<Labels>(LABELS_KEY);
+  const collator = new Intl.Collator('en', {numeric: true, sensitivity: 'base'});
+
+  return Object.fromEntries(Object.entries(labels ?? {}).sort(([keyA], [keyB]) => collator.compare(keyA, keyB)));
+};
+
+const upsertLabel = async (key: string, label: string) => {
+  await client().hset(LABELS_KEY, {[key]: label});
+};
+
+const deleteLabel = async (key: string) => {
+  await client().hdel(LABELS_KEY, key);
+};
+
 const getFTPTests = async (): Promise<FTPTest[]> => {
   const ftpTests = await client().hgetall<Record<string, FTPTest>>(FTP_TESTS_KEY);
 
@@ -31,27 +54,22 @@ const getFTPTests = async (): Promise<FTPTest[]> => {
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 };
 
-const deleteEvent = async (eventId: string) => {
-  await client().hdel(EVENTS_KEY, eventId);
+const upsertFTPTest = async (test: FTPTest) => {
+  await client().hset(FTP_TESTS_KEY, {[test.id]: test});
 };
 
-const deleteLabel = async (key: string) => {
-  await client().hdel(LABELS_KEY, key);
+const deleteFTPTest = async (key: string) => {
+  await client().hdel(FTP_TESTS_KEY, key);
 };
 
-const addEvent = async (event: Event) => {
-  await client().hset(EVENTS_KEY, {[event.id]: event});
+export {
+  deleteEvent,
+  deleteFTPTest,
+  deleteLabel,
+  getEvents,
+  getFTPTests,
+  getLabels,
+  upsertEvent,
+  upsertFTPTest,
+  upsertLabel,
 };
-
-const setLabel = async (key: string, label: string) => {
-  await client().hset(LABELS_KEY, {[key]: label});
-};
-
-const getLabels = async (): Promise<Labels> => {
-  const labels = await client().hgetall<Labels>(LABELS_KEY);
-  const collator = new Intl.Collator('en', {numeric: true, sensitivity: 'base'});
-
-  return Object.fromEntries(Object.entries(labels ?? {}).sort(([keyA], [keyB]) => collator.compare(keyA, keyB)));
-};
-
-export {addEvent, setLabel, deleteEvent, deleteLabel, getEvents, getLabels, getFTPTests};

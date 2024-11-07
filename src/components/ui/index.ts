@@ -3,6 +3,7 @@ export * from './button';
 export * from './checkbox';
 export * from './clipboard';
 export * from './dialog';
+export * from './field';
 export * from './input-group';
 export * from './native-select';
 export * from './number-input';

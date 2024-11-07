@@ -13,7 +13,7 @@ import {
   toaster,
 } from '../components/ui';
 import {useLabels} from '../hooks';
-import {deleteLabel, setLabel} from '../redis';
+import {deleteLabel, upsertLabel} from '../redis';
 
 const rowProps: Partial<Table.RowProps> = {
   width: '100%',
@@ -31,7 +31,7 @@ const EditLabels = () => {
     async ({value}: EditableValueChangeDetails) => {
       if (value === labels[key]) return;
 
-      await setLabel(key, value);
+      await upsertLabel(key, value);
       refreshLabels();
       setNewKey('');
       setNewLabel('');

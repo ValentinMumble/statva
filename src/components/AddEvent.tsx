@@ -5,7 +5,7 @@ import {SegmentedControl, toaster} from '../components/ui';
 import {GearSelect} from '../components';
 import {useLabels} from '../hooks';
 import {Event, labelCollection, removeNull} from '../models';
-import {addEvent} from '../redis';
+import {upsertEvent} from '../redis';
 
 const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
 
@@ -43,7 +43,7 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
       bike,
     }) as Event;
 
-    await addEvent(event);
+    await upsertEvent(event);
     resetForm();
     onAddEvent();
 

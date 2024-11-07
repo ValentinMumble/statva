@@ -1,4 +1,5 @@
 type FTPTest = {
+  id: string;
   date: Date;
   weight: number;
   ftp: number;
