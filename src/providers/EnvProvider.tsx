@@ -7,7 +7,7 @@ type EnvProviderProps = {
 };
 
 const EnvProvider = ({children}: EnvProviderProps) => {
-  const [devMode, setDevMode] = useState<boolean>(true);
+  const [devMode, setDevMode] = useState<boolean>(import.meta.env.DEV);
 
   return <EnvContext.Provider value={[devMode, setDevMode]}>{children}</EnvContext.Provider>;
 };
