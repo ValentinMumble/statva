@@ -72,9 +72,9 @@ const TAGS: Tag[] = [
     help: 'Elapsed time',
   },
   {
-    label: formatPaceOrSpeed,
+    label: activity => formatPaceOrSpeed(activity),
     isRelevant: ({average_speed}) => 0 < average_speed,
-    tooltip: ({average_speed}) => `🏁 ${formatSpeed(average_speed, 3)}`,
+    tooltip: activity => `🏁 ${formatPaceOrSpeed(activity, 3, true)}`,
     total: activities => formatSpeed(getAverageValue(activities, 'average_speed')),
     sortType: 'average_speed',
     help: 'Average speed',

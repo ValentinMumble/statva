@@ -23,7 +23,7 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
       return newActivities;
     });
 
-    if (fetchNextPage && (items ?? ITEMS_PER_PAGE) === activities.length) {
+    if (fetchNextPage && (items ?? ITEMS_PER_PAGE) === activities.length && !import.meta.env.DEV) {
       doFetchActivities(page + 1, true);
       setPage(page + 1);
     }
