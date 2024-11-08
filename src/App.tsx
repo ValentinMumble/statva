@@ -26,7 +26,7 @@ import {
 } from './components';
 import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection} from './models';
 import {ActivityType} from './models/strava';
-import {useActivities, useFtp, useLabels} from './hooks';
+import {useActivities, useEnv, useFtp, useLabels} from './hooks';
 
 const DISPLAYED_ITEMS = 75;
 const BG_COLLECTION = ['date', 'average_watts', 'average_heartrate'];
@@ -44,6 +44,7 @@ const App = () => {
   const [yearRange, setYearRange] = useState<number[]>([]);
   const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
 
+  const [devMode, setDevMode] = useEnv();
   const [label] = useLabels();
   const [getFtp] = useFtp();
   const [activities, refetch] = useActivities({
@@ -97,6 +98,14 @@ const App = () => {
       <VStack align="stretch" flexBasis="62%" height="100vh" overflow="scroll">
         <Collapsible.Root open={filtersOpen} onOpenChange={({open}) => setFiltersOpen(open)}>
           <Group width="full">
+            {import.meta.env.DEV && (
+              <Switch
+                size="xs"
+                title="Use local"
+                checked={devMode}
+                onCheckedChange={({checked}) => setDevMode(checked)}
+              />
+            )}
             <InputGroup
               flex={1}
               endElement={
@@ -110,7 +119,7 @@ const App = () => {
             >
               <Input
                 disabled={isLoading}
-                placeholder={import.meta.env.DEV ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
+                placeholder={devMode ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
                 autoFocus={true}
                 value={search}
                 onChange={handleSearchChange}

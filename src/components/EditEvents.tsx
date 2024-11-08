@@ -13,8 +13,7 @@ import {
 } from '../components/ui';
 import {isChainEvent, Event, isTireEvent, backup} from '../models';
 import {AddEvent} from '../components';
-import {useEvents, useLabels} from '../hooks';
-import {deleteEvent} from '../redis';
+import {useEvents, useFetcher, useLabels} from '../hooks';
 
 const HEADERS = ['Date', 'Type', 'Bike', 'Chain', ''];
 
@@ -31,6 +30,7 @@ type EditEventsProps = {
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
   const [label] = useLabels();
   const [events, refreshEvents] = useEvents();
+  const deleteEvent = useFetcher<void>('events.delete');
 
   const refresh = () => {
     onEditEvents();

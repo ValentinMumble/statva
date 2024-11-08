@@ -12,8 +12,7 @@ import {
   DialogTrigger,
   toaster,
 } from '../components/ui';
-import {useLabels} from '../hooks';
-import {deleteLabel, upsertLabel} from '../redis';
+import {useFetcher, useLabels} from '../hooks';
 
 const rowProps: Partial<Table.RowProps> = {
   width: '100%',
@@ -25,6 +24,8 @@ const EditLabels = () => {
   const [newKey, setNewKey] = useState<string>('');
   const [newLabel, setNewLabel] = useState<string>('');
   const [, labels, refreshLabels] = useLabels();
+  const upsertLabel = useFetcher<void>('labels.set');
+  const deleteLabel = useFetcher<void>('labels.delete');
 
   const handleLabelSave =
     (key: string) =>

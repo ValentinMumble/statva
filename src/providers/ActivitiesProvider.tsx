@@ -1,6 +1,6 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
-import {ITEMS_PER_PAGE, fetchActivities} from '../strava';
 import {DetailedActivity} from '../models/strava';
+import {useFetcher} from '../hooks';
 
 const ActivitiesContext = createContext<
   [DetailedActivity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>]
@@ -13,9 +13,10 @@ type ActivitiesProviderProps = {
 const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
   const [activities, setActivities] = useState<{[id: string]: DetailedActivity} | null>(null);
   const [page, setPage] = useState<number>(1);
+  const getActivities = useFetcher<[DetailedActivity[], boolean]>('activities.get');
 
-  const doFetchActivities = async (page: number, fetchNextPage = false, items?: number) => {
-    const activities = await fetchActivities(page, items);
+  const fetchActivities = async (page: number, fetchNextPage = false, items?: number) => {
+    const [activities, hasMore] = await getActivities(page, items);
     setActivities(currentActivities => {
       const newActivities = {...currentActivities};
       activities.forEach(activity => (newActivities[activity.id] = activity));
@@ -23,18 +24,20 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
       return newActivities;
     });
 
-    if (fetchNextPage && (items ?? ITEMS_PER_PAGE) === activities.length && !import.meta.env.DEV) {
-      doFetchActivities(page + 1, true);
+    if (fetchNextPage && hasMore) {
+      fetchActivities(page + 1, true);
       setPage(page + 1);
     }
   };
 
   useEffect(() => {
-    doFetchActivities(page, true);
-  }, []);
+    setActivities(null);
+    setPage(1);
+    fetchActivities(page, true);
+  }, [getActivities]);
 
   return (
-    <ActivitiesContext.Provider value={[null === activities ? null : Object.values(activities), doFetchActivities]}>
+    <ActivitiesContext.Provider value={[null === activities ? null : Object.values(activities), fetchActivities]}>
       {children}
     </ActivitiesContext.Provider>
   );

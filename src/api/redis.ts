@@ -1,5 +1,5 @@
 import {Redis} from '@upstash/redis';
-import {Event, FTPTest, Labels} from './models';
+import {Event, FTPTest, Labels} from '../models';
 
 const EVENTS_KEY = 'events';
 const LABELS_KEY = 'labels';
@@ -58,18 +58,4 @@ const upsertFTPTest = async (test: FTPTest) => {
   await client().hset(FTP_TESTS_KEY, {[test.id]: test});
 };
 
-const deleteFTPTest = async (key: string) => {
-  await client().hdel(FTP_TESTS_KEY, key);
-};
-
-export {
-  deleteEvent,
-  deleteFTPTest,
-  deleteLabel,
-  getEvents,
-  getFTPTests,
-  getLabels,
-  upsertEvent,
-  upsertFTPTest,
-  upsertLabel,
-};
+export {deleteEvent, deleteLabel, getEvents, getFTPTests, getLabels, upsertEvent, upsertFTPTest, upsertLabel};

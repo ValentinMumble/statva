@@ -1,6 +1,5 @@
-import {DetailedActivity, DetailedAthlete} from './models/strava';
+import {DetailedActivity, DetailedAthlete} from '../models/strava';
 
-const USE_LOCAL_ACTIVITIES = true;
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ITEMS_PER_PAGE = 150;
@@ -46,18 +45,15 @@ const fetchAthlete = async (): Promise<DetailedAthlete> => {
   return await response.json();
 };
 
-const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<DetailedActivity[]> => {
-  if (import.meta.env.DEV && USE_LOCAL_ACTIVITIES) {
-    return await (await fetch('/local_activities.json')).json();
-  }
-
+const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[DetailedActivity[], boolean]> => {
   const accessToken = await fetchAccessToken();
 
   const response = await fetch(
     `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${items}`
   );
+  const activities = await response.json();
 
-  return await response.json();
+  return [activities, activities.length === items];
 };
 
 const fetchAllActivities = async () => {
@@ -83,4 +79,4 @@ const fetchAllActivities = async () => {
   return Object.values(activities);
 };
 
-export {fetchAllActivities, fetchActivities, fetchAthlete, ITEMS_PER_PAGE};
+export {fetchAllActivities, fetchActivities, fetchAthlete};

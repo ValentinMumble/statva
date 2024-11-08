@@ -1,6 +1,6 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
 import {extractEmoji, GetLabel, Labels} from '../models';
-import {getLabels} from '../redis';
+import {useFetcher} from '../hooks';
 
 const LabelContext = createContext<[GetLabel, Labels, () => Promise<void>]>([() => '', {}, () => Promise.resolve()]);
 
@@ -10,6 +10,7 @@ type LabelProviderProps = {
 
 const LabelProvider = ({children}: LabelProviderProps) => {
   const [labels, setLabels] = useState<Labels>({});
+  const getLabels = useFetcher<Labels>('labels.get');
 
   const fetchLabels = async () => {
     setLabels(await getLabels());
@@ -17,7 +18,7 @@ const LabelProvider = ({children}: LabelProviderProps) => {
 
   useEffect(() => {
     fetchLabels();
-  }, []);
+  }, [getLabels]);
 
   return (
     <LabelContext.Provider

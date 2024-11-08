@@ -3,9 +3,8 @@ import {Group, IconButton, Input, SegmentGroupValueChangeDetails} from '@chakra-
 import {LuPlus} from 'react-icons/lu';
 import {SegmentedControl, toaster} from '../components/ui';
 import {GearSelect} from '../components';
-import {useLabels} from '../hooks';
+import {useFetcher, useLabels} from '../hooks';
 import {Event, labelCollection, removeNull} from '../models';
-import {upsertEvent} from '../redis';
 
 const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
 
@@ -19,6 +18,7 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
   const [chain, setChain] = useState<string | null>(null);
   const [bike, setBike] = useState<string | null>(null);
   const [label] = useLabels();
+  const upsertEvent = useFetcher<void>('events.set');
 
   const resetForm = () => {
     setChain(null);
