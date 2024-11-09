@@ -15,6 +15,7 @@ import {
   formatCalories,
   GetFtp,
   formatPercent,
+  formatLaps,
 } from '../models';
 import {ActivityType, DetailedActivity} from './strava';
 
@@ -30,7 +31,8 @@ type Tag = {
 
 const TAGS: Tag[] = [
   {
-    label: ({distance, type}) => (ActivityType.Swim === type ? formatElevation(distance) : formatDistance(distance)),
+    label: ({distance, sport_type}) =>
+      ActivityType.Swim === sport_type ? formatElevation(distance) : formatDistance(distance),
     isRelevant: ({distance}) => 0 < distance,
     tooltip: ({distance}) => `📍 ${formatDistance(distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'distance')),
@@ -39,13 +41,15 @@ const TAGS: Tag[] = [
     excludedTypes: [ActivityType.Tennis],
   },
   {
-    label: ({total_elevation_gain}) => formatElevation(total_elevation_gain),
-    isRelevant: ({total_elevation_gain}) => 0 < total_elevation_gain,
-    tooltip: ({total_elevation_gain, distance}) => `⚖️ ${formatPercent(total_elevation_gain / distance, 2)}`,
+    label: activity =>
+      ActivityType.Swim === activity.sport_type ? formatLaps(activity) : formatElevation(activity.total_elevation_gain),
+    isRelevant: ({total_elevation_gain, sport_type}) => ActivityType.Swim === sport_type || 0 < total_elevation_gain,
+    tooltip: ({total_elevation_gain, distance, sport_type}) =>
+      ActivityType.Swim === sport_type ? null : `⚖️ ${formatPercent(total_elevation_gain / distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
     sortType: 'total_elevation_gain',
     help: 'D+',
-    excludedTypes: [ActivityType.Swim, ActivityType.Tennis],
+    excludedTypes: [ActivityType.Tennis],
   },
   {
     label: ({total_elevation_gain, distance}) => formatPercent(total_elevation_gain / distance, 2),

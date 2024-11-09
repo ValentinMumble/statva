@@ -147,16 +147,37 @@ const formatPaceOrSpeed = (activity: DetailedActivity, precision?: number, elaps
   }
 };
 
+const POOL_LENGTH = {
+  'petit port': 25,
+  moustoir: 25,
+  lagrange: 50,
+  kirk: 15,
+  dervallieres: 25,
+};
+
+const formatLaps = (activity: DetailedActivity): string => {
+  const poolLength = Object.entries(POOL_LENGTH).reduce((distance, [key, value]) => {
+    if (activity.name.toLowerCase().includes(key)) {
+      return value;
+    }
+
+    return distance;
+  }, -1);
+
+  return `${-1 === poolLength ? '?' : Math.round(activity.distance / poolLength)} laps`;
+};
+
 export {
   eddingtonNumber,
+  formatLaps,
   formatPaceOrSpeed,
   getActivityUrl,
   getAverageValue,
-  getRidesBeforeMonth,
-  getRidesBetween,
   getHeartZone,
   getMaxValue,
   getPowerZone,
+  getRidesBeforeMonth,
+  getRidesBetween,
   getTotalValue,
   getTypes,
 };
