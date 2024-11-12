@@ -8,18 +8,18 @@ import {useLabels} from '../hooks';
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
 const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
 const MONTH_COLORS = [
-  '#FF000013', // Red
-  '#0000FF13', // Blue
-  '#00800013', // Green
-  '#FFFF0013', // Yellow
-  '#80008013', // Purple
-  '#FFA50013', // Orange
-  '#FFC0CB13', // Pink
-  '#A52A2A13', // Brown
-  '#80808013', // Gray
-  '#00FFFF13', // Cyan
-  '#FF634713', // Tomato (Red-Orange)
-  '#00FF7F13', // Spring Green
+  '#FF000015', // Red
+  '#0000FF15', // Blue
+  '#00800015', // Green
+  '#FFFF0015', // Yellow
+  '#80008015', // Purple
+  '#FFA50015', // Orange
+  '#FFC0CB15', // Pink
+  '#A52A2A15', // Brown
+  '#80808015', // Gray
+  '#00FFFF15', // Cyan
+  '#FF634715', // Tomato (Red-Orange)
+  '#00FF7F15', // Spring Green
 ];
 
 const getBgColor = (bgOption: string, activity: DetailedActivity, ftp: number): string => {
