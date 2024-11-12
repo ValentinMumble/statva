@@ -83,6 +83,12 @@ const STATS: {[key: string]: Stat[][]} = {
         label: '⛰️',
         helpText: 'Total D+',
         value: formatDistance(getTotalValue(activities, 'total_elevation_gain')),
+        info: `This year: ${formatDistance(
+          getTotalValue(
+            activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+            'total_elevation_gain'
+          )
+        )}`,
       }),
       activities => ({
         label: '🥾',
