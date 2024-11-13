@@ -1,6 +1,6 @@
 import {useContext} from 'react';
 import {ActivityFilter, sortActivities} from '../models';
-import {DetailedActivity} from '../models/strava';
+import {Activity} from '../models/strava';
 import {ActivitiesContext} from '../providers';
 import {useFtp} from './useFtp';
 
@@ -14,10 +14,7 @@ const useActivities = ({
   gearId,
   years = [],
   minTime,
-}: ActivityFilter): [
-  DetailedActivity[] | null,
-  (page: number, fetchNext?: boolean, items?: number) => Promise<void>
-] => {
+}: ActivityFilter): [Activity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>] => {
   const [activities, refetch] = useContext(ActivitiesContext);
   const [getFtp] = useFtp();
 

@@ -1,12 +1,12 @@
 import {Labels, Event, FTPTest} from '../models';
-import {DetailedActivity, DetailedAthlete} from '../models/strava';
+import {Activity, Athlete} from '../models/strava';
 
-const fetchLocalActivities = async (): Promise<[DetailedActivity[], boolean]> => [
+const fetchLocalActivities = async (): Promise<[Activity[], boolean]> => [
   await (await fetch('/local_activities.json')).json(),
   false,
 ];
 
-const fetchLocalAthlete = async (): Promise<DetailedAthlete> => await (await fetch('/local_athlete.json')).json();
+const fetchLocalAthlete = async (): Promise<Athlete> => await (await fetch('/local_athlete.json')).json();
 
 const fetchLocalLabels = async (): Promise<Labels> => await (await fetch('/local_labels.json')).json();
 

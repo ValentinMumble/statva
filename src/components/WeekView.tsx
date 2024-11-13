@@ -5,7 +5,7 @@ import {Tooltip} from '../components/ui';
 import {ActivityIcon} from '../components';
 import {useActivities, useLabels} from '../hooks';
 import {arrayRotate, getActivityUrl, TIMEFRAMES} from '../models';
-import {DetailedActivity} from '../models/strava';
+import {Activity} from '../models/strava';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -22,7 +22,7 @@ const WeekView = () => {
   const incrementWeekCount = () => setWeekCount(weekCount => weekCount + 1);
 
   const dataPerWeek = (activities ?? []).reduce(
-    (weekMap: {[weekId: string]: {[weekday: string]: DetailedActivity}}, activity) => {
+    (weekMap: {[weekId: string]: {[weekday: string]: Activity}}, activity) => {
       const date = new Date(activity.start_date);
       const weekId = TIMEFRAMES['week'].getPeriodKey(date);
       const weekday = WEEKDAYS[date.getDay()];

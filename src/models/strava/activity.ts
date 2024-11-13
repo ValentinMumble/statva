@@ -1,6 +1,6 @@
 import {MetaAthlete, PolylineMap, ActivityType} from '../strava';
 
-export interface DetailedActivity {
+export interface Activity {
   achievement_count: number;
   athlete_count: number;
   athlete: MetaAthlete;

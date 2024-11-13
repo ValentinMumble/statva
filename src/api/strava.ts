@@ -1,4 +1,4 @@
-import {DetailedActivity, DetailedAthlete} from '../models/strava';
+import {Activity, Athlete} from '../models/strava';
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
@@ -38,14 +38,14 @@ const fetchAccessToken = async () => {
   return token;
 };
 
-const fetchAthlete = async (): Promise<DetailedAthlete> => {
+const fetchAthlete = async (): Promise<Athlete> => {
   const accessToken = await fetchAccessToken();
   const response = await fetch(`${ATHLETE_ENDPOINT}?access_token=${accessToken}`);
 
   return await response.json();
 };
 
-const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[DetailedActivity[], boolean]> => {
+const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[Activity[], boolean]> => {
   const accessToken = await fetchAccessToken();
 
   const response = await fetch(
@@ -61,14 +61,14 @@ const fetchAllActivities = async () => {
 
   let page = 1;
   let resultCount = 0;
-  const activities: {[id: string]: DetailedActivity} = {};
+  const activities: {[id: string]: Activity} = {};
 
   do {
     const response = await fetch(
       `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
     );
 
-    const data = (await response.json()) as DetailedActivity[];
+    const data = (await response.json()) as Activity[];
 
     data.forEach(activity => (activities[activity.id] = activity));
 

@@ -5,14 +5,14 @@ import {SegmentedControl, Skeleton} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection} from '../../models';
-import {DetailedActivity} from '../../models/strava';
+import {Activity} from '../../models/strava';
 
 const EVENT_TYPES = ['tire', 'brake_pad', 'battery'];
 const DATA_TYPES = ['distance', 'total_elevation_gain'];
 const SUPER6 = 'b13440652';
 
 const EventChart = () => {
-  const [data, setData] = useState<keyof DetailedActivity>('distance');
+  const [data, setData] = useState<keyof Activity>('distance');
   const [eventType, setEventType] = useState<string>('tire');
   const [label] = useLabels();
   const [events, refreshEvents] = useEvents(eventType);
@@ -24,7 +24,7 @@ const EventChart = () => {
     gearId: SUPER6,
   });
 
-  const handleDataChange = ({value}: SegmentGroupValueChangeDetails) => setData(value as keyof DetailedActivity);
+  const handleDataChange = ({value}: SegmentGroupValueChangeDetails) => setData(value as keyof Activity);
   const handleEventTypeChange = ({value}: SegmentGroupValueChangeDetails) => setEventType(value);
 
   const odometer =

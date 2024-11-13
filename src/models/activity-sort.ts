@@ -1,5 +1,5 @@
 import {GetFtp} from '../models';
-import {DetailedActivity} from './strava';
+import {Activity} from './strava';
 
 type SortType =
   | 'achievement_count'
@@ -41,13 +41,7 @@ const DEFAULT_SORTS: SortType[] = [
   'weighted_average_watts',
 ];
 
-const sortActivities = (
-  sortType: SortType,
-  sortDirection: SortDirection,
-  a: DetailedActivity,
-  b: DetailedActivity,
-  getFtp: GetFtp
-) => {
+const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Activity, b: Activity, getFtp: GetFtp) => {
   const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
 
   switch (sortType) {

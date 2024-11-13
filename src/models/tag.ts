@@ -17,13 +17,13 @@ import {
   formatPercent,
   formatLaps,
 } from '../models';
-import {ActivityType, DetailedActivity} from './strava';
+import {ActivityType, Activity} from './strava';
 
 type Tag = {
-  label: (activity: DetailedActivity, ftp: number) => string | number | null;
-  isRelevant: (activity: DetailedActivity) => boolean;
-  tooltip?: (activity: DetailedActivity, ftp: number) => string | number | null;
-  total: (activities: DetailedActivity[], getFtp: GetFtp) => string | number;
+  label: (activity: Activity, ftp: number) => string | number | null;
+  isRelevant: (activity: Activity) => boolean;
+  tooltip?: (activity: Activity, ftp: number) => string | number | null;
+  total: (activities: Activity[], getFtp: GetFtp) => string | number;
   sortType: SortType;
   help: string;
   excludedTypes?: ActivityType[];

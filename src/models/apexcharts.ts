@@ -1,9 +1,9 @@
 import {Props} from 'react-apexcharts';
 import {ActivityFilter} from './activity';
-import {DetailedActivity} from './strava';
+import {Activity} from './strava';
 
 type ChartProps = {
-  data: keyof DetailedActivity;
+  data: keyof Activity;
   formatter: (value: number) => string;
   filter?: Partial<ActivityFilter>;
 } & Props;

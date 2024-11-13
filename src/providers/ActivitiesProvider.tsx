@@ -1,9 +1,9 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
-import {DetailedActivity} from '../models/strava';
+import {Activity} from '../models/strava';
 import {useFetcher} from '../hooks';
 
 const ActivitiesContext = createContext<
-  [DetailedActivity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>]
+  [Activity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>]
 >([null, () => Promise.resolve()]);
 
 type ActivitiesProviderProps = {
@@ -11,9 +11,9 @@ type ActivitiesProviderProps = {
 };
 
 const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
-  const [activities, setActivities] = useState<{[id: string]: DetailedActivity} | null>(null);
+  const [activities, setActivities] = useState<{[id: string]: Activity} | null>(null);
   const [page, setPage] = useState<number>(1);
-  const getActivities = useFetcher<[DetailedActivity[], boolean]>('activities.get');
+  const getActivities = useFetcher<[Activity[], boolean]>('activities.get');
 
   const fetchActivities = async (page: number, fetchNextPage = false, items?: number) => {
     const [activities, hasMore] = await getActivities(page, items);

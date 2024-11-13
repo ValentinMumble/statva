@@ -24,14 +24,14 @@ import {
   getTotalValue,
   getTypes,
 } from '../models';
-import {ActivityType, DetailedActivity, DetailedAthlete} from '../models/strava';
+import {ActivityType, Activity, Athlete} from '../models/strava';
 
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 const YEAR_GOAL_KM = 10000;
 
 type Stat = (
-  activities: DetailedActivity[],
-  athlete: DetailedAthlete
+  activities: Activity[],
+  athlete: Athlete
 ) => {
   label: ReactNode;
   helpText: ReactNode;

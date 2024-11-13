@@ -1,11 +1,8 @@
-import {DetailedActivity, ActivityType} from '../src/models/strava';
+import {Activity, ActivityType} from '../src/models/strava';
 
-const dummyActivity: DetailedActivity = {
+const dummyActivity: Activity = {
   resource_state: 2,
-  athlete: {
-    id: 11670816,
-    resource_state: 1,
-  },
+  athlete: {id: 11670816, resource_state: 1},
   name: 'N-Peloton #575 G2',
   distance: 111256,
   moving_time: 12271,
@@ -67,6 +64,6 @@ const dummyActivity: DetailedActivity = {
   suffer_score: 261,
 };
 
-const getActivity = (data: Partial<DetailedActivity>): DetailedActivity => ({...dummyActivity, ...data});
+const getActivity = (data: Partial<Activity>): Activity => ({...dummyActivity, ...data});
 
 export {getActivity};

@@ -1,9 +1,9 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
 import {FTPTest} from '../models';
-import {DetailedAthlete} from '../models/strava';
+import {Athlete} from '../models/strava';
 import {useFetcher} from '../hooks';
 
-const AthleteContext = createContext<[DetailedAthlete | null, FTPTest[], () => Promise<void>]>([
+const AthleteContext = createContext<[Athlete | null, FTPTest[], () => Promise<void>]>([
   null,
   [],
   () => Promise.resolve(),
@@ -14,9 +14,9 @@ type AthleteProviderProps = {
 };
 
 const AthleteProvider = ({children}: AthleteProviderProps) => {
-  const [athlete, setAthlete] = useState<DetailedAthlete | null>(null);
+  const [athlete, setAthlete] = useState<Athlete | null>(null);
   const [ftpTests, setFtpTests] = useState<FTPTest[]>([]);
-  const getAthlete = useFetcher<DetailedAthlete>('athlete.get');
+  const getAthlete = useFetcher<Athlete>('athlete.get');
   const getFTPTests = useFetcher<FTPTest[]>('ftp_tests.get');
 
   const fetchData = async () => {

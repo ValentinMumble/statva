@@ -1,5 +1,5 @@
 import {SortType, SortDirection, formatSpeed} from '../models';
-import {ActivityType, DetailedActivity} from './strava';
+import {ActivityType, Activity} from './strava';
 
 const ACTIVITY_URL = 'https://www.strava.com/activities/';
 
@@ -24,7 +24,7 @@ const getTypes = (type: ActivityType): ActivityType[] => {
   }
 };
 
-const getTotalValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
+const getTotalValue = (activities: Activity[], value: keyof Activity): number =>
   activities.reduce((total, activity) => {
     if (typeof activity[value] !== 'number') {
       return 0;
@@ -33,21 +33,21 @@ const getTotalValue = (activities: DetailedActivity[], value: keyof DetailedActi
     return (activity[value] as number) + total;
   }, 0);
 
-const getMaxValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
+const getMaxValue = (activities: Activity[], value: keyof Activity): number =>
   Math.max(...activities.map(activity => (activity[value] ?? 0) as number));
 
-const getAverageValue = (activities: DetailedActivity[], value: keyof DetailedActivity): number =>
+const getAverageValue = (activities: Activity[], value: keyof Activity): number =>
   activities
     .filter(activity => undefined !== activity[value])
     .reduce((total, activity, _index, activities) => total + (activity[value] as number) / activities.length, 0);
 
-const getRidesBeforeMonth = (rides: DetailedActivity[], date: Date) =>
+const getRidesBeforeMonth = (rides: Activity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
-const getRidesBetween = (rides: DetailedActivity[], from: Date, to: Date | null) =>
+const getRidesBetween = (rides: Activity[], from: Date, to: Date | null) =>
   rides.filter(ride => new Date(ride.start_date) >= from && new Date(ride.start_date) < (to ?? new Date()));
 
-const eddingtonNumber = (rides: DetailedActivity[]) => {
+const eddingtonNumber = (rides: Activity[]) => {
   const ridesPerDay = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
     const dateString = new Date(activity.start_date).toDateString();
     dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
@@ -82,9 +82,9 @@ const eddingtonNumber = (rides: DetailedActivity[]) => {
   return [eddingtonNumber, next];
 };
 
-const getActivityUrl = ({id}: DetailedActivity): string => `${ACTIVITY_URL}${id}`;
+const getActivityUrl = ({id}: Activity): string => `${ACTIVITY_URL}${id}`;
 
-const getHeartZone = ({average_heartrate = 0}: DetailedActivity, maxHeartrate = 190): number => {
+const getHeartZone = ({average_heartrate = 0}: Activity, maxHeartrate = 190): number => {
   switch (true) {
     case average_heartrate === 0:
       break;
@@ -126,7 +126,7 @@ const getPowerZone = (watts: number, ftp: number): number => {
   return 0;
 };
 
-const formatPaceOrSpeed = (activity: DetailedActivity, precision?: number, elapsed?: boolean): string => {
+const formatPaceOrSpeed = (activity: Activity, precision?: number, elapsed?: boolean): string => {
   const time = elapsed ? activity.elapsed_time : activity.moving_time;
 
   switch (activity.sport_type) {
@@ -155,7 +155,7 @@ const POOL_LENGTH = {
   dervallieres: 25,
 };
 
-const formatLaps = (activity: DetailedActivity): string => {
+const formatLaps = (activity: Activity): string => {
   const poolLength = Object.entries(POOL_LENGTH).reduce((distance, [key, value]) => {
     if (activity.name.toLowerCase().includes(key)) {
       return value;

@@ -2,7 +2,7 @@ import {Box, Skeleton, Table} from '@chakra-ui/react';
 import {Tooltip, Tag} from '../components/ui';
 import {ActivityIcon} from '../components';
 import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone} from '../models';
-import {DetailedActivity} from '../models/strava';
+import {Activity} from '../models/strava';
 import {useLabels} from '../hooks';
 
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
@@ -22,7 +22,7 @@ const MONTH_COLORS = [
   '#00FF7F15', // Spring Green
 ];
 
-const getBgColor = (bgOption: string, activity: DetailedActivity, ftp: number): string => {
+const getBgColor = (bgOption: string, activity: Activity, ftp: number): string => {
   switch (bgOption) {
     case 'average_watts':
       return POWER_COLORS[getPowerZone(activity.weighted_average_watts ?? 0, ftp)];
@@ -35,7 +35,7 @@ const getBgColor = (bgOption: string, activity: DetailedActivity, ftp: number): 
 };
 
 type ActivityListItemProps = {
-  activity: DetailedActivity | null;
+  activity: Activity | null;
   enabledSorts: SortType[];
   bgOption: string;
   getFtp: GetFtp;

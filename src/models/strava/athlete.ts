@@ -1,0 +1,41 @@
+import {SummaryClub, SummaryGear} from '.';
+import {FollowerStatus} from './follower-status';
+import {ResourceState} from './resource-state';
+import {UnitSystem} from './unit-system';
+
+export interface Athlete {
+  athlete_type: number;
+  badge_type_id: number;
+  bikes: SummaryGear[];
+  bio: string;
+  blocked: boolean;
+  can_follow: boolean;
+  city: string;
+  clubs: SummaryClub[];
+  country: string;
+  created_at: Date;
+  date_preference: string;
+  firstname: string;
+  follower_count: number;
+  follower: FollowerStatus;
+  friend_count: number;
+  friend: FollowerStatus;
+  ftp: number;
+  id: number;
+  is_winback_via_upload: boolean;
+  is_winback_via_view: boolean;
+  lastname: string;
+  measurement_preference: UnitSystem;
+  mutual_friend_count: number;
+  postable_clubs_count: number;
+  premium: boolean;
+  profile_medium: string;
+  profile: string;
+  resource_state: ResourceState;
+  sex: string;
+  shoes: SummaryGear[];
+  state: string;
+  summit: boolean;
+  updated_at: Date;
+  weight: number;
+}
