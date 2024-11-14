@@ -12,7 +12,6 @@ import {
   Timeframe,
   TIMEFRAMES,
 } from '../../models';
-import {ActivityType} from '../../models/strava';
 
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
@@ -29,7 +28,7 @@ const MonthChart = ({data, formatter, filter, timeframe: initialTimeframe = 'mon
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: getTypes(type as ActivityType),
+    includedActivityTypes: getTypes(type),
     ...filter,
   });
   const [label] = useLabels();

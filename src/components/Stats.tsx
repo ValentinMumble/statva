@@ -204,7 +204,7 @@ const Stats = () => {
   const athlete = useAthlete();
   const [activities] = useActivities({
     withPrivate: true,
-    includedActivityTypes: getTypes(TYPES[typeIndex] as ActivityType),
+    includedActivityTypes: getTypes(TYPES[typeIndex]),
   });
 
   const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);

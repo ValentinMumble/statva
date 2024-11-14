@@ -4,21 +4,17 @@ const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ITEMS_PER_PAGE = 150;
 
-const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
-const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
-const refreshToken = import.meta.env.VITE_STRAVA_REFRESH_TOKEN;
-
 let token: string | null = null;
 let tokenTimestamp: number = 0;
 
-const isTokenExpired = () => tokenTimestamp + 6 * 3600 * 1000 < Date.now();
+const isTokenExpired = () => tokenTimestamp + 6 * 3600 * 1000 < Date.now(); // 6 hours
 
 const fetchAccessToken = async () => {
   if (null === token || isTokenExpired()) {
     const body = JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      refresh_token: refreshToken,
+      client_id: import.meta.env.VITE_STRAVA_CLIENT_ID,
+      client_secret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
+      refresh_token: import.meta.env.VITE_STRAVA_REFRESH_TOKEN,
       grant_type: 'refresh_token',
     });
 

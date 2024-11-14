@@ -36,16 +36,16 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
 
 const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
   const emptyValues: {[period: string]: any} = {};
-  const {maxValue, getDatePeriod, separator} = TIMEFRAMES[timeframe];
+  const {maxValue, getDatePeriod, separator, getPeriodKey} = TIMEFRAMES[timeframe];
 
   for (let year = firstDate.getUTCFullYear(); year <= lastDate.getUTCFullYear(); year++) {
     let maxPeriod = maxValue;
     maxPeriod = year === lastDate.getUTCFullYear() ? getDatePeriod(lastDate) : maxPeriod;
 
     if ('day' === timeframe) {
-      for (let month = 1; month <= TIMEFRAMES['month'].maxValue; month++) {
+      for (let month = 1; month <= TIMEFRAMES['month'].getDatePeriod(lastDate); month++) {
         for (let day = 1; day <= maxPeriod; day++) {
-          emptyValues[`${year}${separator}${month}${separator}${day}`] = emptyValue;
+          emptyValues[getPeriodKey(new Date(`${year}-${month}-${day}`))] = emptyValue;
         }
       }
     } else {

@@ -1,8 +1,6 @@
 import {SortType, SortDirection, formatSpeed} from '../models';
 import {ActivityType, Activity} from './strava';
 
-const ACTIVITY_URL = 'https://www.strava.com/activities/';
-
 type ActivityFilter = {
   search?: string;
   sort?: SortType;
@@ -15,12 +13,12 @@ type ActivityFilter = {
   minTime?: number;
 };
 
-const getTypes = (type: ActivityType): ActivityType[] => {
+const getTypes = (type: ActivityType | string): ActivityType[] => {
   switch (type) {
     case ActivityType.Ride:
       return [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
     default:
-      return [type];
+      return [type as ActivityType];
   }
 };
 
@@ -82,7 +80,7 @@ const eddingtonNumber = (rides: Activity[]) => {
   return [eddingtonNumber, next];
 };
 
-const getActivityUrl = ({id}: Activity): string => `${ACTIVITY_URL}${id}`;
+const getActivityUrl = ({id}: Activity): string => `https://www.strava.com/activities/${id}`;
 
 const getHeartZone = ({average_heartrate = 0}: Activity, maxHeartrate = 190): number => {
   switch (true) {
