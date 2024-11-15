@@ -51,4 +51,4 @@ const isBatteryEvent = (event: Event): event is BatteryEvent => 'battery' === ev
 const isBrakePadEvent = (event: Event): event is BrakePadEvent => 'brake_pad' === event.type;
 
 export {getEventLabel, isBatteryEvent, isChainEvent, isTireEvent, isBrakePadEvent};
-export type {BatteryEvent, ChainEvent, TireEvent, Event};
+export type {BatteryEvent, ChainEvent, TireEvent, Event, BrakePadEvent};
