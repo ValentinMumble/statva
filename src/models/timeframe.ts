@@ -24,14 +24,16 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
     maxValue: 52,
     separator: '-',
     getDatePeriod: date => getWeekNumber(date),
-    getPeriodKey: date => `${date.getUTCFullYear()}${TIMEFRAMES.week.separator}${getWeekNumber(date)}`,
+    getPeriodKey: date =>
+      `${date.getUTCFullYear()}${TIMEFRAMES.week.separator}${getWeekNumber(date).toString().padStart(2, '0')}`,
   },
   month: {
     initialItemCount: 15,
     maxValue: 12,
     separator: '/',
     getDatePeriod: date => date.getUTCMonth() + 1,
-    getPeriodKey: date => `${date.getUTCFullYear()}${TIMEFRAMES.month.separator}${date.getUTCMonth() + 1}`,
+    getPeriodKey: date =>
+      `${date.getUTCFullYear()}${TIMEFRAMES.month.separator}${(date.getUTCMonth() + 1).toString().padStart(2, '0')}`,
   },
 };
 
@@ -54,7 +56,7 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
       }
     } else {
       for (let period = 1; period <= maxPeriod; period++) {
-        emptyValues[`${year}${separator}${period}`] = emptyValue;
+        emptyValues[`${year}${separator}${period.toString().padStart(2, '0')}`] = emptyValue;
       }
     }
   }
@@ -72,7 +74,9 @@ const buildPeriodMap = (activities: Activity[], timeframe: Timeframe, data: keyo
 
         return periodMap;
       }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
-    ).slice(-itemCount)
+    )
+      .slice(-itemCount)
+      .sort()
   );
 };
 
