@@ -49,9 +49,11 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
     if ('day' === timeframe) {
       const maxMonth = TIMEFRAMES['month'].getDatePeriod(lastDate);
       for (let month = 1; month <= maxMonth; month++) {
-        const maxDay = month === maxMonth ? maxPeriod : getDaysInMonth(month, year);
+        const maxDay = month === maxMonth ? lastDate.getDate() : getDaysInMonth(month, year);
         for (let day = 1; day <= maxDay; day++) {
-          emptyValues[getPeriodKey(new Date(`${year}-${month}-${day}`))] = emptyValue;
+          emptyValues[
+            getPeriodKey(new Date(`${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`))
+          ] = emptyValue;
         }
       }
     } else {
@@ -64,8 +66,8 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
   return emptyValues;
 };
 
-const buildPeriodMap = (activities: Activity[], timeframe: Timeframe, data: keyof Activity, itemCount: number) => {
-  return Object.fromEntries(
+const buildPeriodMap = (activities: Activity[], timeframe: Timeframe, data: keyof Activity, itemCount: number) =>
+  Object.fromEntries(
     Object.entries(
       activities.reduce((periodMap: {[period: string]: number}, activity) => {
         const date = new Date(activity.start_date);
@@ -75,10 +77,9 @@ const buildPeriodMap = (activities: Activity[], timeframe: Timeframe, data: keyo
         return periodMap;
       }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
     )
-      .slice(-itemCount)
       .sort()
+      .slice(-itemCount)
   );
-};
 
 //TODO not export generatePeriodKeys
 export {generatePeriodKeys, buildPeriodMap, TIMEFRAMES};
