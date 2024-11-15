@@ -12,7 +12,7 @@ const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
-    includedActivityTypes: getTypes(ActivityType.Ride),
+    includedActivityTypes: getTypes(ActivityType.Ride, ActivityType.Run),
   });
 
   const dataPerGear = (activities ?? []).reduce((gearMap: {[gearId: string]: number}, activity) => {

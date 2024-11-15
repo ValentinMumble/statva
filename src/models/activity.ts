@@ -13,14 +13,18 @@ type ActivityFilter = {
   minTime?: number;
 };
 
-const getTypes = (type: ActivityType | string): ActivityType[] => {
-  switch (type) {
-    case ActivityType.Ride:
-      return [ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
-    default:
-      return [type as ActivityType];
-  }
-};
+const getTypes = (...types: (ActivityType | string)[]): ActivityType[] => [
+  ...new Set(
+    types.reduce((types: ActivityType[], type) => {
+      switch (type) {
+        case ActivityType.Ride:
+          return [...types, ActivityType.Ride, ActivityType.GravelRide, ActivityType.VirtualRide];
+        default:
+          return [...types, type as ActivityType];
+      }
+    }, [])
+  ),
+];
 
 const getTotalValue = (activities: Activity[], value: keyof Activity): number =>
   activities.reduce((total, activity) => {

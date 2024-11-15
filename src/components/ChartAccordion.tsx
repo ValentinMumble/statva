@@ -53,15 +53,15 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <EddingtonChart />,
   },
   {
-    label: 'Distance / bike 🚲',
+    label: 'Distance / gear 📍',
     component: <GearChart data="distance" formatter={value => formatDistance(value, 0)} type="pie" />,
   },
   {
-    label: 'Time / bike ⏱️',
+    label: 'Time / gear ⏱️',
     component: <GearChart data="moving_time" formatter={formatDuration} type="pie" />,
   },
   {
-    label: 'D+ / bike ⛰️',
+    label: 'D+ / gear ⛰️',
     component: <GearChart data="total_elevation_gain" formatter={formatElevation} type="pie" />,
   },
   {

@@ -64,6 +64,6 @@ const dummyActivity: Activity = {
   suffer_score: 261,
 };
 
-const getActivity = (data: Partial<Activity>): Activity => ({...dummyActivity, ...data});
+const getActivity = (data?: Partial<Activity>): Activity => ({...dummyActivity, ...data});
 
 export {getActivity};
