@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, generatePeriodKeys, getOptions, labelCollection, Timeframe, TIMEFRAMES} from '../../models';
+import {aggregateActivityTypeCount, ChartProps, getOptions, labelCollection, Timeframe, TIMEFRAMES} from '../../models';
 import {Checkbox, SegmentedControl, StepperInput} from '../ui';
 import {Group} from '@chakra-ui/react';
 import {TbBusStop} from 'react-icons/tb';
@@ -31,27 +31,10 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
 
   const toggleWithCommute = () => setWithCommute(withCommute => !withCommute);
 
-  const dataPerPeriod = (activities ?? []).reduce(
-    (periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
-      const date = new Date(activity.start_date);
-      const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
-      const data = periodMap[periodKey] ?? {};
-      const key = activity.commute ? 'Commute' : activity.sport_type;
-      periodMap[periodKey] = {...data, [key]: (data[key] ?? 0) + 1};
+  const dataPerPeriod = aggregateActivityTypeCount(activities ?? [], timeframe, itemCount);
+  const labels = Object.keys(dataPerPeriod).map(key => label(key));
 
-      return periodMap;
-    },
-    generatePeriodKeys(
-      new Date((activities ?? []).at(0)?.start_date ?? 0),
-      new Date((activities ?? []).at(-1)?.start_date ?? 0),
-      timeframe
-    )
-  );
-
-  const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = Object.keys(sliced).map(key => label(key));
-
-  const distinctTypes: string[] = Object.values(sliced).reduce(
+  const distinctTypes: string[] = Object.values(dataPerPeriod).reduce(
     (types: string[], entry: {[type: string]: number} | null) =>
       null === entry ? types : [...new Set([...types, ...Object.keys(entry)])],
     []
@@ -59,7 +42,7 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
 
   const series = distinctTypes.map(type => ({
     name: type,
-    data: Object.values(sliced).map(value => value?.[type] ?? null),
+    data: Object.values(dataPerPeriod).map(value => value?.[type] ?? null),
   }));
 
   return (

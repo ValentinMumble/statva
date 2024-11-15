@@ -1,5 +1,5 @@
 import {buildActivity} from '../../test/test-util';
-import {buildPeriodMap, generatePeriodKeys} from './timeframe';
+import {aggregateTimeframeData, generatePeriodKeys} from './timeframe';
 
 test('it can generate period keys for months', () => {
   expect(generatePeriodKeys(new Date('2023-10-03'), new Date('2024-03-07'), 'month')).toEqual({
@@ -52,7 +52,7 @@ test('it can generate period keys for days', () => {
   });
 });
 
-test('it can build a period map for months', () => {
+test('it can aggregate data indexed by months', () => {
   const activities = [
     buildActivity({start_date: '2024-03-01', distance: 1000}),
     buildActivity({start_date: '2024-05-01', distance: 2000}),
@@ -60,7 +60,7 @@ test('it can build a period map for months', () => {
     buildActivity({start_date: '2024-07-01', distance: 3000}),
   ];
 
-  expect(buildPeriodMap(activities, 'month', 'distance', 10)).toEqual({
+  expect(aggregateTimeframeData(activities, 'month', 'distance', 10)).toEqual({
     '2024/01': 0,
     '2024/02': 0,
     '2024/03': 1000,
@@ -71,7 +71,7 @@ test('it can build a period map for months', () => {
   });
 });
 
-test('it can build a period map for weeks', () => {
+test('it can aggregate data indexed by weeks', () => {
   const activities = [
     buildActivity({start_date: '2024-01-20', distance: 1000}),
     buildActivity({start_date: '2024-02-03', distance: 2000}),
@@ -79,7 +79,7 @@ test('it can build a period map for weeks', () => {
     buildActivity({start_date: '2024-03-02', distance: 3000}),
   ];
 
-  expect(buildPeriodMap(activities, 'week', 'distance', 10)).toEqual({
+  expect(aggregateTimeframeData(activities, 'week', 'distance', 10)).toEqual({
     '2024-01': 0,
     '2024-02': 0,
     '2024-03': 1000,
@@ -92,7 +92,7 @@ test('it can build a period map for weeks', () => {
   });
 });
 
-test('it can build a period map for days', async () => {
+test('it can aggregate data indexed by days', async () => {
   const activities = [
     buildActivity({start_date: '2023-02-20', distance: 1000}),
     buildActivity({start_date: '2024-02-20', distance: 1000}),
@@ -100,7 +100,7 @@ test('it can build a period map for days', async () => {
     buildActivity({start_date: '2024-03-02', distance: 3000}),
   ];
 
-  expect(buildPeriodMap(activities, 'day', 'distance', 13)).toEqual({
+  expect(aggregateTimeframeData(activities, 'day', 'distance', 13)).toEqual({
     '2024/02/19': 0,
     '2024/02/20': 2000,
     '2024/02/21': 0,

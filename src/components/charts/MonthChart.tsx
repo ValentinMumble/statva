@@ -3,7 +3,15 @@ import Chart from 'react-apexcharts';
 import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {SegmentedControl, StepperInput} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
-import {buildPeriodMap, ChartProps, getOptions, getTypes, labelCollection, Timeframe, TIMEFRAMES} from '../../models';
+import {
+  aggregateTimeframeData,
+  ChartProps,
+  getOptions,
+  getTypes,
+  labelCollection,
+  Timeframe,
+  TIMEFRAMES,
+} from '../../models';
 
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
@@ -31,7 +39,7 @@ const MonthChart = ({data, formatter, filter, timeframe: initialTimeframe = 'mon
     setItemCount(TIMEFRAMES[newTimeframe].initialItemCount);
   };
 
-  const dataPerPeriod = buildPeriodMap(activities ?? [], timeframe, data, itemCount);
+  const dataPerPeriod = aggregateTimeframeData(activities ?? [], timeframe, data, itemCount);
   const labels = Object.keys(dataPerPeriod).map(key => label(key));
   const series = [{name: label(data), data: Object.values(dataPerPeriod)}];
 

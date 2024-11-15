@@ -66,7 +66,12 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
   return emptyValues;
 };
 
-const buildPeriodMap = (activities: Activity[], timeframe: Timeframe, data: keyof Activity, itemCount: number) =>
+const aggregateTimeframeData = (
+  activities: Activity[],
+  timeframe: Timeframe,
+  data: keyof Activity,
+  itemCount: number
+) =>
   Object.fromEntries(
     Object.entries(
       activities.reduce((periodMap: {[period: string]: number}, activity) => {
@@ -81,6 +86,23 @@ const buildPeriodMap = (activities: Activity[], timeframe: Timeframe, data: keyo
       .slice(-itemCount)
   );
 
-//TODO not export generatePeriodKeys
-export {generatePeriodKeys, buildPeriodMap, TIMEFRAMES};
+//TODO unit test
+const aggregateActivityTypeCount = (activities: Activity[], timeframe: Timeframe, itemCount: number) =>
+  Object.fromEntries(
+    Object.entries(
+      activities.reduce((periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
+        const date = new Date(activity.start_date);
+        const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
+        const data = periodMap[periodKey] ?? {};
+        const key = activity.commute ? 'Commute' : activity.sport_type;
+        periodMap[periodKey] = {...data, [key]: (data[key] ?? 0) + 1};
+
+        return periodMap;
+      }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
+    )
+      .sort()
+      .slice(-itemCount)
+  );
+
+export {generatePeriodKeys, aggregateTimeframeData, aggregateActivityTypeCount, TIMEFRAMES};
 export type {Timeframe};
