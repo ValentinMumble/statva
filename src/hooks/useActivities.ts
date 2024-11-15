@@ -22,7 +22,10 @@ const useActivities = ({
     null === activities
       ? null
       : activities
-          .filter(({commute}) => commute === false || true === withCommute)
+          .filter(
+            ({commute}) =>
+              true === withCommute || ('only' === withCommute && commute) || (false === withCommute && !commute)
+          )
           .filter(activity => activity.private === false || true === withPrivate)
           .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
           .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))

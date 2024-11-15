@@ -12,7 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import {BsDatabaseDown} from 'react-icons/bs';
-import {HiArrowDown, HiArrowUp, HiOutlineLockClosed, HiOutlineLockOpen} from 'react-icons/hi2';
+import {HiArrowDown, HiArrowUp, HiLockClosed} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
 import {Tooltip, InputGroup, Switch, Skeleton, Tag, SegmentedControl} from './components/ui';
 import {
@@ -33,6 +33,7 @@ const BG_COLLECTION = ['date', 'average_watts', 'average_heartrate'];
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
+  const [withCommute, setWithCommute] = useState<boolean | 'only'>(true);
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
   const [types, setTypes] = useState<ActivityType[] | null>(null);
@@ -52,6 +53,7 @@ const App = () => {
     includedActivityTypes: types ?? undefined,
     sort: activeSort,
     withPrivate,
+    withCommute,
     gearId: gearIds[0],
     years: 0 === yearRange.length ? [] : range(yearRange.at(0), yearRange.at(-1)),
     sortDirection,
@@ -61,9 +63,10 @@ const App = () => {
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
-  const handleSearchClear = () => {
+  const handleResetFilters = () => {
     setFiltersOpen(false);
     setWithPrivate(false);
+    setWithCommute(true);
     setSearch('');
     setTypes(null);
     setActiveSort('date');
@@ -110,7 +113,7 @@ const App = () => {
               flex={1}
               endElement={
                 <>
-                  <IconButton title="Clear" variant="ghost" size="xs" onClick={handleSearchClear}>
+                  <IconButton title="Clear" variant="ghost" size="xs" onClick={handleResetFilters}>
                     <MdClear />
                   </IconButton>
                   {activities?.length ?? 0}
@@ -131,8 +134,8 @@ const App = () => {
               items={labelCollection(BG_COLLECTION, label).items}
             />
             <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
-            <IconButton variant="ghost" onClick={handlePrivateToggle} title="With private">
-              {withPrivate ? <HiOutlineLockClosed /> : <HiOutlineLockOpen />}
+            <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
+              <HiLockClosed />
             </IconButton>
             <IconButton variant="ghost" onClick={handleRefetch}>
               <BsDatabaseDown />
@@ -150,7 +153,12 @@ const App = () => {
           </Group>
           <Collapsible.Content padding="20px 0" display="flex" flexDirection="column" gap="30px">
             <HStack paddingRight="20px" gap="40px">
-              <ActivityTypeFilter types={types} onTypesChange={setTypes} />
+              <ActivityTypeFilter
+                types={types}
+                onTypesChange={setTypes}
+                withCommute={withCommute}
+                onWithCommuteChange={setWithCommute}
+              />
               <YearRangeSlider value={yearRange} onChange={setYearRange} />
             </HStack>
             <HStack justifyContent="space-between">

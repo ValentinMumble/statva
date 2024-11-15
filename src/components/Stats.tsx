@@ -47,6 +47,62 @@ const STATS: {[key: string]: Stat[][]} = {
         helpText: 'Rides',
         value: activities.length,
       }),
+      activities => {
+        const [eddington, next] = eddingtonNumber(activities);
+
+        return {
+          label: '🧸',
+          helpText: 'Eddington №',
+          info: `${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`,
+          value: (
+            <span>
+              {eddington}
+              <StatUpTrend marginLeft={5}>{next}</StatUpTrend>
+            </span>
+          ),
+        };
+      },
+      activities => ({
+        label: '⏱️',
+        helpText: 'Spent riding',
+        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
+        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
+      }),
+      activities => ({
+        label: '🥾',
+        helpText: 'Gran Fondos',
+        value: activities.filter(({distance}) => distance >= 100 * 1000).length,
+      }),
+      activities => ({
+        label: '⛰️',
+        helpText: 'Total D+',
+        value: formatDistance(getTotalValue(activities, 'total_elevation_gain')),
+        info: `This year: ${formatDistance(
+          getTotalValue(
+            activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+            'total_elevation_gain'
+          )
+        )}`,
+      }),
+      activities => ({
+        label: '💼',
+        helpText: 'Commuting',
+        value: formatDistance(
+          getTotalValue(
+            activities.filter(({commute}) => commute),
+            'distance'
+          )
+        ),
+        info: formatDuration(
+          getTotalValue(
+            activities.filter(({commute}) => commute),
+            'moving_time'
+          ),
+          true
+        ),
+      }),
+    ],
+    [
       activities => ({
         label: '📍',
         helpText: 'Distance ridden',
@@ -80,30 +136,6 @@ const STATS: {[key: string]: Stat[][]} = {
         };
       },
       activities => ({
-        label: '⛰️',
-        helpText: 'Total D+',
-        value: formatDistance(getTotalValue(activities, 'total_elevation_gain')),
-        info: `This year: ${formatDistance(
-          getTotalValue(
-            activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
-            'total_elevation_gain'
-          )
-        )}`,
-      }),
-      activities => ({
-        label: '🥾',
-        helpText: 'Gran Fondos',
-        value: activities.filter(({distance}) => distance >= 100 * 1000).length,
-      }),
-    ],
-    [
-      activities => ({
-        label: '⏱️',
-        helpText: 'Spent riding',
-        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
-        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
-      }),
-      activities => ({
         label: '🍕',
         helpText: 'Calories burned',
         value: formatCalories(getTotalValue(activities, 'kilojoules'), false),
@@ -124,21 +156,6 @@ const STATS: {[key: string]: Stat[][]} = {
         info: `${athlete.weight} kg`,
         value: `${athlete.ftp} 〰 ${(athlete.ftp / athlete.weight).toFixed(1)}`,
       }),
-      activities => {
-        const [eddington, next] = eddingtonNumber(activities);
-
-        return {
-          label: '🧸',
-          helpText: 'Eddington №',
-          info: `${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`,
-          value: (
-            <span>
-              {eddington}
-              <StatUpTrend marginLeft={5}>{next}</StatUpTrend>
-            </span>
-          ),
-        };
-      },
     ],
   ],
   Run: [

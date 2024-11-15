@@ -8,7 +8,7 @@ type ActivityFilter = {
   includedActivityTypes?: ActivityType[];
   gearId?: string;
   years?: number[];
-  withCommute?: boolean;
+  withCommute?: boolean | 'only';
   withPrivate: boolean;
   minTime?: number;
 };
