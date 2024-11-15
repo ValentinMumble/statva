@@ -1,4 +1,4 @@
-import {getActivity} from '../../test/test-util';
+import {buildActivity} from '../../test/test-util';
 import {sortActivities} from './activity-sort';
 
 const getFtp = () => 250;
@@ -8,8 +8,8 @@ test('it can sort activities by date', async () => {
     sortActivities(
       'date',
       'desc',
-      getActivity({start_date: '2024-02-02'}),
-      getActivity({start_date: '2023-02-02'}),
+      buildActivity({start_date: '2024-02-02'}),
+      buildActivity({start_date: '2023-02-02'}),
       getFtp
     )
   ).toBe(-1);
@@ -18,8 +18,8 @@ test('it can sort activities by date', async () => {
     sortActivities(
       'date',
       'desc',
-      getActivity({start_date: '2023-02-02'}),
-      getActivity({start_date: '2024-02-02'}),
+      buildActivity({start_date: '2023-02-02'}),
+      buildActivity({start_date: '2024-02-02'}),
       getFtp
     )
   ).toBe(1);
@@ -28,8 +28,8 @@ test('it can sort activities by date', async () => {
     sortActivities(
       'date',
       'asc',
-      getActivity({start_date: '2023-02-02'}),
-      getActivity({start_date: '2024-02-02'}),
+      buildActivity({start_date: '2023-02-02'}),
+      buildActivity({start_date: '2024-02-02'}),
       getFtp
     )
   ).toBe(-1);

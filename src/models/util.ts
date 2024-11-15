@@ -64,19 +64,23 @@ const backup = (array: {id: string}[]): string =>
     }, {})
   );
 
-export {
-  arrayRotate,
-  backup,
-  formatCalories,
-  formatDistance,
-  formatDuration,
-  formatDurationInDays,
-  formatElevation,
-  formatSpeed,
-  formatPercent,
-  formatPower,
-  getWeekNumber,
-  KJ_TO_CAL_RATIO,
-  range,
-  removeNull,
-};
+  const getDaysInMonth = (month: number, year: number) =>
+    month === 2 ? (year & 3 || (!(year % 25) && year & 15) ? 28 : 29) : 30 + ((month + (month >> 3)) & 1);
+
+  export {
+    arrayRotate,
+    backup,
+    formatCalories,
+    formatDistance,
+    formatDuration,
+    formatDurationInDays,
+    formatElevation,
+    formatSpeed,
+    formatPercent,
+    formatPower,
+    getDaysInMonth,
+    getWeekNumber,
+    KJ_TO_CAL_RATIO,
+    range,
+    removeNull,
+  };

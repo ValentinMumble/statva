@@ -1,4 +1,5 @@
-import {getWeekNumber} from './util';
+import {Activity} from './strava';
+import {getDaysInMonth, getWeekNumber} from './util';
 
 type Timeframe = 'day' | 'month' | 'week';
 
@@ -35,6 +36,7 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
 };
 
 const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
+  //TODO try to remove any
   const emptyValues: {[period: string]: any} = {};
   const {maxValue, getDatePeriod, separator, getPeriodKey} = TIMEFRAMES[timeframe];
 
@@ -43,8 +45,10 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
     maxPeriod = year === lastDate.getUTCFullYear() ? getDatePeriod(lastDate) : maxPeriod;
 
     if ('day' === timeframe) {
-      for (let month = 1; month <= TIMEFRAMES['month'].getDatePeriod(lastDate); month++) {
-        for (let day = 1; day <= maxPeriod; day++) {
+      const maxMonth = TIMEFRAMES['month'].getDatePeriod(lastDate);
+      for (let month = 1; month <= maxMonth; month++) {
+        const maxDay = month === maxMonth ? maxPeriod : getDaysInMonth(month, year);
+        for (let day = 1; day <= maxDay; day++) {
           emptyValues[getPeriodKey(new Date(`${year}-${month}-${day}`))] = emptyValue;
         }
       }
@@ -58,5 +62,20 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
   return emptyValues;
 };
 
-export {generatePeriodKeys, TIMEFRAMES};
+const buildPeriodMap = (activities: Activity[], timeframe: Timeframe, data: keyof Activity, itemCount: number) => {
+  return Object.fromEntries(
+    Object.entries(
+      activities.reduce((periodMap: {[period: string]: number}, activity) => {
+        const date = new Date(activity.start_date);
+        const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
+        periodMap[periodKey] = (periodMap[periodKey] ?? 0) + (activity[data] as number);
+
+        return periodMap;
+      }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
+    ).slice(-itemCount)
+  );
+};
+
+//TODO not export generatePeriodKeys
+export {generatePeriodKeys, buildPeriodMap, TIMEFRAMES};
 export type {Timeframe};

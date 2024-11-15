@@ -3,15 +3,7 @@ import Chart from 'react-apexcharts';
 import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {SegmentedControl, StepperInput} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
-import {
-  ChartProps,
-  generatePeriodKeys,
-  getOptions,
-  getTypes,
-  labelCollection,
-  Timeframe,
-  TIMEFRAMES,
-} from '../../models';
+import {buildPeriodMap, ChartProps, getOptions, getTypes, labelCollection, Timeframe, TIMEFRAMES} from '../../models';
 
 const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
 
@@ -39,17 +31,9 @@ const MonthChart = ({data, formatter, filter, timeframe: initialTimeframe = 'mon
     setItemCount(TIMEFRAMES[newTimeframe].initialItemCount);
   };
 
-  const dataPerPeriod = (activities ?? []).reduce((periodMap: {[period: string]: number}, activity) => {
-    const date = new Date(activity.start_date);
-    const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
-    periodMap[periodKey] = (periodMap[periodKey] ?? 0) + (activity[data] as number);
-
-    return periodMap;
-  }, generatePeriodKeys(new Date((activities ?? []).at(0)?.start_date ?? 0), new Date((activities ?? []).at(-1)?.start_date ?? 0), timeframe));
-
-  const sliced = Object.fromEntries(Object.entries(dataPerPeriod).slice(-itemCount));
-  const labels = Object.keys(sliced).map(key => label(key));
-  const series = [{name: label(data), data: Object.values(sliced)}];
+  const dataPerPeriod = buildPeriodMap(activities ?? [], timeframe, data, itemCount);
+  const labels = Object.keys(dataPerPeriod).map(key => label(key));
+  const series = [{name: label(data), data: Object.values(dataPerPeriod)}];
 
   return (
     <>
