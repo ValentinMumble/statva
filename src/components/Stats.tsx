@@ -19,8 +19,11 @@ import {
   formatDistance,
   formatDuration,
   formatDurationInDays,
+  formatPower,
   formatSpeed,
+  getAverageValue,
   getMaxValue,
+  getMonthDiff,
   getTotalValue,
   getTypes,
 } from '../models';
@@ -47,62 +50,6 @@ const STATS: {[key: string]: Stat[][]} = {
         helpText: 'Rides',
         value: activities.length,
       }),
-      activities => {
-        const [eddington, next] = eddingtonNumber(activities);
-
-        return {
-          label: '🧸',
-          helpText: 'Eddington №',
-          info: `${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`,
-          value: (
-            <span>
-              {eddington}
-              <StatUpTrend marginLeft={5}>{next}</StatUpTrend>
-            </span>
-          ),
-        };
-      },
-      activities => ({
-        label: '⏱️',
-        helpText: 'Spent riding',
-        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
-        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
-      }),
-      activities => ({
-        label: '🥾',
-        helpText: 'Gran Fondos',
-        value: activities.filter(({distance}) => distance >= 100 * 1000).length,
-      }),
-      activities => ({
-        label: '⛰️',
-        helpText: 'Total D+',
-        value: formatDistance(getTotalValue(activities, 'total_elevation_gain')),
-        info: `This year: ${formatDistance(
-          getTotalValue(
-            activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
-            'total_elevation_gain'
-          )
-        )}`,
-      }),
-      activities => ({
-        label: '💼',
-        helpText: 'Commuting',
-        value: formatDistance(
-          getTotalValue(
-            activities.filter(({commute}) => commute),
-            'distance'
-          )
-        ),
-        info: formatDuration(
-          getTotalValue(
-            activities.filter(({commute}) => commute),
-            'moving_time'
-          ),
-          true
-        ),
-      }),
-    ],
-    [
       activities => ({
         label: '📍',
         helpText: 'Distance ridden',
@@ -136,6 +83,42 @@ const STATS: {[key: string]: Stat[][]} = {
         };
       },
       activities => ({
+        label: '⛰️',
+        helpText: 'Total D+',
+        value: formatDistance(getTotalValue(activities, 'total_elevation_gain')),
+        info: `This year: ${formatDistance(
+          getTotalValue(
+            activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear()),
+            'total_elevation_gain'
+          )
+        )}`,
+      }),
+      activities => ({
+        label: '🚎',
+        helpText: 'Commuting',
+        value: formatDistance(
+          getTotalValue(
+            activities.filter(({commute}) => commute),
+            'distance'
+          )
+        ),
+        info: formatDuration(
+          getTotalValue(
+            activities.filter(({commute}) => commute),
+            'moving_time'
+          ),
+          true
+        ),
+      }),
+    ],
+    [
+      activities => ({
+        label: '⏱️',
+        helpText: 'Spent riding',
+        info: formatDuration(getTotalValue(activities, 'moving_time'), true),
+        value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
+      }),
+      activities => ({
         label: '🍕',
         helpText: 'Calories burned',
         value: formatCalories(getTotalValue(activities, 'kilojoules'), false),
@@ -155,6 +138,76 @@ const STATS: {[key: string]: Stat[][]} = {
         helpText: 'FTP: W 〰 W/kg',
         info: `${athlete.weight} kg`,
         value: `${athlete.ftp} 〰 ${(athlete.ftp / athlete.weight).toFixed(1)}`,
+      }),
+      activities => ({
+        label: '🥾',
+        helpText: 'Gran Fondos',
+        value: activities.filter(({distance}) => distance >= 100 * 1000).length,
+      }),
+    ],
+    [
+      activities => {
+        const [eddington, next] = eddingtonNumber(activities);
+
+        return {
+          label: '🧸',
+          helpText: 'Eddington №',
+          info: `${next} ride${1 < next ? 's' : ''} ≥ ${eddington + 1} km for next level`,
+          value: (
+            <span>
+              {eddington}
+              <StatUpTrend marginLeft={5}>{next}</StatUpTrend>
+            </span>
+          ),
+        };
+      },
+      activities => ({
+        label: '🚲',
+        helpText: 'N-P count',
+        value: activities.filter(({name}) => name.includes('N-Peloton')).length,
+      }),
+      activities => {
+        const npRides = activities.filter(({name}) => name.includes('N-Peloton'));
+        const monthDiff = getMonthDiff(
+          new Date(npRides.at(0)?.start_date ?? 0),
+          new Date(npRides.at(-1)?.start_date ?? 0)
+        );
+
+        return {
+          label: '🎚️',
+          helpText: 'N-P / month',
+          value: (npRides.length / monthDiff).toFixed(1),
+        };
+      },
+      activities => ({
+        label: '📍',
+        helpText: 'N-P distance',
+        value: formatDistance(
+          getTotalValue(
+            activities.filter(({name}) => name.includes('N-Peloton')),
+            'distance'
+          )
+        ),
+      }),
+      activities => ({
+        label: '🏁',
+        helpText: 'N-P avg speed',
+        value: formatSpeed(
+          getAverageValue(
+            activities.filter(({name}) => name.includes('N-Peloton')),
+            'average_speed'
+          )
+        ),
+      }),
+      activities => ({
+        label: '🏋',
+        helpText: 'N-P avg power',
+        value: formatPower(
+          getAverageValue(
+            activities.filter(({name}) => name.includes('N-Peloton')),
+            'weighted_average_watts'
+          )
+        ),
       }),
     ],
   ],
@@ -222,6 +275,8 @@ const Stats = () => {
   const [activities] = useActivities({
     withPrivate: true,
     includedActivityTypes: getTypes(TYPES[typeIndex]),
+    sort: 'date',
+    sortDirection: 'asc',
   });
 
   const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);
@@ -247,7 +302,7 @@ const Stats = () => {
             const statContent = (
               <StatRoot key={index} onClick={toggleTypeChange}>
                 <StatLabel fontSize="1.2em">{label}</StatLabel>
-                <StatValueText fontSize="1.3em">{value}</StatValueText>
+                <StatValueText fontSize="1.2em">{value}</StatValueText>
                 <StatHelpText fontSize=".8em">{helpText}</StatHelpText>
               </StatRoot>
             );
