@@ -69,7 +69,7 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
 const aggregateTimeframeData = (
   activities: Activity[],
   timeframe: Timeframe,
-  data: keyof Activity,
+  data: keyof Activity | number,
   itemCount: number
 ) =>
   Object.fromEntries(
@@ -77,7 +77,8 @@ const aggregateTimeframeData = (
       activities.reduce((periodMap: {[period: string]: number}, activity) => {
         const date = new Date(activity.start_date);
         const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
-        periodMap[periodKey] = (periodMap[periodKey] ?? 0) + (activity[data] as number);
+        const valueToAdd = 'number' === typeof data ? data : (activity[data] as number);
+        periodMap[periodKey] = (periodMap[periodKey] ?? 0) + valueToAdd;
 
         return periodMap;
       }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))

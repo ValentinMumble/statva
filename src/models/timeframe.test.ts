@@ -71,6 +71,26 @@ test('it can aggregate data indexed by months', () => {
   });
 });
 
+test('it can aggregate data indexed by months using provided value', () => {
+  const activities = [
+    buildActivity({start_date: '2024-03-01'}),
+    buildActivity({start_date: '2024-05-01'}),
+    buildActivity({start_date: '2024-05-02'}),
+    buildActivity({start_date: '2024-05-03'}),
+    buildActivity({start_date: '2024-07-01'}),
+  ];
+
+  expect(aggregateTimeframeData(activities, 'month', 1, 10)).toEqual({
+    '2024/01': 0,
+    '2024/02': 0,
+    '2024/03': 1,
+    '2024/04': 0,
+    '2024/05': 3,
+    '2024/06': 0,
+    '2024/07': 1,
+  });
+});
+
 test('it can aggregate data indexed by weeks', () => {
   const activities = [
     buildActivity({start_date: '2024-01-20', distance: 1000}),

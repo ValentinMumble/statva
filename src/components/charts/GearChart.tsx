@@ -18,7 +18,8 @@ const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
   const dataPerGear = (activities ?? []).reduce((gearMap: {[gearId: string]: number}, activity) => {
     if (null === activity.gear_id) return gearMap;
 
-    gearMap[activity.gear_id] = (gearMap[activity.gear_id] ?? 0) + (activity[data] as number);
+    const valueToAdd = 'number' === typeof data ? data : (activity[data] as number);
+    gearMap[activity.gear_id] = (gearMap[activity.gear_id] ?? 0) + valueToAdd;
 
     return gearMap;
   }, {});
@@ -30,7 +31,8 @@ const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
   );
   const selectedGear = Object.keys(sortedDesc);
   const labels = selectedGear.map(gearId => label(gearId, true));
-  const series = 'pie' === type ? Object.values(sortedDesc) : [{name: label(data), data: Object.values(sortedDesc)}];
+  const series =
+    'pie' === type ? Object.values(sortedDesc) : [{name: label(data.toString()), data: Object.values(sortedDesc)}];
 
   return (
     <>
