@@ -1,7 +1,7 @@
 import {Box, Skeleton, Table} from '@chakra-ui/react';
 import {Tooltip, Tag} from '../components/ui';
 import {ActivityIcon} from '../components';
-import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone} from '../models';
+import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType} from '../models';
 import {Activity} from '../models/strava';
 import {useLabels} from '../hooks';
 
@@ -67,7 +67,11 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
   return (
     <Table.Row onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
       <Table.Cell>
-        <ActivityIcon activityType={activity.sport_type} isCommute={activity.commute} />
+        <ActivityIcon
+          activityType={activity.sport_type}
+          isCommute={activity.commute}
+          workoutType={getWorkoutType(activity)}
+        />
       </Table.Cell>
       <Table.Cell padding="2px">
         <Box bg={getBgColor(bgOption, activity, ftp)} borderRadius="8px" padding="2px 10px">

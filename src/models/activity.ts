@@ -1,5 +1,5 @@
 import {SortType, SortDirection, formatSpeed} from '../models';
-import {ActivityType, Activity} from './strava';
+import {ActivityType, Activity, WorkoutType} from './strava';
 
 type ActivityFilter = {
   search?: string;
@@ -25,6 +25,23 @@ const getTypes = (...types: (ActivityType | string)[]): ActivityType[] => [
     }, [])
   ),
 ];
+
+const WORKOUT_TYPE_MAP: {[key: string]: {[index: number]: WorkoutType}} = {
+  Ride: {
+    10: WorkoutType.None,
+    11: WorkoutType.Race,
+    12: WorkoutType.Workout,
+  },
+  Run: {
+    0: WorkoutType.None,
+    1: WorkoutType.Race,
+    2: WorkoutType.LongRun,
+    3: WorkoutType.Workout,
+  },
+};
+
+const getWorkoutType = (activity: Activity): WorkoutType =>
+  WORKOUT_TYPE_MAP[activity?.type]?.[activity.workout_type] ?? WorkoutType.None;
 
 const getTotalValue = (activities: Activity[], value: keyof Activity): number =>
   activities.reduce((total, activity) => {
@@ -182,5 +199,6 @@ export {
   getRidesBetween,
   getTotalValue,
   getTypes,
+  getWorkoutType,
 };
 export type {ActivityFilter};

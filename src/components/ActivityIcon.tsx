@@ -12,7 +12,7 @@ import {
   TbTrekking,
   TbWalk,
 } from 'react-icons/tb';
-import {ActivityType} from '../models/strava';
+import {ActivityType, WorkoutType} from '../models/strava';
 
 const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
   if (isCommute) {
@@ -53,14 +53,20 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
 type ActivityIconProps = {
   activityType: ActivityType;
   isCommute?: boolean;
+  workoutType?: WorkoutType;
 } & IconProps;
 
-const ActivityIcon = ({activityType, isCommute = false, ...rest}: ActivityIconProps) => {
+const ActivityIcon = ({
+  activityType,
+  isCommute = false,
+  workoutType = WorkoutType.None,
+  ...rest
+}: ActivityIconProps) => {
   const ActivityIconType = getActivityIcon(activityType, isCommute);
 
   return (
     // The span is to prevent React whining about passing a ref to the react-icon component
-    <Icon {...rest}>
+    <Icon {...rest} color={WorkoutType.Race === workoutType ? 'orange.500' : undefined}>
       <span>
         <ActivityIconType />
       </span>
