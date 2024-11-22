@@ -6,23 +6,31 @@ import {GearSelect} from '../components';
 import {useFetcher, useLabels} from '../hooks';
 import {Event, labelCollection, removeNull} from '../models';
 
-const EVENT_TYPES = ['chain', 'battery', 'brake_pad'];
+//TODO type this in event.ts ? typeof keyof Event
+const EVENT_TYPES = ['chain', 'cassette', 'battery', 'brake_pad'];
 
 type AddEventProps = {
   onAddEvent: () => void;
 };
 
+//TODO better component for each event type
 const AddEvent = ({onAddEvent}: AddEventProps) => {
   const [type, setType] = useState<string>('chain');
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [chain, setChain] = useState<string | null>(null);
   const [bike, setBike] = useState<string | null>(null);
+  const [brand, setBrand] = useState<string | null>(null);
+  const [model, setModel] = useState<string | null>(null);
+  const [range, setRange] = useState<string | null>(null);
   const [label] = useLabels();
   const upsertEvent = useFetcher<void>('events.set');
 
   const resetForm = () => {
     setChain(null);
     setBike(null);
+    setBrand(null);
+    setModel(null);
+    setRange(null);
   };
 
   const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) => {
@@ -32,6 +40,9 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
 
   const handleDateChange = ({target}: ChangeEvent<HTMLInputElement>) => setDate(target.value);
   const handleChainChange = ({target}: ChangeEvent<HTMLInputElement>) => setChain(target.value);
+  const handleBrandChange = ({target}: ChangeEvent<HTMLInputElement>) => setBrand(target.value);
+  const handleModelChange = ({target}: ChangeEvent<HTMLInputElement>) => setModel(target.value);
+  const handleRangeChange = ({target}: ChangeEvent<HTMLInputElement>) => setRange(target.value);
   const handleBikeChange = (bikes: string[]) => setBike(bikes[0]);
 
   const handleAdd = async () => {
@@ -41,6 +52,9 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
       date,
       chain,
       bike,
+      brand,
+      model,
+      range,
     }) as Event;
 
     await upsertEvent(event);
@@ -54,6 +68,8 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
     switch (type) {
       case 'chain':
         return null !== bike && null !== chain;
+      case 'cassette':
+        return null !== brand && null !== model && null !== range;
       case 'battery':
       default:
         return true;
@@ -78,6 +94,13 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
             selectContentProps={{portalled: false}}
           />
           <Input size="sm" width="200px" placeholder="🔗" value={chain ?? ''} onChange={handleChainChange} />
+        </>
+      )}
+      {'cassette' === type && (
+        <>
+          <Input size="sm" width="200px" placeholder="Brand" value={brand ?? ''} onChange={handleBrandChange} />
+          <Input size="sm" width="200px" placeholder="Model" value={model ?? ''} onChange={handleModelChange} />
+          <Input size="sm" width="200px" placeholder="Range" value={range ?? ''} onChange={handleRangeChange} />
         </>
       )}
       <IconButton variant="outline" title="Add event" disabled={!isFormValid()} size="xs" onClick={handleAdd}>

@@ -41,7 +41,7 @@ const WORKOUT_TYPE_MAP: {[key: string]: {[index: number]: WorkoutType}} = {
 };
 
 const getWorkoutType = (activity: Activity): WorkoutType =>
-  WORKOUT_TYPE_MAP[activity?.type]?.[activity.workout_type] ?? WorkoutType.None;
+  WORKOUT_TYPE_MAP[activity.type]?.[activity.workout_type] ?? WorkoutType.None;
 
 const getTotalValue = (activities: Activity[], value: keyof Activity): number =>
   activities.reduce((total, activity) => {
@@ -49,7 +49,7 @@ const getTotalValue = (activities: Activity[], value: keyof Activity): number =>
       return 0;
     }
 
-    return (activity[value] as number) + total;
+    return activity[value] + total;
   }, 0);
 
 const getMaxValue = (activities: Activity[], value: keyof Activity): number =>
@@ -63,9 +63,11 @@ const getAverageValue = (activities: Activity[], value: keyof Activity): number 
 const getRidesBeforeMonth = (rides: Activity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
+//TODO unit test
 const getRidesBetween = (rides: Activity[], from: Date, to: Date | null) =>
   rides.filter(ride => new Date(ride.start_date) >= from && new Date(ride.start_date) < (to ?? new Date()));
 
+//TODO unit test
 const eddingtonNumber = (rides: Activity[]) => {
   const ridesPerDay = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
     const dateString = new Date(activity.start_date).toDateString();
@@ -176,7 +178,13 @@ const POOL_LENGTH = {
 
 const formatLaps = (activity: Activity): string => {
   const poolLength = Object.entries(POOL_LENGTH).reduce((distance, [key, value]) => {
-    if (activity.name.toLowerCase().includes(key)) {
+    if (
+      activity.name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .includes(key)
+    ) {
       return value;
     }
 

@@ -1,5 +1,5 @@
 import {buildActivity} from '../../test/test-util';
-import {getTypes, getWorkoutType} from './activity';
+import {formatLaps, getTypes, getWorkoutType} from './activity';
 import {ActivityType, WorkoutType} from './strava';
 
 test('it can get matching types from an ActivityType', () => {
@@ -33,4 +33,11 @@ test('it can get the workout type for a Run', () => {
 
 test('it returns None for an unknown sport type', () => {
   expect(getWorkoutType(buildActivity({type: ActivityType.Swim, workout_type: 0}))).toEqual(WorkoutType.None);
+});
+
+test('it can format laps for a Swim activity', () => {
+  expect(formatLaps(buildActivity({distance: 250, name: 'Natation Petit Port'}))).toEqual('10 laps');
+  expect(formatLaps(buildActivity({distance: 250, name: 'Natation Léo Lagrange'}))).toEqual('5 laps');
+  expect(formatLaps(buildActivity({distance: 250, name: 'Natation Dervallières'}))).toEqual('10 laps');
+  expect(formatLaps(buildActivity({distance: 250, name: 'Natation unknown'}))).toEqual('? laps');
 });

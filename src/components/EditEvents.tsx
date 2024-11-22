@@ -11,7 +11,7 @@ import {
   DialogTrigger,
   toaster,
 } from '../components/ui';
-import {isChainEvent, Event, isTireEvent, backup} from '../models';
+import {isChainEvent, Event, isTireEvent, backup, isCassetteEvent} from '../models';
 import {AddEvent} from '../components';
 import {useEvents, useFetcher, useLabels} from '../hooks';
 
@@ -80,8 +80,17 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                     </>
                   ) : isTireEvent(event) ? (
                     <>
-                      <Table.Cell>{event.model}</Table.Cell>
+                      <Table.Cell>
+                        {event.brand} {event.model}
+                      </Table.Cell>
                       <Table.Cell>{event.width} mm</Table.Cell>
+                    </>
+                  ) : isCassetteEvent(event) ? (
+                    <>
+                      <Table.Cell>
+                        {event.brand} {event.model}
+                      </Table.Cell>
+                      <Table.Cell>{event.range}</Table.Cell>
                     </>
                   ) : (
                     <>

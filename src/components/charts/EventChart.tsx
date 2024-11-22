@@ -7,7 +7,7 @@ import {useActivities, useEvents, useLabels} from '../../hooks';
 import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection} from '../../models';
 import {Activity} from '../../models/strava';
 
-const EVENT_TYPES = ['tire', 'brake_pad', 'battery'];
+const EVENT_TYPES = ['tire', 'brake_pad', 'battery', 'cassette'];
 const DATA_TYPES = ['distance', 'total_elevation_gain'];
 const SUPER6 = 'b13440652';
 
@@ -37,7 +37,7 @@ const EventChart = () => {
             0
           );
 
-          const eventId = `${event.date.toLocaleDateString()} ${getEventLabel(event)}`;
+          const eventId = `${event.date.toLocaleDateString()} ${getEventLabel(event, label)}`;
 
           odometer[eventId] = [...(odometer[eventId] ?? []), periodTotal];
 
