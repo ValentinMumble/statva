@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, SegmentGroupValueChangeDetails, Text, Span} from '@chakra-ui/react';
 import {SegmentedControl, StepperInput} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
 import {
@@ -55,9 +55,17 @@ const MonthChart = ({
   const serieLabel = 'number' === typeof data ? filter?.search : label(data);
   const series = [{name: serieLabel, data: Object.values(dataPerPeriod)}];
 
+  const avg = Object.values(dataPerPeriod).reduce(
+    (total, currentTotal, _index, entries) => total + currentTotal / entries.length,
+    0
+  );
+
   return (
     <>
       <Group width="full" justifyContent="end" gap="20px">
+        <Text>
+          <Span fontStyle="italic">μ</Span> {formatter?.(avg)}
+        </Text>
         {displayTypes && (
           <SegmentedControl
             value={type}

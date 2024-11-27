@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/react';
 import {SegmentedControl, Skeleton} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
@@ -30,16 +30,14 @@ const EventChart = () => {
   const odometer =
     null === events
       ? {}
-      : events.reduce((odometer: {[id: string]: number[]}, event, index) => {
+      : events.reduce((odometer: {[id: string]: number}, event, index) => {
           const nextEventDate = index === events.length - 1 ? null : events[index + 1].date;
           const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
             (sum, ride) => (ride[data] as number) + sum,
             0
           );
 
-          const eventId = `${event.date.toLocaleDateString()} ${getEventLabel(event, label)}`;
-
-          odometer[eventId] = [...(odometer[eventId] ?? []), periodTotal];
+          odometer[`${event.date.toLocaleDateString()} ${getEventLabel(event, label)}`] = periodTotal;
 
           return odometer;
         }, {});
@@ -47,16 +45,18 @@ const EventChart = () => {
   const labels: string[] = [];
   const series: ApexAxisChartSeries = [];
 
-  Object.entries(odometer).forEach(([eventLabel, totals], eventIndex) => {
+  Object.entries(odometer).forEach(([eventLabel, total], eventIndex) => {
     // Remove date + space
     labels.push(eventLabel.slice(11));
 
-    totals.forEach(total => {
-      const data = new Array(Object.keys(odometer).length).fill(null);
-      data[eventIndex] = total;
-      series.push({name: eventLabel, data});
-    });
+    const data = new Array(Object.keys(odometer).length).fill(null);
+    data[eventIndex] = total;
+    series.push({name: eventLabel, data});
   });
+
+  const avg = Object.values(odometer)
+    .filter(total => 0 < total)
+    .reduce((total, currentTotal, _index, entries) => total + currentTotal / entries.length, 0);
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
 
@@ -67,6 +67,9 @@ const EventChart = () => {
   return (
     <>
       <Group width="full" justifyContent="end" gap="20px">
+        <Text>
+          <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
+        </Text>
         <SegmentedControl
           size="sm"
           value={data}
