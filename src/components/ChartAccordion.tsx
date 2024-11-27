@@ -13,6 +13,7 @@ import {
   EventChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
+import {ActivityType} from '../models/strava';
 import {AccordionItemContent, AccordionItemTrigger, AccordionRoot} from '../components/ui';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
@@ -26,7 +27,9 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Distance / time 📍',
-    component: <MonthChart data="distance" formatter={value => formatDistance(value, 1)} />,
+    component: (
+      <MonthChart data="distance" formatter={value => formatDistance(value, 1)} excludedTypes={[ActivityType.Tennis]} />
+    ),
   },
   {
     label: 'Activities / time 🛹',
@@ -38,11 +41,24 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'D+ / time ⛰️',
-    component: <MonthChart data="total_elevation_gain" formatter={value => formatDistance(value, 1)} type="area" />,
+    component: (
+      <MonthChart
+        data="total_elevation_gain"
+        formatter={value => formatDistance(value, 1)}
+        type="area"
+        excludedTypes={[ActivityType.Tennis, ActivityType.Swim]}
+      />
+    ),
   },
   {
     label: 'Calories / time 🍕',
-    component: <MonthChart data="kilojoules" formatter={formatCalories} />,
+    component: (
+      <MonthChart
+        data="kilojoules"
+        formatter={formatCalories}
+        excludedTypes={[ActivityType.Tennis, ActivityType.Swim]}
+      />
+    ),
   },
   {
     label: 'FTP / time ⚡️',

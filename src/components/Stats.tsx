@@ -29,7 +29,7 @@ import {
 } from '../models';
 import {ActivityType, Activity, Athlete} from '../models/strava';
 
-const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
+const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 const YEAR_GOAL_KM = 10000;
 
 type Stat = (

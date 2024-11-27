@@ -12,12 +12,14 @@ import {
   Timeframe,
   TIMEFRAMES,
 } from '../../models';
+import {ActivityType} from '../../models/strava';
 
-const TYPES = ['Ride', 'Run', 'Swim', 'Tennis'];
+const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 
 type MonthChartProps = ChartProps & {
   timeframe?: Timeframe;
   displayTypes?: boolean;
+  excludedTypes?: ActivityType[];
 };
 
 const MonthChart = ({
@@ -26,10 +28,11 @@ const MonthChart = ({
   filter,
   timeframe: initialTimeframe = 'month',
   displayTypes = true,
+  excludedTypes = [],
   ...rest
 }: MonthChartProps) => {
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
-  const [type, setType] = useState<string>(TYPES[0]);
+  const [type, setType] = useState<ActivityType>(ActivityType.Ride);
   const [itemCount, setItemCount] = useState<number>(TIMEFRAMES[initialTimeframe].initialItemCount);
   const [activities] = useActivities({
     withCommute: true,
@@ -41,7 +44,7 @@ const MonthChart = ({
   });
   const [label] = useLabels();
 
-  const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) => setType(value);
+  const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) => setType(value as ActivityType);
   const handleTimeframeChange = (newTimeframe: Timeframe) => {
     setTimeframe(newTimeframe);
     setItemCount(TIMEFRAMES[newTimeframe].initialItemCount);
@@ -60,7 +63,12 @@ const MonthChart = ({
             value={type}
             size="sm"
             onValueChange={handleTypeChange}
-            items={labelCollection(TYPES, label).items}
+            items={
+              labelCollection(
+                TYPES.filter(type => !excludedTypes.includes(type)),
+                label
+              ).items
+            }
           />
         )}
         <SegmentedControl
