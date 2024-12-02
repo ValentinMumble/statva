@@ -92,7 +92,7 @@ const App = () => {
   const isLoading = null === activities;
 
   return (
-    <Stack padding="0 20px" gap="20px" direction={['column-reverse', 'row']}>
+    <Stack padding="20px" gap="20px" direction={['column-reverse', 'row']}>
       <VStack align="stretch" flexBasis="38%" gap="20px" width={['100vw', null]} height="100vh" overflowY="scroll">
         <Stats />
         <ChartAccordion />
