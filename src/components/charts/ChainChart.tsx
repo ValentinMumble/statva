@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/react';
 import {SegmentedControl, Skeleton} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection} from '../../models';
@@ -67,9 +67,17 @@ const ChainChart = () => {
     return <Skeleton height="200px" />;
   }
 
+  const avg = Object.values(chainOdometer)
+    .map(totals => totals.reduce((total, currentTotal) => total + currentTotal, 0))
+    .filter(total => 0 < total)
+    .reduce((total, currentTotal, _index, entries) => total + currentTotal / entries.length, 0);
+
   return (
     <>
       <Group width="full" justifyContent="end" gap="20px">
+        <Text>
+          <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
+        </Text>
         <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
         <EditEvents onEditEvents={refreshEvents} />
         <EditLabels />
