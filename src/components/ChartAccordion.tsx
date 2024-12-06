@@ -2,7 +2,7 @@ import {ReactNode, useState} from 'react';
 import {AccordionItem} from '@chakra-ui/react';
 import {
   ProgressChart,
-  MonthChart,
+  TimeframeChart,
   EddingtonChart,
   GearChart,
   AverageGearChart,
@@ -11,6 +11,7 @@ import {
   ActivityTimeChart,
   ChainChart,
   EventChart,
+  SufferChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
 import {ActivityType} from '../models/strava';
@@ -28,7 +29,11 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Distance / time 📍',
     component: (
-      <MonthChart data="distance" formatter={value => formatDistance(value, 1)} excludedTypes={[ActivityType.Tennis]} />
+      <TimeframeChart
+        data="distance"
+        formatter={value => formatDistance(value, 1)}
+        excludedTypes={[ActivityType.Tennis]}
+      />
     ),
   },
   {
@@ -37,12 +42,12 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Moving / time ⏱️',
-    component: <MonthChart data="moving_time" formatter={formatDuration} />,
+    component: <TimeframeChart data="moving_time" formatter={formatDuration} />,
   },
   {
     label: 'D+ / time ⛰️',
     component: (
-      <MonthChart
+      <TimeframeChart
         data="total_elevation_gain"
         formatter={value => formatDistance(value, 1)}
         type="area"
@@ -53,7 +58,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Calories / time 🍕',
     component: (
-      <MonthChart
+      <TimeframeChart
         data="kilojoules"
         formatter={formatCalories}
         excludedTypes={[ActivityType.Tennis, ActivityType.Swim]}
@@ -86,7 +91,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'N-Peloton / time 🚲',
-    component: <MonthChart filter={{search: 'N-Peloton'}} data={1} displayTypes={false} />,
+    component: <TimeframeChart filter={{search: 'N-Peloton'}} data={1} displayTypes={false} />,
   },
   {
     label: 'N-Peloton 🏁 & ⚡️',
@@ -95,6 +100,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Average 🫀 & ⚡️',
     component: <HeartChart />,
+  },
+  {
+    label: 'Suffer chart 🌶️',
+    component: <SufferChart />,
   },
 ];
 

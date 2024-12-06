@@ -16,13 +16,13 @@ import {ActivityType} from '../../models/strava';
 
 const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 
-type MonthChartProps = ChartProps & {
+type TimeframeChartProps = ChartProps & {
   timeframe?: Timeframe;
   displayTypes?: boolean;
   excludedTypes?: ActivityType[];
 };
 
-const MonthChart = ({
+const TimeframeChart = ({
   data,
   formatter,
   filter,
@@ -30,7 +30,7 @@ const MonthChart = ({
   displayTypes = true,
   excludedTypes = [],
   ...rest
-}: MonthChartProps) => {
+}: TimeframeChartProps) => {
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
   const [type, setType] = useState<ActivityType>(ActivityType.Ride);
   const [itemCount, setItemCount] = useState<number>(TIMEFRAMES[initialTimeframe].initialItemCount);
@@ -96,4 +96,4 @@ const MonthChart = ({
   );
 };
 
-export {MonthChart};
+export {TimeframeChart};
