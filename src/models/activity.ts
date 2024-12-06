@@ -63,44 +63,37 @@ const getAverageValue = (activities: Activity[], value: keyof Activity): number 
 const getRidesBeforeMonth = (rides: Activity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
-//TODO unit test
-const getRidesBetween = (rides: Activity[], from: Date, to: Date | null) =>
+const getRidesBetween = (rides: Activity[], from: Date, to?: Date | undefined): Activity[] =>
   rides.filter(ride => new Date(ride.start_date) >= from && new Date(ride.start_date) < (to ?? new Date()));
 
-//TODO unit test
 const eddingtonNumber = (rides: Activity[]) => {
-  const ridesPerDay = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
+  const dailyDistances = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
     const dateString = new Date(activity.start_date).toDateString();
     dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
 
     return dayMap;
   }, {});
 
-  const rideCount = Object.values(ridesPerDay).length;
-  const rideCountPerDistance: number[] = new Array(rideCount).fill(0);
+  const distancesKm = Object.values(dailyDistances)
+    .map(distance => distance / 1000)
+    .sort((a, b) => b - a);
+
   let eddingtonNumber = 0;
-  let above = 0;
 
-  Object.values(ridesPerDay).forEach(distance => {
-    const distanceInKm = Math.round(distance / 1000);
-
-    if (distanceInKm > eddingtonNumber) {
-      above++;
-
-      if (distanceInKm < rideCount) {
-        rideCountPerDistance[distanceInKm]++;
-      }
-
-      if (above > eddingtonNumber) {
-        eddingtonNumber++;
-        above -= rideCountPerDistance[eddingtonNumber];
-      }
+  for (let i = 0; i < distancesKm.length; i++) {
+    if (distancesKm[i] >= i + 1) {
+      eddingtonNumber = i + 1;
+    } else {
+      break;
     }
-  });
+  }
 
-  const next = eddingtonNumber - above + 1;
+  const daysForNextLevel = Math.max(
+    0,
+    eddingtonNumber + 1 - distancesKm.filter(distance => distance >= eddingtonNumber + 1).length
+  );
 
-  return [eddingtonNumber, next];
+  return [eddingtonNumber, daysForNextLevel];
 };
 
 const getActivityUrl = ({id}: Activity): string => `https://www.strava.com/activities/${id}`;

@@ -64,8 +64,8 @@ const backup = (array: {id: string}[]): string =>
     }, {})
   );
 
-  const getDaysInMonth = (month: number, year: number) =>
-    month === 2 ? (year & 3 || (!(year % 25) && year & 15) ? 28 : 29) : 30 + ((month + (month >> 3)) & 1);
+const getDaysInMonth = (month: number, year: number) =>
+  month === 2 ? (year & 3 || (!(year % 25) && year & 15) ? 28 : 29) : 30 + ((month + (month >> 3)) & 1);
 
 const getMonthDiff = (dateFrom: Date, dateTo: Date): number =>
   dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());

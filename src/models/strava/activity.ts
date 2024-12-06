@@ -13,6 +13,7 @@ export interface Activity {
   commute: boolean;
   device_watts: boolean;
   display_hide_heartrate_option: boolean;
+  /** Distance in meters */
   distance: number;
   elapsed_time: number;
   elev_high: number;

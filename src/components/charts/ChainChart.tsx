@@ -24,7 +24,7 @@ const ChainChart = () => {
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
 
   const chainOdometer = currentBikeEvents.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
-    const nextEventDate = index === currentBikeEvents.length - 1 ? null : currentBikeEvents[index + 1].date;
+    const nextEventDate = currentBikeEvents[index + 1]?.date;
     const periodDistance = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
       (sum, ride) => ride.distance + sum,
       0

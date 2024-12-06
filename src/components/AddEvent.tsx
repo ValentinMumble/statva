@@ -6,7 +6,6 @@ import {GearSelect} from '../components';
 import {useFetcher, useLabels} from '../hooks';
 import {Event, labelCollection, removeNull} from '../models';
 
-//TODO type this in event.ts ? typeof keyof Event
 const EVENT_TYPES = ['chain', 'cassette', 'battery', 'brake_pad'];
 
 type AddEventProps = {
