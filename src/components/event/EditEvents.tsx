@@ -10,10 +10,10 @@ import {
   DialogTitle,
   DialogTrigger,
   toaster,
-} from '../components/ui';
-import {isChainEvent, Event, isTireEvent, backup, isCassetteEvent} from '../models';
-import {AddEvent} from '../components';
-import {useEvents, useFetcher, useLabels} from '../hooks';
+} from '../../components/ui';
+import {isChainEvent, Event, isTireEvent, backup, isCassetteEvent} from '../../models';
+import {AddEvent} from '../../components';
+import {useEvents, useFetcher, useLabels} from '../../hooks';
 
 const HEADERS = ['Date', 'Type', 'Bike', 'Chain', ''];
 
