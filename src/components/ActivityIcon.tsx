@@ -5,10 +5,10 @@ import {
   TbBrandZwift,
   TbBusStop,
   TbKayak,
+  TbRouteX,
   TbRun,
   TbSkiJumping,
   TbSwimming,
-  TbTreadmill,
   TbTrekking,
   TbWalk,
 } from 'react-icons/tb';
@@ -34,7 +34,7 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
     case ActivityType.RockClimbing:
       return GiMountainClimbing;
     case ActivityType.TrailRun:
-      return TbTreadmill;
+      return TbRouteX;
     case ActivityType.Run:
       return TbRun;
     case ActivityType.Swim:

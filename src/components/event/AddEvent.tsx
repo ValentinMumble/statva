@@ -2,11 +2,11 @@ import {ChangeEvent, useState} from 'react';
 import {Group, IconButton, Input, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {LuPlus} from 'react-icons/lu';
 import {SegmentedControl, toaster} from '../../components/ui';
-import {EVENT_FORMS} from '../../components';
+import {EventForm} from '../../components';
 import {useFetcher, useLabels} from '../../hooks';
 import {Event, isEventValid, labelCollection} from '../../models';
 
-const EVENT_TYPES = ['chain', 'cassette', 'battery', 'brake_pad'];
+const EVENT_TYPES: Event['type'][] = ['chain', 'cassette', 'tire', 'battery', 'brake_pad'];
 
 type AddEventProps = {
   onAddEvent: () => void;
@@ -36,8 +36,6 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
     toaster.create({title: `${label(eventWithId.type)} Event added`});
   };
 
-  const EventForm = EVENT_FORMS[event.type ?? ''] ?? null;
-
   return (
     <Group justifyContent="space-between">
       <Input
@@ -53,7 +51,7 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
         onValueChange={handleTypeChange}
         items={labelCollection(EVENT_TYPES, label).items}
       />
-      {null !== EventForm && <EventForm event={event} onChange={setEvent} />}
+      <EventForm event={event} onChange={setEvent} />
       <IconButton variant="outline" title="Add event" disabled={!isEventValid(event)} size="xs" onClick={handleAdd}>
         <LuPlus />
       </IconButton>

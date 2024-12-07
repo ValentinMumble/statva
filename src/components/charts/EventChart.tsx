@@ -4,11 +4,11 @@ import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/reac
 import {SegmentedControl, Skeleton} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
-import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection} from '../../models';
+import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection, Event} from '../../models';
 import {Activity} from '../../models/strava';
 
-const EVENT_TYPES = ['tire', 'brake_pad', 'battery', 'cassette'];
-const DATA_TYPES = ['distance', 'total_elevation_gain'];
+const EVENT_TYPES: Event['type'][] = ['tire', 'brake_pad', 'battery', 'cassette'];
+const DATA_TYPES: (keyof Activity)[] = ['distance', 'total_elevation_gain'];
 const SUPER6 = 'b13440652';
 
 const EventChart = () => {

@@ -7,7 +7,7 @@ import {
   SelectValueText,
   SelectContentProps,
 } from '../components/ui';
-import {GEAR, labelCollection} from '../models';
+import {GEAR, labelCollection, Gear} from '../models';
 import {useLabels} from '../hooks';
 
 type GearSelectProps = Omit<SelectRootProps, 'collection'> & {
@@ -15,14 +15,26 @@ type GearSelectProps = Omit<SelectRootProps, 'collection'> & {
   onSelectedGearChange: (selectedGear: string[]) => void;
   clearable?: boolean;
   selectContentProps?: SelectContentProps;
+  excludedGearTypes?: Gear['type'][];
 };
 
-const GearSelect = ({selectedGear, onSelectedGearChange, selectContentProps, clearable, ...rest}: GearSelectProps) => {
+const GearSelect = ({
+  selectedGear,
+  onSelectedGearChange,
+  selectContentProps,
+  clearable,
+  excludedGearTypes = [],
+  ...rest
+}: GearSelectProps) => {
   const [label] = useLabels();
 
   const handleGearChange = ({value}: SelectValueChangeDetails) => onSelectedGearChange(value);
 
-  const gearCollection = labelCollection(Object.keys(GEAR), label);
+  const relevantGearIds = Object.values(GEAR)
+    .filter(({type}) => !excludedGearTypes.includes(type))
+    .map(({id}) => id);
+
+  const gearCollection = labelCollection(relevantGearIds, label);
   gearCollection.items.push({value: 'null', label: '🤷'});
 
   return (

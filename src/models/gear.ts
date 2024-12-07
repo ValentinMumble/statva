@@ -20,3 +20,4 @@ const GEAR: {[key: string]: Gear} = {
 };
 
 export {GEAR};
+export type {Gear};
