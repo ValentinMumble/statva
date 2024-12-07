@@ -1,5 +1,12 @@
 import {buildActivity} from '../../test/test-util';
-import {eddingtonNumber, formatLaps, getRidesBetween, getTypes, getWorkoutType} from './activity';
+import {
+  eddingtonNumber,
+  formatLaps,
+  getRidesBetween,
+  getTypes,
+  getWorkoutType,
+  daysExceedingDistance,
+} from './activity';
 import {ActivityType, WorkoutType} from './strava';
 
 describe('getTypes', () => {
@@ -115,5 +122,46 @@ describe('getRidesBetween', () => {
       buildActivity({start_date: '2021-10-03'}),
       buildActivity({start_date: '2021-10-04'}),
     ]);
+  });
+});
+
+describe('daysExceedingDistance', () => {
+  test('it can get the count of days by distance', () => {
+    const rides = [
+      buildActivity({start_date: '2021-10-01', distance: 6000}),
+      buildActivity({start_date: '2021-10-02', distance: 6000}),
+      buildActivity({start_date: '2021-10-03', distance: 5000}),
+      buildActivity({start_date: '2021-10-04', distance: 4000}),
+      buildActivity({start_date: '2021-10-05', distance: 5000}),
+    ];
+
+    expect(daysExceedingDistance(rides)).toEqual({
+      1: 5,
+      2: 5,
+      3: 5,
+      4: 5,
+      5: 4,
+      6: 2,
+    });
+  });
+
+  test('it can get the count of days by distance', () => {
+    const rides = [
+      buildActivity({start_date: '2021-10-01', distance: 6000}),
+      buildActivity({start_date: '2021-10-01', distance: 1000}),
+      buildActivity({start_date: '2021-10-02', distance: 3000}),
+      buildActivity({start_date: '2021-10-04', distance: 4000}),
+      buildActivity({start_date: '2021-10-05', distance: 5000}),
+    ];
+
+    expect(daysExceedingDistance(rides)).toEqual({
+      1: 4,
+      2: 4,
+      3: 4,
+      4: 3,
+      5: 2,
+      6: 1,
+      7: 1,
+    });
   });
 });

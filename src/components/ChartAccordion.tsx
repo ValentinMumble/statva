@@ -12,6 +12,7 @@ import {
   ChainChart,
   EventChart,
   SufferChart,
+  EddingtonDayChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
 import {ActivityType} from '../models/strava';
@@ -72,6 +73,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Eddington / time 🧸',
     component: <EddingtonChart />,
+  },
+  {
+    label: 'Eddington / day 🧸',
+    component: <EddingtonDayChart />,
   },
   {
     label: 'Distance / gear 📍',

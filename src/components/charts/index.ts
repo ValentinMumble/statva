@@ -2,6 +2,7 @@ export * from './ActivityTimeChart';
 export * from './AverageGearChart';
 export * from './ChainChart';
 export * from './EddingtonChart';
+export * from './EddingtonDayChart';
 export * from './EventChart';
 export * from './FTPChart';
 export * from './GearChart';

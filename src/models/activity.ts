@@ -68,7 +68,7 @@ const getRidesBetween = (rides: Activity[], from: Date, to?: Date | undefined): 
 
 const eddingtonNumber = (rides: Activity[]) => {
   const dailyDistances = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
-    const dateString = new Date(activity.start_date).toDateString();
+    const dateString = new Date(activity.start_date).toISOString().slice(0, 10);
     dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
 
     return dayMap;
@@ -94,6 +94,30 @@ const eddingtonNumber = (rides: Activity[]) => {
   );
 
   return [eddingtonNumber, daysForNextLevel];
+};
+
+const daysExceedingDistance = (rides: Activity[]): {[distance: number]: number} => {
+  const dailyDistances = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
+    const dateString = new Date(activity.start_date).toISOString().slice(0, 10);
+    dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
+
+    return dayMap;
+  }, {});
+
+  const distancesKm = Object.values(dailyDistances).map(distance => distance / 1000);
+
+  const result: {[distanceKm: number]: number} = {};
+  for (let distance = 1; distance <= Math.max(...distancesKm); distance++) {
+    result[distance] = 0;
+  }
+
+  distancesKm.forEach(distance => {
+    for (let d = 1; d <= Math.floor(distance); d++) {
+      result[d]++;
+    }
+  });
+
+  return result;
 };
 
 const getActivityUrl = ({id}: Activity): string => `https://www.strava.com/activities/${id}`;
@@ -202,5 +226,6 @@ export {
   getTotalValue,
   getTypes,
   getWorkoutType,
+  daysExceedingDistance,
 };
 export type {ActivityFilter};

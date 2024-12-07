@@ -18,9 +18,7 @@ const options: ApexCharts.ApexOptions = {
   fill: {type: 'gradient'},
 };
 
-type EddingtonChartProps = {};
-
-const EddingtonChart = ({}: EddingtonChartProps) => {
+const EddingtonChart = () => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const [activities] = useActivities({
     withCommute: true,
