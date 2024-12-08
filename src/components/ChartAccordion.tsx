@@ -13,6 +13,7 @@ import {
   EventChart,
   SufferChart,
   EddingtonDayChart,
+  EventTimelineChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
 import {ActivityType} from '../models/strava';
@@ -26,6 +27,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Event odometer 📟',
     component: <EventChart />,
+  },
+  {
+    label: 'Event timeline 🎞️',
+    component: <EventTimelineChart />,
   },
   {
     label: 'Distance / time 📍',

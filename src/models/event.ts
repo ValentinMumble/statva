@@ -65,11 +65,26 @@ const isEventValid = (event: Partial<Event>): boolean => {
   }
 };
 
+const getNextEvent = <T extends Event>(events: T[], fromEvent: T, filter?: (event: T) => boolean): T | null => {
+  if (filter) events = events.filter(filter);
+
+  return events[events.indexOf(fromEvent) + 1] ?? null;
+};
+
 const isChainEvent = (event: Partial<Event>): event is ChainEvent => 'chain' === event.type;
 const isCassetteEvent = (event: Partial<Event>): event is CassetteEvent => 'cassette' === event.type;
 const isTireEvent = (event: Partial<Event>): event is TireEvent => 'tire' === event.type;
 const isBatteryEvent = (event: Partial<Event>): event is BatteryEvent => 'battery' === event.type;
 const isBrakePadEvent = (event: Partial<Event>): event is BrakePadEvent => 'brake_pad' === event.type;
 
-export {getEventLabel, isBatteryEvent, isCassetteEvent, isChainEvent, isEventValid, isTireEvent, isBrakePadEvent};
+export {
+  getEventLabel,
+  getNextEvent,
+  isBatteryEvent,
+  isCassetteEvent,
+  isChainEvent,
+  isEventValid,
+  isTireEvent,
+  isBrakePadEvent,
+};
 export type {BatteryEvent, CassetteEvent, ChainEvent, TireEvent, Event, BrakePadEvent};

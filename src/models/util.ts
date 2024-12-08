@@ -84,7 +84,6 @@ export {
   getDaysInMonth,
   getMonthDiff,
   getWeekNumber,
-  KJ_TO_CAL_RATIO,
   range,
   removeNull,
 };
