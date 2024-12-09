@@ -102,13 +102,14 @@ const STATS: {[key: string]: Stat[][]} = {
             'distance'
           )
         ),
-        info: formatDuration(
+        info: `This year: ${formatDistance(
           getTotalValue(
-            activities.filter(({commute}) => commute),
-            'moving_time'
-          ),
-          true
-        ),
+            activities.filter(
+              ({start_date, commute}) => commute && new Date(start_date).getFullYear() === new Date().getFullYear()
+            ),
+            'distance'
+          )
+        )}`,
       }),
     ],
     [
