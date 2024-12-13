@@ -1,14 +1,26 @@
 import Chart from 'react-apexcharts';
 import {Skeleton} from '../../components/ui';
 import {useEvents, useLabels} from '../../hooks';
-import {getOptions, ChainEvent, getNextEvent, isChainEvent, isBatteryEvent, isTireEvent} from '../../models';
+import {
+  getOptions,
+  ChainEvent,
+  getNextEvent,
+  isChainEvent,
+  isBatteryEvent,
+  isCassetteEvent,
+  isBrakePadEvent,
+  isTireEvent,
+} from '../../models';
+
+const EVENT_OFFSET = 42 * 3600 * 1000; // 36 hours
 
 const options: ApexCharts.ApexOptions = {
   xaxis: {type: 'datetime'},
   plotOptions: {
     bar: {
       horizontal: true,
-      barHeight: '100%',
+      barHeight: '40%',
+      rangeBarGroupRows: true,
     },
   },
   legend: {show: false},
@@ -38,35 +50,35 @@ const EventTimelineChart = () => {
     data: events.map(event => ({
       x: `${label(event.type)} ${label(event.bike, true)}`,
       y: [
-        event.date.getTime(),
+        event.date.getTime() + EVENT_OFFSET,
         (getNextEvent(chainEvents, event, ({bike}) => event.bike === bike)?.date ?? new Date()).getTime(),
       ],
     })),
   }));
 
-  const batteryEvents = events.filter(isBatteryEvent);
-  const batterySerie = {
-    name: label(batteryEvents[0].type),
-    data: batteryEvents.map(event => ({
-      x: label(event.type),
-      y: [event.date.getTime(), (getNextEvent(batteryEvents, event)?.date ?? new Date()).getTime()],
-    })),
-  };
-
-  const tireEvents = events.filter(isTireEvent);
-  const tireSerie = {
-    name: label(tireEvents[0].type),
-    data: tireEvents.map(event => ({
-      x: label(event.type),
-      y: [event.date.getTime(), (getNextEvent(tireEvents, event)?.date ?? new Date()).getTime()],
-    })),
-  };
+  //TODO tire display brand
+  const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent]
+    .map(isEventType =>
+      events.filter(isEventType).map(event => ({
+        name: `${label(event.type)} ${event.date.toLocaleDateString()}`,
+        data: [
+          {
+            x: label(event.type),
+            y: [
+              event.date.getTime() + EVENT_OFFSET,
+              (getNextEvent(events.filter(isEventType), event)?.date ?? new Date()).getTime(),
+            ],
+          },
+        ],
+      }))
+    )
+    .flat();
 
   return (
     <>
       <Chart
         options={getOptions([], undefined, options)}
-        series={[...chainSeries, batterySerie, tireSerie]}
+        series={[...chainSeries, ...eventSeries]}
         type="rangeBar"
         height={400}
       />
