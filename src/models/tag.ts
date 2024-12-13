@@ -12,10 +12,10 @@ import {
   getMaxValue,
   getAverageValue,
   formatPower,
-  formatCalories,
   GetFtp,
   formatPercent,
   formatLaps,
+  guessCalories,
 } from '../models';
 import {ActivityType, Activity} from './strava';
 
@@ -164,7 +164,7 @@ const TAGS: Tag[] = [
     help: 'Suffer score',
   },
   {
-    label: ({kilojoules}) => (undefined === kilojoules ? null : formatCalories(kilojoules)),
+    label: guessCalories,
     isRelevant: ({kilojoules}) => 0 < (kilojoules ?? 0),
     total: activities => Math.round(getTotalValue(activities, 'kilojoules')),
     sortType: 'kilojoules',

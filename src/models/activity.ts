@@ -1,4 +1,4 @@
-import {SortType, SortDirection, formatSpeed} from '../models';
+import {SortType, SortDirection, formatSpeed, formatCalories} from '../models';
 import {ActivityType, Activity, WorkoutType} from './strava';
 
 type ActivityFilter = {
@@ -212,7 +212,65 @@ const formatLaps = (activity: Activity): string => {
   return `${-1 === poolLength ? '?' : Math.round(activity.distance / poolLength)} laps`;
 };
 
+const calculateRunCalories = (weight: number, movingTime: number, distance: number, avgHeartrate: number): number => {
+  // Constants for Apple Fitness calculation
+  const activeCaloriesPerMinuteBase = 0.12; // Base active calorie burn rate per minute per kg (example value)
+  const activeHeartRateFactor = (avgHeartrate - 80) / 100; // Example adjustment factor for heart rate
+  const caloriesPerKmPerKg = 1.0; // Approximate calorie burn per km per kg for running
+
+  // Convert moving time to minutes
+  const movingTimeMinutes = movingTime / 60;
+
+  // Calculate calories based on time
+  const timeBasedCalories = weight * movingTimeMinutes * activeCaloriesPerMinuteBase * (1 + activeHeartRateFactor);
+
+  // Calculate calories based on distance
+  const distanceBasedCalories = weight * (distance / 1000) * caloriesPerKmPerKg;
+
+  // Combine the two estimates
+  const totalCalories = (timeBasedCalories + distanceBasedCalories) / 2;
+
+  return Math.round(totalCalories);
+};
+
+const calculateSwimCalories = (weight: number, time: number, distance: number, heartRate: number): number => {
+  // Apple Fitness method factors
+  const baseCaloriesPerMinute = 0.13 * weight; // Base calories burned per minute per kg for swimming
+  const heartRateFactor = (heartRate - 100) * 0.08; // Adjust for heart rate intensity
+  const distanceFactor = (distance / 1000) * 0.25; // Adjust for distance in kilometers
+
+  // Time in minutes
+  const timeInMinutes = time / 60;
+
+  // Calculate calories burned
+  const calories = (baseCaloriesPerMinute + heartRateFactor + distanceFactor) * timeInMinutes;
+
+  return Math.round(calories);
+};
+
+const guessCalories = (activity: Activity): string | null => {
+  if (activity.kilojoules) {
+    return formatCalories(activity.kilojoules);
+  }
+
+  switch (activity.sport_type) {
+    case ActivityType.Swim:
+      return formatCalories(
+        calculateSwimCalories(74, activity.moving_time, activity.distance, activity.average_heartrate ?? 0)
+      );
+    case ActivityType.Run:
+    case ActivityType.TrailRun:
+      return formatCalories(
+        calculateRunCalories(74, activity.moving_time, activity.distance, activity.average_heartrate ?? 0)
+      );
+    default:
+      return null;
+  }
+};
+
 export {
+  calculateRunCalories,
+  calculateSwimCalories,
   eddingtonNumber,
   formatLaps,
   formatPaceOrSpeed,
@@ -226,6 +284,7 @@ export {
   getTotalValue,
   getTypes,
   getWorkoutType,
+  guessCalories,
   daysExceedingDistance,
 };
 export type {ActivityFilter};

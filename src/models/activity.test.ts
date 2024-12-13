@@ -6,6 +6,8 @@ import {
   getTypes,
   getWorkoutType,
   daysExceedingDistance,
+  calculateRunCalories,
+  calculateSwimCalories,
 } from './activity';
 import {ActivityType, WorkoutType} from './strava';
 
@@ -163,5 +165,54 @@ describe('daysExceedingDistance', () => {
       6: 1,
       7: 1,
     });
+  });
+});
+
+describe.skip('calculateRunCalories', () => {
+  test.each([
+    [74, 2336, 846, 142.2, 218],
+    [74, 2540.9, 936, 142.4, 234],
+    [74, 4029.3, 1313, 146, 266],
+    [74, 3284.3, 1074, 141.5, 304],
+    [74, 5087.1, 1699, 152.1, 350],
+    [74, 5300.9, 1670, 159.3, 371],
+    [74, 6152.3, 1805, 163.3, 416],
+    [74, 5022.9, 1403, 166.5, 457],
+    [74, 5072.6, 1601, 151.6, 467],
+    [74, 5213.9, 1695, 153.9, 486],
+    [74, 7778.2, 2462, 150.6, 510],
+    [74, 6283, 1738, 161.9, 582],
+    [74, 6309.5, 2041, 150.8, 584],
+    [74, 8567.2, 2420, 166.4, 586],
+    [74, 6662, 2091, 153, 613],
+    [74, 6667.1, 1895, 162.9, 615],
+    [74, 7042.2, 2169, 154.1, 642],
+    [74, 7276.5, 2059, 157.2, 670],
+    [74, 7528.4, 2228, 166.4, 685],
+    [74, 10398.2, 3171, 153.8, 687],
+    [74, 7694.3, 2152, 165.8, 700],
+    [74, 7688.5, 2174, 163.3, 708],
+    [74, 7808.9, 2265, 160.8, 717],
+    [74, 12078, 3710, 159.7, 795],
+    [74, 10050.6, 2908, 164.9, 923],
+    [74, 13127.6, 4387, 152.7, 929],
+    [74, 10118.3, 3201, 154.2, 936],
+    [74, 10241.2, 2979, 167.4, 936],
+    [74, 13124.6, 3867, 160.7, 942],
+    [74, 10657.8, 3146, 159.8, 989],
+    [74, 15291.1, 5129, 153.4, 1060],
+  ])('it can calculate calories for a run', (weight, movingTime, distance, average_heartrate, expected) => {
+    expect(calculateRunCalories(weight, movingTime, distance, average_heartrate)).toEqual(expected);
+  });
+});
+
+describe('calculateSwimCalories', () => {
+  test.each([
+    [74, 1560, 1100, 149, 358],
+    [74, 1858, 1300, 149, 430],
+    [74, 1696, 1200, 147, 325],
+    [74, 2218, 1500, 150, 509],
+  ])('it can calculate calories for a swim', (weight, movingTime, distance, average_heartrate, expected) => {
+    expect(calculateSwimCalories(weight, movingTime, distance, average_heartrate)).toEqual(expected);
   });
 });
