@@ -80,7 +80,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <EddingtonChart />,
   },
   {
-    label: 'Eddington / day 🧸',
+    label: 'Eddington bars 🍻',
     component: <EddingtonDayChart />,
   },
   {
