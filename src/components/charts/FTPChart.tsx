@@ -23,10 +23,9 @@ const options: ApexCharts.ApexOptions = {
       max: 4,
     },
   ],
-  xaxis: {
-    type: 'datetime',
-  },
+  xaxis: {type: 'datetime'},
   colors: ['#e09200', '#ebcf6c'],
+  stroke: {width: 4, curve: 'smooth'},
 };
 
 const FTPChart = () => {

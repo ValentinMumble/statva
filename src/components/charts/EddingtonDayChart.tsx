@@ -63,6 +63,7 @@ const EddingtonDayChart = () => {
               dataLabels: {position: 'top'},
             },
           },
+          stroke: {width: 0},
         })}
         series={series}
         type="bar"

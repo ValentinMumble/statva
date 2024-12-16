@@ -20,9 +20,9 @@ const getOptions: (
     zoom: {enabled: false},
     background: 'transparent',
   },
-  stroke: {curve: 'straight'},
+  stroke: {curve: 'straight', width: 1.5, colors: ['#000']},
   dataLabels: {enabled: false},
-  markers: {size: [4]},
+  markers: {size: [3]},
   grid: {borderColor: '#FFFFFF30'},
   fill: {type: 'solid'},
   colors: [

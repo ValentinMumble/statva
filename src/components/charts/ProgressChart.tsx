@@ -3,10 +3,11 @@ import {useActivities} from '../../hooks';
 import {formatPower, formatSpeed, getOptions} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
+  xaxis: {type: 'datetime'},
   yaxis: [
     {
       labels: {formatter: (value: number) => formatSpeed(value)},
-      min: 26 / 3.6,
+      min: 22 / 3.6,
       max: 40 / 3.6,
     },
     {
@@ -19,7 +20,6 @@ const options: ApexCharts.ApexOptions = {
   colors: ['#aba19c', '#e09200'],
   stroke: {
     curve: 'smooth',
-    width: 4,
   },
   fill: {type: 'gradient'},
 };
@@ -37,15 +37,20 @@ const ProgressChart = ({search}: ProgressChartProps) => {
     sortDirection: 'asc',
   });
 
-  const averageSpeedSerie = (activities ?? []).map(({average_speed}) => average_speed);
-  const averagePowerSerie = (activities ?? []).map(({weighted_average_watts}) => weighted_average_watts ?? null);
-  const labels = (activities ?? []).map(({start_date}) => new Date(start_date).toLocaleDateString());
+  const averageSpeedSerie = (activities ?? []).map(({average_speed, start_date}) => [
+    new Date(start_date).getTime(),
+    average_speed,
+  ]);
+  const averagePowerSerie = (activities ?? []).map(({weighted_average_watts, start_date}) => [
+    new Date(start_date).getTime(),
+    weighted_average_watts ?? null,
+  ]);
   const series = [
     {name: '🏁', data: averageSpeedSerie},
-    {name: '⚡️', data: averagePowerSerie},
+    {name: '⚡️', data: averagePowerSerie as number[][]},
   ];
 
-  return <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />;
+  return <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />;
 };
 
 export {ProgressChart};

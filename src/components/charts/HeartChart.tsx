@@ -19,6 +19,7 @@ const options: ApexCharts.ApexOptions = {
     },
   },
   markers: {size: [0]},
+  xaxis: {type: 'datetime'},
   yaxis: [
     {
       max: 190,
@@ -46,17 +47,20 @@ const HeartChart = () => {
       (0 < (average_heartrate ?? 0) || 0 < (weighted_average_watts ?? 0)) && MIN_DISTANCE_METERS < distance
   );
 
-  const heartRateSerie = rides.map(({average_heartrate}) => (average_heartrate ? Math.round(average_heartrate) : null));
-  const powerSerie = rides.map(({weighted_average_watts}) =>
-    weighted_average_watts ? Math.round(weighted_average_watts) : null
-  );
-  const labels = rides.map(({start_date}) => new Date(start_date).toLocaleDateString());
+  const heartRateSerie = rides.map(({average_heartrate, start_date}) => [
+    new Date(start_date).getTime(),
+    average_heartrate ? Math.round(average_heartrate) : null,
+  ]);
+  const powerSerie = rides.map(({weighted_average_watts, start_date}) => [
+    new Date(start_date).getTime(),
+    weighted_average_watts ? Math.round(weighted_average_watts) : null,
+  ]);
   const series = [
-    {name: '🫀', data: heartRateSerie},
-    {name: '⚡️', data: powerSerie},
+    {name: '🫀', data: heartRateSerie as number[][]},
+    {name: '⚡️', data: powerSerie as number[][]},
   ];
 
-  return <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />;
+  return <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />;
 };
 
 export {HeartChart};

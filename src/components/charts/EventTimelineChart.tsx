@@ -13,8 +13,6 @@ import {
   getEventLabel,
 } from '../../models';
 
-const EVENT_OFFSET = 42 * 3600 * 1000; // 36 hours
-
 const options: ApexCharts.ApexOptions = {
   xaxis: {type: 'datetime'},
   plotOptions: {
@@ -51,7 +49,7 @@ const EventTimelineChart = () => {
     data: events.map(event => ({
       x: `${label(event.type)} ${label(event.bike, true)}`,
       y: [
-        event.date.getTime() + EVENT_OFFSET,
+        event.date.getTime(),
         (getNextEvent(chainEvents, event, ({bike}) => event.bike === bike)?.date ?? new Date()).getTime(),
       ],
     })),
@@ -64,10 +62,7 @@ const EventTimelineChart = () => {
         data: [
           {
             x: label(event.type),
-            y: [
-              event.date.getTime() + EVENT_OFFSET,
-              (getNextEvent(events.filter(isEventType), event)?.date ?? new Date()).getTime(),
-            ],
+            y: [event.date.getTime(), (getNextEvent(events.filter(isEventType), event)?.date ?? new Date()).getTime()],
           },
         ],
       }))
