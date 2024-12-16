@@ -10,6 +10,7 @@ import {
   isCassetteEvent,
   isBrakePadEvent,
   isTireEvent,
+  getEventLabel,
 } from '../../models';
 
 const EVENT_OFFSET = 42 * 3600 * 1000; // 36 hours
@@ -56,11 +57,10 @@ const EventTimelineChart = () => {
     })),
   }));
 
-  //TODO tire display brand
   const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent]
     .map(isEventType =>
       events.filter(isEventType).map(event => ({
-        name: `${label(event.type)} ${event.date.toLocaleDateString()}`,
+        name: getEventLabel(event, label),
         data: [
           {
             x: label(event.type),

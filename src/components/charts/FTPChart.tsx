@@ -23,8 +23,10 @@ const options: ApexCharts.ApexOptions = {
       max: 4,
     },
   ],
+  xaxis: {
+    type: 'datetime',
+  },
   colors: ['#e09200', '#ebcf6c'],
-  fill: {type: 'gradient'},
 };
 
 const FTPChart = () => {
@@ -52,15 +54,14 @@ const FTPChart = () => {
     refresh();
   };
 
-  const labels = ftpTests.map(({date}) => date.toLocaleDateString());
   const series = [
-    {name: 'W', data: ftpTests.map(({ftp}) => ftp)},
-    {name: 'W/kg', data: ftpTests.map(({ftp, weight}) => ftp / weight)},
+    {name: 'W', data: ftpTests.map(({ftp, date}) => [date.getTime(), ftp])},
+    {name: 'W/kg', data: ftpTests.map(({ftp, weight, date}) => [date.getTime(), ftp / weight])},
   ];
 
   return (
     <>
-      <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />
+      <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
       <Group marginBottom="20px">
         <Input type="date" size="sm" width="200px" value={date} onChange={({target}) => setDate(target.value)} />
         <NumberInputRoot size="sm" value={weight?.toString()} onValueChange={({value}) => setWeight(Number(value))}>
