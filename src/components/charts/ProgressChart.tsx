@@ -18,9 +18,7 @@ const options: ApexCharts.ApexOptions = {
     },
   ],
   colors: ['#aba19c', '#e09200'],
-  stroke: {
-    curve: 'smooth',
-  },
+  stroke: {curve: 'smooth'},
   fill: {type: 'gradient'},
 };
 
