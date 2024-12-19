@@ -33,16 +33,29 @@ type BrakePadEvent = BaseEvent & {
   type: 'brake_pad';
 };
 
-type Event = ChainEvent | CassetteEvent | TireEvent | BatteryEvent | BrakePadEvent;
+type SaddleEvent = BaseEvent & {
+  type: 'saddle';
+  brand: string;
+  model: string;
+  width: number;
+};
 
-const getEventLabel = (event: Event, label: GetLabel): string => {
+type Event = ChainEvent | CassetteEvent | TireEvent | BatteryEvent | BrakePadEvent | SaddleEvent;
+
+const getEventLabel = (event: Event, label: GetLabel, short: boolean = false): string => {
   switch (event.type) {
     case 'chain':
       return event.chain;
     case 'tire':
-      return `${event.brand} ${event.model} ${event.width}`;
+      return `${short ? '' : event.brand} ${event.model} ${event.width}`.trim();
+    case 'saddle':
+      const [saddleMain] = event.model.split(' ');
+
+      return `${event.brand} ${short ? saddleMain : event.model} ${short ? '' : event.width}`.trim();
     case 'cassette':
-      return `${event.brand} ${event.model} ${event.range}`;
+      const [cassetteMain] = event.model.split(' ');
+
+      return `${event.brand} ${short ? cassetteMain : event.model} ${event.range}`.trim();
     default:
       return label(event.type);
   }
@@ -57,9 +70,8 @@ const isEventValid = (event: Partial<Event>): boolean => {
     case 'cassette':
       return hasTypeAndDate && undefined !== event.brand && undefined !== event.model && undefined !== event.range;
     case 'tire':
+    case 'saddle':
       return hasTypeAndDate && undefined !== event.brand && undefined !== event.model && undefined !== event.width;
-    case 'brake_pad':
-    case 'battery':
     default:
       return hasTypeAndDate;
   }
@@ -76,6 +88,7 @@ const isCassetteEvent = (event: Partial<Event>): event is CassetteEvent => 'cass
 const isTireEvent = (event: Partial<Event>): event is TireEvent => 'tire' === event.type;
 const isBatteryEvent = (event: Partial<Event>): event is BatteryEvent => 'battery' === event.type;
 const isBrakePadEvent = (event: Partial<Event>): event is BrakePadEvent => 'brake_pad' === event.type;
+const isSaddleEvent = (event: Partial<Event>): event is SaddleEvent => 'saddle' === event.type;
 
 export {
   getEventLabel,
@@ -85,6 +98,7 @@ export {
   isChainEvent,
   isEventValid,
   isTireEvent,
+  isSaddleEvent,
   isBrakePadEvent,
 };
-export type {BatteryEvent, CassetteEvent, ChainEvent, TireEvent, Event, BrakePadEvent};
+export type {BatteryEvent, CassetteEvent, ChainEvent, TireEvent, Event, BrakePadEvent, SaddleEvent};

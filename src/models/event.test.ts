@@ -1,4 +1,13 @@
-import {BatteryEvent, BrakePadEvent, CassetteEvent, ChainEvent, getEventLabel, isEventValid, TireEvent} from './event';
+import {
+  BatteryEvent,
+  BrakePadEvent,
+  CassetteEvent,
+  ChainEvent,
+  getEventLabel,
+  isEventValid,
+  SaddleEvent,
+  TireEvent,
+} from './event';
 
 const chainEvent: ChainEvent = {
   id: 'id',
@@ -34,36 +43,57 @@ const cassetteEvent: CassetteEvent = {
   type: 'cassette',
   date: new Date(),
   brand: 'SRAM',
-  model: 'Force AXS',
+  model: 'Force AXS XG-1270',
   range: '10-33',
+};
+
+const saddleEvent: SaddleEvent = {
+  id: 'id',
+  type: 'saddle',
+  date: new Date(),
+  brand: 'S-Works',
+  model: 'Romin EVO Mirror',
+  width: 143,
 };
 
 const mockLabel = (key: string | null) => key ?? '';
 
 describe('getEventLabel', () => {
-  test('it can get the label from an event', () => {
-    expect(getEventLabel(chainEvent, mockLabel)).toEqual('🍓');
-    expect(getEventLabel(tireEvent, mockLabel)).toEqual('Continental GP5000 32');
-    expect(getEventLabel(batteryEvent, mockLabel)).toEqual('battery');
-    expect(getEventLabel(brakePadEvent, mockLabel)).toEqual('brake_pad');
-    expect(getEventLabel(cassetteEvent, mockLabel)).toEqual('SRAM Force AXS 10-33');
+  test.each([
+    [chainEvent, '🍓'],
+    [tireEvent, 'Continental GP5000 32'],
+    [batteryEvent, 'battery'],
+    [brakePadEvent, 'brake_pad'],
+    [cassetteEvent, 'SRAM Force AXS XG-1270 10-33'],
+    [saddleEvent, 'S-Works Romin EVO Mirror 143'],
+  ])('it can get the label from an event', (event, expected) => {
+    expect(getEventLabel(event, mockLabel)).toEqual(expected);
+  });
+
+  test.each([
+    [tireEvent, 'GP5000 32'],
+    [cassetteEvent, 'SRAM Force 10-33'],
+    [saddleEvent, 'S-Works Romin'],
+  ])('it can get the event label in a short version', (event, expected) => {
+    expect(getEventLabel(event, mockLabel, true)).toEqual(expected);
   });
 });
 
 describe('isEventValid', () => {
-  test('it can tell if an event is valid', () => {
-    expect(isEventValid(chainEvent)).toEqual(true);
-    expect(isEventValid(tireEvent)).toEqual(true);
-    expect(isEventValid(batteryEvent)).toEqual(true);
-    expect(isEventValid(brakePadEvent)).toEqual(true);
-    expect(isEventValid(cassetteEvent)).toEqual(true);
-  });
-
-  test('it can tell if an event is invalid', () => {
-    expect(isEventValid({...chainEvent, chain: undefined})).toEqual(false);
-    expect(isEventValid({...tireEvent, brand: undefined})).toEqual(false);
-    expect(isEventValid({...batteryEvent, date: undefined})).toEqual(false);
-    expect(isEventValid({...brakePadEvent, type: undefined})).toEqual(false);
-    expect(isEventValid({...cassetteEvent, model: undefined})).toEqual(false);
+  test.each([
+    [chainEvent, true],
+    [tireEvent, true],
+    [batteryEvent, true],
+    [brakePadEvent, true],
+    [cassetteEvent, true],
+    [saddleEvent, true],
+    [{...chainEvent, chain: undefined}, false],
+    [{...tireEvent, brand: undefined}, false],
+    [{...batteryEvent, date: undefined}, false],
+    [{...brakePadEvent, type: undefined}, false],
+    [{...cassetteEvent, model: undefined}, false],
+    [{...saddleEvent, width: undefined}, false],
+  ])('it can tell if an event is valid', (event, expected) => {
+    expect(isEventValid(event)).toEqual(expected);
   });
 });

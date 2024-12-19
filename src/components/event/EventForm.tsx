@@ -1,5 +1,5 @@
 import {Event} from '../../models';
-import {CassetteEventForm, ChainEventForm, TireEventForm} from '../event';
+import {CassetteEventForm, ChainEventForm, SaddleEventForm, TireEventForm} from '../event';
 
 type EventFormProps = {
   event: Partial<Event>;
@@ -14,6 +14,8 @@ const EventForm = (props: EventFormProps) => {
       return <CassetteEventForm {...props} />;
     case 'tire':
       return <TireEventForm {...props} />;
+    case 'saddle':
+      return <SaddleEventForm {...props} />;
     default:
       return null;
   }

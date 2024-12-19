@@ -11,6 +11,7 @@ import {
   isBrakePadEvent,
   isTireEvent,
   getEventLabel,
+  isSaddleEvent,
 } from '../../models';
 
 const options: ApexCharts.ApexOptions = {
@@ -55,7 +56,7 @@ const EventTimelineChart = () => {
     })),
   }));
 
-  const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent]
+  const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent]
     .map(isEventType =>
       events.filter(isEventType).map(event => ({
         name: getEventLabel(event, label),

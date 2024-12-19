@@ -11,7 +11,7 @@ import {
   DialogTrigger,
   toaster,
 } from '../../components/ui';
-import {isChainEvent, Event, isTireEvent, backup, isCassetteEvent} from '../../models';
+import {isChainEvent, Event, isTireEvent, backup, isCassetteEvent, isSaddleEvent} from '../../models';
 import {AddEvent} from '../../components';
 import {useEvents, useFetcher, useLabels} from '../../hooks';
 
@@ -44,6 +44,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
     toaster.create({title: `${label(event.type)} Event removed`});
   };
 
+  //TODO cell component for each event type
   return (
     <DialogRoot size="xl">
       <DialogTrigger asChild={true}>
@@ -78,7 +79,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                       <Table.Cell>{label(event.bike, true)}</Table.Cell>
                       <Table.Cell>{event.chain}</Table.Cell>
                     </>
-                  ) : isTireEvent(event) ? (
+                  ) : isTireEvent(event) || isSaddleEvent(event) ? (
                     <>
                       <Table.Cell>
                         {event.brand} {event.model}
