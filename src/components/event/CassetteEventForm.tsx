@@ -1,13 +1,9 @@
 import {ChangeEvent} from 'react';
 import {Input} from '@chakra-ui/react';
-import {CassetteEvent, isCassetteEvent} from '../../models';
+import {CassetteEvent} from '../../models';
 import {EventFormProps} from '../../components';
 
-const CassetteEventForm = ({event, onChange}: EventFormProps) => {
-  if (!isCassetteEvent(event)) {
-    return null;
-  }
-
+const CassetteEventForm = ({event, onChange}: EventFormProps<CassetteEvent>) => {
   const handlePropertyChange =
     (property: keyof CassetteEvent) =>
     ({target}: ChangeEvent<HTMLInputElement>) => {

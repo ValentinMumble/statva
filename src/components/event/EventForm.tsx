@@ -1,21 +1,21 @@
 import {Event} from '../../models';
 import {CassetteEventForm, ChainEventForm, SaddleEventForm, TireEventForm} from '../event';
 
-type EventFormProps = {
-  event: Partial<Event>;
-  onChange: (event: Partial<Event>) => void;
+type EventFormProps<EventType> = {
+  event: Partial<EventType>;
+  onChange: (event: Partial<EventType>) => void;
 };
 
-const EventForm = (props: EventFormProps) => {
-  switch (props.event.type) {
+const EventForm = ({event, ...props}: EventFormProps<Event>) => {
+  switch (event.type) {
     case 'chain':
-      return <ChainEventForm {...props} />;
+      return <ChainEventForm {...props} event={event} />;
     case 'cassette':
-      return <CassetteEventForm {...props} />;
+      return <CassetteEventForm {...props} event={event} />;
     case 'tire':
-      return <TireEventForm {...props} />;
+      return <TireEventForm {...props} event={event} />;
     case 'saddle':
-      return <SaddleEventForm {...props} />;
+      return <SaddleEventForm {...props} event={event} />;
     default:
       return null;
   }

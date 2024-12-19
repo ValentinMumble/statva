@@ -1,13 +1,9 @@
 import {ChangeEvent} from 'react';
 import {Input} from '@chakra-ui/react';
-import {ChainEvent, isChainEvent} from '../../models';
+import {ChainEvent} from '../../models';
 import {GearSelect, EventFormProps} from '../../components';
 
-const ChainEventForm = ({event, onChange}: EventFormProps) => {
-  if (!isChainEvent(event)) {
-    return null;
-  }
-
+const ChainEventForm = ({event, onChange}: EventFormProps<ChainEvent>) => {
   const handlePropertyChange =
     (property: keyof ChainEvent) =>
     ({target}: ChangeEvent<HTMLInputElement>) => {
@@ -18,7 +14,7 @@ const ChainEventForm = ({event, onChange}: EventFormProps) => {
     <>
       <GearSelect
         size="sm"
-        selectedGear={[event.bike]}
+        selectedGear={event.bike ? [event.bike] : []}
         excludedGearTypes={['shoes']}
         onSelectedGearChange={bikes => onChange({...event, bike: bikes[0]})}
         selectContentProps={{portalled: false}}

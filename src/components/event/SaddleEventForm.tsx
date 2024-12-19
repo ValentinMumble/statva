@@ -1,13 +1,9 @@
 import {ChangeEvent} from 'react';
 import {Input} from '@chakra-ui/react';
-import {SaddleEvent, isSaddleEvent} from '../../models';
+import {SaddleEvent} from '../../models';
 import {EventFormProps} from '../../components';
 
-const SaddleEventForm = ({event, onChange}: EventFormProps) => {
-  if (!isSaddleEvent(event)) {
-    return null;
-  }
-
+const SaddleEventForm = ({event, onChange}: EventFormProps<SaddleEvent>) => {
   const handlePropertyChange =
     (property: keyof SaddleEvent) =>
     ({target}: ChangeEvent<HTMLInputElement>) => {

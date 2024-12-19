@@ -1,13 +1,9 @@
 import {ChangeEvent} from 'react';
 import {Input} from '@chakra-ui/react';
-import {TireEvent, isTireEvent} from '../../models';
+import {TireEvent} from '../../models';
 import {EventFormProps} from '../../components';
 
-const TireEventForm = ({event, onChange}: EventFormProps) => {
-  if (!isTireEvent(event)) {
-    return null;
-  }
-
+const TireEventForm = ({event, onChange}: EventFormProps<TireEvent>) => {
   const handlePropertyChange =
     (property: keyof TireEvent) =>
     ({target}: ChangeEvent<HTMLInputElement>) => {
