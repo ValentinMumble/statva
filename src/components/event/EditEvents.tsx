@@ -11,8 +11,8 @@ import {
   DialogTrigger,
   toaster,
 } from '../../components/ui';
-import {isChainEvent, Event, isTireEvent, backup, isCassetteEvent, isSaddleEvent} from '../../models';
-import {AddEvent} from '../../components';
+import {Event, backup} from '../../models';
+import {AddEvent, EventCells} from '../../components';
 import {useEvents, useFetcher, useLabels} from '../../hooks';
 
 const HEADERS = ['Date', 'Type', 'Bike', 'Chain', ''];
@@ -44,7 +44,6 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
     toaster.create({title: `${label(event.type)} Event removed`});
   };
 
-  //TODO cell component for each event type
   return (
     <DialogRoot size="xl">
       <DialogTrigger asChild={true}>
@@ -74,31 +73,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                 <Table.Row key={event.id} {...rowProps}>
                   <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
                   <Table.Cell>{label(event.type)}</Table.Cell>
-                  {isChainEvent(event) ? (
-                    <>
-                      <Table.Cell>{label(event.bike, true)}</Table.Cell>
-                      <Table.Cell>{event.chain}</Table.Cell>
-                    </>
-                  ) : isTireEvent(event) || isSaddleEvent(event) ? (
-                    <>
-                      <Table.Cell>
-                        {event.brand} {event.model}
-                      </Table.Cell>
-                      <Table.Cell>{event.width} mm</Table.Cell>
-                    </>
-                  ) : isCassetteEvent(event) ? (
-                    <>
-                      <Table.Cell>
-                        {event.brand} {event.model}
-                      </Table.Cell>
-                      <Table.Cell>{event.range}</Table.Cell>
-                    </>
-                  ) : (
-                    <>
-                      <Table.Cell />
-                      <Table.Cell />
-                    </>
-                  )}
+                  <EventCells event={event} />
                   <Table.Cell textAlign="end">
                     <IconButton variant="ghost" title="Remove event" size="xs" onClick={handleRemove(event)}>
                       <LuMinus />
