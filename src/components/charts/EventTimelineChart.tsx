@@ -56,6 +56,7 @@ const EventTimelineChart = () => {
     })),
   }));
 
+  //TODO try to map on event type and see if type hinting works
   const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent]
     .map(isEventType =>
       events.filter(isEventType).map(event => ({

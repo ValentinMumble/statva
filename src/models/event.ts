@@ -11,6 +11,16 @@ type ChainEvent = BaseEvent & {
   bike: string;
 };
 
+type FallEvent = BaseEvent & {
+  type: 'fall';
+  bike: string;
+};
+
+type PunctureEvent = BaseEvent & {
+  type: 'puncture';
+  bike: string;
+};
+
 type CassetteEvent = BaseEvent & {
   type: 'cassette';
   brand: string;
@@ -40,12 +50,24 @@ type SaddleEvent = BaseEvent & {
   width: number;
 };
 
-type Event = ChainEvent | CassetteEvent | TireEvent | BatteryEvent | BrakePadEvent | SaddleEvent;
+type Event =
+  | ChainEvent
+  | CassetteEvent
+  | TireEvent
+  | BatteryEvent
+  | BrakePadEvent
+  | SaddleEvent
+  | FallEvent
+  | PunctureEvent;
 
 const getEventLabel = (event: Event, label: GetLabel, short: boolean = false): string => {
   switch (event.type) {
     case 'chain':
       return event.chain;
+    case 'fall':
+      return `${label(event.bike)} ${label(event.type)}`;
+    case 'puncture':
+      return `${label(event.bike)} ${label(event.type)}`;
     case 'tire':
       return `${short ? '' : event.brand} ${event.model} ${event.width}`.trim();
     case 'saddle':
@@ -72,6 +94,9 @@ const isEventValid = (event: Partial<Event>): boolean => {
     case 'tire':
     case 'saddle':
       return hasTypeAndDate && undefined !== event.brand && undefined !== event.model && undefined !== event.width;
+    case 'fall':
+    case 'puncture':
+      return hasTypeAndDate && undefined !== event.bike;
     default:
       return hasTypeAndDate;
   }
@@ -83,6 +108,7 @@ const getNextEvent = <T extends Event>(events: T[], fromEvent: T, filter?: (even
   return events[events.indexOf(fromEvent) + 1] ?? null;
 };
 
+//TODO useless?
 const isChainEvent = (event: Partial<Event>): event is ChainEvent => 'chain' === event.type;
 const isCassetteEvent = (event: Partial<Event>): event is CassetteEvent => 'cassette' === event.type;
 const isTireEvent = (event: Partial<Event>): event is TireEvent => 'tire' === event.type;
@@ -94,11 +120,21 @@ export {
   getEventLabel,
   getNextEvent,
   isBatteryEvent,
+  isBrakePadEvent,
   isCassetteEvent,
   isChainEvent,
   isEventValid,
-  isTireEvent,
   isSaddleEvent,
-  isBrakePadEvent,
+  isTireEvent,
 };
-export type {BatteryEvent, CassetteEvent, ChainEvent, TireEvent, Event, BrakePadEvent, SaddleEvent};
+export type {
+  BatteryEvent,
+  BrakePadEvent,
+  CassetteEvent,
+  ChainEvent,
+  Event,
+  FallEvent,
+  PunctureEvent,
+  SaddleEvent,
+  TireEvent,
+};

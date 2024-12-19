@@ -6,7 +6,16 @@ import {EventForm} from '../../components';
 import {useFetcher, useLabels} from '../../hooks';
 import {Event, isEventValid, labelCollection} from '../../models';
 
-const EVENT_TYPES: Event['type'][] = ['chain', 'cassette', 'tire', 'battery', 'brake_pad', 'saddle'];
+const EVENT_TYPES: Event['type'][] = [
+  'chain',
+  'cassette',
+  'tire',
+  'saddle',
+  'battery',
+  'brake_pad',
+  'fall',
+  'puncture',
+];
 
 type AddEventProps = {
   onAddEvent: () => void;
