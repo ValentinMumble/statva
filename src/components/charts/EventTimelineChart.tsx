@@ -12,19 +12,9 @@ import {
   isTireEvent,
   getEventLabel,
   isSaddleEvent,
+  isFallEvent,
+  isPunctureEvent,
 } from '../../models';
-
-const options: ApexCharts.ApexOptions = {
-  xaxis: {type: 'datetime'},
-  plotOptions: {
-    bar: {
-      horizontal: true,
-      barHeight: '40%',
-      rangeBarGroupRows: true,
-    },
-  },
-  legend: {show: false},
-};
 
 const EventTimelineChart = () => {
   const [label] = useLabels();
@@ -56,7 +46,6 @@ const EventTimelineChart = () => {
     })),
   }));
 
-  //TODO try to map on event type and see if type hinting works
   const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent]
     .map(isEventType =>
       events.filter(isEventType).map(event => ({
@@ -71,13 +60,42 @@ const EventTimelineChart = () => {
     )
     .flat();
 
+  const oneShotEventSeries = [isFallEvent, isPunctureEvent]
+    .map(isEventType =>
+      events.filter(isEventType).map(event => ({
+        name: label(isEventType(event) ? event.bike : event.type, true),
+        data: [
+          {
+            x: label(event.type),
+            y: [event.date.getTime(), event.date.getTime()],
+          },
+        ],
+      }))
+    )
+    .flat();
+
   return (
     <>
       <Chart
-        options={getOptions([], undefined, options)}
-        series={[...chainSeries, ...eventSeries]}
+        options={getOptions([], undefined, {
+          xaxis: {type: 'datetime'},
+          plotOptions: {
+            bar: {
+              horizontal: true,
+              barHeight: '40%',
+              rangeBarGroupRows: true,
+              dataLabels: {hideOverflowingLabels: false},
+            },
+          },
+          dataLabels: {
+            enabled: true,
+            formatter: (val: number[], opts) => (val[0] === val[1] ? opts.globals.seriesNames[opts.seriesIndex] : ''),
+          },
+          legend: {show: false},
+        })}
+        series={[...chainSeries, ...eventSeries, ...oneShotEventSeries]}
         type="rangeBar"
-        height={400}
+        height={450}
       />
     </>
   );

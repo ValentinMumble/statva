@@ -108,13 +108,14 @@ const getNextEvent = <T extends Event>(events: T[], fromEvent: T, filter?: (even
   return events[events.indexOf(fromEvent) + 1] ?? null;
 };
 
-//TODO useless?
 const isChainEvent = (event: Partial<Event>): event is ChainEvent => 'chain' === event.type;
 const isCassetteEvent = (event: Partial<Event>): event is CassetteEvent => 'cassette' === event.type;
 const isTireEvent = (event: Partial<Event>): event is TireEvent => 'tire' === event.type;
 const isBatteryEvent = (event: Partial<Event>): event is BatteryEvent => 'battery' === event.type;
 const isBrakePadEvent = (event: Partial<Event>): event is BrakePadEvent => 'brake_pad' === event.type;
 const isSaddleEvent = (event: Partial<Event>): event is SaddleEvent => 'saddle' === event.type;
+const isFallEvent = (event: Partial<Event>): event is FallEvent => 'fall' === event.type;
+const isPunctureEvent = (event: Partial<Event>): event is PunctureEvent => 'puncture' === event.type;
 
 export {
   getEventLabel,
@@ -124,6 +125,8 @@ export {
   isCassetteEvent,
   isChainEvent,
   isEventValid,
+  isFallEvent,
+  isPunctureEvent,
   isSaddleEvent,
   isTireEvent,
 };
