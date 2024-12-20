@@ -1,6 +1,7 @@
 export * from './ActivityTimeChart';
 export * from './AverageGearChart';
 export * from './ChainChart';
+export * from './DataLineChart';
 export * from './EddingtonChart';
 export * from './EddingtonDayChart';
 export * from './EventChart';
@@ -9,5 +10,4 @@ export * from './FTPChart';
 export * from './GearChart';
 export * from './HeartChart';
 export * from './ProgressChart';
-export * from './SufferChart';
 export * from './TimeframeChart';

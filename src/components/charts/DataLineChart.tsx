@@ -1,9 +1,9 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {Group} from '@chakra-ui/react';
-import {StepperInput} from '../../components/ui';
-import {useActivities} from '../../hooks';
-import {extractEmoji, getOptions} from '../../models';
+import {StepperInput} from '../ui';
+import {useActivities, useLabels} from '../../hooks';
+import {ChartProps, extractEmoji, getOptions} from '../../models';
 
 const DEFAULT_ITEM_COUNT = 50;
 
@@ -23,8 +23,9 @@ const options: ApexCharts.ApexOptions = {
   markers: {size: [0]},
 };
 
-const SufferChart = () => {
+const DataLineChart = ({data}: ChartProps) => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
+  const [label] = useLabels();
   const [activities] = useActivities({
     withCommute: false,
     withPrivate: false,
@@ -32,12 +33,13 @@ const SufferChart = () => {
     sortDirection: 'asc',
   });
 
-  const relevantActivities = (activities ?? [])
-    .filter(({suffer_score}) => undefined !== suffer_score)
-    .slice(-itemCount);
+  if ('number' === typeof data) {
+    return null;
+  }
 
+  const relevantActivities = (activities ?? []).filter(activity => undefined !== activity[data]).slice(-itemCount);
   const labels = relevantActivities.map(({name}) => extractEmoji(name));
-  const series = [{name: '🌶️', data: relevantActivities.map(({suffer_score}) => suffer_score ?? 0)}];
+  const series = [{name: label(data), data: relevantActivities.map(activity => Number(activity[data] ?? 0))}];
 
   return (
     <>
@@ -53,4 +55,4 @@ const SufferChart = () => {
   );
 };
 
-export {SufferChart};
+export {DataLineChart};

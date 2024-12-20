@@ -11,7 +11,7 @@ import {
   ActivityTimeChart,
   ChainChart,
   EventChart,
-  SufferChart,
+  DataLineChart,
   EddingtonDayChart,
   EventTimelineChart,
 } from './charts';
@@ -113,7 +113,11 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Suffer chart 🌶️',
-    component: <SufferChart />,
+    component: <DataLineChart data="suffer_score" />,
+  },
+  {
+    label: 'Cadence chart 🎡',
+    component: <DataLineChart data="average_cadence" />,
   },
 ];
 
