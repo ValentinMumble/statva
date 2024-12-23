@@ -1,8 +1,8 @@
 import {ChangeEvent, useState} from 'react';
-import {Group, IconButton, Input, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
+import {Group, IconButton, Input, SelectValueChangeDetails} from '@chakra-ui/react';
 import {LuPlus} from 'react-icons/lu';
-import {SegmentedControl, toaster} from '../../components/ui';
-import {EventForm} from '../../components';
+import {SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText, toaster} from '../../components/ui';
+import {EventForm, GearSelect} from '../../components';
 import {useFetcher, useLabels} from '../../hooks';
 import {Event, isEventValid, labelCollection} from '../../models';
 
@@ -16,18 +16,19 @@ const EVENT_TYPES: Event['type'][] = [
   'fall',
   'puncture',
 ];
+const SUPER6 = 'b13440652';
 
 type AddEventProps = {
   onAddEvent: () => void;
 };
 
 const AddEvent = ({onAddEvent}: AddEventProps) => {
-  const [event, setEvent] = useState<Partial<Event>>({type: 'chain', date: new Date()});
+  const [event, setEvent] = useState<Partial<Event>>({type: 'chain', date: new Date(), bike: SUPER6});
   const [label] = useLabels();
   const upsertEvent = useFetcher<void>('events.set');
 
-  const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) =>
-    setEvent(event => ({date: event.date, type: value as Event['type']}));
+  const handleTypeChange = ({value}: SelectValueChangeDetails) =>
+    setEvent(event => ({date: event.date, bike: event.bike, type: value[0] as Event['type']}));
 
   const handleDateChange = ({target}: ChangeEvent<HTMLInputElement>) =>
     setEvent(event => ({...event, date: new Date(target.value)}));
@@ -45,6 +46,8 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
     toaster.create({title: `${label(eventWithId.type)} Event added`});
   };
 
+  const typeCollection = labelCollection(EVENT_TYPES, label);
+
   return (
     <Group justifyContent="space-between">
       <Input
@@ -54,12 +57,30 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
         value={event.date?.toISOString().slice(0, 10)}
         onChange={handleDateChange}
       />
-      <SegmentedControl
+      <GearSelect
         size="sm"
-        value={event.type}
-        onValueChange={handleTypeChange}
-        items={labelCollection(EVENT_TYPES, label).items}
+        selectedGear={event.bike ? [event.bike] : []}
+        excludedGearTypes={['shoes']}
+        onSelectedGearChange={([bike]) => setEvent({...event, bike})}
+        selectContentProps={{portalled: false}}
       />
+      <SelectRoot
+        width="100px"
+        value={[String(event.type)]}
+        onValueChange={handleTypeChange}
+        collection={typeCollection}
+      >
+        <SelectTrigger>
+          <SelectValueText placeholder="Type" />
+        </SelectTrigger>
+        <SelectContent portalled={false}>
+          {typeCollection.items.map(type => (
+            <SelectItem item={type} key={type.value}>
+              {type.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </SelectRoot>
       <EventForm event={event} onChange={setEvent} />
       <IconButton variant="outline" title="Add event" disabled={!isEventValid(event)} size="xs" onClick={handleAdd}>
         <LuPlus />

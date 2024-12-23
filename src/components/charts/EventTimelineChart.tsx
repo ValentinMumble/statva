@@ -15,14 +15,18 @@ import {
   isFallEvent,
   isPunctureEvent,
 } from '../../models';
+import {useState} from 'react';
 
 const EventTimelineChart = () => {
+  const [bikes] = useState<string[]>(['b13440652']);
   const [label] = useLabels();
-  const [events] = useEvents();
+  const [allEvents] = useEvents();
 
-  if (null === events) {
+  if (null === allEvents) {
     return <Skeleton height="200px" />;
   }
+
+  const events = allEvents.filter(event => bikes.includes(event.bike));
 
   const chainEvents = events.filter(isChainEvent);
   const eventsIndexedByChain = chainEvents.reduce(

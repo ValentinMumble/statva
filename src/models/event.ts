@@ -3,22 +3,12 @@ import {GetLabel} from './label';
 type BaseEvent = {
   id: string;
   date: Date;
+  bike: string;
 };
 
 type ChainEvent = BaseEvent & {
   type: 'chain';
   chain: string;
-  bike: string;
-};
-
-type FallEvent = BaseEvent & {
-  type: 'fall';
-  bike: string;
-};
-
-type PunctureEvent = BaseEvent & {
-  type: 'puncture';
-  bike: string;
 };
 
 type CassetteEvent = BaseEvent & {
@@ -41,6 +31,14 @@ type BatteryEvent = BaseEvent & {
 
 type BrakePadEvent = BaseEvent & {
   type: 'brake_pad';
+};
+
+type FallEvent = BaseEvent & {
+  type: 'fall';
+};
+
+type PunctureEvent = BaseEvent & {
+  type: 'puncture';
 };
 
 type SaddleEvent = BaseEvent & {
@@ -84,21 +82,18 @@ const getEventLabel = (event: Event, label: GetLabel, short: boolean = false): s
 };
 
 const isEventValid = (event: Partial<Event>): boolean => {
-  const hasTypeAndDate = undefined !== event.type && undefined !== event.date;
+  const isBaseEventValid = undefined !== event.type && undefined !== event.date && undefined !== event.bike;
 
   switch (event.type) {
     case 'chain':
-      return hasTypeAndDate && undefined !== event.chain && undefined !== event.bike;
+      return isBaseEventValid && undefined !== event.chain;
     case 'cassette':
-      return hasTypeAndDate && undefined !== event.brand && undefined !== event.model && undefined !== event.range;
+      return isBaseEventValid && undefined !== event.brand && undefined !== event.model && undefined !== event.range;
     case 'tire':
     case 'saddle':
-      return hasTypeAndDate && undefined !== event.brand && undefined !== event.model && undefined !== event.width;
-    case 'fall':
-    case 'puncture':
-      return hasTypeAndDate && undefined !== event.bike;
+      return isBaseEventValid && undefined !== event.brand && undefined !== event.model && undefined !== event.width;
     default:
-      return hasTypeAndDate;
+      return isBaseEventValid;
   }
 };
 

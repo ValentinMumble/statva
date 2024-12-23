@@ -18,7 +18,7 @@ const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
   const dataPerGear = (activities ?? []).reduce((gearMap: {[gearId: string]: number}, activity) => {
     if (null === activity.gear_id) return gearMap;
 
-    const valueToAdd = 'number' === typeof data ? data : (activity[data] as number);
+    const valueToAdd = 'number' === typeof data ? data : Number(activity[data]);
     gearMap[activity.gear_id] = (gearMap[activity.gear_id] ?? 0) + valueToAdd;
 
     return gearMap;

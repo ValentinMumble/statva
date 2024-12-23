@@ -15,7 +15,7 @@ import {Event, backup} from '../../models';
 import {AddEvent, EventCells} from '../../components';
 import {useEvents, useFetcher, useLabels} from '../../hooks';
 
-const HEADERS = ['Date', 'Type', 'Bike', 'Chain', ''];
+const HEADERS = ['Date', 'Bike', 'Type', 'Additional', '', ''];
 
 const rowProps: Partial<Table.RowProps> = {
   width: '100%',
@@ -72,6 +72,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
               {(events ?? []).reverse().map(event => (
                 <Table.Row key={event.id} {...rowProps}>
                   <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
+                  <Table.Cell>{label(event.bike)}</Table.Cell>
                   <Table.Cell>{label(event.type)}</Table.Cell>
                   <EventCells event={event} />
                   <Table.Cell textAlign="end">

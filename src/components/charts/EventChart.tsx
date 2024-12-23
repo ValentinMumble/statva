@@ -33,7 +33,7 @@ const EventChart = () => {
       : events.reduce((odometer: {[id: string]: number}, event, index) => {
           const nextEventDate = events[index + 1]?.date;
           const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
-            (sum, ride) => (ride[data] as number) + sum,
+            (sum, ride) => Number(ride[data]) + sum,
             0
           );
 

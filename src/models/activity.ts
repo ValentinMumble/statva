@@ -55,12 +55,12 @@ const getTotalValue = (activities: Activity[], value: keyof Activity): number =>
   }, 0);
 
 const getMaxValue = (activities: Activity[], value: keyof Activity): number =>
-  Math.max(...activities.map(activity => (activity[value] ?? 0) as number));
+  Math.max(...activities.map(activity => Number(activity[value] ?? 0)));
 
 const getAverageValue = (activities: Activity[], value: keyof Activity): number =>
   activities
     .filter(activity => undefined !== activity[value])
-    .reduce((total, activity, _index, activities) => total + (activity[value] as number) / activities.length, 0);
+    .reduce((total, activity, _index, activities) => total + Number(activity[value]) / activities.length, 0);
 
 const getRidesBeforeMonth = (rides: Activity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
