@@ -4,7 +4,7 @@ export * from './ChainChart';
 export * from './DataLineChart';
 export * from './EddingtonChart';
 export * from './EddingtonDayChart';
-export * from './EventChart';
+export * from './EventOdometerChart';
 export * from './EventTimelineChart';
 export * from './FTPChart';
 export * from './GearChart';

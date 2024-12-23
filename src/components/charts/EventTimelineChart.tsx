@@ -1,5 +1,6 @@
 import Chart from 'react-apexcharts';
-import {Skeleton} from '../../components/ui';
+import {SegmentedControl, Skeleton} from '../../components/ui';
+import {EditEvents} from '../../components';
 import {useEvents, useLabels} from '../../hooks';
 import {
   getOptions,
@@ -14,21 +15,27 @@ import {
   isSaddleEvent,
   isFallEvent,
   isPunctureEvent,
+  SUPER6,
+  labelCollection,
 } from '../../models';
 import {useState} from 'react';
+import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 
 const EventTimelineChart = () => {
-  const [bikes] = useState<string[]>(['b13440652']);
+  const [gearId, setGearId] = useState<string>(SUPER6);
   const [label] = useLabels();
-  const [allEvents] = useEvents();
+  const [allEvents, refreshEvents] = useEvents();
 
   if (null === allEvents) {
     return <Skeleton height="200px" />;
   }
 
-  const events = allEvents.filter(event => bikes.includes(event.bike));
+  const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
 
-  const chainEvents = events.filter(isChainEvent);
+  const relevantBikes = [...new Set(allEvents.map(({bike}) => bike))];
+  const relevantEvents = allEvents.filter(({bike}) => gearId === bike);
+
+  const chainEvents = relevantEvents.filter(isChainEvent);
   const eventsIndexedByChain = chainEvents.reduce(
     (eventsIndexedByChain: {[key: string]: ChainEvent[]}, event: ChainEvent) => {
       const events = eventsIndexedByChain[event.chain] ?? [];
@@ -52,12 +59,15 @@ const EventTimelineChart = () => {
 
   const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent]
     .map(isEventType =>
-      events.filter(isEventType).map(event => ({
+      relevantEvents.filter(isEventType).map(event => ({
         name: getEventLabel(event, label),
         data: [
           {
             x: label(event.type),
-            y: [event.date.getTime(), (getNextEvent(events.filter(isEventType), event)?.date ?? new Date()).getTime()],
+            y: [
+              event.date.getTime(),
+              (getNextEvent(relevantEvents.filter(isEventType), event)?.date ?? new Date()).getTime(),
+            ],
           },
         ],
       }))
@@ -66,7 +76,7 @@ const EventTimelineChart = () => {
 
   const oneShotEventSeries = [isFallEvent, isPunctureEvent]
     .map(isEventType =>
-      events.filter(isEventType).map(event => ({
+      allEvents.filter(isEventType).map(event => ({
         name: label(isEventType(event) ? event.bike : event.type, true),
         data: [
           {
@@ -78,8 +88,14 @@ const EventTimelineChart = () => {
     )
     .flat();
 
+  const bikeCollection = labelCollection(relevantBikes, label, true);
+
   return (
     <>
+      <Group width="full" justifyContent="end" gap="20px">
+        <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
+        <EditEvents onEditEvents={refreshEvents} />
+      </Group>
       <Chart
         options={getOptions([], undefined, {
           xaxis: {type: 'datetime'},

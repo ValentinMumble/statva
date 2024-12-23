@@ -4,7 +4,7 @@ import {LuPlus} from 'react-icons/lu';
 import {SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText, toaster} from '../../components/ui';
 import {EventForm, GearSelect} from '../../components';
 import {useFetcher, useLabels} from '../../hooks';
-import {Event, isEventValid, labelCollection} from '../../models';
+import {Event, isEventValid, labelCollection, SUPER6} from '../../models';
 
 const EVENT_TYPES: Event['type'][] = [
   'chain',
@@ -16,7 +16,6 @@ const EVENT_TYPES: Event['type'][] = [
   'fall',
   'puncture',
 ];
-const SUPER6 = 'b13440652';
 
 type AddEventProps = {
   onAddEvent: () => void;

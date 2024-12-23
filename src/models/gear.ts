@@ -19,5 +19,7 @@ const GEAR: {[key: string]: Gear} = {
   g17385334: {id: 'g17385334', type: 'shoes'},
 };
 
-export {GEAR};
+const SUPER6 = 'b13440652';
+
+export {GEAR, SUPER6};
 export type {Gear};

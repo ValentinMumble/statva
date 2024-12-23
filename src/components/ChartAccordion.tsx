@@ -10,7 +10,7 @@ import {
   FTPChart,
   ActivityTimeChart,
   ChainChart,
-  EventChart,
+  EventOdometerChart,
   DataLineChart,
   EddingtonDayChart,
   EventTimelineChart,
@@ -26,7 +26,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Event odometer 📟',
-    component: <EventChart />,
+    component: <EventOdometerChart />,
   },
   {
     label: 'Event timeline 🎞️',
