@@ -1,9 +1,11 @@
 import {useState} from 'react';
 import {Group} from '@chakra-ui/react';
 import Chart from 'react-apexcharts';
-import {YearRangeSlider} from '../../components';
+import {StepperInput} from '../../components/ui';
 import {useActivities} from '../../hooks';
-import {formatPower, formatSpeed, getOptions, range} from '../../models';
+import {formatPower, formatSpeed, getOptions} from '../../models';
+
+const DEFAULT_ITEM_COUNT = 50;
 
 const options: ApexCharts.ApexOptions = {
   xaxis: {type: 'datetime'},
@@ -30,14 +32,13 @@ type ProgressChartProps = {
 };
 
 const ProgressChart = ({search}: ProgressChartProps) => {
-  const [yearRange, setYearRange] = useState<number[]>([]);
+  const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const [activities] = useActivities({
     search,
     withCommute: false,
     withPrivate: false,
     sort: 'date',
     sortDirection: 'asc',
-    years: 0 === yearRange.length ? undefined : range(yearRange[0], yearRange[1]),
   });
 
   const averageSpeedSerie = (activities ?? []).map(({average_speed, start_date}) => [
@@ -49,14 +50,18 @@ const ProgressChart = ({search}: ProgressChartProps) => {
     weighted_average_watts ?? null,
   ]);
   const series = [
-    {name: '🏁', data: averageSpeedSerie},
-    {name: '⚡️', data: averagePowerSerie as number[][]},
+    {name: '🏁', data: averageSpeedSerie.slice(-itemCount)},
+    {name: '⚡️', data: averagePowerSerie.slice(-itemCount) as number[][]},
   ];
 
   return (
     <>
-      <Group padding="0 30px" width="full">
-        <YearRangeSlider value={yearRange} min={2023} onChange={setYearRange} />
+      <Group width="full" justifyContent="end" gap="20px">
+        <StepperInput
+          size="xs"
+          value={itemCount.toString()}
+          onValueChange={({valueAsNumber}) => setItemCount(valueAsNumber)}
+        />
       </Group>
       <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
     </>

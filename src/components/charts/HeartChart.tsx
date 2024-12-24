@@ -1,12 +1,13 @@
 import {useState} from 'react';
 import {Group} from '@chakra-ui/react';
 import Chart from 'react-apexcharts';
-import {YearRangeSlider} from '../../components';
+import {StepperInput} from '../../components/ui';
 import {useActivities} from '../../hooks';
 import {ActivityType} from '../../models/strava';
-import {getOptions, getTypes, range} from '../../models';
+import {getOptions, getTypes} from '../../models';
 
 const MIN_DISTANCE_METERS = 30 * 1000;
+const DEFAULT_ITEM_COUNT = 50;
 
 const options: ApexCharts.ApexOptions = {
   colors: ['#8ac448', '#bfaf7d'],
@@ -37,14 +38,13 @@ const options: ApexCharts.ApexOptions = {
 };
 
 const HeartChart = () => {
-  const [yearRange, setYearRange] = useState<number[]>([]);
+  const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
     includedActivityTypes: getTypes(ActivityType.Ride),
-    years: 0 === yearRange.length ? undefined : range(yearRange[0], yearRange[1]),
   });
 
   const rides = (activities ?? []).filter(
@@ -61,14 +61,18 @@ const HeartChart = () => {
     weighted_average_watts ? Math.round(weighted_average_watts) : null,
   ]);
   const series = [
-    {name: '🫀', data: heartRateSerie as number[][]},
-    {name: '⚡️', data: powerSerie as number[][]},
+    {name: '🫀', data: heartRateSerie.slice(-itemCount) as number[][]},
+    {name: '⚡️', data: powerSerie.slice(-itemCount) as number[][]},
   ];
 
   return (
     <>
-      <Group padding="0 30px" width="full">
-        <YearRangeSlider value={yearRange} min={2023} onChange={setYearRange} />
+      <Group width="full" justifyContent="end" gap="20px">
+        <StepperInput
+          size="xs"
+          value={itemCount.toString()}
+          onValueChange={({valueAsNumber}) => setItemCount(valueAsNumber)}
+        />
       </Group>
       <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
     </>
