@@ -63,7 +63,7 @@ const EventTimelineChart = () => {
     })),
   }));
 
-  const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent]
+  const eventSeries = [isBatteryEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent, isTireEvent]
     .map(isEventType =>
       bikeEvents.filter(isEventType).map(event => ({
         name: getEventLabel(event, label),
