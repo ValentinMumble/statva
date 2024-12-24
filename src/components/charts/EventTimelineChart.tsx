@@ -1,7 +1,7 @@
 import Chart from 'react-apexcharts';
 import {SegmentedControl} from '../../components/ui';
 import {EditEvents} from '../../components';
-import {useEvents, useLabels} from '../../hooks';
+import {useActivities, useEvents, useLabels} from '../../hooks';
 import {
   getOptions,
   ChainEvent,
@@ -17,6 +17,7 @@ import {
   isPunctureEvent,
   SUPER6,
   labelCollection,
+  extractEmoji,
 } from '../../models';
 import {useState} from 'react';
 import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
@@ -25,6 +26,11 @@ const EventTimelineChart = () => {
   const [gearId, setGearId] = useState<string>(SUPER6);
   const [label] = useLabels();
   const [allEvents, refreshEvents] = useEvents();
+  const [activities] = useActivities({
+    withCommute: true,
+    withPrivate: true,
+    gearId,
+  });
 
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
 
@@ -76,15 +82,21 @@ const EventTimelineChart = () => {
 
   const oneShotEventSeries = [isFallEvent, isPunctureEvent]
     .map(isEventType =>
-      bikeEvents.filter(isEventType).map(event => ({
-        name: label(event.type),
-        data: [
-          {
-            x: label(event.type),
-            y: [event.date.getTime(), event.date.getTime()],
-          },
-        ],
-      }))
+      bikeEvents.filter(isEventType).map(event => {
+        const ride = activities?.find(
+          ({start_date}) => event.date.toLocaleDateString() === new Date(start_date).toLocaleDateString()
+        );
+
+        return {
+          name: ride ? extractEmoji(ride.name) : label(event.type),
+          data: [
+            {
+              x: label(event.type),
+              y: [event.date.getTime(), event.date.getTime()],
+            },
+          ],
+        };
+      })
     )
     .flat();
 
