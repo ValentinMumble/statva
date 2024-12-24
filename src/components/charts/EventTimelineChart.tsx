@@ -1,5 +1,5 @@
 import Chart from 'react-apexcharts';
-import {SegmentedControl, Skeleton} from '../../components/ui';
+import {SegmentedControl} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {useEvents, useLabels} from '../../hooks';
 import {
@@ -26,11 +26,11 @@ const EventTimelineChart = () => {
   const [label] = useLabels();
   const [allEvents, refreshEvents] = useEvents();
 
-  if (null === allEvents) {
-    return <Skeleton height="200px" />;
-  }
-
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
+
+  if (null === allEvents) {
+    return null;
+  }
 
   const relevantBikes = [...new Set(allEvents.map(({bike}) => bike))];
   const bikeEvents = allEvents.filter(({bike}) => gearId === bike);

@@ -93,12 +93,12 @@ const App = () => {
 
   return (
     <Stack padding="0 20px" gap="20px" direction={['column-reverse', 'row']}>
-      <VStack align="stretch" flexBasis="38%" gap="20px" width={['100vw', null]} height="100vh" overflowY="scroll">
+      <VStack align="stretch" flexBasis="40%" gap="20px" width={['100vw', null]} height="100vh" overflowY="scroll">
         <Stats />
         <ChartAccordion />
         <WeekView />
       </VStack>
-      <VStack padding="10px 0" align="stretch" flexBasis="62%" height="100vh" overflow="scroll">
+      <VStack padding="10px 0" align="stretch" flexBasis="60%" height="100vh" overflow="scroll">
         <Collapsible.Root open={filtersOpen} onOpenChange={({open}) => setFiltersOpen(open)}>
           <Group width="full">
             {import.meta.env.DEV && (

@@ -1,7 +1,7 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/react';
-import {SegmentedControl, Skeleton} from '../../components/ui';
+import {SegmentedControl} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection, SUPER6} from '../../models';
 import {useActivities, useEvents, useLabels} from '../../hooks';
@@ -11,8 +11,7 @@ const ChainChart = () => {
   const [gearId, setGearId] = useState<string>(SUPER6);
   const [label] = useLabels();
   const [events, refreshEvents] = useEvents<ChainEvent>('chain');
-  const relevantBikes = [...new Set((events ?? []).map(({bike}) => bike))];
-  const currentBikeEvents = (events ?? []).filter(({bike}) => gearId === bike);
+
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -22,6 +21,13 @@ const ChainChart = () => {
   });
 
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
+
+  if (null === events) {
+    return null;
+  }
+
+  const relevantBikes = [...new Set(events.map(({bike}) => bike))];
+  const currentBikeEvents = events.filter(({bike}) => gearId === bike);
 
   const chainOdometer = currentBikeEvents.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
     const nextEventDate = currentBikeEvents[index + 1]?.date;
@@ -58,14 +64,6 @@ const ChainChart = () => {
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
   const bikeCollection = labelCollection(relevantBikes, label, true);
-
-  useEffect(() => {
-    setGearId(relevantBikes[0]);
-  }, [relevantBikes.length]);
-
-  if (null === events) {
-    return <Skeleton height="200px" />;
-  }
 
   const avg = Object.values(chainOdometer)
     .map(totals => totals.reduce((total, currentTotal) => total + currentTotal, 0))
