@@ -6,10 +6,11 @@ const EXCLUDED_YEARS = [2020, 2021, 2022];
 
 type YearRangeSliderProps = {
   value: number[];
+  min?: number;
   onChange: (newValue: number[]) => void;
 };
 
-const YearRangeSlider = ({value, onChange}: YearRangeSliderProps) => {
+const YearRangeSlider = ({value, onChange, min}: YearRangeSliderProps) => {
   value = 0 === value.length ? BOUNDARIES : value;
 
   return (
@@ -18,7 +19,7 @@ const YearRangeSlider = ({value, onChange}: YearRangeSliderProps) => {
       size="sm"
       value={value}
       onValueChangeEnd={({value}) => onChange(value)}
-      min={BOUNDARIES.at(0)}
+      min={min ?? BOUNDARIES.at(0)}
       max={BOUNDARIES.at(-1)}
       marks={range(BOUNDARIES.at(0), BOUNDARIES.at(-1))
         .filter(year => !EXCLUDED_YEARS.includes(year))

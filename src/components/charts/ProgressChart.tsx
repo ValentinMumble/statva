@@ -1,6 +1,9 @@
+import {useState} from 'react';
+import {Group} from '@chakra-ui/react';
 import Chart from 'react-apexcharts';
+import {YearRangeSlider} from '../../components';
 import {useActivities} from '../../hooks';
-import {formatPower, formatSpeed, getOptions} from '../../models';
+import {formatPower, formatSpeed, getOptions, range} from '../../models';
 
 const options: ApexCharts.ApexOptions = {
   xaxis: {type: 'datetime'},
@@ -27,12 +30,14 @@ type ProgressChartProps = {
 };
 
 const ProgressChart = ({search}: ProgressChartProps) => {
+  const [yearRange, setYearRange] = useState<number[]>([]);
   const [activities] = useActivities({
     search,
     withCommute: false,
     withPrivate: false,
     sort: 'date',
     sortDirection: 'asc',
+    years: 0 === yearRange.length ? undefined : range(yearRange[0], yearRange[1]),
   });
 
   const averageSpeedSerie = (activities ?? []).map(({average_speed, start_date}) => [
@@ -48,7 +53,14 @@ const ProgressChart = ({search}: ProgressChartProps) => {
     {name: '⚡️', data: averagePowerSerie as number[][]},
   ];
 
-  return <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />;
+  return (
+    <>
+      <Group padding="0 30px" width="full">
+        <YearRangeSlider value={yearRange} min={2023} onChange={setYearRange} />
+      </Group>
+      <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
+    </>
+  );
 };
 
 export {ProgressChart};

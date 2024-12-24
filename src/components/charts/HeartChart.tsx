@@ -1,7 +1,10 @@
+import {useState} from 'react';
+import {Group} from '@chakra-ui/react';
 import Chart from 'react-apexcharts';
+import {YearRangeSlider} from '../../components';
 import {useActivities} from '../../hooks';
 import {ActivityType} from '../../models/strava';
-import {getOptions, getTypes} from '../../models';
+import {getOptions, getTypes, range} from '../../models';
 
 const MIN_DISTANCE_METERS = 30 * 1000;
 
@@ -34,12 +37,14 @@ const options: ApexCharts.ApexOptions = {
 };
 
 const HeartChart = () => {
+  const [yearRange, setYearRange] = useState<number[]>([]);
   const [activities] = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
     includedActivityTypes: getTypes(ActivityType.Ride),
+    years: 0 === yearRange.length ? undefined : range(yearRange[0], yearRange[1]),
   });
 
   const rides = (activities ?? []).filter(
@@ -60,7 +65,14 @@ const HeartChart = () => {
     {name: '⚡️', data: powerSerie as number[][]},
   ];
 
-  return <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />;
+  return (
+    <>
+      <Group padding="0 30px" width="full">
+        <YearRangeSlider value={yearRange} min={2023} onChange={setYearRange} />
+      </Group>
+      <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
+    </>
+  );
 };
 
 export {HeartChart};
