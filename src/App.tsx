@@ -128,11 +128,7 @@ const App = () => {
                 onChange={handleSearchChange}
               />
             </InputGroup>
-            <SegmentedControl
-              value={bgOption}
-              onValueChange={handleBgOptionChange}
-              items={labelCollection(BG_COLLECTION, label).items}
-            />
+
             <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
             <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
               <HiLockClosed />
@@ -158,6 +154,12 @@ const App = () => {
                 onTypesChange={setTypes}
                 withCommute={withCommute}
                 onWithCommuteChange={setWithCommute}
+              />
+              <SegmentedControl
+                size="sm"
+                value={bgOption}
+                onValueChange={handleBgOptionChange}
+                items={labelCollection(BG_COLLECTION, label).items}
               />
               <YearRangeSlider value={yearRange} onChange={setYearRange} />
             </HStack>
