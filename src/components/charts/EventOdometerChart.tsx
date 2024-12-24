@@ -63,7 +63,7 @@ const EventOdometerChart = () => {
     .reduce((total, currentTotal, _index, entries) => total + currentTotal / entries.length, 0);
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
-  const bikeCollection = labelCollection(relevantBikes, label, true);
+  const bikeCollection = labelCollection(relevantBikes, key => label(key, true));
 
   return (
     <>

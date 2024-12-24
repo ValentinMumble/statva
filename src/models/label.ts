@@ -6,9 +6,9 @@ type Labels = {
 
 type GetLabel = (key: string | null, emojiOnly?: boolean) => string;
 
-const labelCollection = (items: string[], label: GetLabel, emojiOnly?: boolean) =>
+const labelCollection = (items: string[], label: GetLabel) =>
   createListCollection({
-    items: items.map(item => ({value: item, label: label(item, emojiOnly)})),
+    items: items.map(item => ({value: item, label: label(item)})),
   });
 
 const extractEmoji = (text: string): string =>

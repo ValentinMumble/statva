@@ -63,7 +63,7 @@ const ChainChart = () => {
   };
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
-  const bikeCollection = labelCollection(relevantBikes, label, true);
+  const bikeCollection = labelCollection(relevantBikes, key => label(key, true));
 
   const avg = Object.values(chainOdometer)
     .map(totals => totals.reduce((total, currentTotal) => total + currentTotal, 0))

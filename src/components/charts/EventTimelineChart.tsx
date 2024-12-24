@@ -77,7 +77,7 @@ const EventTimelineChart = () => {
   const oneShotEventSeries = [isFallEvent, isPunctureEvent]
     .map(isEventType =>
       bikeEvents.filter(isEventType).map(event => ({
-        name: label(isEventType(event) ? event.bike : event.type, true),
+        name: label(event.type),
         data: [
           {
             x: label(event.type),
@@ -88,7 +88,7 @@ const EventTimelineChart = () => {
     )
     .flat();
 
-  const bikeCollection = labelCollection(relevantBikes, label, true);
+  const bikeCollection = labelCollection(relevantBikes, key => label(key, true));
 
   return (
     <>
