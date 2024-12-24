@@ -75,6 +75,7 @@ const fallEvent: FallEvent = {
   type: 'fall',
   date: new Date(),
   bike: 'bikeId',
+  description: 'I fell off my bike',
 };
 
 const mockLabel = (key: string | null) => key ?? '';
