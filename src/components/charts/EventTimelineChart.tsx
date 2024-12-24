@@ -33,9 +33,9 @@ const EventTimelineChart = () => {
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
 
   const relevantBikes = [...new Set(allEvents.map(({bike}) => bike))];
-  const relevantEvents = allEvents.filter(({bike}) => gearId === bike);
+  const bikeEvents = allEvents.filter(({bike}) => gearId === bike);
 
-  const chainEvents = relevantEvents.filter(isChainEvent);
+  const chainEvents = bikeEvents.filter(isChainEvent);
   const eventsIndexedByChain = chainEvents.reduce(
     (eventsIndexedByChain: {[key: string]: ChainEvent[]}, event: ChainEvent) => {
       const events = eventsIndexedByChain[event.chain] ?? [];
@@ -59,14 +59,14 @@ const EventTimelineChart = () => {
 
   const eventSeries = [isBatteryEvent, isTireEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent]
     .map(isEventType =>
-      relevantEvents.filter(isEventType).map(event => ({
+      bikeEvents.filter(isEventType).map(event => ({
         name: getEventLabel(event, label),
         data: [
           {
             x: label(event.type),
             y: [
               event.date.getTime(),
-              (getNextEvent(relevantEvents.filter(isEventType), event)?.date ?? new Date()).getTime(),
+              (getNextEvent(bikeEvents.filter(isEventType), event)?.date ?? new Date()).getTime(),
             ],
           },
         ],
@@ -76,7 +76,7 @@ const EventTimelineChart = () => {
 
   const oneShotEventSeries = [isFallEvent, isPunctureEvent]
     .map(isEventType =>
-      allEvents.filter(isEventType).map(event => ({
+      bikeEvents.filter(isEventType).map(event => ({
         name: label(isEventType(event) ? event.bike : event.type, true),
         data: [
           {

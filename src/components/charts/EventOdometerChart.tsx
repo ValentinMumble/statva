@@ -6,7 +6,7 @@ import {useActivities, useEvents, useLabels} from '../../hooks';
 import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection, Event, SUPER6} from '../../models';
 import {Activity} from '../../models/strava';
 
-const EVENT_TYPES: Event['type'][] = ['tire', 'brake_pad', 'battery', 'cassette', 'saddle'];
+const EVENT_TYPES: Event['type'][] = ['tire', 'cassette', 'brake_pad', 'battery', 'saddle'];
 const DATA_TYPES: (keyof Activity)[] = ['distance', 'total_elevation_gain'];
 
 const EventOdometerChart = () => {
@@ -27,10 +27,12 @@ const EventOdometerChart = () => {
   const handleEventTypeChange = ({value}: SegmentGroupValueChangeDetails) => setEventType(value);
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
 
-  const relevantBikes = [
-    ...new Set((events ?? []).filter(({type}) => EVENT_TYPES.includes(type)).map(({bike}) => bike)),
-  ];
-  const relevantEvents = (events ?? []).filter(({bike, type}) => gearId === bike && eventType === type);
+  if (null === events) {
+    return null;
+  }
+
+  const relevantBikes = [...new Set(events.filter(({type}) => EVENT_TYPES.includes(type)).map(({bike}) => bike))];
+  const relevantEvents = events.filter(({bike, type}) => gearId === bike && eventType === type);
 
   const odometer = relevantEvents.reduce((odometer: {[id: string]: number}, event, index) => {
     const nextEventDate = relevantEvents[index + 1]?.date;
@@ -69,7 +71,7 @@ const EventOdometerChart = () => {
         <Text>
           <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
         </Text>
-        <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
+        <SegmentedControl size="xs" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
         <SegmentedControl
           size="xs"
           value={data}

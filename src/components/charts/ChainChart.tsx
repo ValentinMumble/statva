@@ -3,12 +3,12 @@ import Chart from 'react-apexcharts';
 import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/react';
 import {SegmentedControl, Skeleton} from '../../components/ui';
 import {EditEvents} from '../../components';
-import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection} from '../../models';
+import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection, SUPER6} from '../../models';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 import {EditLabels} from '../EditLabels';
 
 const ChainChart = () => {
-  const [gearId, setGearId] = useState<string>('');
+  const [gearId, setGearId] = useState<string>(SUPER6);
   const [label] = useLabels();
   const [events, refreshEvents] = useEvents<ChainEvent>('chain');
   const relevantBikes = [...new Set((events ?? []).map(({bike}) => bike))];
