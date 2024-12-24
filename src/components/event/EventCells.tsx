@@ -1,6 +1,6 @@
 import {Table} from '@chakra-ui/react';
 import {Event} from '../../models';
-import {CassetteEventCells, ChainEventCells, SaddleEventCells, TireEventCells} from '../event';
+import {CassetteEventCells, ChainEventCells, FallEventCells, SaddleEventCells, TireEventCells} from '../event';
 
 type EventCellsProps<EventType> = {
   event: EventType;
@@ -16,6 +16,8 @@ const EventCells = ({event}: EventCellsProps<Event>) => {
       return <TireEventCells event={event} />;
     case 'saddle':
       return <SaddleEventCells event={event} />;
+    case 'fall':
+      return <FallEventCells event={event} />;
     default:
       return (
         <>

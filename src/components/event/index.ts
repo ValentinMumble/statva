@@ -6,6 +6,8 @@ export * from './ChainEventForm';
 export * from './EditEvents';
 export * from './EventCells';
 export * from './EventForm';
+export * from './FallEventCells';
+export * from './FallEventForm';
 export * from './SaddleEventCells';
 export * from './SaddleEventForm';
 export * from './TireEventCells';

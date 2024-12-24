@@ -25,6 +25,11 @@ type TireEvent = BaseEvent & {
   width: number;
 };
 
+type FallEvent = BaseEvent & {
+  type: 'fall';
+  description: string;
+};
+
 type BatteryEvent = BaseEvent & {
   type: 'battery';
 };
@@ -33,9 +38,6 @@ type BrakePadEvent = BaseEvent & {
   type: 'brake_pad';
 };
 
-type FallEvent = BaseEvent & {
-  type: 'fall';
-};
 
 type PunctureEvent = BaseEvent & {
   type: 'puncture';
