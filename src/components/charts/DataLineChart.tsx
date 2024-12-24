@@ -7,23 +7,12 @@ import {ChartProps, extractEmoji, getOptions} from '../../models';
 
 const DEFAULT_ITEM_COUNT = 50;
 
-const options: ApexCharts.ApexOptions = {
-  colors: ['#645f28'],
-  fill: {
-    type: 'gradient',
-    gradient: {
-      type: 'vertical',
-      gradientToColors: ['#da340a'],
-    },
-  },
-  stroke: {
-    curve: 'smooth',
-    width: 3,
-  },
-  markers: {size: [0]},
+type DataLineChartProps = ChartProps & {
+  min?: number;
+  max?: number;
 };
 
-const DataLineChart = ({data}: ChartProps) => {
+const DataLineChart = ({data, min, max}: DataLineChartProps) => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const [label] = useLabels();
   const [activities] = useActivities({
@@ -50,7 +39,27 @@ const DataLineChart = ({data}: ChartProps) => {
           onValueChange={({valueAsNumber}) => setItemCount(valueAsNumber)}
         />
       </Group>
-      <Chart options={getOptions(labels, undefined, options)} series={series} type="line" height={400} />
+      <Chart
+        options={getOptions(labels, undefined, {
+          yaxis: {min, max},
+          colors: ['#446a30'],
+          fill: {
+            type: 'gradient',
+            gradient: {
+              type: 'vertical',
+              gradientToColors: ['#da340a'],
+            },
+          },
+          stroke: {
+            curve: 'smooth',
+            width: 3,
+          },
+          markers: {size: [0]},
+        })}
+        series={series}
+        type="line"
+        height={400}
+      />
     </>
   );
 };

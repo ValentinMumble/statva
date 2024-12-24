@@ -117,7 +117,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'Cadence chart 🎡',
-    component: <DataLineChart data="average_cadence" />,
+    component: <DataLineChart min={50} max={110} data="average_cadence" />,
   },
 ];
 
