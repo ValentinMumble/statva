@@ -1,9 +1,8 @@
 import Chart from 'react-apexcharts';
-import {useActivityMeta, useLabels} from '../../hooks';
+import {useActivityMeta} from '../../hooks';
 import {computeFinishCount, getOptions} from '../../models';
 
 const FinishChart = () => {
-  const [label] = useLabels();
   const [activityMeta] = useActivityMeta();
 
   const finishMap = computeFinishCount(Object.values(activityMeta));
