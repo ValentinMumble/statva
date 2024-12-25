@@ -228,9 +228,9 @@ describe('computeFinishCount', () => {
     const rides = [
       buildDetailedActivity({description: "Finish Caf'K"}),
       buildDetailedActivity({description: 'Finish Zazou'}),
-      buildDetailedActivity({description: "Finish Caf'K"}),
+      buildDetailedActivity({description: "Finish caf'k"}),
       buildDetailedActivity({description: "Finish au Caf'K"}),
-      buildDetailedActivity({description: 'Finish Belle de Jour'}),
+      buildDetailedActivity({description: 'Finish belle de jour'}),
       buildDetailedActivity({description: 'Finish Belle de Jour'}),
       buildDetailedActivity({description: 'Finish Laloko'}),
       buildDetailedActivity({description: 'Finish à Laloko'}),
@@ -243,10 +243,10 @@ describe('computeFinishCount', () => {
     expect(computeFinishCount(rides)).toEqual({
       "Caf'K": 3,
       Zazou: 1,
-      'Belle de Jour': 2,
+      'Belle De Jour': 2,
       Laloko: 2,
-      "l'équipe": 2,
-      "l'Atlantide": 1,
+      "L'Équipe": 2,
+      "L'Atlantide": 1,
       'La Générale': 1,
     });
   });
