@@ -1,3 +1,4 @@
+import {Group, Span, Text} from '@chakra-ui/react';
 import Chart from 'react-apexcharts';
 import {useActivityMeta} from '../../hooks';
 import {computeFinishCount, getOptions} from '../../models';
@@ -9,8 +10,18 @@ const FinishChart = () => {
   const labels = Object.keys(finishMap);
   const series = Object.values(finishMap);
 
+  const seriesAvg = Math.round(series.reduce((acc, val) => acc + val, 0) / series.length);
+
   return (
     <>
+      <Group width="full" gap="20px">
+        <Text>
+          <Span fontStyle="italic">Unique bars</Span> {labels.length}
+        </Text>
+        <Text>
+          <Span fontStyle="italic">μ</Span> {seriesAvg} finish
+        </Text>
+      </Group>
       <Chart
         options={getOptions(labels, undefined, {
           legend: {show: false},
