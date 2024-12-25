@@ -296,7 +296,7 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
     }
   });
 
-  return locationCount;
+  return Object.fromEntries(Object.entries(locationCount).sort());
 };
 
 export {

@@ -234,9 +234,9 @@ describe('computeFinishCount', () => {
       buildDetailedActivity({description: 'Finish Belle de Jour'}),
       buildDetailedActivity({description: 'Finish Laloko'}),
       buildDetailedActivity({description: 'Finish à Laloko'}),
-      buildDetailedActivity({description: "Finish à L'équipe"}),
-      buildDetailedActivity({description: "Finish L'équipe"}),
-      buildDetailedActivity({description: "Finish L'Atlantide"}),
+      buildDetailedActivity({description: "Finish à l'équipe"}),
+      buildDetailedActivity({description: "Finish l'équipe"}),
+      buildDetailedActivity({description: "Finish l'Atlantide"}),
       buildDetailedActivity({description: 'Finish à La Générale\nBlablab'}),
     ];
 
@@ -245,8 +245,8 @@ describe('computeFinishCount', () => {
       Zazou: 1,
       'Belle de Jour': 2,
       Laloko: 2,
-      "L'équipe": 2,
-      "L'Atlantide": 1,
+      "l'équipe": 2,
+      "l'Atlantide": 1,
       'La Générale': 1,
     });
   });
