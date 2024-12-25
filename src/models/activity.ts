@@ -279,10 +279,29 @@ const cleanActivity = (activity: DetailedActivity): DetailedActivity => {
   return activity;
 };
 
+const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number> => {
+  const locationCount: Record<string, number> = {};
+
+  rideMeta.forEach(activity => {
+    const match = activity.description.match(/Finish\s+([\w'’\s]+)/i);
+    if (match) {
+      const location = match[1].trim();
+      if (locationCount[location]) {
+        locationCount[location]++;
+      } else {
+        locationCount[location] = 1;
+      }
+    }
+  });
+
+  return locationCount;
+};
+
 export {
   calculateRunCalories,
   calculateSwimCalories,
   cleanActivity,
+  computeFinishCount,
   eddingtonNumber,
   formatLaps,
   formatPaceOrSpeed,

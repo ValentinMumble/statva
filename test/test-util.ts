@@ -1,4 +1,4 @@
-import {Activity, ActivityType} from '../src/models/strava';
+import {Activity, ActivityType, DetailedActivity} from '../src/models/strava';
 
 const dummyActivity: Activity = {
   resource_state: 2,
@@ -27,6 +27,7 @@ const dummyActivity: Activity = {
   map: {
     id: 'a12728812950',
     summary_polyline: '',
+    polyline: '',
     resource_state: 2,
   },
   trainer: false,
@@ -64,6 +65,132 @@ const dummyActivity: Activity = {
   suffer_score: 261,
 };
 
-const buildActivity = (data?: Partial<Activity>): Activity => ({...dummyActivity, ...data});
+const dummyDetailedActivity: DetailedActivity = {
+  resource_state: 3,
+  athlete: {
+    id: 11670816,
+    resource_state: 1,
+  },
+  name: 'N-Peloton #561 G2 préchauffé 🎸',
+  distance: 107956,
+  moving_time: 11758,
+  elapsed_time: 13546,
+  total_elevation_gain: 699.9,
+  type: 'Ride',
+  sport_type: 'Ride',
+  workout_type: 10,
+  id: 11914029170,
+  start_date: '2024-07-17T16:42:13Z',
+  start_date_local: '2024-07-17T18:42:13Z',
+  timezone: '(GMT+01:00) Europe/Paris',
+  utc_offset: 7200,
+  location_city: null,
+  location_state: null,
+  location_country: 'France',
+  achievement_count: 58,
+  kudos_count: 29,
+  comment_count: 0,
+  athlete_count: 4,
+  photo_count: 0,
+  map: {
+    id: 'a11914029170',
+    polyline: '',
+    summary_polyline: '',
+    resource_state: 3,
+  },
+  trainer: false,
+  commute: false,
+  manual: false,
+  private: false,
+  visibility: 'everyone',
+  flagged: false,
+  gear_id: 'b13440652',
+  start_latlng: [47.232242, -1.550666],
+  end_latlng: [47.216488, -1.555888],
+  average_speed: 9.181,
+  max_speed: 15.82,
+  average_cadence: 86.2,
+  average_temp: 19,
+  average_watts: 184,
+  max_watts: 847,
+  weighted_average_watts: 200,
+  device_watts: true,
+  kilojoules: 2164,
+  has_heartrate: true,
+  average_heartrate: 152.8,
+  max_heartrate: 182,
+  heartrate_opt_out: false,
+  display_hide_heartrate_option: true,
+  elev_high: 57.4,
+  elev_low: 4.6,
+  upload_id: 12703779285,
+  upload_id_str: '12703779285',
+  external_id: 'karooUpload.fit',
+  from_accepted_tag: false,
+  pr_count: 37,
+  total_photo_count: 1,
+  has_kudoed: false,
+  suffer_score: 303,
+  description: 'Finish au Caf’K',
+  calories: 2412.9,
+  perceived_exertion: null,
+  prefer_perceived_exertion: false,
+  segment_efforts: [],
+  splits_metric: [],
+  splits_standard: [],
+  laps: [],
+  gear: {
+    id: 'b13440652',
+    primary: false,
+    name: 'Super6 🦈',
+    nickname: 'Super6 🦈',
+    resource_state: 2,
+    retired: false,
+    distance: 9188331,
+    converted_distance: 9188.3,
+  },
+  photos: {
+    primary: {
+      unique_id: '74CBC3C1-465E-41B4-A778-5230BD627B0E',
+      urls: {},
+      source: 1,
+      media_type: 1,
+    },
+    use_primary_photo: false,
+    count: 1,
+  },
+  stats_visibility: [
+    {
+      type: 'heart_rate',
+      visibility: 'everyone',
+    },
+    {
+      type: 'pace',
+      visibility: 'everyone',
+    },
+    {
+      type: 'power',
+      visibility: 'everyone',
+    },
+    {
+      type: 'speed',
+      visibility: 'everyone',
+    },
+    {
+      type: 'calories',
+      visibility: 'everyone',
+    },
+  ],
+  hide_from_home: false,
+  device_name: 'Hammerhead Karoo 2',
+  embed_token: '060df5967fff70ddfd8357d5b3018de8a77ab8a3',
+  available_zones: ['heartrate', 'power'],
+};
 
-export {buildActivity};
+const buildActivity = (data?: Partial<Activity>): Activity => ({...dummyActivity, ...data});
+const buildDetailedActivity = (data?: Partial<DetailedActivity>): DetailedActivity => ({
+  ...dummyDetailedActivity,
+  ...data,
+});
+
+export {buildActivity, buildDetailedActivity};

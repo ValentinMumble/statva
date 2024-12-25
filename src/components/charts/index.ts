@@ -6,6 +6,7 @@ export * from './EddingtonChart';
 export * from './EddingtonDayChart';
 export * from './EventOdometerChart';
 export * from './EventTimelineChart';
+export * from './FinishChart';
 export * from './FTPChart';
 export * from './GearChart';
 export * from './HeartChart';

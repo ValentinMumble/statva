@@ -1,4 +1,4 @@
-import {buildActivity} from '../../test/test-util';
+import {buildActivity, buildDetailedActivity} from '../../test/test-util';
 import {
   eddingtonNumber,
   formatLaps,
@@ -8,6 +8,7 @@ import {
   daysExceedingDistance,
   calculateRunCalories,
   calculateSwimCalories,
+  computeFinishCount,
 } from './activity';
 import {ActivityType, WorkoutType} from './strava';
 
@@ -219,5 +220,24 @@ describe.skip('calculateSwimCalories', () => {
     [74, 2218, 1500, 150, 509],
   ])('it can calculate calories for a swim', (weight, movingTime, distance, average_heartrate, expected) => {
     expect(calculateSwimCalories(weight, movingTime, distance, average_heartrate)).toEqual(expected);
+  });
+});
+
+describe('computeFinishCount', () => {
+  test('it can compute finish count by location', () => {
+    const rides = [
+      buildDetailedActivity({description: "Finish Caf'K"}),
+      buildDetailedActivity({description: 'Finish Zazou'}),
+      buildDetailedActivity({description: "Finish Caf'K"}),
+      buildDetailedActivity({description: "Finish Caf'K"}),
+      buildDetailedActivity({description: 'Finish Belle de Jour'}),
+      buildDetailedActivity({description: 'Finish Belle de Jour'}),
+    ];
+
+    expect(computeFinishCount(rides)).toEqual({
+      "Caf'K": 3,
+      Zazou: 1,
+      'Belle de Jour': 2,
+    });
   });
 });
