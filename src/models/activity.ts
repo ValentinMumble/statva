@@ -286,7 +286,8 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
     const match = activity.description.match(/Finish\s+(?:au|à)?\s*([\w'’\s\p{L}]+)/iu);
 
     if (match) {
-      const location = match[1].trim();
+      const location = match[1].split('\n')[0].trim();
+
       if (locationCount[location]) {
         locationCount[location]++;
       } else {
