@@ -2,7 +2,7 @@ import {useState, ReactNode, createContext, useEffect} from 'react';
 import {extractEmoji, GetLabel, Labels} from '../models';
 import {useFetcher} from '../hooks';
 
-const LabelContext = createContext<[GetLabel, Labels, () => Promise<void>]>([() => '', {}, () => Promise.resolve()]);
+const LabelContext = createContext<[GetLabel, Labels, () => Promise<void>]>([() => '', {}, Promise.resolve]);
 
 type LabelProviderProps = {
   children?: ReactNode;

@@ -1,3 +1,4 @@
+export * from './useActivityMeta';
 export * from './useActivities';
 export * from './useAthlete';
 export * from './useEnv';

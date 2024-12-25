@@ -2,10 +2,13 @@ import {
   deleteEvent,
   deleteLabel,
   fetchActivities,
+  fetchActivity,
   fetchAthlete,
+  getActivities,
   getEvents,
   getFTPTests,
   getLabels,
+  upsertActivity,
   upsertEvent,
   upsertFTPTest,
   upsertLabel,
@@ -16,6 +19,7 @@ import {
   fetchLocalFTPTests,
   fetchLocalLabels,
   fetchLocalAthlete,
+  fetchLocalMeta,
 } from '../api/local';
 import {useEnv} from './useEnv';
 
@@ -23,6 +27,9 @@ type Fetcher<T> = (...args: any[]) => Promise<T>;
 
 const PROD_REGISTRY: {[key: string]: Fetcher<any>} = {
   'activities.get': fetchActivities,
+  'activity.get': fetchActivity,
+  'activities.meta.get': getActivities,
+  'activities.meta.set': upsertActivity,
   'athlete.get': fetchAthlete,
   'events.get': getEvents,
   'events.set': upsertEvent,
@@ -36,6 +43,9 @@ const PROD_REGISTRY: {[key: string]: Fetcher<any>} = {
 
 const DEV_REGISTRY: {[key: string]: Fetcher<any>} = {
   'activities.get': fetchLocalActivities,
+  'activity.get': fetchActivity, //TODO: Implement local version
+  'activities.meta.get': fetchLocalMeta,
+  'activities.meta.set': () => Promise.resolve(console.log('Local, not implemented')),
   'athlete.get': fetchLocalAthlete,
   'events.get': fetchLocalEvents,
   'events.set': () => Promise.resolve(console.log('Local, not implemented')),

@@ -3,11 +3,7 @@ import {FTPTest} from '../models';
 import {Athlete} from '../models/strava';
 import {useFetcher} from '../hooks';
 
-const AthleteContext = createContext<[Athlete | null, FTPTest[], () => Promise<void>]>([
-  null,
-  [],
-  () => Promise.resolve(),
-]);
+const AthleteContext = createContext<[Athlete | null, FTPTest[], () => Promise<void>]>([null, [], Promise.resolve]);
 
 type AthleteProviderProps = {
   children?: ReactNode;

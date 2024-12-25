@@ -1,5 +1,5 @@
 import {Labels, Event, FTPTest} from '../models';
-import {Activity, Athlete} from '../models/strava';
+import {Activity, Athlete, DetailedActivity} from '../models/strava';
 
 const fetchLocalActivities = async (): Promise<[Activity[], boolean]> => [
   await (await fetch('/local_activities.json')).json(),
@@ -7,7 +7,8 @@ const fetchLocalActivities = async (): Promise<[Activity[], boolean]> => [
 ];
 
 const fetchLocalAthlete = async (): Promise<Athlete> => await (await fetch('/local_athlete.json')).json();
-
+const fetchLocalMeta = async (): Promise<Record<string, DetailedActivity>> =>
+  await (await fetch('/local_meta.json')).json();
 const fetchLocalLabels = async (): Promise<Labels> => await (await fetch('/local_labels.json')).json();
 
 const fetchLocalEvents = async (): Promise<Event[]> =>
@@ -22,4 +23,11 @@ const fetchLocalFTPTests = async (): Promise<FTPTest[]> =>
     date: new Date(ftpTest.date),
   }));
 
-export {fetchLocalActivities, fetchLocalLabels, fetchLocalEvents, fetchLocalFTPTests, fetchLocalAthlete};
+export {
+  fetchLocalActivities,
+  fetchLocalAthlete,
+  fetchLocalEvents,
+  fetchLocalFTPTests,
+  fetchLocalLabels,
+  fetchLocalMeta,
+};

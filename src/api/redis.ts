@@ -1,9 +1,13 @@
 import {Redis} from '@upstash/redis';
 import {Event, FTPTest, Labels} from '../models';
+import {DetailedActivity} from '../models/strava';
 
-const EVENTS_KEY = 'events';
-const LABELS_KEY = 'labels';
-const FTP_TESTS_KEY = 'ftp_tests';
+enum Key {
+  EVENTS = 'events',
+  LABELS = 'labels',
+  FTP_TESTS = 'ftp_tests',
+  ACTIVITIES = 'activities',
+}
 
 const client = () =>
   new Redis({
@@ -12,7 +16,7 @@ const client = () =>
   });
 
 const getEvents = async (): Promise<Event[] | null> => {
-  const rawEvents = await client().hgetall<Record<string, Event>>(EVENTS_KEY);
+  const rawEvents = await client().hgetall<Record<string, Event>>(Key.EVENTS);
 
   if (null === rawEvents) return null;
 
@@ -22,30 +26,30 @@ const getEvents = async (): Promise<Event[] | null> => {
 };
 
 const upsertEvent = async (event: Event) => {
-  await client().hset(EVENTS_KEY, {[event.id]: event});
+  await client().hset(Key.EVENTS, {[event.id]: event});
 };
 
 const deleteEvent = async (eventId: string) => {
-  await client().hdel(EVENTS_KEY, eventId);
+  await client().hdel(Key.EVENTS, eventId);
 };
 
 const getLabels = async (): Promise<Labels> => {
-  const labels = await client().hgetall<Labels>(LABELS_KEY);
+  const labels = await client().hgetall<Labels>(Key.LABELS);
   const collator = new Intl.Collator('en', {numeric: true, sensitivity: 'base'});
 
   return Object.fromEntries(Object.entries(labels ?? {}).sort(([keyA], [keyB]) => collator.compare(keyA, keyB)));
 };
 
 const upsertLabel = async (key: string, label: string) => {
-  await client().hset(LABELS_KEY, {[key]: label});
+  await client().hset(Key.LABELS, {[key]: label});
 };
 
 const deleteLabel = async (key: string) => {
-  await client().hdel(LABELS_KEY, key);
+  await client().hdel(Key.LABELS, key);
 };
 
 const getFTPTests = async (): Promise<FTPTest[]> => {
-  const ftpTests = await client().hgetall<Record<string, FTPTest>>(FTP_TESTS_KEY);
+  const ftpTests = await client().hgetall<Record<string, FTPTest>>(Key.FTP_TESTS);
 
   if (null === ftpTests) return [];
 
@@ -55,7 +59,28 @@ const getFTPTests = async (): Promise<FTPTest[]> => {
 };
 
 const upsertFTPTest = async (test: FTPTest) => {
-  await client().hset(FTP_TESTS_KEY, {[test.id]: test});
+  await client().hset(Key.FTP_TESTS, {[test.id]: test});
 };
 
-export {deleteEvent, deleteLabel, getEvents, getFTPTests, getLabels, upsertEvent, upsertFTPTest, upsertLabel};
+const getActivities = async (): Promise<Record<string, DetailedActivity>> => {
+  const activities = await client().hgetall<Record<string, DetailedActivity>>(Key.ACTIVITIES);
+
+  return activities ?? {};
+};
+
+const upsertActivity = async (activity: DetailedActivity) => {
+  await client().hset(Key.ACTIVITIES, {[activity.id]: activity});
+};
+
+export {
+  deleteEvent,
+  deleteLabel,
+  getActivities,
+  getEvents,
+  getFTPTests,
+  getLabels,
+  upsertActivity,
+  upsertEvent,
+  upsertFTPTest,
+  upsertLabel,
+};

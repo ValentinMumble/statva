@@ -1,7 +1,8 @@
-import {Activity, Athlete} from '../models/strava';
+import {Activity, Athlete, DetailedActivity} from '../models/strava';
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
+const ACTIVITY_ENDPOINT = 'https://www.strava.com/api/v3/activities';
 const ITEMS_PER_PAGE = 150;
 
 let token: string | null = null;
@@ -52,6 +53,14 @@ const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[A
   return [activities, activities.length === items];
 };
 
+const fetchActivity = async (id: number): Promise<DetailedActivity> => {
+  const accessToken = await fetchAccessToken();
+
+  const response = await fetch(`${ACTIVITY_ENDPOINT}/${id}?access_token=${accessToken}`);
+
+  return await response.json();
+};
+
 const fetchAllActivities = async () => {
   const accessToken = await fetchAccessToken();
 
@@ -75,4 +84,4 @@ const fetchAllActivities = async () => {
   return Object.values(activities);
 };
 
-export {fetchAllActivities, fetchActivities, fetchAthlete};
+export {fetchAllActivities, fetchActivity, fetchActivities, fetchAthlete};

@@ -1,5 +1,5 @@
 import {SortType, SortDirection, formatSpeed, formatCalories} from '../models';
-import {ActivityType, Activity, WorkoutType} from './strava';
+import {ActivityType, Activity, WorkoutType, DetailedActivity} from './strava';
 
 type ActivityFilter = {
   search?: string;
@@ -270,9 +270,19 @@ const guessCalories = (activity: Activity): string | null => {
   }
 };
 
+const cleanActivity = (activity: DetailedActivity): DetailedActivity => {
+  activity['segment_efforts'] = [];
+  activity['splits_metric'] = [];
+  activity['splits_standard'] = [];
+  activity['laps'] = [];
+
+  return activity;
+};
+
 export {
   calculateRunCalories,
   calculateSwimCalories,
+  cleanActivity,
   eddingtonNumber,
   formatLaps,
   formatPaceOrSpeed,

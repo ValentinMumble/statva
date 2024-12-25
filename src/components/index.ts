@@ -1,5 +1,6 @@
 export * from './ActivityIcon';
 export * from './ActivityListItem';
+export * from './ActivityMeta';
 export * from './ActivityTypeFilter';
 export * from './ChartAccordion';
 export * from './event';

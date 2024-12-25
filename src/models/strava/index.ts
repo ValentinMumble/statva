@@ -5,6 +5,7 @@ export * from './activity-type';
 export * from './activity-zone';
 export * from './athlete';
 export * from './comment';
+export * from './detailed-activity';
 export * from './detailed-gear';
 export * from './heart-rate-zone-ranges';
 export * from './meta-activity';

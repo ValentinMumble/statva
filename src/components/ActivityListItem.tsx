@@ -1,6 +1,6 @@
-import {Box, Skeleton, Table} from '@chakra-ui/react';
+import {Flex, Skeleton, Table} from '@chakra-ui/react';
 import {Tooltip, Tag} from '../components/ui';
-import {ActivityIcon} from '../components';
+import {ActivityIcon, ActivityMeta} from '../components';
 import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType} from '../models';
 import {Activity} from '../models/strava';
 import {useLabels} from '../hooks';
@@ -74,7 +74,13 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
         />
       </Table.Cell>
       <Table.Cell padding="2px">
-        <Box bg={getBgColor(bgOption, activity, ftp)} borderRadius="8px" padding="2px 10px">
+        <Flex
+          bg={getBgColor(bgOption, activity, ftp)}
+          borderRadius="8px"
+          padding="2px 5px"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Tooltip
             positioning={{placement: 'right-end'}}
             content={
@@ -88,7 +94,8 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
               {activity.name}
             </a>
           </Tooltip>
-        </Box>
+          <ActivityMeta activity={activity} />
+        </Flex>
       </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => {
         const label = tag.label(activity, ftp);

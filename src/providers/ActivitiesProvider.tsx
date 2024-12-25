@@ -4,7 +4,7 @@ import {useFetcher} from '../hooks';
 
 const ActivitiesContext = createContext<
   [Activity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>]
->([null, () => Promise.resolve()]);
+>([null, Promise.resolve]);
 
 type ActivitiesProviderProps = {
   children?: ReactNode;
