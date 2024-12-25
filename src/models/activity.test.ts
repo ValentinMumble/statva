@@ -238,6 +238,9 @@ describe('computeFinishCount', () => {
       buildDetailedActivity({description: "Finish l'équipe"}),
       buildDetailedActivity({description: "Finish l'Atlantide"}),
       buildDetailedActivity({description: 'Finish à La Générale\nBlablab'}),
+      buildDetailedActivity({description: 'Finish à l’Atomics'}),
+      buildDetailedActivity({description: 'Finish à l’atomics'}),
+      buildDetailedActivity({description: "Finish à l'Atomics"}),
     ];
 
     expect(computeFinishCount(rides)).toEqual({
@@ -248,6 +251,7 @@ describe('computeFinishCount', () => {
       "L'Équipe": 2,
       "L'Atlantide": 1,
       'La Générale': 1,
+      "L'Atomics": 3,
     });
   });
 });

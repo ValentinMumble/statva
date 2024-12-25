@@ -289,6 +289,7 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
       const location = match[1]
         .split('\n')[0]
         .trim()
+        .replace('’', "'")
         .replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
 
       if (locationCount[location]) {
