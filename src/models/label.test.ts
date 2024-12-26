@@ -4,8 +4,9 @@ test.each([
   ['nice 🚲 here', '🚲'],
   ['🩲 nice here', '🩲'],
   ['nice here 🎡', '🎡'],
-  // ['nice h☕️ere ', '☕️'], // TODO
-  // ['🏜️', '🏜️'],
+  ['nice h☕️ere ', '☕️'],
+  ['🏜️', '🏜️'],
+  ['Aller chercher l’Alpe d’Huez 🐐', '🐐'],
   ['📍', '📍'],
   ['no emoji', ''],
   ['', ''],

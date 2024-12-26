@@ -1,5 +1,7 @@
 import {createListCollection} from '@chakra-ui/react';
 
+const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Emoji}\uFE0F]/gu;
+
 type Labels = {
   [key: string]: string;
 };
@@ -11,10 +13,7 @@ const labelCollection = (items: string[], label: GetLabel) =>
     items: items.map(item => ({value: item, label: label(item)})),
   });
 
-const extractEmoji = (text: string): string =>
-  text
-    .match(/\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/g)
-    ?.join('') ?? '';
+const extractEmoji = (text: string): string => text.match(EMOJI_REGEX)?.join('') ?? '';
 
 export {extractEmoji, labelCollection};
 export type {Labels, GetLabel};

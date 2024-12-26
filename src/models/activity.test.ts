@@ -36,30 +36,28 @@ describe('getTypes', () => {
 });
 
 describe('getWorkoutTypes', () => {
-  test('it can get the workout type for a Ride', () => {
-    expect(getWorkoutType(buildActivity({type: ActivityType.Ride, workout_type: 10}))).toEqual(WorkoutType.None);
-    expect(getWorkoutType(buildActivity({type: ActivityType.Ride, workout_type: 11}))).toEqual(WorkoutType.Race);
-    expect(getWorkoutType(buildActivity({type: ActivityType.Ride, workout_type: 12}))).toEqual(WorkoutType.Workout);
-  });
-
-  test('it can get the workout type for a Run', () => {
-    expect(getWorkoutType(buildActivity({type: ActivityType.Run, workout_type: 0}))).toEqual(WorkoutType.None);
-    expect(getWorkoutType(buildActivity({type: ActivityType.Run, workout_type: 1}))).toEqual(WorkoutType.Race);
-    expect(getWorkoutType(buildActivity({type: ActivityType.Run, workout_type: 2}))).toEqual(WorkoutType.LongRun);
-    expect(getWorkoutType(buildActivity({type: ActivityType.Run, workout_type: 3}))).toEqual(WorkoutType.Workout);
-  });
-
-  test('it returns None for an unknown sport type', () => {
-    expect(getWorkoutType(buildActivity({type: ActivityType.Swim, workout_type: 0}))).toEqual(WorkoutType.None);
+  test.each([
+    [ActivityType.Ride, 10, WorkoutType.None],
+    [ActivityType.Ride, 11, WorkoutType.Race],
+    [ActivityType.Ride, 12, WorkoutType.Workout],
+    [ActivityType.Run, 0, WorkoutType.None],
+    [ActivityType.Run, 1, WorkoutType.Race],
+    [ActivityType.Run, 2, WorkoutType.LongRun],
+    [ActivityType.Run, 3, WorkoutType.Workout],
+    [ActivityType.Swim, 0, WorkoutType.None],
+  ])('it can get the workout type for a each type', (type, workout_type, expected) => {
+    expect(getWorkoutType(buildActivity({type, workout_type}))).toEqual(expected);
   });
 });
 
 describe('formatting', () => {
-  test('it can format laps for a Swim activity', () => {
-    expect(formatLaps(buildActivity({distance: 250, name: 'Natation Petit Port'}))).toEqual('10 laps');
-    expect(formatLaps(buildActivity({distance: 250, name: 'Natation Léo Lagrange'}))).toEqual('5 laps');
-    expect(formatLaps(buildActivity({distance: 250, name: 'Natation Dervallières'}))).toEqual('10 laps');
-    expect(formatLaps(buildActivity({distance: 250, name: 'Natation unknown'}))).toEqual('? laps');
+  test.each([
+    [250, 'Natation Petit Port', '10 laps'],
+    [250, 'Natation Léo Lagrange', '5 laps'],
+    [250, 'Natation Dervallières', '10 laps'],
+    [250, 'Natation unknown', '? laps'],
+  ])('it can format laps for a Swim activity', (distance, name, expected) => {
+    expect(formatLaps(buildActivity({distance, name}))).toEqual(expected);
   });
 });
 

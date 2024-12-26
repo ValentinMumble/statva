@@ -26,8 +26,8 @@ const options: ApexCharts.ApexOptions = {
   xaxis: {type: 'datetime'},
   yaxis: [
     {
-      max: 190,
       min: 60,
+      max: 190,
     },
     {
       opposite: true,
