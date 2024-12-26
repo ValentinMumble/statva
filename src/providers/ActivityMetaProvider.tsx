@@ -21,7 +21,7 @@ const ActivityMetaProvider = ({children}: ActivityMetaProviderProps) => {
 
   useEffect(() => {
     fetchActivityMeta();
-  }, []);
+  }, [getActivities]);
 
   return (
     <ActivityMetaContext.Provider value={[activityMeta, fetchActivityMeta]}>{children}</ActivityMetaContext.Provider>

@@ -16,6 +16,7 @@ const ActivityMeta = ({activity}: ActivityMetaProps) => {
 
   const handleFetchActivity = async () => {
     const fullActivity = await fetchActivity(activity.id);
+    console.log(fullActivity);
 
     await upsertActivity(cleanActivity(fullActivity));
     refetch();
@@ -24,9 +25,15 @@ const ActivityMeta = ({activity}: ActivityMetaProps) => {
   const hasMeta = activity.id in activityMeta;
 
   return (
-    <HoverCardRoot>
+    <HoverCardRoot openDelay={300}>
       <HoverCardTrigger asChild={true}>
-        <IconButton size="2xs" variant="ghost" opacity={hasMeta ? 0.7 : 0.2} onClick={handleFetchActivity}>
+        <IconButton
+          size="2xs"
+          variant="ghost"
+          opacity={hasMeta ? 0.6 : 0.1}
+          _hover={{opacity: hasMeta ? 1 : 0.5}}
+          onClick={handleFetchActivity}
+        >
           <MdOutlineNotes />
         </IconButton>
       </HoverCardTrigger>

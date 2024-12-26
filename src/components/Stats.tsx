@@ -1,8 +1,8 @@
 import {ReactNode, useState} from 'react';
 import {VStack, HStack} from '@chakra-ui/react';
 import {
-  ProgressBar,
-  ProgressRoot,
+  ProgressCircleRing,
+  ProgressCircleRoot,
   Skeleton,
   SkeletonText,
   StatHelpText,
@@ -61,18 +61,17 @@ const STATS: {[key: string]: Stat[][]} = {
           'distance'
         );
         const yearProgress = Math.min(100, (yearTotal / 1000 / YEAR_GOAL_KM) * 100);
+        const goalReached = 100 <= yearProgress;
 
         return {
-          label: '🎊',
-          helpText: (
-            <ProgressRoot
-              colorPalette={100 <= yearProgress ? 'green' : 'orange'}
-              value={yearProgress}
-              marginRight="15px"
-            >
-              <ProgressBar />
-            </ProgressRoot>
+          label: goalReached ? (
+            '✅'
+          ) : (
+            <ProgressCircleRoot size="xs" colorPalette="orange" value={yearProgress}>
+              <ProgressCircleRing cap="round" />
+            </ProgressCircleRoot>
           ),
+          helpText: 'This year',
           info: `Last year: ${formatDistance(
             getTotalValue(
               activities.filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear() - 1),
