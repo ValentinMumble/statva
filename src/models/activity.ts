@@ -172,6 +172,7 @@ const formatPaceOrSpeed = (activity: Activity, precision?: number, elapsed?: boo
   switch (activity.sport_type) {
     case ActivityType.Run:
     case ActivityType.TrailRun:
+    case ActivityType.Hike:
       const secsPerKm = (time / activity.distance) * 1000;
       const minutesPerKm = Math.floor(secsPerKm / 60);
       const secondsPerKm = Math.round(secsPerKm - minutesPerKm * 60);
