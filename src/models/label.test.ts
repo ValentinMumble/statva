@@ -12,6 +12,7 @@ test.each([
   ['', ''],
   ['GRVL 120 🦖', '🦖'],
   ['Super6 🦈', '🦈'],
+  ['Cervélo R5 🐈‍⬛', '🐈‍⬛'],
 ])('it can extract the emoji from %s', (input, expected) => {
   expect(extractEmoji(input)).toEqual(expected);
 });
