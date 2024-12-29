@@ -1,7 +1,6 @@
 import {createListCollection} from '@chakra-ui/react';
 
-const EMOJI_REGEX =
-  /(\p{Emoji_Presentation}|\p{Extended_Pictographic})(\u200D(\p{Emoji_Presentation}|\p{Extended_Pictographic}))*|\uFE0F/gu;
+const EMOJI_REGEX = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})(\u200D)*|\uFE0F/gu;
 
 type Labels = {
   [key: string]: string;

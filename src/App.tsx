@@ -92,7 +92,7 @@ const App = () => {
   const isLoading = null === activities;
 
   return (
-    <Stack padding="0 20px" gap="20px" direction={['column-reverse', 'row']}>
+    <Stack padding={[undefined, '0 20px']} gap="20px" direction={['column-reverse', 'row']}>
       <VStack align="stretch" flexBasis="40%" gap="20px" width={['100vw', null]} height="100vh" overflowY="scroll">
         <Stats />
         <ChartAccordion />
@@ -128,24 +128,25 @@ const App = () => {
                 onChange={handleSearchChange}
               />
             </InputGroup>
-
             <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
             <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
               <HiLockClosed />
             </IconButton>
-            <IconButton variant="ghost" onClick={handleRefetch}>
-              <BsDatabaseDown />
-            </IconButton>
-            <Collapsible.Trigger>
-              <IconButton
-                transition="rotate ease .2s"
-                rotate={filtersOpen ? '180deg' : undefined}
-                variant="ghost"
-                as="span"
-              >
-                <MdFilterList />
+            <Group hideBelow="md">
+              <IconButton variant="ghost" onClick={handleRefetch}>
+                <BsDatabaseDown />
               </IconButton>
-            </Collapsible.Trigger>
+              <Collapsible.Trigger>
+                <IconButton
+                  transition="rotate ease .2s"
+                  rotate={filtersOpen ? '180deg' : undefined}
+                  variant="ghost"
+                  as="span"
+                >
+                  <MdFilterList />
+                </IconButton>
+              </Collapsible.Trigger>
+            </Group>
           </Group>
           <Collapsible.Content padding="20px 0" display="flex" flexDirection="column" gap="30px">
             <HStack paddingRight="20px" gap="40px">
@@ -176,7 +177,7 @@ const App = () => {
           </Collapsible.Content>
         </Collapsible.Root>
         <Table.Root unstyled={true}>
-          <Table.Header>
+          <Table.Header hideBelow="md">
             <Table.Row fontSize=".8em" cursor="pointer">
               <Table.ColumnHeader />
               <Table.ColumnHeader>

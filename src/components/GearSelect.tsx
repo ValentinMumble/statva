@@ -39,7 +39,7 @@ const GearSelect = ({
 
   return (
     <SelectRoot
-      width="180px"
+      width={['80px', '180px']}
       value={selectedGear}
       onValueChange={handleGearChange}
       collection={gearCollection}

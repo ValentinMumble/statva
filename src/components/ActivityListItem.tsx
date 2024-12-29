@@ -108,7 +108,12 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
         const tagContent = <Tag variant="subtle">{label}</Tag>;
 
         return (
-          <Table.Cell key={tag.sortType} textAlign="center" opacity={tag.isRelevant(activity) ? 0.9 : 0.4}>
+          <Table.Cell
+            key={tag.sortType}
+            hideBelow="md"
+            textAlign="center"
+            opacity={tag.isRelevant(activity) ? 0.9 : 0.4}
+          >
             {null === tooltip ? (
               tagContent
             ) : (
