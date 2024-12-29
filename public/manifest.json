@@ -1,0 +1,16 @@
+{
+  "short_name": "Statva",
+  "name": "Statva",
+  "description": "Statva 📈",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "32x32 24x24 16x16",
+      "type": "image/ico"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#000000"
+}
