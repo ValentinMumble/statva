@@ -54,7 +54,7 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
           <Skeleton>name</Skeleton>
         </Table.Cell>
         {enabledSorts.map(sort => (
-          <Table.Cell key={sort} padding="4px" width="60px">
+          <Table.Cell key={sort} padding="4px" width="60px" hideBelow="md">
             <Skeleton>tag</Skeleton>
           </Table.Cell>
         ))}
