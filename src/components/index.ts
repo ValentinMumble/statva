@@ -6,6 +6,7 @@ export * from './ChartAccordion';
 export * from './event';
 export * from './EditLabels';
 export * from './GearSelect';
+export * from './PolylineMap';
 export * from './Stats';
 export * from './WeekView';
 export * from './YearRangeSlider';
