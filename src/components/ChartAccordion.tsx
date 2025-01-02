@@ -101,7 +101,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <AverageGearChart />,
   },
   {
-    label: 'N-Peloton / time 🚲',
+    label: 'N-Peloton / time 🦊',
     component: <TimeframeChart filter={{search: 'N-Peloton'}} data={1} displayTypes={false} />,
   },
   {

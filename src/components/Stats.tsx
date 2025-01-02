@@ -161,11 +161,6 @@ const STATS: {[key: string]: Stat[][]} = {
           ),
         };
       },
-      activities => ({
-        label: '🚲',
-        helpText: 'N-P count',
-        value: activities.filter(({name}) => name.includes('N-Peloton')).length,
-      }),
       activities => {
         const npRides = activities.filter(({name}) => name.includes('N-Peloton'));
         const monthDiff = getMonthDiff(
@@ -174,9 +169,10 @@ const STATS: {[key: string]: Stat[][]} = {
         );
 
         return {
-          label: '🎚️',
-          helpText: 'N-P / month',
-          value: (npRides.length / monthDiff).toFixed(1),
+          label: '🦊',
+          helpText: 'N-P count',
+          value: activities.filter(({name}) => name.includes('N-Peloton')).length,
+          info: `${(npRides.length / monthDiff).toFixed(1)} / month`,
         };
       },
       activities => ({
