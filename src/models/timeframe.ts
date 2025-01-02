@@ -24,8 +24,14 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
     maxValue: 52,
     separator: '-',
     getDatePeriod: date => getWeekNumber(date),
-    getPeriodKey: date =>
-      `${date.getUTCFullYear()}${TIMEFRAMES.week.separator}${getWeekNumber(date).toString().padStart(2, '0')}`,
+    getPeriodKey: date => {
+      let year = date.getUTCFullYear();
+      if (date.getUTCMonth() === 11 && getWeekNumber(date) === 1) {
+        year++;
+      }
+
+      return `${year}${TIMEFRAMES.week.separator}${getWeekNumber(date).toString().padStart(2, '0')}`;
+    },
   },
   month: {
     initialItemCount: 15,
@@ -38,7 +44,6 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
 };
 
 const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
-  //TODO try to remove any
   const emptyValues: {[period: string]: any} = {};
   const {maxValue, getDatePeriod, separator, getPeriodKey} = TIMEFRAMES[timeframe];
 
