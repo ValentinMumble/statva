@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {IconButton, Table} from '@chakra-ui/react';
 import {LuPlus} from 'react-icons/lu';
 import {Tooltip} from '../components/ui';
-import {ActivityIcon} from '../components';
+import {ActivityIcon, EditLabels} from '../components';
 import {useActivities, useLabels} from '../hooks';
 import {arrayRotate, getActivityUrl, TIMEFRAMES} from '../models';
 import {Activity} from '../models/strava';
@@ -46,11 +46,12 @@ const WeekView = () => {
     <Table.Root>
       <Table.Header>
         <Table.Row>
-          <Table.ColumnHeader>
+          <Table.ColumnHeader width="170px">
             Week
             <IconButton title="More" variant="ghost" onClick={incrementWeekCount} marginLeft="10px">
               <LuPlus />
             </IconButton>
+            <EditLabels />
           </Table.ColumnHeader>
           {mondayFirst.map(weekDay => (
             <Table.ColumnHeader
