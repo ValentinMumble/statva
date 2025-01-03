@@ -24,7 +24,7 @@ const WeekView = () => {
   const dataPerWeek = (activities ?? []).reduce(
     (weekMap: {[weekId: string]: {[weekday: string]: Activity}}, activity) => {
       const date = new Date(activity.start_date);
-      const weekId = TIMEFRAMES['week'].getPeriodKey(date);
+      const weekId = TIMEFRAMES.week.getPeriodKey(date);
       const weekday = WEEKDAYS[date.getDay()];
       const currentActivityTime = weekMap[weekId]?.[weekday]?.moving_time ?? 0;
 

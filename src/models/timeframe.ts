@@ -1,7 +1,7 @@
 import {Activity} from './strava';
 import {getDaysInMonth, getWeekNumber} from './util';
 
-type Timeframe = 'day' | 'month' | 'week';
+type Timeframe = 'day' | 'week' | 'month' | 'year';
 
 type TimeframeData = {
   initialItemCount: number;
@@ -41,6 +41,13 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
     getPeriodKey: date =>
       `${date.getUTCFullYear()}${TIMEFRAMES.month.separator}${(date.getUTCMonth() + 1).toString().padStart(2, '0')}`,
   },
+  year: {
+    initialItemCount: 5,
+    maxValue: 5,
+    separator: '',
+    getDatePeriod: date => date.getUTCFullYear(),
+    getPeriodKey: date => date.getUTCFullYear().toString(),
+  },
 };
 
 const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
@@ -61,6 +68,8 @@ const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timefram
           ] = emptyValue;
         }
       }
+    } else if ('year' === timeframe) {
+      emptyValues[year.toString()] = emptyValue;
     } else {
       for (let period = 1; period <= maxPeriod; period++) {
         emptyValues[`${year}${separator}${period.toString().padStart(2, '0')}`] = emptyValue;
