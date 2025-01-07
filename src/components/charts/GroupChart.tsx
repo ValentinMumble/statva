@@ -1,18 +1,20 @@
 import Chart from 'react-apexcharts';
-import {useActivities} from '../../hooks';
-import {getOptions, getTypes} from '../../models';
-import {Activity, ActivityType} from '../../models/strava';
+import {useActivities, useActivityMeta} from '../../hooks';
+import {getOptions, getTypes, getWorkoutType} from '../../models';
+import {Activity, ActivityType, DetailedActivity, WorkoutType} from '../../models/strava';
 import {Group, Span, Text} from '@chakra-ui/react';
 
-const isGroupRide = (ride: Activity): boolean => {
-  if (ride.athlete_count > 1 || ride.name.includes('N-Peloton')) {
-    return true;
-  }
+const GROUP_RIDES = ['Raymond Ride', 'N-Peloton', 'NP', 'duo'];
+const GROUP_TAGS = ['groupe', 'duo'];
 
-  return false;
-};
+const isGroupRide = (ride: Activity, meta: DetailedActivity | null): boolean =>
+  ride.athlete_count > 1 ||
+  getWorkoutType(ride) === WorkoutType.Race ||
+  GROUP_RIDES.some(groupRide => ride.name.toLowerCase().includes(groupRide.toLowerCase())) ||
+  GROUP_TAGS.some(tag => (meta?.description ?? '').toLowerCase().includes(tag.toLowerCase()));
 
 const GroupChart = () => {
+  const [activityMeta] = useActivityMeta();
   const [activities] = useActivities({
     withCommute: false,
     withPrivate: false,
@@ -21,7 +23,7 @@ const GroupChart = () => {
 
   const map = (activities ?? []).reduce(
     (map, ride) => {
-      if (isGroupRide(ride)) {
+      if (isGroupRide(ride, activityMeta[ride.id] ?? null)) {
         map.Group++;
       } else {
         map.Solo++;
