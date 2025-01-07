@@ -9,6 +9,7 @@ export * from './EventTimelineChart';
 export * from './FinishChart';
 export * from './FTPChart';
 export * from './GearChart';
+export * from './GroupChart';
 export * from './HeartChart';
 export * from './ProgressChart';
 export * from './TimeframeChart';

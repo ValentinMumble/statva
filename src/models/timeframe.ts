@@ -11,7 +11,7 @@ type TimeframeData = {
   getPeriodKey: (date: Date) => string;
 };
 
-const TIMEFRAMES: {[key: string]: TimeframeData} = {
+const TIMEFRAMES: Record<Timeframe, TimeframeData> = {
   day: {
     initialItemCount: 30,
     maxValue: 365,
@@ -48,7 +48,7 @@ const TIMEFRAMES: {[key: string]: TimeframeData} = {
     getDatePeriod: date => date.getUTCFullYear(),
     getPeriodKey: date => date.getUTCFullYear().toString(),
   },
-};
+}; ;
 
 const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
   const emptyValues: {[period: string]: any} = {};
