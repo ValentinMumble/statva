@@ -2,10 +2,9 @@ import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/react';
 import {SegmentedControl} from '../../components/ui';
-import {EditEvents} from '../../components';
+import {EditEvents, EditLabels} from '../../components';
 import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection, SUPER6} from '../../models';
 import {useActivities, useEvents, useLabels} from '../../hooks';
-import {EditLabels} from '../EditLabels';
 
 const ChainChart = () => {
   const [gearId, setGearId] = useState<string>(SUPER6);
@@ -55,11 +54,12 @@ const ChainChart = () => {
     });
   });
 
-  const totalFormatter = (value: string, options: {dataPointIndex: number}) => {
-    const isCurrentChain =
-      options.dataPointIndex === Object.keys(chainOdometer).indexOf(currentBikeEvents.at(-1)?.chain ?? '');
+  const totalFormatter = (value: string, {dataPointIndex}: {dataPointIndex: number}) => {
+    const chains = Object.keys(chainOdometer);
+    const isCurrentChain = dataPointIndex === chains.indexOf(currentBikeEvents.at(-1)?.chain ?? '');
+    const chainEventCount = chainOdometer[chains[dataPointIndex]].length;
 
-    return `${isCurrentChain ? '🔗 ' : ''}${formatDistance(Number(value), 0)}`;
+    return `${isCurrentChain ? '🔗 ' : ''}${formatDistance(Number(value), 0)} 〰 ${chainEventCount}`;
   };
 
   const chartOptions = getOptions(labels, value => formatDistance(value, 0));
