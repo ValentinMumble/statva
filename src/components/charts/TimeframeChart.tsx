@@ -39,7 +39,7 @@ const TimeframeChart = ({
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    includedActivityTypes: getTypes(type),
+    includedActivityTypes: displayTypes ? getTypes(type) : undefined,
     ...filter,
   });
   const [label] = useLabels();

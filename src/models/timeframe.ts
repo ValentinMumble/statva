@@ -91,7 +91,7 @@ const aggregateTimeframeData = (
       activities.reduce((periodMap: {[period: string]: number}, activity) => {
         const date = new Date(activity.start_date);
         const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
-        const valueToAdd = 'number' === typeof data ? data : Number(activity[data]);
+        const valueToAdd = 'number' === typeof data ? data : Number(activity[data] ?? 0);
         periodMap[periodKey] = (periodMap[periodKey] ?? 0) + valueToAdd;
 
         return periodMap;

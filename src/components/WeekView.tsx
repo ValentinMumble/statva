@@ -9,6 +9,11 @@ import {Activity} from '../models/strava';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+type Week = {
+  days: {[weekday: string]: Activity};
+  effort: number;
+};
+
 const WeekView = () => {
   const [weekCount, setWeekCount] = useState<number>(5);
   const [activities] = useActivities({
@@ -21,23 +26,23 @@ const WeekView = () => {
 
   const incrementWeekCount = () => setWeekCount(weekCount => weekCount + 1);
 
-  const dataPerWeek = (activities ?? []).reduce(
-    (weekMap: {[weekId: string]: {[weekday: string]: Activity}}, activity) => {
-      const date = new Date(activity.start_date);
-      const weekId = TIMEFRAMES.week.getPeriodKey(date);
-      const weekday = WEEKDAYS[date.getDay()];
-      const currentActivityTime = weekMap[weekId]?.[weekday]?.moving_time ?? 0;
+  const dataPerWeek = (activities ?? []).reduce((weekMap: {[weekId: string]: Week}, activity) => {
+    const date = new Date(activity.start_date);
+    const weekId = TIMEFRAMES.week.getPeriodKey(date);
+    const weekday = WEEKDAYS[date.getDay()];
+    const currentActivityTime = weekMap[weekId]?.days[weekday]?.moving_time ?? 0;
+    const currentWeekEffort = weekMap[weekId]?.['effort'] ?? 0;
 
-      if (!weekMap[weekId]) {
-        weekMap[weekId] = {};
-      }
+    if (!weekMap[weekId]) {
+      weekMap[weekId] = {effort: 0, days: {}};
+    }
 
-      weekMap[weekId][weekday] = activity.moving_time > currentActivityTime ? activity : weekMap[weekId][weekday];
+    weekMap[weekId].days[weekday] =
+      activity.moving_time > currentActivityTime ? activity : weekMap[weekId].days[weekday];
+    weekMap[weekId]['effort'] = currentWeekEffort + (activity.suffer_score ?? 0);
 
-      return weekMap;
-    },
-    {}
-  );
+    return weekMap;
+  }, {});
 
   const lastWeeks = Object.fromEntries(Object.entries(dataPerWeek).slice(-weekCount).reverse());
   const mondayFirst = arrayRotate(WEEKDAYS, -1);
@@ -62,6 +67,7 @@ const WeekView = () => {
               {weekDay.substring(0, 2)}
             </Table.ColumnHeader>
           ))}
+          <Table.ColumnHeader textAlign="center">{label('suffer_score')}</Table.ColumnHeader>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -69,7 +75,7 @@ const WeekView = () => {
           <Table.Row key={week}>
             <Table.Cell>{label(week)}</Table.Cell>
             {mondayFirst.map(weekDay => {
-              const activity = lastWeeks[week][weekDay] ?? null;
+              const activity = lastWeeks[week].days[weekDay] ?? null;
 
               return activity ? (
                 <Table.Cell key={weekDay} textAlign="center">
@@ -85,6 +91,9 @@ const WeekView = () => {
                 </Table.Cell>
               );
             })}
+            <Table.Cell textAlign="center" fontSize="12px">
+              {lastWeeks[week].effort}
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>

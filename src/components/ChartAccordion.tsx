@@ -53,6 +53,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <TimeframeChart data="moving_time" formatter={formatDuration} />,
   },
   {
+    label: 'Suffer score / time 🌶️',
+    component: <TimeframeChart data="suffer_score" formatter={value => value.toFixed(0)} displayTypes={false} />,
+  },
+  {
     label: 'D+ / time ⛰️',
     component: (
       <TimeframeChart
