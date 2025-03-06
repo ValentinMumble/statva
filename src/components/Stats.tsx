@@ -1,17 +1,6 @@
 import {ReactNode, useState} from 'react';
-import {VStack, HStack} from '@chakra-ui/react';
-import {
-  ProgressCircleRing,
-  ProgressCircleRoot,
-  Skeleton,
-  SkeletonText,
-  StatHelpText,
-  StatLabel,
-  StatRoot,
-  StatUpTrend,
-  StatValueText,
-  Tooltip,
-} from '../components/ui';
+import {VStack, HStack, Text} from '@chakra-ui/react';
+import {ProgressCircleRing, ProgressCircleRoot, StatUpTrend} from '../components/ui';
 import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
@@ -23,11 +12,14 @@ import {
   formatSpeed,
   getAverageValue,
   getMaxValue,
+  getMonday,
   getMonthDiff,
+  getRidesBetween,
   getTotalValue,
   getTypes,
 } from '../models';
 import {ActivityType, Activity, Athlete} from '../models/strava';
+import {StatComponent} from './StatComponent';
 
 const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 const YEAR_GOAL_KM = 10000;
@@ -41,6 +33,60 @@ type Stat = (
   value: ReactNode;
   info?: ReactNode;
 };
+
+const GLOBAL_STATS: Stat[] = [
+  activities => {
+    const monday = getMonday();
+    const sunday = new Date();
+    sunday.setDate(monday.getDate() + 6);
+    const weekActivities = getRidesBetween(activities, monday, sunday);
+
+    return {
+      label: '🏓',
+      helpText: 'Week activity count',
+      value: (
+        <span>
+          {weekActivities.length}
+          <StatUpTrend marginLeft={5} width="24px" />
+        </span>
+      ),
+    };
+  },
+  activities => {
+    const monday = getMonday();
+    const sunday = new Date();
+    sunday.setDate(monday.getDate() + 6);
+    const weekActivities = getRidesBetween(activities, monday, sunday);
+
+    return {
+      label: '🌶️',
+      helpText: 'Week load',
+      value: (
+        <span>
+          {getTotalValue(weekActivities, 'suffer_score')}
+          <StatUpTrend marginLeft={5} width="24px" />
+        </span>
+      ),
+    };
+  },
+  activities => {
+    const monday = getMonday();
+    const sunday = new Date();
+    sunday.setDate(monday.getDate() + 6);
+    const weekActivities = getRidesBetween(activities, monday, sunday);
+
+    return {
+      label: '⏱️',
+      helpText: 'Week moving time',
+      value: (
+        <span>
+          {formatDuration(getTotalValue(weekActivities, 'moving_time'))}
+          <StatUpTrend marginLeft={5} width="24px" />
+        </span>
+      ),
+    };
+  },
+];
 
 const STATS: {[key: string]: Stat[][]} = {
   Ride: [
@@ -266,51 +312,40 @@ const STATS: {[key: string]: Stat[][]} = {
 
 const Stats = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
+  const currentType = TYPES[typeIndex];
 
   const athlete = useAthlete();
   const [activities] = useActivities({
     withPrivate: true,
-    includedActivityTypes: getTypes(TYPES[typeIndex]),
     sort: 'date',
     sortDirection: 'asc',
   });
+  const typeActivities = activities?.filter(({sport_type}) => getTypes(currentType).includes(sport_type)) ?? null;
 
   const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);
 
-  const isLoading = null === athlete || null === activities;
-
   return (
     <VStack alignItems="stretch">
-      {STATS[TYPES[typeIndex]].map((statGroup, index) => (
+      <Text textStyle="xl">Week</Text>
+      <HStack>
+        {GLOBAL_STATS.map((stat, index) => (
+          <StatComponent key={index} stat={stat} activities={activities} athlete={athlete} />
+        ))}
+      </HStack>
+      <Text textStyle="xl" marginTop="10px">
+        {currentType}
+      </Text>
+      {STATS[currentType].map((statGroup, index) => (
         <HStack key={index}>
-          {statGroup.map((stat, index) => {
-            if (isLoading) {
-              return (
-                <StatRoot key={index}>
-                  <Skeleton width="40%">l</Skeleton>
-                  <Skeleton width="80%">l</Skeleton>
-                  <SkeletonText width="70%" noOfLines={1} />
-                </StatRoot>
-              );
-            }
-
-            const {label, value, helpText, info} = stat(activities, athlete);
-            const statContent = (
-              <StatRoot key={index} onClick={toggleTypeChange}>
-                <StatLabel fontSize="1.2em">{label}</StatLabel>
-                <StatValueText fontSize="1.2em">{value}</StatValueText>
-                <StatHelpText fontSize=".8em">{helpText}</StatHelpText>
-              </StatRoot>
-            );
-
-            return info ? (
-              <Tooltip key={index} content={info}>
-                {statContent}
-              </Tooltip>
-            ) : (
-              statContent
-            );
-          })}
+          {statGroup.map((stat, index) => (
+            <StatComponent
+              key={index}
+              stat={stat}
+              activities={typeActivities}
+              athlete={athlete}
+              onClick={toggleTypeChange}
+            />
+          ))}
         </HStack>
       ))}
     </VStack>
@@ -318,3 +353,4 @@ const Stats = () => {
 };
 
 export {Stats};
+export type {Stat};

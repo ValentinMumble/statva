@@ -48,7 +48,7 @@ const getWorkoutType = (activity: Activity): WorkoutType =>
 const getTotalValue = (activities: Activity[], value: keyof Activity): number =>
   activities.reduce((total, activity) => {
     if (typeof activity[value] !== 'number') {
-      return 0;
+      return total;
     }
 
     return activity[value] + total;

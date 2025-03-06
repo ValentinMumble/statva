@@ -40,6 +40,14 @@ const getWeekNumber = (date: Date): number => {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
 };
 
+const getMonday = (date: Date = new Date()): Date => {
+  const d = new Date(date);
+  const day = d.getDay(),
+    diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+
+  return new Date(d.setDate(diff));
+};
+
 const arrayRotate = (originalArray: any[], count: number): typeof originalArray => {
   const array = [...originalArray];
   const length = array.length;
@@ -151,6 +159,7 @@ export {
   formatPercent,
   formatPower,
   getDaysInMonth,
+  getMonday,
   getMonthDiff,
   getWeekNumber,
   range,
