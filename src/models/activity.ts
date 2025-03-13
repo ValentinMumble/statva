@@ -66,7 +66,9 @@ const getRidesBeforeMonth = (rides: Activity[], date: Date) =>
   rides.filter(ride => new Date(ride.start_date) < new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
 const getRidesBetween = (rides: Activity[], from: Date, to?: Date | undefined): Activity[] =>
-  rides.filter(ride => new Date(ride.start_date) >= from && new Date(ride.start_date) < (to ?? new Date()));
+  rides.filter(
+    ride => new Date(ride.start_date) >= new Date(from.toDateString()) && new Date(ride.start_date) < (to ?? new Date())
+  );
 
 const eddingtonNumber = (rides: Activity[]) => {
   const dailyDistances = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {

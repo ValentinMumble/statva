@@ -123,7 +123,7 @@ describe('getRidesBetween', () => {
       buildActivity({start_date: '2021-10-04'}),
     ];
 
-    expect(getRidesBetween(rides, new Date('2021-10-02'))).toEqual([
+    expect(getRidesBetween(rides, new Date('2021-10-02T12:00:00.000+01:00'))).toEqual([
       buildActivity({start_date: '2021-10-02'}),
       buildActivity({start_date: '2021-10-03'}),
       buildActivity({start_date: '2021-10-04'}),

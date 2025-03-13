@@ -1,6 +1,6 @@
 import {ReactNode, useState} from 'react';
 import {VStack, HStack, Text} from '@chakra-ui/react';
-import {ProgressCircleRing, ProgressCircleRoot, StatUpTrend} from '../components/ui';
+import {ProgressCircleRing, ProgressCircleRoot, StatDownTrend, StatUpTrend} from '../components/ui';
 import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
@@ -37,51 +37,82 @@ type Stat = (
 const GLOBAL_STATS: Stat[] = [
   activities => {
     const monday = getMonday();
-    const sunday = new Date();
-    sunday.setDate(monday.getDate() + 6);
-    const weekActivities = getRidesBetween(activities, monday, sunday);
+    const nextMonday = new Date();
+    nextMonday.setDate(monday.getDate() + 7);
+    const lastMonday = getMonday();
+    lastMonday.setDate(monday.getDate() - 7);
+
+    const weekActivities = getRidesBetween(activities, monday, nextMonday).filter(({commute}) => !commute);
+    const lastWeekActivities = getRidesBetween(activities, lastMonday, monday).filter(({commute}) => !commute);
 
     return {
       label: '🏓',
-      helpText: 'Week activity count',
+      helpText: 'Activity count',
+      info: `Last week: ${lastWeekActivities.length}`,
       value: (
         <span>
           {weekActivities.length}
-          <StatUpTrend marginLeft={5} width="24px" />
+          {weekActivities.length >= lastWeekActivities.length ? (
+            <StatUpTrend marginLeft={5} width="24px" />
+          ) : (
+            <StatDownTrend marginLeft={5} width="24px" />
+          )}
         </span>
       ),
     };
   },
   activities => {
     const monday = getMonday();
-    const sunday = new Date();
-    sunday.setDate(monday.getDate() + 6);
-    const weekActivities = getRidesBetween(activities, monday, sunday);
+    const nextMonday = new Date();
+    nextMonday.setDate(monday.getDate() + 7);
+    const lastMonday = getMonday();
+    lastMonday.setDate(monday.getDate() - 7);
+
+    const weekActivities = getRidesBetween(activities, monday, nextMonday);
+    const lastWeekActivities = getRidesBetween(activities, lastMonday, monday);
+    const weekLoad = getTotalValue(weekActivities, 'suffer_score');
+    const lastWeekLoad = getTotalValue(lastWeekActivities, 'suffer_score');
 
     return {
       label: '🌶️',
-      helpText: 'Week load',
+      helpText: 'Load',
+      info: `Last week: ${lastWeekLoad}`,
       value: (
         <span>
-          {getTotalValue(weekActivities, 'suffer_score')}
-          <StatUpTrend marginLeft={5} width="24px" />
+          {weekLoad}
+          {weekLoad >= lastWeekLoad ? (
+            <StatUpTrend marginLeft={5} width="24px" />
+          ) : (
+            <StatDownTrend marginLeft={5} width="24px" />
+          )}
         </span>
       ),
     };
   },
   activities => {
     const monday = getMonday();
-    const sunday = new Date();
-    sunday.setDate(monday.getDate() + 6);
-    const weekActivities = getRidesBetween(activities, monday, sunday);
+    const nextMonday = new Date();
+    nextMonday.setDate(monday.getDate() + 7);
+    const lastMonday = getMonday();
+    lastMonday.setDate(monday.getDate() - 7);
+
+    const weekActivities = getRidesBetween(activities, monday, nextMonday).filter(({commute}) => !commute);
+    const lastWeekActivities = getRidesBetween(activities, lastMonday, monday).filter(({commute}) => !commute);
+    const weekMovingTime = getTotalValue(weekActivities, 'moving_time');
+    const lastWeekMovingTime = getTotalValue(lastWeekActivities, 'moving_time');
 
     return {
       label: '⏱️',
-      helpText: 'Week moving time',
+      helpText: 'Moving time',
+      info: `Last week: ${formatDuration(lastWeekMovingTime)}`,
       value: (
         <span>
-          {formatDuration(getTotalValue(weekActivities, 'moving_time'))}
-          <StatUpTrend marginLeft={5} width="24px" />
+          {formatDuration(weekMovingTime)}
+          {weekMovingTime >= lastWeekMovingTime ? (
+            <StatUpTrend marginLeft={5} width="24px" />
+          ) : (
+            <StatDownTrend marginLeft={5} width="24px" />
+          )}
         </span>
       ),
     };
