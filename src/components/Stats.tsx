@@ -34,21 +34,30 @@ type Stat = (
   info?: ReactNode;
 };
 
+
+const getWeeksActivities = (activities: Activity[]) => {
+  const monday = getMonday();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const lastMonday = new Date(monday);
+  lastMonday.setDate(monday.getDate() - 7);
+  const lastWeeksTomorrow = new Date(tomorrow);
+  lastWeeksTomorrow.setDate(tomorrow.getDate() - 7);
+
+  const weekActivities = getRidesBetween(activities, monday, tomorrow);
+  const lastWeekActivities = getRidesBetween(activities, lastMonday, lastWeeksTomorrow);
+
+  return [weekActivities, lastWeekActivities];
+};
+
 const GLOBAL_STATS: Stat[] = [
   activities => {
-    const monday = getMonday();
-    const nextMonday = new Date();
-    nextMonday.setDate(monday.getDate() + 7);
-    const lastMonday = getMonday();
-    lastMonday.setDate(monday.getDate() - 7);
-
-    const weekActivities = getRidesBetween(activities, monday, nextMonday).filter(({commute}) => !commute);
-    const lastWeekActivities = getRidesBetween(activities, lastMonday, monday).filter(({commute}) => !commute);
+    const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
 
     return {
       label: '🏓',
       helpText: 'Activity count',
-      info: `Last week: ${lastWeekActivities.length}`,
+      info: `Last week, to this day: ${lastWeekActivities.length}`,
       value: (
         <span>
           {weekActivities.length}
@@ -62,21 +71,14 @@ const GLOBAL_STATS: Stat[] = [
     };
   },
   activities => {
-    const monday = getMonday();
-    const nextMonday = new Date();
-    nextMonday.setDate(monday.getDate() + 7);
-    const lastMonday = getMonday();
-    lastMonday.setDate(monday.getDate() - 7);
-
-    const weekActivities = getRidesBetween(activities, monday, nextMonday);
-    const lastWeekActivities = getRidesBetween(activities, lastMonday, monday);
+    const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
     const weekLoad = getTotalValue(weekActivities, 'suffer_score');
     const lastWeekLoad = getTotalValue(lastWeekActivities, 'suffer_score');
 
     return {
       label: '🌶️',
-      helpText: 'Load',
-      info: `Last week: ${lastWeekLoad}`,
+      helpText: 'Training load',
+      info: `Last week, to this day: ${lastWeekLoad}`,
       value: (
         <span>
           {weekLoad}
@@ -90,21 +92,14 @@ const GLOBAL_STATS: Stat[] = [
     };
   },
   activities => {
-    const monday = getMonday();
-    const nextMonday = new Date();
-    nextMonday.setDate(monday.getDate() + 7);
-    const lastMonday = getMonday();
-    lastMonday.setDate(monday.getDate() - 7);
-
-    const weekActivities = getRidesBetween(activities, monday, nextMonday).filter(({commute}) => !commute);
-    const lastWeekActivities = getRidesBetween(activities, lastMonday, monday).filter(({commute}) => !commute);
+    const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
     const weekMovingTime = getTotalValue(weekActivities, 'moving_time');
     const lastWeekMovingTime = getTotalValue(lastWeekActivities, 'moving_time');
 
     return {
       label: '⏱️',
-      helpText: 'Moving time',
-      info: `Last week: ${formatDuration(lastWeekMovingTime)}`,
+      helpText: 'Active time',
+      info: `Last week, to this day: ${formatDuration(lastWeekMovingTime)}`,
       value: (
         <span>
           {formatDuration(weekMovingTime)}
