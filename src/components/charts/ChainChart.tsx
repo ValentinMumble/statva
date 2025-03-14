@@ -1,15 +1,18 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/react';
-import {SegmentedControl} from '../../components/ui';
+import {Group, SegmentGroupValueChangeDetails, Spacer, Span, Text} from '@chakra-ui/react';
+import {SegmentedControl, Switch} from '../../components/ui';
 import {EditEvents, EditLabels} from '../../components';
 import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection, SUPER6} from '../../models';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 
+const RETIRED_CHAINS = ['🍍'];
+
 const ChainChart = () => {
+  const [withRetired, setWithRetired] = useState<boolean>(false);
   const [gearId, setGearId] = useState<string>(SUPER6);
   const [label] = useLabels();
-  const [events, refreshEvents] = useEvents<ChainEvent>('chain');
+  const [chainEvents, refreshEvents] = useEvents<ChainEvent>('chain');
 
   const [activities] = useActivities({
     withCommute: true,
@@ -21,10 +24,11 @@ const ChainChart = () => {
 
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
 
-  if (null === events) {
+  if (null === chainEvents) {
     return null;
   }
 
+  const events = chainEvents.filter(({chain}) => withRetired || !RETIRED_CHAINS.includes(chain));
   const relevantBikes = [...new Set(events.map(({bike}) => bike))];
   const currentBikeEvents = events.filter(({bike}) => gearId === bike);
 
@@ -73,6 +77,10 @@ const ChainChart = () => {
   return (
     <>
       <Group width="full" justifyContent="end" gap="20px">
+        <Switch size="xs" checked={withRetired} onCheckedChange={({checked}) => setWithRetired(checked)}>
+          🗄️
+        </Switch>
+        <Spacer />
         <Text>
           <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
         </Text>
