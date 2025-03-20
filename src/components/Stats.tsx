@@ -1,6 +1,6 @@
 import {ReactNode, useState} from 'react';
 import {VStack, HStack, Text} from '@chakra-ui/react';
-import {ProgressCircleRing, ProgressCircleRoot, StatDownTrend, StatUpTrend} from '../components/ui';
+import {ProgressCircleRing, ProgressCircleRoot, StatTrend} from '../components/ui';
 import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
@@ -34,7 +34,6 @@ type Stat = (
   info?: ReactNode;
 };
 
-
 const getWeeksActivities = (activities: Activity[]) => {
   const monday = getMonday();
   const tomorrow = new Date();
@@ -57,15 +56,12 @@ const GLOBAL_STATS: Stat[] = [
     return {
       label: '🏓',
       helpText: 'Activity count',
-      info: `Last week, to this day: ${lastWeekActivities.length}`,
       value: (
         <span>
           {weekActivities.length}
-          {weekActivities.length >= lastWeekActivities.length ? (
-            <StatUpTrend marginLeft={5} width="24px" />
-          ) : (
-            <StatDownTrend marginLeft={5} width="24px" />
-          )}
+          <StatTrend marginLeft={5} up={weekActivities.length >= lastWeekActivities.length}>
+            {lastWeekActivities.length}
+          </StatTrend>
         </span>
       ),
     };
@@ -78,15 +74,12 @@ const GLOBAL_STATS: Stat[] = [
     return {
       label: '🌶️',
       helpText: 'Training load',
-      info: `Last week, to this day: ${lastWeekLoad}`,
       value: (
         <span>
           {weekLoad}
-          {weekLoad >= lastWeekLoad ? (
-            <StatUpTrend marginLeft={5} width="24px" />
-          ) : (
-            <StatDownTrend marginLeft={5} width="24px" />
-          )}
+          <StatTrend marginLeft={5} up={weekLoad >= lastWeekLoad}>
+            {lastWeekLoad}
+          </StatTrend>
         </span>
       ),
     };
@@ -99,19 +92,34 @@ const GLOBAL_STATS: Stat[] = [
     return {
       label: '⏱️',
       helpText: 'Active time',
-      info: `Last week, to this day: ${formatDuration(lastWeekMovingTime)}`,
       value: (
         <span>
           {formatDuration(weekMovingTime)}
-          {weekMovingTime >= lastWeekMovingTime ? (
-            <StatUpTrend marginLeft={5} width="24px" />
-          ) : (
-            <StatDownTrend marginLeft={5} width="24px" />
-          )}
+          <StatTrend marginLeft={5} up={weekMovingTime >= lastWeekMovingTime}>
+            {formatDuration(lastWeekMovingTime)}
+          </StatTrend>
         </span>
       ),
     };
   },
+    activities => {
+      const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
+      const weekDistance = getTotalValue(weekActivities, 'distance');
+      const lastWeekDistance = getTotalValue(lastWeekActivities, 'distance');
+
+      return {
+        label: '📍',
+        helpText: 'Distance',
+        value: (
+          <span>
+            {formatDistance(weekDistance)}
+            <StatTrend marginLeft={5} up={weekDistance >= lastWeekDistance}>
+              {formatDistance(lastWeekDistance)}
+            </StatTrend>
+          </span>
+        ),
+      };
+    },
 ];
 
 const STATS: {[key: string]: Stat[][]} = {
@@ -228,7 +236,9 @@ const STATS: {[key: string]: Stat[][]} = {
           value: (
             <span>
               {eddington}
-              <StatUpTrend marginLeft={5}>{next}</StatUpTrend>
+              <StatTrend marginLeft={5} up={true}>
+                {next}
+              </StatTrend>
             </span>
           ),
         };
