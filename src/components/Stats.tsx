@@ -4,7 +4,6 @@ import {ProgressCircleRing, ProgressCircleRoot, StatTrend} from '../components/u
 import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
-  formatCalories,
   formatDistance,
   formatDuration,
   formatDurationInDays,
@@ -198,10 +197,15 @@ const STATS: {[key: string]: Stat[][]} = {
         info: formatDuration(getTotalValue(activities, 'moving_time'), true),
         value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
       }),
+      // activities => ({
+      //   label: '🍕',
+      //   helpText: 'Calories burned',
+      //   value: formatCalories(getTotalValue(activities, 'kilojoules'), false),
+      // }),
       activities => ({
-        label: '🍕',
-        helpText: 'Calories burned',
-        value: formatCalories(getTotalValue(activities, 'kilojoules'), false),
+        label: '🗺️',
+        helpText: 'Avg distance',
+        value: formatDistance(getAverageValue(activities.filter(({commute}) => !commute), 'distance')),
       }),
       activities => ({
         label: '🏁',
@@ -302,6 +306,11 @@ const STATS: {[key: string]: Stat[][]} = {
         value: formatDistance(getTotalValue(activities, 'distance')),
       }),
       activities => ({
+        label: '🗺️',
+        helpText: 'Avg distance',
+        value: formatDistance(getAverageValue(activities, 'distance'), 1),
+      }),
+      activities => ({
         label: '⏱️',
         helpText: 'Spent running',
         info: formatDuration(getTotalValue(activities, 'moving_time'), true),
@@ -320,6 +329,11 @@ const STATS: {[key: string]: Stat[][]} = {
         label: '📍',
         helpText: 'Distance swum',
         value: formatDistance(getTotalValue(activities, 'distance')),
+      }),
+      activities => ({
+        label: '🗺️',
+        helpText: 'Avg distance',
+        value: formatDistance(getAverageValue(activities, 'distance'), 1),
       }),
       activities => ({
         label: '⏱️',

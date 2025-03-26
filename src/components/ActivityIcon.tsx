@@ -14,6 +14,7 @@ import {
 } from 'react-icons/tb';
 import {ActivityType, WorkoutType} from '../models/strava';
 
+//TODO add PiBicycleDuotone for GranFondo
 const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
   if (isCommute) {
     return TbBusStop;
@@ -50,6 +51,7 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
   }
 };
 
+//TODO handle Activity as a whole
 type ActivityIconProps = {
   activityType: ActivityType;
   isCommute?: boolean;
