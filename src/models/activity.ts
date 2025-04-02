@@ -67,7 +67,9 @@ const getRidesBeforeMonth = (rides: Activity[], date: Date) =>
 
 const getRidesBetween = (rides: Activity[], from: Date, to?: Date | undefined): Activity[] =>
   rides.filter(
-    ride => new Date(ride.start_date) >= new Date(from.toDateString()) && new Date(ride.start_date) < (new Date(to?.toDateString() ?? new Date()))
+    ride =>
+      new Date(ride.start_date) >= new Date(from.toDateString()) &&
+      new Date(ride.start_date) < new Date(to?.toDateString() ?? new Date())
   );
 
 const eddingtonNumber = (rides: Activity[]) => {
@@ -282,6 +284,9 @@ const cleanActivity = (activity: DetailedActivity): DetailedActivity => {
   return activity;
 };
 
+const isDetailedActivity = (activity: DetailedActivity): activity is DetailedActivity =>
+  'id' in activity && 'name' in activity && 'type' in activity && 'start_date' in activity && 'description' in activity;
+
 const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number> => {
   const locationCount: Record<string, number> = {};
 
@@ -325,6 +330,7 @@ export {
   getTypes,
   getWorkoutType,
   guessCalories,
+  isDetailedActivity,
   daysExceedingDistance,
 };
 export type {ActivityFilter};

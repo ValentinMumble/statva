@@ -2,7 +2,7 @@ import {IconButton, Image} from '@chakra-ui/react';
 import {MdOutlineNotes} from 'react-icons/md';
 import {HoverCardContent, HoverCardRoot, HoverCardTrigger} from '../components/ui';
 import {Activity, DetailedActivity} from '../models/strava';
-import {cleanActivity} from '../models';
+import {cleanActivity, isDetailedActivity} from '../models';
 import {useActivityMeta, useFetcher} from '../hooks';
 
 type ActivityMetaProps = {
@@ -16,8 +16,14 @@ const ActivityMeta = ({activity}: ActivityMetaProps) => {
 
   const handleFetchActivity = async () => {
     const fullActivity = await fetchActivity(activity.id);
-    console.log(fullActivity);
 
+    if (!isDetailedActivity(fullActivity)) {
+      console.error('Invalid activity received');
+
+      return;
+    }
+
+    console.log(fullActivity);
     await upsertActivity(cleanActivity(fullActivity));
     refetch();
   };
