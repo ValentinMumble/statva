@@ -4,6 +4,7 @@ import {PiBicycleFill, PiBicycle, PiTennisBallBold, PiQuestionBold} from 'react-
 import {
   TbBrandZwift,
   TbBusStop,
+  TbGymnastics,
   TbKayak,
   TbRouteX,
   TbRun,
@@ -11,6 +12,7 @@ import {
   TbSwimming,
   TbTrekking,
   TbWalk,
+  TbYoga,
 } from 'react-icons/tb';
 import {ActivityType, WorkoutType} from '../models/strava';
 
@@ -46,6 +48,10 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
       return TbBrandZwift;
     case ActivityType.Walk:
       return TbWalk;
+      case ActivityType.Workout:
+      return TbGymnastics;
+    case ActivityType.Yoga:
+      return TbYoga;
     default:
       return PiQuestionBold;
   }

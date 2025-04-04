@@ -38,7 +38,7 @@ const TAGS: Tag[] = [
     tooltip: ({distance}) => `📍 ${formatDistance(distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'distance')),
     sortType: 'distance',
-    excludedTypes: [ActivityType.Tennis],
+    excludedTypes: [ActivityType.Tennis, ActivityType.Yoga],
   },
   {
     help: 'D+',
@@ -49,7 +49,7 @@ const TAGS: Tag[] = [
       ActivityType.Swim === sport_type ? null : `⚖️ ${formatPercent(total_elevation_gain / distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'total_elevation_gain')),
     sortType: 'total_elevation_gain',
-    excludedTypes: [ActivityType.Tennis],
+    excludedTypes: [ActivityType.Tennis, ActivityType.Yoga],
   },
   {
     help: 'D+ percentage',
@@ -58,7 +58,7 @@ const TAGS: Tag[] = [
     total: activities =>
       formatPercent(getTotalValue(activities, 'total_elevation_gain') / getTotalValue(activities, 'distance'), 2),
     sortType: 'elevation_percent',
-    excludedTypes: [ActivityType.Swim, ActivityType.Tennis],
+    excludedTypes: [ActivityType.Swim, ActivityType.Tennis, ActivityType.Yoga],
   },
   {
     help: 'Moving time',
@@ -90,7 +90,7 @@ const TAGS: Tag[] = [
     isRelevant: ({max_speed}) => 0 < max_speed,
     total: activities => formatSpeed(getMaxValue(activities, 'max_speed')),
     sortType: 'max_speed',
-    excludedTypes: [ActivityType.Tennis, ActivityType.Swim, ActivityType.Hike],
+    excludedTypes: [ActivityType.Tennis, ActivityType.Swim, ActivityType.Hike, ActivityType.Yoga],
   },
   {
     help: 'Average power',
