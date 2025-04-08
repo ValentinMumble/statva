@@ -6,7 +6,8 @@ import {EditEvents, EditLabels} from '../../components';
 import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection, SUPER6} from '../../models';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 
-const RETIRED_CHAINS = ['🍍'];
+const RETIRED_CHAINS = ['🍍', '🧄', '🍪'];
+const RETIRED_BIKES = ['b11897955', 'b12655849'];
 
 const ChainChart = () => {
   const [withRetired, setWithRetired] = useState<boolean>(false);
@@ -29,7 +30,9 @@ const ChainChart = () => {
   }
 
   const events = chainEvents.filter(({chain}) => withRetired || !RETIRED_CHAINS.includes(chain));
-  const relevantBikes = [...new Set(events.map(({bike}) => bike))];
+  const relevantBikes = [...new Set(events.map(({bike}) => bike))].filter(
+    bike => withRetired || !RETIRED_BIKES.includes(bike)
+  );
   const currentBikeEvents = events.filter(({bike}) => gearId === bike);
 
   const chainOdometer = currentBikeEvents.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
