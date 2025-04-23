@@ -12,6 +12,7 @@ export * from './meta-activity';
 export * from './meta-athlete';
 export * from './polyline-map';
 export * from './power-zone-ranges';
+export * from './route';
 export * from './stream';
 export * from './stream-set';
 export * from './summary-activity';

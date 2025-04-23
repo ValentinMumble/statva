@@ -14,7 +14,7 @@ import {
 import {BsDatabaseDown} from 'react-icons/bs';
 import {HiArrowDown, HiArrowUp, HiLockClosed} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
-import {Tooltip, InputGroup, Switch, Skeleton, Tag, SegmentedControl} from './components/ui';
+import {Tooltip, InputGroup, Switch, Skeleton, Tag, SegmentedControl} from '../components/ui';
 import {
   ActivityListItem,
   ActivityTypeFilter,
@@ -23,10 +23,10 @@ import {
   Stats,
   WeekView,
   YearRangeSlider,
-} from './components';
-import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection} from './models';
-import {ActivityType} from './models/strava';
-import {useActivities, useEnv, useFtp, useLabels} from './hooks';
+} from '../components';
+import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection} from '../models';
+import {ActivityType} from '../models/strava';
+import {useActivities, useEnv, useFtp, useLabels} from '../hooks';
 
 const DISPLAYED_ITEMS = 75;
 const BG_COLLECTION = ['date', 'average_watts', 'average_heartrate'];

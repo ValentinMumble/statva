@@ -6,3 +6,4 @@ export * from './useEvents';
 export * from './useFetcher';
 export * from './useFtp';
 export * from './useLabels';
+export * from './useRoutes';
