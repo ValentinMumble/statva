@@ -1,35 +1,44 @@
-import 'leaflet/dist/leaflet.css'
-import {MapContainer, Polyline, TileLayer} from 'react-leaflet';
+import {Box} from '@chakra-ui/react';
+import 'leaflet/dist/leaflet.css';
+import {LatLngBounds, LatLngExpression} from 'leaflet';
+import {MapContainer, Polyline, TileLayer, useMap} from 'react-leaflet';
+import {decodePolyline} from '../models';
 
-const PolylineMap = () => {
+const NANTES: LatLngExpression = [47.218371, -1.553621];
+const STRAVA_ORANGE = '#fc4c02';
+
+type MapBoxProps = {
+  polyline: LatLngExpression[];
+};
+
+const MapBox = ({polyline}: MapBoxProps) => {
+  const bounds = new LatLngBounds(polyline);
+  const map = useMap();
+  map.fitBounds(bounds);
+
+  return null;
+};
+
+type PolylineMapProps = {
+  polyline: string | null;
+};
+
+const PolylineMap = ({polyline}: PolylineMapProps) => {
+  const decodedPolyline = polyline ? (decodePolyline(polyline) as LatLngExpression[]) : [NANTES];
+
   return (
-    <MapContainer
-      center={[40.7317535212683, -73.99685430908403]}
-      zoom={13}
-      scrollWheelZoom={false}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Polyline
-        pathOptions={{fillColor: 'red', color: 'blue'}}
-        positions={[
-          [40.689818841705, -74.04511194542516],
-          [40.75853187779803, -73.98495720388513],
-          [40.86151538060051, -74.06201170384256],
-          [40.80981015620906, -74.03656769139772],
-          [40.80721155324825, -74.04274750092904],
-          [40.78901848327006, -74.081199649124],
-          [40.764319913561216, -74.08840942691056],
-          [40.749756455072884, -74.09493255919364],
-          [40.74793579843903, -74.07673645335137],
-          [40.675849802727335, -74.19758606169779],
-          [40.60394644123212, -74.05991363796608],
-          [40.6495463256113, -73.96000671720954],
-        ]}
-      />
-    </MapContainer>
+    <Box width="1000px" height="600px">
+      <MapContainer scrollWheelZoom={false} style={{height: '100%', width: '100%'}}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <Polyline pathOptions={{color: STRAVA_ORANGE}} positions={decodedPolyline} />
+        {/* <Marker position={position}>
+          <Popup>
+            A pretty CSS3 popup. <br /> Easily customizable.
+          </Popup>
+        </Marker> */}
+        <MapBox polyline={decodedPolyline} />
+      </MapContainer>
+    </Box>
   );
 };
 
