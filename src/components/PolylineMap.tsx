@@ -3,7 +3,10 @@ import 'leaflet/dist/leaflet.css';
 import {LatLngBounds, LatLngExpression} from 'leaflet';
 import {MapContainer, Polyline, TileLayer, useMap} from 'react-leaflet';
 import {decodePolyline} from '../models';
+import {EmojiMarker} from './leaflet';
 
+const TILE_URL =
+  'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=MAP_TOKEN_REMOVED';
 const NANTES: LatLngExpression = [47.218371, -1.553621];
 const STRAVA_ORANGE = '#fc4c02';
 
@@ -20,7 +23,7 @@ const MapBox = ({polyline}: MapBoxProps) => {
 };
 
 type PolylineMapProps = {
-  polyline: string | null;
+  polyline: string | undefined;
 };
 
 const PolylineMap = ({polyline}: PolylineMapProps) => {
@@ -29,14 +32,11 @@ const PolylineMap = ({polyline}: PolylineMapProps) => {
   return (
     <Box width="1000px" height="600px">
       <MapContainer scrollWheelZoom={false} style={{height: '100%', width: '100%'}}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <Polyline pathOptions={{color: STRAVA_ORANGE}} positions={decodedPolyline} />
-        {/* <Marker position={position}>
-          <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
-          </Popup>
-        </Marker> */}
+        <TileLayer url={TILE_URL} />
         <MapBox polyline={decodedPolyline} />
+        <Polyline pathOptions={{color: STRAVA_ORANGE}} positions={decodedPolyline} />
+        <EmojiMarker position={decodedPolyline.at(0)} emoji="📍" />
+        <EmojiMarker position={decodedPolyline.at(-1)} emoji="🏁" />
       </MapContainer>
     </Box>
   );
