@@ -26,7 +26,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 </AthleteProvider>
               }
             />
-            <Route path="/routes" element={<UserRoutes />} />
+            <Route path="/routes/:routeId?" element={<UserRoutes />} />
           </Routes>
         </BrowserRouter>
       </LabelProvider>

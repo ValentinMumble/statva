@@ -7,7 +7,7 @@ import {EmojiMarker} from './leaflet';
 
 const TILE_URL =
   'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=MAP_TOKEN_REMOVED';
-const NANTES: LatLngExpression = [47.218371, -1.553621];
+const NANTES: LatLngExpression = [47.23, -1.55];
 const STRAVA_ORANGE = '#fc4c02';
 
 type MapBoxProps = {
