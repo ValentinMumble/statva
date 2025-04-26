@@ -32,7 +32,7 @@ const EventTimelineChart = () => {
     gearId,
   });
 
-  const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
+  const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => value && setGearId(value);
 
   if (null === allEvents) {
     return null;

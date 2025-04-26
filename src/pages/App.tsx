@@ -79,7 +79,7 @@ const App = () => {
   };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
-  const handleBgOptionChange = ({value}: SegmentGroupValueChangeDetails) => setBgOption(value);
+  const handleBgOptionChange = ({value}: SegmentGroupValueChangeDetails) => value && setBgOption(value);
   const handleDisplayMoreItems = () => setDisplayedItems(displayedItems => displayedItems + DISPLAYED_ITEMS);
 
   const handleSortToggle = (sortType: SortType) => () =>

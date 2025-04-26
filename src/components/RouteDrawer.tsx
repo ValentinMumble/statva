@@ -1,6 +1,5 @@
 import {useNavigate} from 'react-router';
-import {Avatar, Button, Drawer, Text, List, Portal, Skeleton} from '@chakra-ui/react';
-import {CloseButton} from './ui/close-button';
+import {Avatar, Button, Drawer, Text, List, Portal, Skeleton, CloseButton} from '@chakra-ui/react';
 import {Route} from '../models/strava';
 
 type RouteDrawerProps = {

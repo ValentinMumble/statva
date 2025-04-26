@@ -24,8 +24,8 @@ const EventOdometerChart = () => {
   });
 
   const handleDataChange = ({value}: SegmentGroupValueChangeDetails) => setData(value as keyof Activity);
-  const handleEventTypeChange = ({value}: SegmentGroupValueChangeDetails) => setEventType(value);
-  const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => setGearId(value);
+  const handleEventTypeChange = ({value}: SegmentGroupValueChangeDetails) => value && setEventType(value);
+  const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => value && setGearId(value);
 
   if (null === events) {
     return null;
