@@ -1,22 +1,29 @@
-import {divIcon, LatLngExpression} from 'leaflet';
-import {Marker} from 'react-leaflet';
+import {divIcon} from 'leaflet';
+import {Marker, MarkerProps, Popup} from 'react-leaflet';
 
 type EmojiMarkerProps = {
-  position: LatLngExpression | undefined;
   emoji: string;
-};
+  popup?: string;
+} & MarkerProps;
 
-const EmojiMarker = ({position, emoji}: EmojiMarkerProps) => {
+const EmojiMarker = ({position, emoji, popup, ...rest}: EmojiMarkerProps) => {
   if (!position) {
     return null;
   }
 
-  const icon = divIcon({
-    className: 'map-marker',
-    html: emoji,
-  });
-
-  return <Marker position={position} icon={icon} />;
+  return (
+    <Marker
+      position={position}
+      icon={divIcon({
+        className: 'map-marker',
+        iconSize: [40, 40],
+        html: emoji,
+      })}
+      {...rest}
+    >
+      {popup && <Popup>{popup}</Popup>}
+    </Marker>
+  );
 };
 
 export {EmojiMarker};

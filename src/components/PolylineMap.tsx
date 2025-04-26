@@ -27,7 +27,7 @@ type PolylineMapProps = {
   polyline: string | undefined;
 } & BoxProps;
 
-const PolylineMap = ({polyline, ...boxProps}: PolylineMapProps) => {
+const PolylineMap = ({polyline, children, ...boxProps}: PolylineMapProps) => {
   const decodedPolyline = polyline ? (decodePolyline(polyline) as LatLngExpression[]) : [NANTES];
 
   return (
@@ -36,8 +36,9 @@ const PolylineMap = ({polyline, ...boxProps}: PolylineMapProps) => {
         <TileLayer url={TILE_URL} />
         <MapBox polyline={decodedPolyline} />
         <Polyline pathOptions={{color: STRAVA_ORANGE}} positions={decodedPolyline} />
-        <EmojiMarker position={decodedPolyline.at(0)} emoji="📍" />
-        <EmojiMarker position={decodedPolyline.at(-1)} emoji="🏁" />
+        <EmojiMarker position={decodedPolyline.at(0) ?? NANTES} emoji="🌱" />
+        <EmojiMarker position={decodedPolyline.at(-1) ?? NANTES} emoji="🏁" />
+        {children}
       </MapContainer>
     </Box>
   );
