@@ -13,7 +13,7 @@ const Routes = () => {
       <PolylineMap width="100vw" height="100vh" polyline={selectedRoute?.map.summary_polyline} />
       <VStack position="absolute" zIndex={1000} top="0" left="0" padding="12px" gap="12px" align="start">
         <RouteCard route={selectedRoute} />
-        <RouteDrawer routes={routes} defaultOpen={undefined === routeId} />
+        <RouteDrawer selectedRoute={selectedRoute} routes={routes} defaultOpen={undefined === routeId} />
       </VStack>
     </>
   );

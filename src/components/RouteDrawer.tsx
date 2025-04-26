@@ -2,12 +2,14 @@ import {useNavigate} from 'react-router';
 import {Avatar, Button, Drawer, Text, List, Portal, Skeleton, CloseButton} from '@chakra-ui/react';
 import {Route} from '../models/strava';
 
+
 type RouteDrawerProps = {
+  selectedRoute: Route | undefined;
   routes: Route[] | null;
   defaultOpen?: boolean;
 };
 
-const RouteDrawer = ({routes, defaultOpen}: RouteDrawerProps) => {
+const RouteDrawer = ({routes, selectedRoute, defaultOpen}: RouteDrawerProps) => {
   const navigate = useNavigate();
 
   const handleRouteClick = (route: Route) => () => {
@@ -30,7 +32,7 @@ const RouteDrawer = ({routes, defaultOpen}: RouteDrawerProps) => {
               <Drawer.Title>Select a route</Drawer.Title>
             </Drawer.Header>
             <Drawer.Body>
-              <List.Root gap="2" variant="plain" align="start">
+              <List.Root gap="10px" variant="plain">
                 {null === routes
                   ? [...new Array(20)].map((_, index) => (
                       <Skeleton key={index}>
@@ -38,13 +40,17 @@ const RouteDrawer = ({routes, defaultOpen}: RouteDrawerProps) => {
                       </Skeleton>
                     ))
                   : routes.map(route => (
-                      <List.Item key={route.id} onClick={handleRouteClick(route)} alignItems="center" gap="2">
-                        <Avatar.Root size="sm" shape="rounded">
+                      <List.Item key={route.id} onClick={handleRouteClick(route)} alignItems="center" gap="10px">
+                        <Avatar.Root
+                          size="sm"
+                          shape="rounded"
+                          outlineStyle="solid"
+                          outlineWidth="2px"
+                          outlineColor={selectedRoute?.id === route.id ? 'orange.600' : 'transparent'}
+                        >
                           <Avatar.Image src={route.map_urls.dark_url} />
                         </Avatar.Root>
-                        <Text fontSize="15px">
-                          {route.name}
-                        </Text>
+                        <Text fontSize="15px">{route.name}</Text>
                       </List.Item>
                     ))}
               </List.Root>
