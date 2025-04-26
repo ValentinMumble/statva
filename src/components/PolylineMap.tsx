@@ -1,4 +1,4 @@
-import {Box} from '@chakra-ui/react';
+import {Box, BoxProps} from '@chakra-ui/react';
 import 'leaflet/dist/leaflet.css';
 import {LatLngBounds, LatLngExpression} from 'leaflet';
 import {MapContainer, Polyline, TileLayer, useMap} from 'react-leaflet';
@@ -18,19 +18,20 @@ const MapBox = ({polyline}: MapBoxProps) => {
   const bounds = new LatLngBounds(polyline);
   const map = useMap();
   map.fitBounds(bounds);
+  map.zoomControl.setPosition('topright')
 
   return null;
 };
 
 type PolylineMapProps = {
   polyline: string | undefined;
-};
+} & BoxProps;
 
-const PolylineMap = ({polyline}: PolylineMapProps) => {
+const PolylineMap = ({polyline, ...boxProps}: PolylineMapProps) => {
   const decodedPolyline = polyline ? (decodePolyline(polyline) as LatLngExpression[]) : [NANTES];
 
   return (
-    <Box width="1000px" height="600px">
+    <Box {...boxProps}>
       <MapContainer scrollWheelZoom={false} style={{height: '100%', width: '100%'}}>
         <TileLayer url={TILE_URL} />
         <MapBox polyline={decodedPolyline} />

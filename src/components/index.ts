@@ -7,6 +7,8 @@ export * from './event';
 export * from './EditLabels';
 export * from './GearSelect';
 export * from './PolylineMap';
+export * from './RouteCard';
+export * from './RouteDrawer';
 export * from './StatComponent';
 export * from './Stats';
 export * from './WeekView';

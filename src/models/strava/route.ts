@@ -19,6 +19,12 @@ type Route = {
   id: number;
   map: PolylineMap;
   timestamp: number;
+  map_urls: {
+    dark_url: string;
+    light_url: string;
+    url: string;
+    retina_url: string;
+  }
 };
 
 export type {Route};
