@@ -13,7 +13,6 @@ export * from './progress-circle';
 export * from './provider';
 export * from './radio';
 export * from './segmented-control';
-export * from './select';
 export * from './skeleton';
 export * from './slider';
 export * from './stat';

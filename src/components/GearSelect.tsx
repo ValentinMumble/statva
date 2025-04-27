@@ -1,12 +1,4 @@
-import {SelectValueChangeDetails, SelectRootProps} from '@chakra-ui/react';
-import {
-  SelectContent,
-  SelectItem,
-  SelectRoot,
-  SelectTrigger,
-  SelectValueText,
-  SelectContentProps,
-} from '../components/ui';
+import {SelectValueChangeDetails, SelectRootProps, Select, Portal} from '@chakra-ui/react';
 import {GEAR, labelCollection, Gear} from '../models';
 import {useLabels} from '../hooks';
 
@@ -14,14 +6,14 @@ type GearSelectProps = Omit<SelectRootProps, 'collection'> & {
   selectedGear: string[];
   onSelectedGearChange: (selectedGear: string[]) => void;
   clearable?: boolean;
-  selectContentProps?: SelectContentProps;
   excludedGearTypes?: Gear['type'][];
+  portalled?: boolean;
 };
 
 const GearSelect = ({
   selectedGear,
   onSelectedGearChange,
-  selectContentProps,
+  portalled = true,
   clearable,
   excludedGearTypes = [],
   ...rest
@@ -38,24 +30,34 @@ const GearSelect = ({
   gearCollection.items.push({value: 'null', label: '🤷'});
 
   return (
-    <SelectRoot
+    <Select.Root
       width={['80px', '180px']}
       value={selectedGear}
       onValueChange={handleGearChange}
       collection={gearCollection}
       {...rest}
     >
-      <SelectTrigger clearable={clearable}>
-        <SelectValueText placeholder="⚙️" />
-      </SelectTrigger>
-      <SelectContent {...selectContentProps}>
-        {gearCollection.items.map(gear => (
-          <SelectItem item={gear} key={gear.value}>
-            {gear.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </SelectRoot>
+      <Select.Control>
+        <Select.Trigger>
+          <Select.ValueText placeholder="⚙️" />
+        </Select.Trigger>
+        <Select.IndicatorGroup>
+          {clearable && <Select.ClearTrigger />}
+          <Select.Indicator />
+        </Select.IndicatorGroup>
+      </Select.Control>
+      <Portal disabled={!portalled}>
+        <Select.Positioner>
+          <Select.Content>
+            {gearCollection.items.map(gear => (
+              <Select.Item item={gear} key={gear.value}>
+                {gear.label}
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Positioner>
+      </Portal>
+    </Select.Root>
   );
 };
 

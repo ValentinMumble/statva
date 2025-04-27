@@ -1,7 +1,7 @@
 import {ChangeEvent, useState} from 'react';
-import {Group, IconButton, Input, SelectValueChangeDetails} from '@chakra-ui/react';
+import {Group, IconButton, Input, Select, SelectValueChangeDetails} from '@chakra-ui/react';
 import {LuPlus} from 'react-icons/lu';
-import {SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText, toaster} from '../../components/ui';
+import {toaster} from '../../components/ui';
 import {EventForm, GearSelect} from '../../components';
 import {useFetcher, useLabels} from '../../hooks';
 import {Event, isEventValid, labelCollection, SUPER6} from '../../models';
@@ -61,25 +61,32 @@ const AddEvent = ({onAddEvent}: AddEventProps) => {
         selectedGear={event.bike ? [event.bike] : []}
         excludedGearTypes={['shoes']}
         onSelectedGearChange={([bike]) => setEvent({...event, bike})}
-        selectContentProps={{portalled: false}}
+        portalled={false}
       />
-      <SelectRoot
+      <Select.Root
         width="100px"
         value={[String(event.type)]}
         onValueChange={handleTypeChange}
         collection={typeCollection}
       >
-        <SelectTrigger>
-          <SelectValueText placeholder="Type" />
-        </SelectTrigger>
-        <SelectContent portalled={false}>
-          {typeCollection.items.map(type => (
-            <SelectItem item={type} key={type.value}>
-              {type.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </SelectRoot>
+        <Select.Control>
+          <Select.Trigger>
+            <Select.ValueText placeholder="Type" />
+          </Select.Trigger>
+          <Select.IndicatorGroup>
+            <Select.Indicator />
+          </Select.IndicatorGroup>
+        </Select.Control>
+        <Select.Positioner>
+          <Select.Content>
+            {typeCollection.items.map(type => (
+              <Select.Item item={type} key={type.value}>
+                {type.label}
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Positioner>
+      </Select.Root>
       <EventForm event={event} onChange={setEvent} />
       <IconButton variant="outline" title="Add event" disabled={!isEventValid(event)} size="xs" onClick={handleAdd}>
         <LuPlus />
