@@ -6,6 +6,7 @@ export * from './ChartAccordion';
 export * from './event';
 export * from './EditLabels';
 export * from './GearSelect';
+export * from './leaflet';
 export * from './PolylineMap';
 export * from './RouteCard';
 export * from './RouteDrawer';

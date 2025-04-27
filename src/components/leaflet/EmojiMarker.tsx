@@ -7,10 +7,6 @@ type EmojiMarkerProps = {
 } & MarkerProps;
 
 const EmojiMarker = ({position, emoji, popup, ...rest}: EmojiMarkerProps) => {
-  if (!position) {
-    return null;
-  }
-
   return (
     <Marker
       position={position}
