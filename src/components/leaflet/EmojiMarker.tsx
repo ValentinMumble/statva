@@ -23,3 +23,4 @@ const EmojiMarker = ({position, emoji, popup, ...rest}: EmojiMarkerProps) => {
 };
 
 export {EmojiMarker};
+export type {EmojiMarkerProps};

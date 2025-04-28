@@ -2,9 +2,9 @@ import {Box, BoxProps} from '@chakra-ui/react';
 import 'leaflet/dist/leaflet.css';
 import {LatLngBounds, LatLngExpression} from 'leaflet';
 import {MapContainer, Polyline, TileLayer, useMap} from 'react-leaflet';
-import {decodePolyline} from '../models';
-import {EmojiMarker} from './leaflet';
-import {Route} from '../models/strava';
+import {decodePolyline} from '../../models';
+import {EmojiMarker} from './EmojiMarker';
+import {Route} from '../../models/strava';
 
 const TILE_URL =
   'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=MAP_TOKEN_REMOVED';

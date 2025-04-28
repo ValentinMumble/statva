@@ -9,6 +9,9 @@ export default defineConfig({
       version: '1',
     },
   },
+  server: {
+    host: true,
+  },
   plugins: [react()],
   build: {
     chunkSizeWarningLimit: 700,

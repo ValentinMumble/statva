@@ -3,13 +3,13 @@ import {Button, createListCollection, Select, SelectValueChangeDetails, VStack} 
 import {useGeolocation, useRoutes} from '../hooks';
 import {Route} from '../models/strava';
 import {CheckIn} from '../models';
-import {RouteMap} from '../components';
-import {Marker} from 'react-leaflet';
+import {LocationMarker, RouteMap} from '../components';
 
 const AddCheckIn = () => {
   const routes = useRoutes();
   const [route, setRoute] = useState<Route>();
-  const {latitude, longitude, refetch} = useGeolocation();
+  const [position, fetchPosition] = useGeolocation();
+  const [latitude, longitude] = position;
 
   const routeCollection = createListCollection({
     items: (routes ?? []).map(route => ({value: route.id.toString(), label: route.name})),
@@ -70,9 +70,9 @@ const AddCheckIn = () => {
         </Select.Positioner>
       </Select.Root>
       <RouteMap width="100vw" height="50vh" route={route}>
-        {latitude && longitude && <Marker position={[latitude, longitude]} />}
+        {latitude && longitude && <LocationMarker position={[latitude, longitude]} emoji="📍" />}
       </RouteMap>
-      <Button variant="subtle" onClick={refetch}>
+      <Button variant="subtle" onClick={fetchPosition}>
         Refresh Location
       </Button>
       <Button variant="subtle" onClick={handleCheckIn}>
