@@ -6,5 +6,6 @@ export * from './useEnv';
 export * from './useEvents';
 export * from './useFetcher';
 export * from './useFtp';
+export * from './useGeolocation';
 export * from './useLabels';
 export * from './useRoutes';

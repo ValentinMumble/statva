@@ -1,12 +1,15 @@
 import {useEffect, useState} from 'react';
-import {Button, Image, createListCollection, Select, SelectValueChangeDetails, VStack} from '@chakra-ui/react';
-import {useRoutes} from '../hooks';
+import {Button, createListCollection, Select, SelectValueChangeDetails, VStack} from '@chakra-ui/react';
+import {useGeolocation, useRoutes} from '../hooks';
 import {Route} from '../models/strava';
 import {CheckIn} from '../models';
+import {RouteMap} from '../components';
+import {Marker} from 'react-leaflet';
 
 const AddCheckIn = () => {
   const routes = useRoutes();
   const [route, setRoute] = useState<Route>();
+  const location = useGeolocation();
 
   const routeCollection = createListCollection({
     items: (routes ?? []).map(route => ({value: route.id.toString(), label: route.name})),
@@ -18,17 +21,20 @@ const AddCheckIn = () => {
   };
 
   const handleCheckIn = () => {
-    if (!route) return;
+    if (!route || !location.latitude || !location.longitude) {
+      console.error('Route or location is not available');
+      return;
+    }
 
     const checkIn: CheckIn = {
       id: self.crypto.randomUUID(),
       routeId: route.id.toString(),
       date: new Date(),
-      // Nantes
-      lat: 48.8566,
-      lng: 2.3522,
+      lat: location.latitude,
+      lng: location.longitude,
     };
 
+    //TODO save checkIn to the database
     console.log(checkIn);
   };
 
@@ -39,7 +45,7 @@ const AddCheckIn = () => {
   }, [routes]);
 
   return (
-    <VStack>
+    <VStack padding="10px">
       <Select.Root
         value={route ? [route.id.toString()] : undefined}
         onValueChange={handleRouteChange}
@@ -63,8 +69,10 @@ const AddCheckIn = () => {
           </Select.Content>
         </Select.Positioner>
       </Select.Root>
-      <Image src={route?.map_urls.dark_url} />
-      <Button variant="outline" onClick={handleCheckIn}>
+      <RouteMap width="100vw" height="80vh" route={route}>
+        {location.latitude && location.longitude && <Marker position={[location.latitude, location.longitude]} />}
+      </RouteMap>
+      <Button variant="subtle" onClick={handleCheckIn}>
         Check-in
       </Button>
     </VStack>

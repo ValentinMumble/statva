@@ -4,6 +4,7 @@ import {LatLngBounds, LatLngExpression} from 'leaflet';
 import {MapContainer, Polyline, TileLayer, useMap} from 'react-leaflet';
 import {decodePolyline} from '../models';
 import {EmojiMarker} from './leaflet';
+import {Route} from '../models/strava';
 
 const TILE_URL =
   'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=MAP_TOKEN_REMOVED';
@@ -18,16 +19,17 @@ const MapBox = ({polyline}: MapBoxProps) => {
   const bounds = new LatLngBounds(polyline);
   const map = useMap();
   map.fitBounds(bounds);
-  map.zoomControl.setPosition('topright')
+  map.zoomControl.setPosition('topright');
 
   return null;
 };
 
-type PolylineMapProps = {
-  polyline: string | undefined;
+type RouteMapProps = {
+  route: Route | undefined;
 } & BoxProps;
 
-const PolylineMap = ({polyline, children, ...boxProps}: PolylineMapProps) => {
+const RouteMap = ({route, children, ...boxProps}: RouteMapProps) => {
+  const polyline = route?.map.summary_polyline;
   const decodedPolyline = polyline ? (decodePolyline(polyline) as LatLngExpression[]) : [NANTES];
 
   return (
@@ -44,4 +46,4 @@ const PolylineMap = ({polyline, children, ...boxProps}: PolylineMapProps) => {
   );
 };
 
-export {PolylineMap};
+export {RouteMap};
