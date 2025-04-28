@@ -22,7 +22,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                   <AthleteProvider>
                     <ActivityMetaProvider>
                       <ActivitiesProvider>
-                        <Toaster />
                         <App />
                       </ActivitiesProvider>
                     </ActivityMetaProvider>
@@ -32,6 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="/routes/:routeId?" element={<UserRoutes />} />
               <Route path="/check-in" element={<AddCheckIn />} />
             </Routes>
+            <Toaster />
           </BrowserRouter>
         </LabelProvider>
       </EnvProvider>
