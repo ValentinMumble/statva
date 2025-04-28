@@ -1,5 +1,5 @@
-import {Flex, Skeleton, Table} from '@chakra-ui/react';
-import {Tooltip, Tag, HoverCardRoot, HoverCardTrigger, HoverCardContent} from '../components/ui';
+import {Flex, Skeleton, Table, Tag} from '@chakra-ui/react';
+import {Tooltip, HoverCardRoot, HoverCardTrigger, HoverCardContent} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
 import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType} from '../models';
 import {Activity} from '../models/strava';
@@ -110,7 +110,11 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
           return <Table.Cell key={tag.sortType} />;
         }
 
-        const tagContent = <Tag variant="subtle">{label}</Tag>;
+        const tagContent = (
+          <Tag.Root variant="subtle">
+            <Tag.Label>{label}</Tag.Label>
+          </Tag.Root>
+        );
 
         return (
           <Table.Cell

@@ -52,6 +52,7 @@ const GearSelect = ({
             {gearCollection.items.map(gear => (
               <Select.Item item={gear} key={gear.value}>
                 {gear.label}
+                <Select.ItemIndicator />
               </Select.Item>
             ))}
           </Select.Content>

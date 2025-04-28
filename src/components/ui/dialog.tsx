@@ -1,5 +1,4 @@
-import { Dialog as ChakraDialog, Portal } from "@chakra-ui/react"
-import { CloseButton } from "./close-button"
+import { Dialog as ChakraDialog, CloseButton, Portal } from "@chakra-ui/react"
 import * as React from "react"
 
 interface DialogContentProps extends ChakraDialog.ContentProps {

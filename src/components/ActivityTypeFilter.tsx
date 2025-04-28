@@ -1,7 +1,6 @@
 import {MouseEvent} from 'react';
-import {CheckboxGroup} from '@chakra-ui/react';
+import {CheckboxGroup, Checkbox} from '@chakra-ui/react';
 import {TbBusStop} from 'react-icons/tb';
-import {Checkbox} from '../components/ui';
 import {ActivityIcon} from '../components';
 import {ActivityType} from '../models/strava';
 import {useActivities} from '../hooks';
@@ -26,13 +25,17 @@ const ActivityTypeFilter = ({types, withCommute, onTypesChange, onWithCommuteCha
 
   return (
     <>
-      <Checkbox
+      <Checkbox.Root
         title="Commute only"
         size="lg"
         checked={'only' === withCommute}
         onCheckedChange={handleCommuteToggle}
-        icon={<TbBusStop />}
-      />
+      >
+        <Checkbox.HiddenInput />
+        <Checkbox.Control>
+          <TbBusStop />
+        </Checkbox.Control>
+      </Checkbox.Root>
       <CheckboxGroup
         value={null === types ? uniqueTypes : types}
         onValueChange={handleTypeChange}
@@ -40,13 +43,12 @@ const ActivityTypeFilter = ({types, withCommute, onTypesChange, onWithCommuteCha
         flexDirection="row"
       >
         {uniqueTypes.map(type => (
-          <Checkbox
-            key={type}
-            value={type}
-            title={type}
-            size="lg"
-            icon={<ActivityIcon activityType={type} onDoubleClick={handleIconClick(type)} />}
-          />
+          <Checkbox.Root key={type} value={type} title={type} size="lg">
+            <Checkbox.HiddenInput />
+            <Checkbox.Control>
+              <ActivityIcon activityType={type} onDoubleClick={handleIconClick(type)} />
+            </Checkbox.Control>
+          </Checkbox.Root>
         ))}
       </CheckboxGroup>
     </>

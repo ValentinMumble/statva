@@ -1,4 +1,5 @@
-import {Skeleton, SkeletonText, StatHelpText, StatLabel, StatRoot, StatValueText, Tooltip} from '../components/ui';
+import {Skeleton, SkeletonText} from '@chakra-ui/react';
+import {StatHelpText, StatLabel, StatRoot, StatValueText, Tooltip} from '../components/ui';
 import {Activity, Athlete} from '../models/strava';
 import {Stat} from './Stats';
 

@@ -46,7 +46,7 @@ const ActivityMeta = ({activity}: ActivityMetaProps) => {
       </HoverCardTrigger>
       {hasMeta && (
         <HoverCardContent whiteSpaceCollapse="preserve" gap="20px">
-          {hasPhoto && <Image width={100} src={activityMeta[activity.id].photos?.primary?.urls[100] ?? ''} />}
+          {hasPhoto && <Image width={100} src={activityMeta[activity.id].photos?.primary?.urls[100]} />}
           {activityMeta[activity.id].description}
         </HoverCardContent>
       )}

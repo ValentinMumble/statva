@@ -6,15 +6,18 @@ import {
   HStack,
   IconButton,
   Input,
+  InputGroup,
   SegmentGroupValueChangeDetails,
+  Skeleton,
   Stack,
   Table,
+  Tag,
   VStack,
 } from '@chakra-ui/react';
 import {BsDatabaseDown} from 'react-icons/bs';
 import {HiArrowDown, HiArrowUp, HiLockClosed} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
-import {Tooltip, InputGroup, Switch, Skeleton, Tag, SegmentedControl} from '../components/ui';
+import {Tooltip, Switch, SegmentedControl} from '../components/ui';
 import {
   ActivityListItem,
   ActivityTypeFilter,
@@ -194,9 +197,9 @@ const App = () => {
                     <Skeleton margin="0 5px">i</Skeleton>
                   ) : (
                     <VStack>
-                      <Tag colorPalette={tag.sortType === activeSort ? 'orange' : 'gray'} variant="subtle">
-                        {tag.total(activities, getFtp)}
-                      </Tag>
+                      <Tag.Root colorPalette={tag.sortType === activeSort ? 'orange' : 'gray'} variant="subtle">
+                        <Tag.Label>{tag.total(activities, getFtp)}</Tag.Label>
+                      </Tag.Root>
                       {label(tag.sortType)}
                     </VStack>
                   )}
