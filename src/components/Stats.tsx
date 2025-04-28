@@ -23,7 +23,7 @@ import {StatComponent} from './StatComponent';
 const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 const YEAR_GOAL_KM = 10000;
 
-type Stat = (
+type StatEntry = (
   activities: Activity[],
   athlete: Athlete
 ) => {
@@ -48,7 +48,7 @@ const getWeeksActivities = (activities: Activity[]) => {
   return [weekActivities, lastWeekActivities];
 };
 
-const GLOBAL_STATS: Stat[] = [
+const GLOBAL_STATS: StatEntry[] = [
   activities => {
     const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
 
@@ -121,7 +121,7 @@ const GLOBAL_STATS: Stat[] = [
     },
 ];
 
-const STATS: {[key: string]: Stat[][]} = {
+const STATS: {[key: string]: StatEntry[][]} = {
   Ride: [
     [
       activities => ({
@@ -403,4 +403,4 @@ const Stats = () => {
 };
 
 export {Stats};
-export type {Stat};
+export type {StatEntry};
