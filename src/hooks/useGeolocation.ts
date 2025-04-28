@@ -24,6 +24,7 @@ export interface GeoLocationSensorState {
   speed: number | null;
   timestamp: number | null;
   error?: Error | IGeolocationPositionError;
+  refetch: () => void;
 }
 
 const useGeolocation = (options?: PositionOptions): GeoLocationSensorState => {
@@ -37,13 +38,14 @@ const useGeolocation = (options?: PositionOptions): GeoLocationSensorState => {
     longitude: null,
     speed: null,
     timestamp: Date.now(),
+    refetch: () => navigator.geolocation.getCurrentPosition(onEvent, onEventError, options),
   });
   let mounted = true;
   let watchId: any;
 
   const onEvent = (event: any) => {
     if (mounted) {
-      setState({
+      setState(state => ({
         loading: false,
         accuracy: event.coords.accuracy,
         altitude: event.coords.altitude,
@@ -53,14 +55,15 @@ const useGeolocation = (options?: PositionOptions): GeoLocationSensorState => {
         longitude: event.coords.longitude,
         speed: event.coords.speed,
         timestamp: event.timestamp,
-      });
+        refetch: state.refetch,
+      }));
     }
   };
   const onEventError = (error: IGeolocationPositionError) =>
     mounted && setState(oldState => ({...oldState, loading: false, error}));
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(onEvent, onEventError, options);
+    state.refetch();
     watchId = navigator.geolocation.watchPosition(onEvent, onEventError, options);
 
     return () => {

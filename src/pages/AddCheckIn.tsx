@@ -9,7 +9,7 @@ import {Marker} from 'react-leaflet';
 const AddCheckIn = () => {
   const routes = useRoutes();
   const [route, setRoute] = useState<Route>();
-  const location = useGeolocation();
+  const {latitude, longitude, refetch} = useGeolocation();
 
   const routeCollection = createListCollection({
     items: (routes ?? []).map(route => ({value: route.id.toString(), label: route.name})),
@@ -21,7 +21,7 @@ const AddCheckIn = () => {
   };
 
   const handleCheckIn = () => {
-    if (!route || !location.latitude || !location.longitude) {
+    if (!route || !latitude || !longitude) {
       console.error('Route or location is not available');
       return;
     }
@@ -30,8 +30,8 @@ const AddCheckIn = () => {
       id: self.crypto.randomUUID(),
       routeId: route.id.toString(),
       date: new Date(),
-      lat: location.latitude,
-      lng: location.longitude,
+      lat: latitude,
+      lng: longitude,
     };
 
     //TODO save checkIn to the database
@@ -69,9 +69,12 @@ const AddCheckIn = () => {
           </Select.Content>
         </Select.Positioner>
       </Select.Root>
-      <RouteMap width="100vw" height="80vh" route={route}>
-        {location.latitude && location.longitude && <Marker position={[location.latitude, location.longitude]} />}
+      <RouteMap width="100vw" height="50vh" route={route}>
+        {latitude && longitude && <Marker position={[latitude, longitude]} />}
       </RouteMap>
+      <Button variant="subtle" onClick={refetch}>
+        Refresh Location
+      </Button>
       <Button variant="subtle" onClick={handleCheckIn}>
         Check-in
       </Button>
