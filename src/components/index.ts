@@ -7,6 +7,7 @@ export * from './event';
 export * from './EditLabels';
 export * from './GearSelect';
 export * from './leaflet';
+export * from './PageTitle';
 export * from './RouteCard';
 export * from './RouteDrawer';
 export * from './StatComponent';
