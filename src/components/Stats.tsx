@@ -1,6 +1,6 @@
 import {ReactNode, useState} from 'react';
-import {VStack, HStack, Text} from '@chakra-ui/react';
-import {ProgressCircleRing, ProgressCircleRoot, StatTrend} from '../components/ui';
+import {VStack, HStack, Text, BadgeProps, Badge, Stat} from '@chakra-ui/react';
+import {ProgressCircleRing, ProgressCircleRoot} from '../components/ui';
 import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
@@ -19,6 +19,16 @@ import {
 } from '../models';
 import {ActivityType, Activity, Athlete} from '../models/strava';
 import {StatComponent} from './StatComponent';
+
+//TODO replace with Sparkline
+ const StatTrend = (props: BadgeProps & {up: boolean}) => {
+   return (
+     <Badge colorPalette={props.up ? 'green' : 'red'} gap="0" {...props}>
+       {props.up ? <Stat.UpIndicator /> : <Stat.DownIndicator />}
+       {props.children}
+     </Badge>
+   );
+ };
 
 const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 const YEAR_GOAL_KM = 10000;

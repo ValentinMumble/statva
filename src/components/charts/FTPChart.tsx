@@ -1,7 +1,6 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Button, Group, Input, Clipboard, IconButton} from '@chakra-ui/react';
-import {NumberInputField, NumberInputRoot} from '../../components/ui';
+import {Button, Group, Input, Clipboard, IconButton, NumberInput} from '@chakra-ui/react';
 import {useFetcher, useFtp} from '../../hooks';
 import {backup, formatPower, FTPTest, getOptions} from '../../models';
 
@@ -63,12 +62,14 @@ const FTPChart = () => {
       <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
       <Group marginBottom="20px">
         <Input type="date" size="sm" width="200px" value={date} onChange={({target}) => setDate(target.value)} />
-        <NumberInputRoot size="sm" value={weight?.toString()} onValueChange={({value}) => setWeight(Number(value))}>
-          <NumberInputField placeholder="Weight" />
-        </NumberInputRoot>
-        <NumberInputRoot size="sm" value={ftp?.toString()} onValueChange={({value}) => setFtp(Number(value))}>
-          <NumberInputField placeholder="FTP" />
-        </NumberInputRoot>
+        <NumberInput.Root size="sm" value={weight?.toString()} onValueChange={({value}) => setWeight(Number(value))}>
+          <NumberInput.Control />
+          <NumberInput.Input placeholder="Weight" />
+        </NumberInput.Root>
+        <NumberInput.Root size="sm" value={ftp?.toString()} onValueChange={({value}) => setFtp(Number(value))}>
+          <NumberInput.Control />
+          <NumberInput.Input placeholder="FTP" />
+        </NumberInput.Root>
         <Button size="sm" variant="outline" disabled={!canSubmit} onClick={handleAdd}>
           Add
         </Button>
