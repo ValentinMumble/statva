@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {Button, createListCollection, Select, SelectValueChangeDetails, VStack, Clipboard} from '@chakra-ui/react';
-import {TbCircleCheck, TbCurrentLocation} from 'react-icons/tb';
+import {Button, createListCollection, Select, SelectValueChangeDetails, VStack} from '@chakra-ui/react';
+import {TbCircleCheck, TbCurrentLocation, TbShare2} from 'react-icons/tb';
 import {LocationMarker, RouteMap} from '../components';
 import {toaster} from '../components/ui';
 import {useGeolocation, useRoutes} from '../hooks';
@@ -8,16 +8,15 @@ import {CheckIn} from '../models';
 import {Route} from '../models/strava';
 import {addCheckIn} from '../api';
 
-const ROUTES_URL = 'https://statva.vumble.dev/routes';
+const ROUTES_PATH = '/routes';
 
-const generateShareUrl = (route: Route | undefined) => {
-  return route ? `${ROUTES_URL}/${route.id}` : ROUTES_URL;
-};
+const generateShareUrl = (route: Route | undefined) =>
+  route ? `${window.location.origin}${ROUTES_PATH}/${route.id}` : `${window.location.origin}${ROUTES_PATH}`;
 
 const AddCheckIn = () => {
   const routes = useRoutes();
   const [route, setRoute] = useState<Route>();
-  const [[latitude, longitude], fetchLocation] = useGeolocation();
+  const [[latitude, longitude], refreshLocation] = useGeolocation();
 
   const routeCollection = createListCollection({
     items: (routes ?? []).map(route => ({value: route.id.toString(), label: route.name})),
@@ -87,18 +86,20 @@ const AddCheckIn = () => {
         {latitude && longitude && <LocationMarker position={[latitude, longitude]} emoji="📍" />}
       </RouteMap>
       <VStack alignItems="stretch" gap="30px">
-        <Button variant="outline" size="xl" onClick={fetchLocation}>
+        <Button variant="outline" size="xl" onClick={refreshLocation}>
           Refresh location <TbCurrentLocation />
         </Button>
-        <Clipboard.Root value={generateShareUrl(route)} >
-          <Clipboard.Trigger>
-            <Button variant="outline" size="xl" onClick={handleShareLink} width="full" disabled={!route}>
-              Share link
-              <Clipboard.Indicator />
-            </Button>
-          </Clipboard.Trigger>
-        </Clipboard.Root>
-        <Button colorPalette="green"  variant="outline" size="xl" onClick={handleCheckIn} disabled={!route || !latitude || !longitude}>
+        <Button variant="outline" size="xl" onClick={handleShareLink} disabled={!route}>
+          Share link
+          <TbShare2 />
+        </Button>
+        <Button
+          colorPalette="green"
+          variant="outline"
+          size="xl"
+          onClick={handleCheckIn}
+          disabled={!route || !latitude || !longitude}
+        >
           Check-in <TbCircleCheck />
         </Button>
       </VStack>

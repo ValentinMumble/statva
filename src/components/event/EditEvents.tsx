@@ -53,7 +53,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
           <DialogTitle>{events?.length ?? 0} events 🪭</DialogTitle>
           <Clipboard.Root value={backup(events ?? [])}>
-            <Clipboard.Trigger>
+            <Clipboard.Trigger asChild={true}>
               <Button variant="outline">
                 <Clipboard.Indicator />
                 Backup
@@ -66,8 +66,8 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
           <Table.Root size="sm" display="block" height="70vh" overflow="scroll">
             <Table.Header position="sticky" top={0} zIndex={-1}>
               <Table.Row {...rowProps}>
-                {HEADERS.map(header => (
-                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+                {HEADERS.map((header, index) => (
+                  <Table.ColumnHeader key={index}>{header}</Table.ColumnHeader>
                 ))}
               </Table.Row>
             </Table.Header>

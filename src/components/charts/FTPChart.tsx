@@ -73,7 +73,7 @@ const FTPChart = () => {
           Add
         </Button>
         <Clipboard.Root value={backup(ftpTests)}>
-          <Clipboard.Trigger asChild>
+          <Clipboard.Trigger asChild={true}>
             <IconButton title="Backup" size="xs" variant="outline">
               <Clipboard.Indicator />
             </IconButton>

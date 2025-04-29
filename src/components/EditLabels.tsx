@@ -56,7 +56,7 @@ const EditLabels = () => {
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
           <DialogTitle>{Object.keys(labels).length} labels 🏷️</DialogTitle>
           <Clipboard.Root value={JSON.stringify(labels)}>
-            <Clipboard.Trigger>
+            <Clipboard.Trigger asChild={true}>
               <Button variant="outline">
                 <Clipboard.Indicator />
                 Backup
