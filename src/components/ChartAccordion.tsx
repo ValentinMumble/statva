@@ -1,5 +1,5 @@
 import {ReactNode, useState} from 'react';
-import {AccordionItem} from '@chakra-ui/react';
+import {Accordion, Span} from '@chakra-ui/react';
 import {
   ProgressChart,
   TimeframeChart,
@@ -19,7 +19,6 @@ import {
 } from './charts';
 import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
 import {ActivityType} from '../models/strava';
-import {AccordionItemContent, AccordionItemTrigger, AccordionRoot} from '../components/ui';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
@@ -139,16 +138,19 @@ const ChartAccordion = () => {
   const [value, setValue] = useState<string[]>([ACCORDION_ITEMS[0].label]);
 
   return (
-    <AccordionRoot multiple={true} value={value} onValueChange={({value}) => setValue(value)}>
+    <Accordion.Root multiple={true} value={value} onValueChange={({value}) => setValue(value)}>
       {ACCORDION_ITEMS.map(item => (
-        <AccordionItem key={item.label} value={item.label}>
-          <AccordionItemTrigger outline="none">{item.label}</AccordionItemTrigger>
-          <AccordionItemContent padding={0} fontSize=".8em">
+        <Accordion.Item key={item.label} value={item.label}>
+          <Accordion.ItemTrigger>
+            <Span flex={1}>{item.label}</Span>
+            <Accordion.ItemIndicator />
+          </Accordion.ItemTrigger>
+          <Accordion.ItemContent padding={0} fontSize=".8em">
             {item.component}
-          </AccordionItemContent>
-        </AccordionItem>
+          </Accordion.ItemContent>
+        </Accordion.Item>
       ))}
-    </AccordionRoot>
+    </Accordion.Root>
   );
 };
 

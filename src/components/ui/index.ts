@@ -1,4 +1,3 @@
-export * from './accordion';
 export * from './dialog';
 export * from './hover-card';
 export * from './progress-circle';
