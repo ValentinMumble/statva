@@ -16,7 +16,6 @@ import {
 } from 'react-icons/tb';
 import {ActivityType, WorkoutType} from '../models/strava';
 
-//TODO add PiBicycleDuotone for GranFondo
 const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
   if (isCommute) {
     return TbBusStop;
@@ -48,7 +47,7 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
       return TbBrandZwift;
     case ActivityType.Walk:
       return TbWalk;
-      case ActivityType.Workout:
+    case ActivityType.Workout:
       return TbGymnastics;
     case ActivityType.Yoga:
       return TbYoga;
@@ -57,16 +56,30 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
   }
 };
 
+const getIconColor = (workoutType: WorkoutType, isGranFondo: boolean): string | undefined => {
+  if (workoutType === WorkoutType.Race) {
+    return 'orange.500';
+  }
+
+  if (isGranFondo) {
+    return 'orange.200';
+  }
+
+  return undefined;
+};
+
 //TODO handle Activity as a whole
 type ActivityIconProps = {
   activityType: ActivityType;
   isCommute?: boolean;
+  isGranFondo?: boolean;
   workoutType?: WorkoutType;
 } & IconProps;
 
 const ActivityIcon = ({
   activityType,
   isCommute = false,
+  isGranFondo = false,
   workoutType = WorkoutType.None,
   ...rest
 }: ActivityIconProps) => {
@@ -74,7 +87,7 @@ const ActivityIcon = ({
 
   return (
     // The span is to prevent React whining about passing a ref to the react-icon component
-    <Icon {...rest} color={WorkoutType.Race === workoutType ? 'orange.500' : undefined}>
+    <Icon {...rest} color={getIconColor(workoutType, isGranFondo)}>
       <span>
         <ActivityIconType />
       </span>

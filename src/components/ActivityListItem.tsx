@@ -72,6 +72,7 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
             <ActivityIcon
               activityType={activity.sport_type}
               isCommute={activity.commute}
+              isGranFondo={activity.distance > 100 * 1000}
               workoutType={getWorkoutType(activity)}
             />
           </HoverCardTrigger>
