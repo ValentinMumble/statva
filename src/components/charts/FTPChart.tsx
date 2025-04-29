@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
-import {Button, Group, Input} from '@chakra-ui/react';
-import {ClipboardIconButton, ClipboardRoot, NumberInputField, NumberInputRoot} from '../../components/ui';
+import {Button, Group, Input, Clipboard, IconButton} from '@chakra-ui/react';
+import {NumberInputField, NumberInputRoot} from '../../components/ui';
 import {useFetcher, useFtp} from '../../hooks';
 import {backup, formatPower, FTPTest, getOptions} from '../../models';
 
@@ -72,9 +72,13 @@ const FTPChart = () => {
         <Button size="sm" variant="outline" disabled={!canSubmit} onClick={handleAdd}>
           Add
         </Button>
-        <ClipboardRoot value={backup(ftpTests)}>
-          <ClipboardIconButton />
-        </ClipboardRoot>
+        <Clipboard.Root value={backup(ftpTests)}>
+          <Clipboard.Trigger asChild>
+            <IconButton title="Backup" size="xs" variant="outline">
+              <Clipboard.Indicator />
+            </IconButton>
+          </Clipboard.Trigger>
+        </Clipboard.Root>
       </Group>
     </>
   );

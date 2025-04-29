@@ -101,7 +101,7 @@ const App = () => {
         <ChartAccordion />
         <WeekView />
       </VStack>
-      <VStack padding="10px 0" align="stretch" flexBasis="60%" height="100vh" overflow="scroll">
+      <VStack align="stretch" flexBasis="60%" height="100vh" overflow="scroll">
         <Collapsible.Root open={filtersOpen} onOpenChange={({open}) => setFiltersOpen(open)}>
           <Group width="full">
             {import.meta.env.DEV && (
@@ -239,7 +239,7 @@ const App = () => {
               <Table.Row>
                 <Table.Cell />
                 <Table.Cell textAlign="center" padding="10px">
-                  <Button variant="subtle" onClick={handleDisplayMoreItems}>
+                  <Button variant="outline" onClick={handleDisplayMoreItems}>
                     More
                   </Button>
                 </Table.Cell>

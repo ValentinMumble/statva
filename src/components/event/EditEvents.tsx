@@ -1,8 +1,6 @@
-import {Button, IconButton, Table} from '@chakra-ui/react';
+import {Button, IconButton, Table, Clipboard} from '@chakra-ui/react';
 import {LuMinus} from 'react-icons/lu';
 import {
-  ClipboardButton,
-  ClipboardRoot,
   DialogBody,
   DialogContent,
   DialogHeader,
@@ -54,9 +52,14 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
       <DialogContent>
         <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
           <DialogTitle>{events?.length ?? 0} events 🪭</DialogTitle>
-          <ClipboardRoot value={backup(events ?? [])}>
-            <ClipboardButton text="Backup" />
-          </ClipboardRoot>
+          <Clipboard.Root value={backup(events ?? [])}>
+            <Clipboard.Trigger>
+              <Button variant="outline">
+                <Clipboard.Indicator />
+                Backup
+              </Button>
+            </Clipboard.Trigger>
+          </Clipboard.Root>
         </DialogHeader>
         <DialogBody display="flex" flexDirection="column" gap="20px">
           <AddEvent onAddEvent={refresh} />

@@ -1,5 +1,4 @@
 export * from './accordion';
-export * from './clipboard';
 export * from './dialog';
 export * from './hover-card';
 export * from './number-input';

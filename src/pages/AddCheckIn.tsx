@@ -1,12 +1,18 @@
 import {useEffect, useState} from 'react';
-import {Button, createListCollection, Select, SelectValueChangeDetails, VStack} from '@chakra-ui/react';
+import {Button, createListCollection, Select, SelectValueChangeDetails, VStack, Clipboard} from '@chakra-ui/react';
 import {TbCircleCheck, TbCurrentLocation} from 'react-icons/tb';
 import {LocationMarker, RouteMap} from '../components';
+import {toaster} from '../components/ui';
 import {useGeolocation, useRoutes} from '../hooks';
 import {CheckIn} from '../models';
 import {Route} from '../models/strava';
-import {toaster} from '../components/ui';
 import {addCheckIn} from '../api';
+
+const ROUTES_URL = 'https://statva.vumble.dev/routes';
+
+const generateShareUrl = (route: Route | undefined) => {
+  return route ? `${ROUTES_URL}/${route.id}` : ROUTES_URL;
+};
 
 const AddCheckIn = () => {
   const routes = useRoutes();
@@ -39,6 +45,10 @@ const AddCheckIn = () => {
     await addCheckIn(checkIn);
     toaster.create({title: `✅ Checked-in`});
     console.log(checkIn);
+  };
+
+  const handleShareLink = async () => {
+    await navigator.share({title: 'View route', url: generateShareUrl(route)});
   };
 
   useEffect(() => {
@@ -80,7 +90,15 @@ const AddCheckIn = () => {
         <Button variant="outline" size="xl" onClick={fetchLocation}>
           Refresh location <TbCurrentLocation />
         </Button>
-        <Button variant="outline" size="xl" onClick={handleCheckIn} disabled={!route || !latitude || !longitude}>
+        <Clipboard.Root value={generateShareUrl(route)} >
+          <Clipboard.Trigger>
+            <Button variant="outline" size="xl" onClick={handleShareLink} width="full" disabled={!route}>
+              Share link
+              <Clipboard.Indicator />
+            </Button>
+          </Clipboard.Trigger>
+        </Clipboard.Root>
+        <Button colorPalette="green"  variant="outline" size="xl" onClick={handleCheckIn} disabled={!route || !latitude || !longitude}>
           Check-in <TbCircleCheck />
         </Button>
       </VStack>
