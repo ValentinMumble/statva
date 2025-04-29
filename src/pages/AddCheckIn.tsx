@@ -16,6 +16,7 @@ const generateShareUrl = (route: Route | undefined) =>
 const AddCheckIn = () => {
   const routes = useRoutes();
   const [route, setRoute] = useState<Route>();
+  const [isLoading, setLoading] = useState<boolean>(false);
   const [[latitude, longitude], refreshLocation] = useGeolocation();
 
   const routeCollection = createListCollection({
@@ -41,9 +42,11 @@ const AddCheckIn = () => {
       lng: longitude,
     };
 
+    setLoading(true);
     await addCheckIn(checkIn);
     toaster.create({title: `✅ Checked-in`});
     console.log(checkIn);
+    setLoading(false);
   };
 
   const handleShareLink = async () => {
@@ -99,6 +102,9 @@ const AddCheckIn = () => {
           size="xl"
           onClick={handleCheckIn}
           disabled={!route || !latitude || !longitude}
+          loading={isLoading}
+          loadingText="Checking in..."
+          spinnerPlacement="end"
         >
           Check-in <TbCircleCheck />
         </Button>
