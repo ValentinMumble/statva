@@ -93,8 +93,7 @@ const AddCheckIn = () => {
           Refresh location <TbCurrentLocation />
         </Button>
         <Button variant="outline" size="xl" onClick={handleShareLink} disabled={!route}>
-          Share link
-          <TbShare2 />
+          Share link <TbShare2 />
         </Button>
         <Button
           colorPalette="green"

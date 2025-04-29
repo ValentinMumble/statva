@@ -1,14 +1,16 @@
 import {Card} from '@chakra-ui/react';
 import {Route} from '../models/strava';
-import {formatDistance, formatDuration, formatElevation} from '../models';
+import {CheckIn, formatDistance, formatDuration, formatElevation, getCheckInText} from '../models';
 import {useLabels} from '../hooks';
 
 type RouteCardProps = {
   route: Route | undefined;
+  checkIns: CheckIn[];
 };
 
-const RouteCard = ({route}: RouteCardProps) => {
+const RouteCard = ({route, checkIns}: RouteCardProps) => {
   const [label] = useLabels();
+  const lastCheckIn = checkIns.at(-1);
 
   if (!route) {
     return null;
@@ -26,6 +28,9 @@ const RouteCard = ({route}: RouteCardProps) => {
           {label('moving_time')} ~{formatDuration(route.estimated_moving_time)} estimated
           <br />
           {label('date')} Created on {new Date(route.created_at).toLocaleDateString()}
+          <br />
+          📌 {lastCheckIn ? <>{getCheckInText(lastCheckIn, true)}</> : 'No check-in'}
+          <br />
         </Card.Description>
       </Card.Body>
     </Card.Root>

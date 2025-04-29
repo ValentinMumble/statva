@@ -15,7 +15,7 @@ const Routes = () => {
         <CheckIns checkIns={checkIns} />
       </RouteMap>
       <VStack position="absolute" zIndex={1000} top="0" left="0" padding="12px" gap="12px" align="start">
-        <RouteCard route={selectedRoute} />
+        <RouteCard route={selectedRoute} checkIns={checkIns} />
         <RouteDrawer selectedRoute={selectedRoute} routes={routes} defaultOpen={undefined === routeId} />
       </VStack>
     </>
