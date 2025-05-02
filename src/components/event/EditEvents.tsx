@@ -1,14 +1,6 @@
-import {Button, IconButton, Table, Clipboard} from '@chakra-ui/react';
+import {Button, IconButton, Table, Clipboard, Dialog, Portal} from '@chakra-ui/react';
 import {LuMinus} from 'react-icons/lu';
-import {
-  DialogBody,
-  DialogContent,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-  DialogTrigger,
-  toaster,
-} from '../../components/ui';
+import {toaster} from '../../components/ui';
 import {Event, backup} from '../../models';
 import {AddEvent, EventCells} from '../../components';
 import {useEvents, useFetcher, useLabels} from '../../hooks';
@@ -43,53 +35,58 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
   };
 
   return (
-    <DialogRoot size="xl">
-      <DialogTrigger asChild={true}>
+    <Dialog.Root size="xl">
+      <Dialog.Trigger asChild={true}>
         <Button variant="ghost" size="sm" title="Edit events">
           🪭
         </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader display="flex" alignItems="center" justifyContent="space-between">
-          <DialogTitle>{events?.length ?? 0} events 🪭</DialogTitle>
-          <Clipboard.Root value={backup(events ?? [])}>
-            <Clipboard.Trigger asChild={true}>
-              <Button variant="outline">
-                <Clipboard.Indicator />
-                Backup
-              </Button>
-            </Clipboard.Trigger>
-          </Clipboard.Root>
-        </DialogHeader>
-        <DialogBody display="flex" flexDirection="column" gap="20px">
-          <AddEvent onAddEvent={refresh} />
-          <Table.Root size="sm" display="block" height="70vh" overflow="scroll">
-            <Table.Header position="sticky" top={0} zIndex={-1}>
-              <Table.Row {...rowProps}>
-                {HEADERS.map((header, index) => (
-                  <Table.ColumnHeader key={index}>{header}</Table.ColumnHeader>
-                ))}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {(events ?? []).reverse().map(event => (
-                <Table.Row key={event.id} {...rowProps}>
-                  <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
-                  <Table.Cell>{label(event.bike)}</Table.Cell>
-                  <Table.Cell>{label(event.type)}</Table.Cell>
-                  <EventCells event={event} />
-                  <Table.Cell textAlign="end">
-                    <IconButton variant="ghost" title="Remove event" size="xs" onClick={handleRemove(event)}>
-                      <LuMinus />
-                    </IconButton>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </DialogBody>
-      </DialogContent>
-    </DialogRoot>
+      </Dialog.Trigger>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header display="flex" alignItems="center" justifyContent="space-between">
+              <Dialog.Title>{events?.length ?? 0} events 🪭</Dialog.Title>
+              <Clipboard.Root value={backup(events ?? [])}>
+                <Clipboard.Trigger asChild={true}>
+                  <Button variant="outline">
+                    <Clipboard.Indicator />
+                    Backup
+                  </Button>
+                </Clipboard.Trigger>
+              </Clipboard.Root>
+            </Dialog.Header>
+            <Dialog.Body display="flex" flexDirection="column" gap="20px">
+              <AddEvent onAddEvent={refresh} />
+              <Table.Root size="sm" display="block" height="70vh" overflow="scroll">
+                <Table.Header position="sticky" top={0} zIndex={-1}>
+                  <Table.Row {...rowProps}>
+                    {HEADERS.map((header, index) => (
+                      <Table.ColumnHeader key={index}>{header}</Table.ColumnHeader>
+                    ))}
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {(events ?? []).reverse().map(event => (
+                    <Table.Row key={event.id} {...rowProps}>
+                      <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
+                      <Table.Cell>{label(event.bike)}</Table.Cell>
+                      <Table.Cell>{label(event.type)}</Table.Cell>
+                      <EventCells event={event} />
+                      <Table.Cell textAlign="end">
+                        <IconButton variant="ghost" title="Remove event" size="xs" onClick={handleRemove(event)}>
+                          <LuMinus />
+                        </IconButton>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

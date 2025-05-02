@@ -12,40 +12,18 @@ export const StepperInput = forwardRef<HTMLDivElement, StepperInputProps>(functi
     <NumberInput.Root size={size} {...rest} unstyled ref={ref}>
       {label && <NumberInput.Label>{label}</NumberInput.Label>}
       <HStack gap="2">
-        <DecrementTrigger size={size} />
+        <NumberInput.DecrementTrigger asChild>
+          <IconButton variant="outline" size={props.size}>
+            <LuMinus />
+          </IconButton>
+        </NumberInput.DecrementTrigger>
         <NumberInput.ValueText textAlign="center" fontSize="sm" minW="3ch" />
-        <IncrementTrigger size={size} />
+        <NumberInput.IncrementTrigger asChild>
+          <IconButton variant="outline" size={props.size}>
+            <LuPlus />
+          </IconButton>
+        </NumberInput.IncrementTrigger>
       </HStack>
     </NumberInput.Root>
-  );
-});
-
-const DecrementTrigger = forwardRef<
-  HTMLButtonElement,
-  NumberInput.DecrementTriggerProps & {
-    size: StepperInputProps['size'];
-  }
->(function DecrementTrigger(props, ref) {
-  return (
-    <NumberInput.DecrementTrigger {...props} asChild ref={ref}>
-      <IconButton variant="outline" size={props.size}>
-        <LuMinus />
-      </IconButton>
-    </NumberInput.DecrementTrigger>
-  );
-});
-
-const IncrementTrigger = forwardRef<
-  HTMLButtonElement,
-  NumberInput.IncrementTriggerProps & {
-    size: StepperInputProps['size'];
-  }
->(function IncrementTrigger(props, ref) {
-  return (
-    <NumberInput.IncrementTrigger {...props} asChild ref={ref}>
-      <IconButton variant="outline" size={props.size}>
-        <LuPlus />
-      </IconButton>
-    </NumberInput.IncrementTrigger>
   );
 });

@@ -1,5 +1,5 @@
 import {Flex, Skeleton, Table, Tag} from '@chakra-ui/react';
-import {Tooltip, HoverCardRoot, HoverCardTrigger, HoverCardContent} from '../components/ui';
+import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
 import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType} from '../models';
 import {Activity} from '../models/strava';
@@ -67,17 +67,12 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
   return (
     <Table.Row onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
       <Table.Cell>
-        <HoverCardRoot openDelay={300}>
-          <HoverCardTrigger asChild={true}>
-            <ActivityIcon
-              activityType={activity.sport_type}
-              isCommute={activity.commute}
-              isGranFondo={activity.distance > 100 * 1000}
-              workoutType={getWorkoutType(activity)}
-            />
-          </HoverCardTrigger>
-          <HoverCardContent>TODO</HoverCardContent>
-        </HoverCardRoot>
+        <ActivityIcon
+          activityType={activity.sport_type}
+          isCommute={activity.commute}
+          isGranFondo={activity.distance > 100 * 1000}
+          workoutType={getWorkoutType(activity)}
+        />
       </Table.Cell>
       <Table.Cell padding="2px">
         <Flex

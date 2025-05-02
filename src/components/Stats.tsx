@@ -1,6 +1,5 @@
 import {ReactNode, useState} from 'react';
-import {VStack, HStack, Text, BadgeProps, Badge, Stat} from '@chakra-ui/react';
-import {ProgressCircleRing, ProgressCircleRoot} from '../components/ui';
+import {VStack, HStack, Text, BadgeProps, Badge, Stat, ProgressCircle} from '@chakra-ui/react';
 import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
@@ -156,9 +155,12 @@ const STATS: {[key: string]: StatEntry[][]} = {
           label: goalReached ? (
             '✅'
           ) : (
-            <ProgressCircleRoot size="xs" colorPalette="orange" value={yearProgress}>
-              <ProgressCircleRing cap="round" />
-            </ProgressCircleRoot>
+            <ProgressCircle.Root size="xs" colorPalette="orange" value={yearProgress}>
+              <ProgressCircle.Circle>
+                <ProgressCircle.Track />
+                <ProgressCircle.Range strokeLinecap="round" />
+              </ProgressCircle.Circle>
+            </ProgressCircle.Root>
           ),
           helpText: 'This year',
           info: `Last year: ${formatDistance(

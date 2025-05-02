@@ -68,7 +68,6 @@ const getIconColor = (workoutType: WorkoutType, isGranFondo: boolean): string | 
   return undefined;
 };
 
-//TODO handle Activity as a whole
 type ActivityIconProps = {
   activityType: ActivityType;
   isCommute?: boolean;

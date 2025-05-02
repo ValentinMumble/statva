@@ -1,6 +1,5 @@
-import {IconButton, Image} from '@chakra-ui/react';
+import {IconButton, Image, HoverCard} from '@chakra-ui/react';
 import {MdOutlineNotes} from 'react-icons/md';
-import {HoverCardContent, HoverCardRoot, HoverCardTrigger} from '../components/ui';
 import {Activity, DetailedActivity} from '../models/strava';
 import {cleanActivity, isDetailedActivity} from '../models';
 import {useActivityMeta, useFetcher} from '../hooks';
@@ -32,8 +31,8 @@ const ActivityMeta = ({activity}: ActivityMetaProps) => {
   const hasPhoto = hasMeta && activityMeta[activity.id].photos?.primary;
 
   return (
-    <HoverCardRoot openDelay={300}>
-      <HoverCardTrigger asChild={true}>
+    <HoverCard.Root openDelay={300}>
+      <HoverCard.Trigger asChild={true}>
         <IconButton
           size="2xs"
           variant="ghost"
@@ -43,14 +42,16 @@ const ActivityMeta = ({activity}: ActivityMetaProps) => {
         >
           <MdOutlineNotes />
         </IconButton>
-      </HoverCardTrigger>
+      </HoverCard.Trigger>
       {hasMeta && (
-        <HoverCardContent whiteSpaceCollapse="preserve" gap="20px">
-          {hasPhoto && <Image width={100} src={activityMeta[activity.id].photos?.primary?.urls[100]} />}
-          {activityMeta[activity.id].description}
-        </HoverCardContent>
+        <HoverCard.Positioner>
+          <HoverCard.Content whiteSpaceCollapse="preserve" gap="20px">
+            {hasPhoto && <Image width={100} src={activityMeta[activity.id].photos?.primary?.urls[100]} />}
+            {activityMeta[activity.id].description}
+          </HoverCard.Content>
+        </HoverCard.Positioner>
       )}
-    </HoverCardRoot>
+    </HoverCard.Root>
   );
 };
 
