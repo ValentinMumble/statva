@@ -18,16 +18,16 @@ import {
 } from '../models';
 import {ActivityType, Activity, Athlete} from '../models/strava';
 import {StatComponent} from './StatComponent';
+import {WeekChart} from './WeekChart';
 
-//TODO replace with Sparkline
- const StatTrend = (props: BadgeProps & {up: boolean}) => {
-   return (
-     <Badge colorPalette={props.up ? 'green' : 'red'} gap="0" {...props}>
-       {props.up ? <Stat.UpIndicator /> : <Stat.DownIndicator />}
-       {props.children}
-     </Badge>
-   );
- };
+const StatTrend = (props: BadgeProps & {up: boolean}) => {
+  return (
+    <Badge colorPalette={props.up ? 'green' : 'red'} gap="0" {...props}>
+      {props.up ? <Stat.UpIndicator /> : <Stat.DownIndicator />}
+      {props.children}
+    </Badge>
+  );
+};
 
 const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 const YEAR_GOAL_KM = 10000;
@@ -60,22 +60,6 @@ const getWeeksActivities = (activities: Activity[]) => {
 const GLOBAL_STATS: StatEntry[] = [
   activities => {
     const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
-
-    return {
-      label: '🏓',
-      helpText: 'Activity count',
-      value: (
-        <span>
-          {weekActivities.length}
-          <StatTrend marginLeft={5} up={weekActivities.length >= lastWeekActivities.length}>
-            {lastWeekActivities.length}
-          </StatTrend>
-        </span>
-      ),
-    };
-  },
-  activities => {
-    const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
     const weekLoad = getTotalValue(weekActivities, 'suffer_score');
     const lastWeekLoad = getTotalValue(lastWeekActivities, 'suffer_score');
 
@@ -92,6 +76,22 @@ const GLOBAL_STATS: StatEntry[] = [
       ),
     };
   },
+  // activities => {
+  //   const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
+
+  //   return {
+  //     label: '🏓',
+  //     helpText: 'Activity count',
+  //     value: (
+  //       <span>
+  //         {weekActivities.length}
+  //         <StatTrend marginLeft={5} up={weekActivities.length >= lastWeekActivities.length}>
+  //           {lastWeekActivities.length}
+  //         </StatTrend>
+  //       </span>
+  //     ),
+  //   };
+  // },
   activities => {
     const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
     const weekMovingTime = getTotalValue(weekActivities, 'moving_time');
@@ -110,24 +110,24 @@ const GLOBAL_STATS: StatEntry[] = [
       ),
     };
   },
-    activities => {
-      const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
-      const weekDistance = getTotalValue(weekActivities, 'distance');
-      const lastWeekDistance = getTotalValue(lastWeekActivities, 'distance');
+  activities => {
+    const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
+    const weekDistance = getTotalValue(weekActivities, 'distance');
+    const lastWeekDistance = getTotalValue(lastWeekActivities, 'distance');
 
-      return {
-        label: '📍',
-        helpText: 'Distance',
-        value: (
-          <span>
-            {formatDistance(weekDistance)}
-            <StatTrend marginLeft={5} up={weekDistance >= lastWeekDistance}>
-              {formatDistance(lastWeekDistance)}
-            </StatTrend>
-          </span>
-        ),
-      };
-    },
+    return {
+      label: '📍',
+      helpText: 'Distance',
+      value: (
+        <span>
+          {formatDistance(weekDistance)}
+          <StatTrend marginLeft={5} up={weekDistance >= lastWeekDistance}>
+            {formatDistance(lastWeekDistance)}
+          </StatTrend>
+        </span>
+      ),
+    };
+  },
 ];
 
 const STATS: {[key: string]: StatEntry[][]} = {
@@ -217,7 +217,12 @@ const STATS: {[key: string]: StatEntry[][]} = {
       activities => ({
         label: '🗺️',
         helpText: 'Avg distance',
-        value: formatDistance(getAverageValue(activities.filter(({commute}) => !commute), 'distance')),
+        value: formatDistance(
+          getAverageValue(
+            activities.filter(({commute}) => !commute),
+            'distance'
+          )
+        ),
       }),
       activities => ({
         label: '🏁',
@@ -390,6 +395,7 @@ const Stats = () => {
     <VStack alignItems="stretch">
       <Text textStyle="xl">Week</Text>
       <HStack>
+        <WeekChart activities={activities ?? []} />
         {GLOBAL_STATS.map((stat, index) => (
           <StatComponent key={index} stat={stat} activities={activities} athlete={athlete} />
         ))}

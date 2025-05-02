@@ -14,12 +14,13 @@ export default defineConfig({
   },
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 700,
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: {
           '@chakra-ui/react': ['@chakra-ui/react'],
           'react-apexcharts': ['react-apexcharts'],
+          'recharts': ['recharts'],
         },
       },
     },
