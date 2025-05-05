@@ -141,7 +141,7 @@ const ChartAccordion = () => {
     <Accordion.Root multiple={true} value={value} onValueChange={({value}) => setValue(value)}>
       {ACCORDION_ITEMS.map(item => (
         <Accordion.Item key={item.label} value={item.label}>
-          <Accordion.ItemTrigger>
+          <Accordion.ItemTrigger outline={0}>
             <Span flex={1}>{item.label}</Span>
             <Accordion.ItemIndicator />
           </Accordion.ItemTrigger>
