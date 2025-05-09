@@ -62,15 +62,17 @@ const GLOBAL_STATS: StatEntry[] = [
     const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
     const weekLoad = getTotalValue(weekActivities, 'suffer_score');
     const lastWeekLoad = getTotalValue(lastWeekActivities, 'suffer_score');
+    const difference = Math.abs(weekLoad - lastWeekLoad);
 
     return {
       label: '🌶️',
       helpText: 'Training load',
+      info: `Last week: ${lastWeekLoad}`,
       value: (
         <span>
           {weekLoad}
           <StatTrend marginLeft={5} up={weekLoad >= lastWeekLoad}>
-            {lastWeekLoad}
+            {difference}
           </StatTrend>
         </span>
       ),
@@ -96,15 +98,17 @@ const GLOBAL_STATS: StatEntry[] = [
     const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
     const weekMovingTime = getTotalValue(weekActivities, 'moving_time');
     const lastWeekMovingTime = getTotalValue(lastWeekActivities, 'moving_time');
+    const difference = Math.abs(weekMovingTime - lastWeekMovingTime);
 
     return {
       label: '⏱️',
       helpText: 'Active time',
+      info: `Last week: ${formatDuration(lastWeekMovingTime)}`,
       value: (
         <span>
           {formatDuration(weekMovingTime)}
           <StatTrend marginLeft={5} up={weekMovingTime >= lastWeekMovingTime}>
-            {formatDuration(lastWeekMovingTime)}
+            {formatDuration(difference)}
           </StatTrend>
         </span>
       ),
@@ -114,15 +118,17 @@ const GLOBAL_STATS: StatEntry[] = [
     const [weekActivities, lastWeekActivities] = getWeeksActivities(activities);
     const weekDistance = getTotalValue(weekActivities, 'distance');
     const lastWeekDistance = getTotalValue(lastWeekActivities, 'distance');
+    const difference = Math.abs(weekDistance - lastWeekDistance);
 
     return {
       label: '📍',
       helpText: 'Distance',
+      info: `Last week: ${formatDistance(lastWeekDistance)}`,
       value: (
         <span>
           {formatDistance(weekDistance)}
           <StatTrend marginLeft={5} up={weekDistance >= lastWeekDistance}>
-            {formatDistance(lastWeekDistance)}
+            {formatDistance(difference)}
           </StatTrend>
         </span>
       ),
