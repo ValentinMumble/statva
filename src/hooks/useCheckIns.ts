@@ -15,7 +15,9 @@ const useCheckIns = (routeId: string | undefined) => {
     fetchCheckIns();
   }, []);
 
-  return checkIns.filter(checkIn => undefined === routeId || checkIn.routeId === routeId);
+  return checkIns
+    .filter(checkIn => undefined === routeId || checkIn.routeId === routeId)
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
 };
 
 export {useCheckIns};

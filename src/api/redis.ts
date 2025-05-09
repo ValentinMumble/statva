@@ -23,7 +23,6 @@ const getEvents = async (): Promise<Event[] | null> => {
 
   return Object.values(rawEvents)
     .map(event => ({...event, date: new Date(event.date)}))
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
 };
 
 const upsertEvent = async (event: Event) => {
@@ -54,9 +53,7 @@ const getFTPTests = async (): Promise<FTPTest[]> => {
 
   if (null === ftpTests) return [];
 
-  return Object.values(ftpTests)
-    .map(ftpTest => ({...ftpTest, date: new Date(ftpTest.date)}))
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
+  return Object.values(ftpTests).map(ftpTest => ({...ftpTest, date: new Date(ftpTest.date)}));
 };
 
 const upsertFTPTest = async (test: FTPTest) => {
@@ -81,7 +78,6 @@ const getCheckIns = async (): Promise<CheckIn[]> => {
   return Object.values(rawCheckins)
     .flat()
     .map(checkIn => ({...checkIn, date: new Date(checkIn.date)}))
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
 };
 
 const addCheckIn = async (checkIn: CheckIn) => {

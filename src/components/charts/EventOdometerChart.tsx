@@ -40,8 +40,9 @@ const EventOdometerChart = () => {
       (sum, ride) => Number(ride[data]) + sum,
       0
     );
+    const eventLabel = getEventLabel(event, label, true);
 
-    odometer[`${event.date.toLocaleDateString()} ${getEventLabel(event, label, true)}`] = periodTotal;
+    odometer[eventLabel] = (odometer[eventLabel] ?? 0) + periodTotal;
 
     return odometer;
   }, {});
@@ -50,8 +51,7 @@ const EventOdometerChart = () => {
   const series: ApexAxisChartSeries = [];
 
   Object.entries(odometer).forEach(([eventLabel, total], eventIndex) => {
-    // Remove date + space
-    labels.push(eventLabel.slice(11));
+    labels.push(eventLabel);
 
     const data = new Array(Object.keys(odometer).length).fill(null);
     data[eventIndex] = total;
