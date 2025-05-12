@@ -14,6 +14,7 @@ import {
   TbWalk,
   TbYoga,
 } from 'react-icons/tb';
+import {MdElectricBike} from 'react-icons/md';
 import {ActivityType, WorkoutType} from '../models/strava';
 
 const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
@@ -24,6 +25,8 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false)
   switch (activityType) {
     case ActivityType.AlpineSki:
       return TbSkiJumping;
+    case ActivityType.EMountainBikeRide:
+      return MdElectricBike;
     case ActivityType.GravelRide:
       return PiBicycleFill;
     case ActivityType.Hike:

@@ -4,6 +4,7 @@ export enum ActivityType {
   Canoeing = 'Canoeing',
   Crossfit = 'Crossfit',
   EBikeRide = 'EBikeRide',
+  EMountainBikeRide = 'EMountainBikeRide',
   Elliptical = 'Elliptical',
   GravelRide = 'GravelRide',
   Hike = 'Hike',

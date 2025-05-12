@@ -34,31 +34,38 @@ const EventOdometerChart = () => {
   const relevantBikes = [...new Set(events.filter(({type}) => EVENT_TYPES.includes(type)).map(({bike}) => bike))];
   const relevantEvents = events.filter(({bike, type}) => gearId === bike && eventType === type);
 
-  const odometer = relevantEvents.reduce((odometer: {[id: string]: number}, event, index) => {
-    const nextEventDate = relevantEvents[index + 1]?.date;
-    const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
-      (sum, ride) => Number(ride[data]) + sum,
-      0
-    );
-    const eventLabel = getEventLabel(event, label, true);
+  const odometer = relevantEvents.reduce(
+    (odometer: {[id: string]: {id: string; label: string; value: number}}, event, index) => {
+      const nextEventDate = relevantEvents[index + 1]?.date;
+      const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
+        (sum, ride) => Number(ride[data]) + sum,
+        0
+      );
+      const eventLabel = getEventLabel(event, label, true);
 
-    odometer[eventLabel] = (odometer[eventLabel] ?? 0) + periodTotal;
+      const currentValue = odometer[event.id] ?? {id: event.id, label: eventLabel, value: 0};
+      currentValue.value = currentValue.value + periodTotal;
 
-    return odometer;
-  }, {});
+      odometer[event.id] = currentValue;
+
+      return odometer;
+    },
+    {}
+  );
 
   const labels: string[] = [];
   const series: ApexAxisChartSeries = [];
 
-  Object.entries(odometer).forEach(([eventLabel, total], eventIndex) => {
-    labels.push(eventLabel);
+  Object.values(odometer).forEach((event, eventIndex) => {
+    labels.push(event.label);
 
     const data = new Array(Object.keys(odometer).length).fill(null);
-    data[eventIndex] = total;
-    series.push({name: eventLabel, data});
+    data[eventIndex] = event.value;
+    series.push({name: event.label, data});
   });
 
   const avg = Object.values(odometer)
+    .map(({value}) => value)
     .filter(total => 0 < total)
     .reduce((total, currentTotal, _index, entries) => total + currentTotal / entries.length, 0);
 
