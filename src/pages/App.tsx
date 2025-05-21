@@ -151,8 +151,9 @@ const App = () => {
               </Collapsible.Trigger>
             </Group>
           </Group>
-          <Collapsible.Content padding="20px 0" display="flex" flexDirection="column" gap="30px">
-            <HStack paddingRight="20px" gap="40px">
+          <Collapsible.Content padding="15px 0" display="flex" flexDirection="column" gap="20px">
+            <YearRangeSlider padding="0 15px" value={yearRange} onChange={setYearRange} />
+            <HStack justifyContent="space-between">
               <ActivityTypeFilter
                 types={types}
                 onTypesChange={setTypes}
@@ -165,7 +166,6 @@ const App = () => {
                 onValueChange={handleBgOptionChange}
                 items={labelCollection(BG_COLLECTION, label).items}
               />
-              <YearRangeSlider value={yearRange} onChange={setYearRange} />
             </HStack>
             <HStack justifyContent="space-between">
               {TAGS.map(tag => (
