@@ -13,6 +13,7 @@ const EVENT_TYPES: Event['type'][] = [
   'saddle',
   'battery',
   'brake_pad',
+  'brake_bleed',
   'fall',
   'puncture',
 ];

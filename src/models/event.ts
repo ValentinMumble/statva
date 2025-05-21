@@ -38,6 +38,9 @@ type BrakePadEvent = BaseEvent & {
   type: 'brake_pad';
 };
 
+type BrakeBleedEvent = BaseEvent & {
+  type: 'brake_bleed';
+};
 
 type PunctureEvent = BaseEvent & {
   type: 'puncture';
@@ -55,6 +58,7 @@ type Event =
   | CassetteEvent
   | TireEvent
   | BatteryEvent
+  | BrakeBleedEvent
   | BrakePadEvent
   | SaddleEvent
   | FallEvent
@@ -110,6 +114,7 @@ const isCassetteEvent = (event: Partial<Event>): event is CassetteEvent => 'cass
 const isTireEvent = (event: Partial<Event>): event is TireEvent => 'tire' === event.type;
 const isBatteryEvent = (event: Partial<Event>): event is BatteryEvent => 'battery' === event.type;
 const isBrakePadEvent = (event: Partial<Event>): event is BrakePadEvent => 'brake_pad' === event.type;
+const isBrakeBleedEvent = (event: Partial<Event>): event is BrakeBleedEvent => 'brake_bleed' === event.type;
 const isSaddleEvent = (event: Partial<Event>): event is SaddleEvent => 'saddle' === event.type;
 const isFallEvent = (event: Partial<Event>): event is FallEvent => 'fall' === event.type;
 const isPunctureEvent = (event: Partial<Event>): event is PunctureEvent => 'puncture' === event.type;
@@ -119,6 +124,7 @@ export {
   getNextEvent,
   isBatteryEvent,
   isBrakePadEvent,
+  isBrakeBleedEvent,
   isCassetteEvent,
   isChainEvent,
   isEventValid,
@@ -130,6 +136,7 @@ export {
 export type {
   BatteryEvent,
   BrakePadEvent,
+  BrakeBleedEvent,
   CassetteEvent,
   ChainEvent,
   Event,

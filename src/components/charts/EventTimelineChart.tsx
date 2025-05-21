@@ -18,6 +18,7 @@ import {
   SUPER6,
   labelCollection,
   extractEmoji,
+  isBrakeBleedEvent,
 } from '../../models';
 import {useState} from 'react';
 import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
@@ -63,7 +64,7 @@ const EventTimelineChart = () => {
     })),
   }));
 
-  const eventSeries = [isBatteryEvent, isCassetteEvent, isBrakePadEvent, isSaddleEvent, isTireEvent]
+  const eventSeries = [isBatteryEvent, isCassetteEvent, isBrakePadEvent, isBrakeBleedEvent, isSaddleEvent, isTireEvent]
     .map(isEventType =>
       bikeEvents.filter(isEventType).map(event => ({
         name: getEventLabel(event, label),

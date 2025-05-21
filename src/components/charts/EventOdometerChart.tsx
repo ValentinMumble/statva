@@ -6,7 +6,7 @@ import {useActivities, useEvents, useLabels} from '../../hooks';
 import {formatDistance, getEventLabel, getOptions, getRidesBetween, labelCollection, Event, SUPER6} from '../../models';
 import {Activity} from '../../models/strava';
 
-const EVENT_TYPES: Event['type'][] = ['tire', 'cassette', 'brake_pad', 'battery', 'saddle'];
+const EVENT_TYPES: Event['type'][] = ['tire', 'cassette', 'brake_pad', 'brake_bleed', 'battery', 'saddle'];
 const DATA_TYPES: (keyof Activity)[] = ['distance', 'total_elevation_gain'];
 
 const EventOdometerChart = () => {
