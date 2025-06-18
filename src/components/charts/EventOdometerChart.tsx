@@ -42,11 +42,12 @@ const EventOdometerChart = () => {
         0
       );
       const eventLabel = getEventLabel(event, label, true);
+      const key = 'cassette' === event.type ? eventLabel : event.id;
 
-      const currentValue = odometer[event.id] ?? {id: event.id, label: eventLabel, value: 0};
+      const currentValue = odometer[key] ?? {id: event.id, label: eventLabel, value: 0};
       currentValue.value = currentValue.value + periodTotal;
 
-      odometer[event.id] = currentValue;
+      odometer[key] = currentValue;
 
       return odometer;
     },

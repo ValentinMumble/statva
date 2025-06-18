@@ -1,13 +1,14 @@
 import {Group, Span, Text} from '@chakra-ui/react';
 import Chart from 'react-apexcharts';
-import {useActivityMeta} from '../../hooks';
+import {useActivityMeta, useLabels} from '../../hooks';
 import {computeFinishCount, getOptions} from '../../models';
 
 const FinishChart = () => {
   const [activityMeta] = useActivityMeta();
+  const [label] = useLabels();
 
   const finishMap = computeFinishCount(Object.values(activityMeta));
-  const labels = Object.keys(finishMap);
+  const labels = Object.keys(finishMap).map(key => label(key));
   const series = Object.values(finishMap);
 
   const seriesAvg = Math.round(series.reduce((acc, val) => acc + val, 0) / series.length);

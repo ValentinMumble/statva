@@ -380,6 +380,11 @@ const STATS: {[key: string]: StatEntry[][]} = {
         value: formatDurationInDays(getTotalValue(activities, 'moving_time')),
       }),
       activities => ({
+        label: '⏳',
+        helpText: 'Average duration',
+        value: formatDuration(getAverageValue(activities, 'moving_time')),
+      }),
+      activities => ({
         label: '🫀',
         helpText: 'Average heart rate',
         value: `${Math.round(getAverageValue(activities, 'average_heartrate'))} bpm`,
