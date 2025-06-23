@@ -17,6 +17,7 @@ import {
 import {BsDatabaseDown} from 'react-icons/bs';
 import {HiArrowDown, HiArrowUp, HiLockClosed} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
+import {PiBicycle} from 'react-icons/pi';
 import {Tooltip, Switch, SegmentedControl} from '../components/ui';
 import {
   ActivityListItem,
@@ -27,7 +28,7 @@ import {
   WeekView,
   YearRangeSlider,
 } from '../components';
-import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection} from '../models';
+import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection, getTypes} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities, useEnv, useFtp, useLabels} from '../hooks';
 
@@ -39,7 +40,7 @@ const App = () => {
   const [withCommute, setWithCommute] = useState<boolean | 'only'>(true);
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
-  const [types, setTypes] = useState<ActivityType[] | null>(null);
+  const [types, setTypes] = useState<ActivityType[] | null>(getTypes(ActivityType.Ride));
   const [activeSort, setActiveSort] = useState<SortType>('date');
   const [displayedSorts, setDisplayedSorts] = useState<SortType[]>(DEFAULT_SORTS);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -92,6 +93,9 @@ const App = () => {
         : [...displayedSorts, sortType]
     );
 
+  const handleBikeOnlyToggle = () =>
+    setTypes(types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? null : getTypes(ActivityType.Ride));
+
   const isLoading = null === activities;
 
   return (
@@ -132,10 +136,17 @@ const App = () => {
               />
             </InputGroup>
             <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
-            <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
+            <IconButton title="With private" variant={withPrivate ? 'subtle' : 'ghost'} onClick={handlePrivateToggle}>
               <HiLockClosed />
             </IconButton>
             <Group hideBelow="md">
+              <IconButton
+                title="Bike only"
+                variant={types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? 'subtle' : 'ghost'}
+                onClick={handleBikeOnlyToggle}
+              >
+                <PiBicycle />
+              </IconButton>
               <IconButton variant="ghost" onClick={handleRefetch}>
                 <BsDatabaseDown />
               </IconButton>
