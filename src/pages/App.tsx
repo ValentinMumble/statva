@@ -72,7 +72,7 @@ const App = () => {
     setWithPrivate(false);
     setWithCommute(true);
     setSearch('');
-    setTypes(null);
+    setTypes(getTypes(ActivityType.Ride));
     setActiveSort('date');
     setDisplayedSorts(DEFAULT_SORTS);
     setSortDirection('desc');
