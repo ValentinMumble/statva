@@ -239,6 +239,8 @@ describe('computeFinishCount', () => {
       buildDetailedActivity({description: 'Finish à l’Atomics'}),
       buildDetailedActivity({description: 'Finish à l’atomics'}),
       buildDetailedActivity({description: "Finish à l'Atomics"}),
+      buildDetailedActivity({description: `🥰
+Finish au Chemin de Traverse`}),
     ];
 
     expect(computeFinishCount(rides)).toEqual({
@@ -250,6 +252,7 @@ describe('computeFinishCount', () => {
       "L'Atlantide": 1,
       'La Générale': 1,
       "L'Atomics": 3,
+      'Chemin De Traverse': 1,
     });
   });
 });
