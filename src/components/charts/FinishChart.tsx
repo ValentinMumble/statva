@@ -11,7 +11,7 @@ const FinishChart = () => {
   const labels = Object.keys(finishMap).map(key => label(key));
   const series = Object.values(finishMap);
 
-  const seriesAvg = Math.round(series.reduce((acc, val) => acc + val, 0) / series.length);
+  const seriesAvg = Math.round(series.reduce((acc, val) => acc + val, 0) / series.length) ?? 0;
 
   return (
     <>
