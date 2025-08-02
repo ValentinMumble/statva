@@ -128,15 +128,15 @@ const daysExceedingDistance = (rides: Activity[]): {[distance: number]: number} 
 
 const getActivityUrl = ({id}: Activity): string => `https://www.strava.com/activities/${id}`;
 
-const getHeartZone = ({average_heartrate = 0}: Activity, maxHeartrate = 190): number => {
+const getHeartZone = ({average_heartrate = 0}: Activity, maxHeartrate = 189): number => {
   switch (true) {
     case average_heartrate === 0:
       break;
-    case average_heartrate < 0.59 * maxHeartrate:
+    case average_heartrate < 0.64 * maxHeartrate:
       return 1;
-    case average_heartrate < 0.78 * maxHeartrate:
+    case average_heartrate < 0.81 * maxHeartrate:
       return 2;
-    case average_heartrate < 0.87 * maxHeartrate:
+    case average_heartrate < 0.89 * maxHeartrate:
       return 3;
     case average_heartrate < 0.97 * maxHeartrate:
       return 4;
