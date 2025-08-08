@@ -16,12 +16,13 @@ import {
   formatPercent,
   formatLaps,
   guessCalories,
+  extractNormalizedPower,
 } from '../models';
-import {ActivityType, Activity} from './strava';
+import {ActivityType, Activity, DetailedActivity} from './strava';
 
 type Tag = {
-  label: (activity: Activity, ftp: number) => string | number | null;
-  isRelevant: (activity: Activity) => boolean;
+  label: (activity: Activity, fullActivity: DetailedActivity | null, ftp: number) => string | number | null;
+  isRelevant: (activity: Activity, fullActivity: DetailedActivity | null) => boolean;
   tooltip?: (activity: Activity, ftp: number) => string | number | null;
   total: (activities: Activity[], getFtp: GetFtp) => string | number;
   sortType: SortType;
@@ -116,6 +117,17 @@ const TAGS: Tag[] = [
     sortType: 'weighted_average_watts',
   },
   {
+    help: 'Normalized power',
+    label: (_, fullActivity) => {
+      const np = extractNormalizedPower(fullActivity);
+
+      return null === np ? null : formatPower(np);
+    },
+    isRelevant: (_, fullActivity) => null !== fullActivity && 0 < (extractNormalizedPower(fullActivity) ?? 0),
+    total: activities => formatPower(getAverageValue(activities, 'weighted_average_watts')), //TODO
+    sortType: 'normalized_power',
+  },
+  {
     help: 'Max power',
     label: ({max_watts}) => (undefined === max_watts ? null : formatPower(max_watts)),
     isRelevant: ({max_watts}) => 0 < (max_watts ?? 0),
@@ -124,7 +136,7 @@ const TAGS: Tag[] = [
   },
   {
     help: 'Intensity',
-    label: ({weighted_average_watts}, ftp) =>
+    label: ({weighted_average_watts}, _, ftp) =>
       undefined === weighted_average_watts ? null : formatPercent(weighted_average_watts / ftp),
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
     total: (activities, getFtp) =>

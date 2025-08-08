@@ -2,7 +2,7 @@ import {Flex, Skeleton, Table, Tag} from '@chakra-ui/react';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
 import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType} from '../models';
-import {Activity} from '../models/strava';
+import {Activity, DetailedActivity} from '../models/strava';
 import {useLabels} from '../hooks';
 
 const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
@@ -36,12 +36,13 @@ const getBgColor = (bgOption: string, activity: Activity, ftp: number): string =
 
 type ActivityListItemProps = {
   activity: Activity | null;
+  fullActivity?: DetailedActivity | null;
   enabledSorts: SortType[];
   bgOption: string;
   getFtp: GetFtp;
 };
 
-const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
+const ActivityListItem = ({activity, fullActivity = null, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
   const [label] = useLabels();
 
   if (null === activity) {
@@ -99,7 +100,7 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
         </Flex>
       </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => {
-        const label = tag.label(activity, ftp);
+        const label = tag.label(activity, fullActivity, ftp);
         const tooltip = tag.tooltip?.(activity, ftp) ?? null;
 
         if (null === label || tag.excludedTypes?.includes(activity.sport_type)) {
@@ -117,7 +118,7 @@ const ActivityListItem = ({activity, enabledSorts, bgOption, getFtp}: ActivityLi
             key={tag.sortType}
             hideBelow="md"
             textAlign="center"
-            opacity={tag.isRelevant(activity) ? 0.9 : 0.4}
+            opacity={tag.isRelevant(activity, fullActivity) ? 0.9 : 0.4}
           >
             {null === tooltip ? (
               tagContent

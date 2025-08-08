@@ -30,7 +30,7 @@ import {
 } from '../components';
 import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection, getTypes} from '../models';
 import {ActivityType} from '../models/strava';
-import {useActivities, useEnv, useFtp, useLabels} from '../hooks';
+import {useActivities, useActivityMeta, useEnv, useFtp, useLabels} from '../hooks';
 
 const DISPLAYED_ITEMS = 75;
 const BG_COLLECTION = ['date', 'average_watts', 'average_heartrate'];
@@ -62,6 +62,7 @@ const App = () => {
     years: 0 === yearRange.length ? [] : range(yearRange.at(0), yearRange.at(-1)),
     sortDirection,
   });
+  const [activityMeta] = useActivityMeta();
 
   const handleRefetch = () => refetch(1, false, 20);
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
@@ -241,6 +242,7 @@ const App = () => {
                     key={activity.id}
                     getFtp={getFtp}
                     activity={activity}
+                    fullActivity={activityMeta[activity.id] ?? null}
                     bgOption={bgOption}
                     enabledSorts={displayedSorts}
                   />

@@ -20,6 +20,7 @@ type SortType =
   | 'max_speed'
   | 'max_watts'
   | 'moving_time'
+  | 'normalized_power'
   | 'photo_count'
   | 'pr_count'
   | 'suffer_score'
@@ -37,8 +38,8 @@ const DEFAULT_SORTS: SortType[] = [
   'intensity',
   'max_speed',
   'moving_time',
+  'normalized_power',
   'suffer_score',
-  'weighted_average_watts',
 ];
 
 const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Activity, b: Activity, getFtp: GetFtp) => {
@@ -100,6 +101,7 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Act
       return (second.suffer_score ?? 0) - (first.suffer_score ?? 0);
     case 'total_elevation_gain':
       return second.total_elevation_gain - first.total_elevation_gain;
+    case 'normalized_power':
     case 'weighted_average_watts':
       return (second.weighted_average_watts ?? 0) - (first.weighted_average_watts ?? 0);
   }

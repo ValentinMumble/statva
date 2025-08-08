@@ -54,6 +54,7 @@ export interface DetailedActivity {
   pr_count: number;
   prefer_perceived_exertion: boolean;
   private: boolean;
+  private_note?: string;
   resource_state: number;
   segment_efforts: any[];
   splits_metric: any[];

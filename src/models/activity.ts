@@ -287,6 +287,9 @@ const cleanActivity = (activity: DetailedActivity): DetailedActivity => {
 const isDetailedActivity = (activity: DetailedActivity): activity is DetailedActivity =>
   'id' in activity && 'name' in activity && 'type' in activity && 'start_date' in activity && 'description' in activity;
 
+const extractNormalizedPower = (activity: DetailedActivity | null): number | null =>
+  Number(activity?.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null;
+
 const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number> => {
   const locationCount: Record<string, number> = {};
 
@@ -317,6 +320,7 @@ export {
   cleanActivity,
   computeFinishCount,
   eddingtonNumber,
+  extractNormalizedPower,
   formatLaps,
   formatPaceOrSpeed,
   getActivityUrl,
