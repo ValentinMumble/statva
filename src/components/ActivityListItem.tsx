@@ -1,7 +1,7 @@
 import {Flex, Skeleton, Table, Tag} from '@chakra-ui/react';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
-import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType} from '../models';
+import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType, hasKom} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
 import {useLabels} from '../hooks';
 
@@ -70,6 +70,7 @@ const ActivityListItem = ({activity, fullActivity = null, enabledSorts, bgOption
       <Table.Cell>
         <ActivityIcon
           activityType={activity.sport_type}
+          hasKom={hasKom(fullActivity)}
           isCommute={activity.commute}
           isGranFondo={activity.distance > 100 * 1000}
           workoutType={getWorkoutType(activity)}

@@ -15,9 +15,14 @@ import {
   TbYoga,
 } from 'react-icons/tb';
 import {MdElectricBike} from 'react-icons/md';
+import {RiVipCrown2Fill} from 'react-icons/ri';
 import {ActivityType, WorkoutType} from '../models/strava';
 
-const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false) => {
+const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false, hasKom: boolean = false) => {
+  if (hasKom) {
+    return RiVipCrown2Fill;
+  }
+
   if (isCommute) {
     return TbBusStop;
   }
@@ -73,6 +78,7 @@ const getIconColor = (workoutType: WorkoutType, isGranFondo: boolean): string | 
 
 type ActivityIconProps = {
   activityType: ActivityType;
+  hasKom?: boolean;
   isCommute?: boolean;
   isGranFondo?: boolean;
   workoutType?: WorkoutType;

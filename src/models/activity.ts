@@ -276,13 +276,16 @@ const guessCalories = (activity: Activity): string | null => {
 };
 
 const cleanActivity = (activity: DetailedActivity): DetailedActivity => {
-  activity['segment_efforts'] = [];
-  activity['splits_metric'] = [];
-  activity['splits_standard'] = [];
-  activity['laps'] = [];
+  // activity['segment_efforts'] = [];
+  // activity['splits_metric'] = [];
+  // activity['splits_standard'] = [];
+  // activity['laps'] = [];
 
   return activity;
 };
+
+const hasKom = (activity: DetailedActivity | null): boolean =>
+  activity?.segment_efforts.some(effort => effort.kom_rank === 1) ?? false;
 
 const isDetailedActivity = (activity: DetailedActivity): activity is DetailedActivity =>
   'id' in activity && 'name' in activity && 'type' in activity && 'start_date' in activity && 'description' in activity;
@@ -334,6 +337,7 @@ export {
   getTypes,
   getWorkoutType,
   guessCalories,
+  hasKom,
   isDetailedActivity,
   daysExceedingDistance,
 };

@@ -2,6 +2,10 @@ import {MetaAthlete} from './meta-athlete';
 import {PolylineMap} from './polyline-map';
 import {SummaryGear} from './summary-gear';
 
+interface SegmentEffort {
+  kom_rank: number | null;
+}
+
 export interface DetailedActivity {
   achievement_count: number;
   athlete_count: number;
@@ -56,7 +60,7 @@ export interface DetailedActivity {
   private: boolean;
   private_note?: string;
   resource_state: number;
-  segment_efforts: any[];
+  segment_efforts: SegmentEffort[];
   splits_metric: any[];
   splits_standard: any[];
   sport_type: string;
