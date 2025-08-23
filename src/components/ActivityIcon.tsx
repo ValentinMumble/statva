@@ -4,6 +4,7 @@ import {PiBicycleFill, PiBicycle, PiTennisBallBold, PiQuestionBold} from 'react-
 import {
   TbBrandZwift,
   TbBusStop,
+  TbCrown,
   TbGymnastics,
   TbKayak,
   TbRouteX,
@@ -15,12 +16,11 @@ import {
   TbYoga,
 } from 'react-icons/tb';
 import {MdElectricBike} from 'react-icons/md';
-import {RiVipCrown2Fill} from 'react-icons/ri';
 import {ActivityType, WorkoutType} from '../models/strava';
 
-const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false, hasKom: boolean = false) => {
+const getActivityIcon = (activityType: ActivityType, isCommute: boolean, hasKom: boolean) => {
   if (hasKom) {
-    return RiVipCrown2Fill;
+    return TbCrown;
   }
 
   if (isCommute) {
@@ -64,7 +64,11 @@ const getActivityIcon = (activityType: ActivityType, isCommute: boolean = false,
   }
 };
 
-const getIconColor = (workoutType: WorkoutType, isGranFondo: boolean): string | undefined => {
+const getIconColor = (workoutType: WorkoutType, isGranFondo: boolean, hasKom: boolean): string | undefined => {
+  if (hasKom) {
+    return 'yellow.500';
+  }
+
   if (workoutType === WorkoutType.Race) {
     return 'orange.500';
   }
@@ -86,16 +90,17 @@ type ActivityIconProps = {
 
 const ActivityIcon = ({
   activityType,
+  hasKom = false,
   isCommute = false,
   isGranFondo = false,
   workoutType = WorkoutType.None,
   ...rest
 }: ActivityIconProps) => {
-  const ActivityIconType = getActivityIcon(activityType, isCommute);
+  const ActivityIconType = getActivityIcon(activityType, isCommute, hasKom);
 
   return (
     // The span is to prevent React whining about passing a ref to the react-icon component
-    <Icon {...rest} color={getIconColor(workoutType, isGranFondo)}>
+    <Icon {...rest} color={getIconColor(workoutType, isGranFondo, hasKom)}>
       <span>
         <ActivityIconType />
       </span>

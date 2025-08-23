@@ -276,10 +276,10 @@ const guessCalories = (activity: Activity): string | null => {
 };
 
 const cleanActivity = (activity: DetailedActivity): DetailedActivity => {
-  // activity['segment_efforts'] = [];
-  // activity['splits_metric'] = [];
-  // activity['splits_standard'] = [];
-  // activity['laps'] = [];
+  activity['segment_efforts'] = activity['segment_efforts'].map(effort => ({kom_rank: effort.kom_rank}));
+  activity['splits_metric'] = [];
+  activity['splits_standard'] = [];
+  activity['laps'] = [];
 
   return activity;
 };
