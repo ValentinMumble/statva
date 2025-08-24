@@ -334,6 +334,11 @@ const STATS: {[key: string]: StatEntry[][]} = {
         value: formatDistance(getAverageValue(activities, 'distance'), 1),
       }),
       activities => ({
+        label: '🌶️',
+        helpText: 'Avg suffer score',
+        value: Math.round(getAverageValue(activities, 'suffer_score')),
+      }),
+      activities => ({
         label: '⏱️',
         helpText: 'Spent running',
         info: formatDuration(getTotalValue(activities, 'moving_time'), true),
@@ -359,6 +364,11 @@ const STATS: {[key: string]: StatEntry[][]} = {
         value: formatDistance(getAverageValue(activities, 'distance'), 1),
       }),
       activities => ({
+        label: '🌶️',
+        helpText: 'Avg suffer score',
+        value: Math.round(getAverageValue(activities, 'suffer_score')),
+      }),
+      activities => ({
         label: '⏱️',
         helpText: 'Spent swimming',
         info: formatDuration(getTotalValue(activities, 'moving_time'), true),
@@ -381,13 +391,18 @@ const STATS: {[key: string]: StatEntry[][]} = {
       }),
       activities => ({
         label: '⏳',
-        helpText: 'Average duration',
+        helpText: 'Avg duration',
         value: formatDuration(getAverageValue(activities, 'moving_time')),
       }),
       activities => ({
         label: '🫀',
-        helpText: 'Average heart rate',
+        helpText: 'Avg heart rate',
         value: `${Math.round(getAverageValue(activities, 'average_heartrate'))} bpm`,
+      }),
+      activities => ({
+        label: '🌶️',
+        helpText: 'Avg suffer score',
+        value: Math.round(getAverageValue(activities, 'suffer_score')),
       }),
     ],
   ],
