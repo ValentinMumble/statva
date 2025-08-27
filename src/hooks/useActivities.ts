@@ -14,9 +14,15 @@ const useActivities = ({
   gearId,
   years = [],
   minTime,
-}: ActivityFilter): [Activity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>] => {
+}: ActivityFilter): [
+  Activity[] | null,
+  (page: number, fetchNext?: boolean, items?: number) => Promise<void>,
+  Activity[]
+] => {
   const [activities, refetch] = useContext(ActivitiesContext);
   const [getFtp] = useFtp();
+
+  const unprocessedActivities = activities?.filter(activity => !activity.name.match(/[\p{Emoji}]/gu)) ?? [];
 
   return [
     null === activities
@@ -34,6 +40,7 @@ const useActivities = ({
           .filter(({moving_time}) => undefined === minTime || moving_time >= minTime)
           .sort((a, b) => sortActivities(sort, sortDirection, a, b, getFtp)),
     refetch,
+    unprocessedActivities,
   ];
 };
 

@@ -1,6 +1,8 @@
 import {ChangeEvent, useState} from 'react';
 import {
+  Badge,
   Button,
+  Code,
   Collapsible,
   Group,
   HStack,
@@ -52,7 +54,7 @@ const App = () => {
   const [devMode, setDevMode] = useEnv();
   const [label] = useLabels();
   const [getFtp] = useFtp();
-  const [activities, refetch] = useActivities({
+  const [activities, refetch, unprocessedActivities] = useActivities({
     search,
     includedActivityTypes: types ?? undefined,
     sort: activeSort,
@@ -235,9 +237,32 @@ const App = () => {
                 <Table.Cell>No activities... 🏜️</Table.Cell>
               </Table.Row>
             ) : (
-              activities
-                .slice(0, displayedItems)
-                .map(activity => (
+              <>
+                {unprocessedActivities.length > 0 && (
+                  <>
+                    <Table.Row>
+                      <Table.Cell />
+                      <Table.Cell>
+                        <Badge>Unprocessed</Badge>
+                      </Table.Cell>
+                    </Table.Row>
+                    {unprocessedActivities.map(activity => (
+                      <ActivityListItem
+                        key={activity.id}
+                        getFtp={getFtp}
+                        activity={activity}
+                        fullActivity={activityMeta[activity.id] ?? null}
+                        bgOption={bgOption}
+                        enabledSorts={displayedSorts}
+                      />
+                    ))}
+                    <Table.Row>
+                      <Table.Cell />
+                      <Table.Cell>&nbsp;</Table.Cell>
+                    </Table.Row>
+                  </>
+                )}
+                {activities.slice(0, displayedItems).map(activity => (
                   <ActivityListItem
                     key={activity.id}
                     getFtp={getFtp}
@@ -246,7 +271,8 @@ const App = () => {
                     bgOption={bgOption}
                     enabledSorts={displayedSorts}
                   />
-                ))
+                ))}
+              </>
             )}
             {(activities?.length ?? 0) > displayedItems && (
               <Table.Row>
