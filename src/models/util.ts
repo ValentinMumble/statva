@@ -1,6 +1,7 @@
 const KJ_TO_CAL_RATIO = 1.114937039;
 
 const formatDistance = (distance: number, precision = 0): string => `${(distance / 1000).toFixed(precision)} km`;
+const formatDistanceMeters = (distance: number, precision = 0): string => `${distance.toFixed(precision)} m`;
 const formatElevation = (elevation: number): string => `${Math.round(elevation)} m`;
 const formatSpeed = (speed: number, precision = 1): string => `${(speed * 3.6).toFixed(precision)} km/h`;
 const formatPower = (power: number): string => `${Math.round(power)} W`;
@@ -152,6 +153,7 @@ export {
   decodePolyline,
   formatCalories,
   formatDistance,
+  formatDistanceMeters,
   formatDuration,
   formatDurationInDays,
   formatElevation,

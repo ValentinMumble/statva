@@ -4,6 +4,7 @@ import {useActivities, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
   formatDistance,
+  formatDistanceMeters,
   formatDuration,
   formatDurationInDays,
   formatPower,
@@ -361,7 +362,7 @@ const STATS: {[key: string]: StatEntry[][]} = {
       activities => ({
         label: '🗺️',
         helpText: 'Avg distance',
-        value: formatDistance(getAverageValue(activities, 'distance'), 1),
+        value: formatDistanceMeters(getAverageValue(activities, 'distance')),
       }),
       activities => ({
         label: '🌶️',
