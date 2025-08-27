@@ -17,7 +17,7 @@ import {
   FinishChart,
   GroupChart,
 } from './charts';
-import {formatCalories, formatDistance, formatDuration, formatElevation} from '../models';
+import {formatCalories, formatDistance, formatDistanceMeters, formatDuration} from '../models';
 import {ActivityType} from '../models/strava';
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
@@ -98,7 +98,7 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'D+ / gear ⛰️',
-    component: <GearChart data="total_elevation_gain" formatter={formatElevation} type="pie" />,
+    component: <GearChart data="total_elevation_gain" formatter={formatDistanceMeters} type="pie" />,
   },
   {
     label: 'Average speed / bike 🏁',

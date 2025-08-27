@@ -1,6 +1,6 @@
 import {Card} from '@chakra-ui/react';
 import {Route} from '../models/strava';
-import {CheckIn, formatDistance, formatDuration, formatElevation, getCheckInText} from '../models';
+import {CheckIn, formatDistance, formatDuration, formatDistanceMeters, getCheckInText} from '../models';
 import {useLabels} from '../hooks';
 
 type RouteCardProps = {
@@ -23,7 +23,7 @@ const RouteCard = ({route, checkIns}: RouteCardProps) => {
         <Card.Description lineHeight="25px">
           {label('distance')} {formatDistance(route.distance)}
           <br />
-          {label('total_elevation_gain')} {formatElevation(route.elevation_gain)}
+          {label('total_elevation_gain')} {formatDistanceMeters(route.elevation_gain)}
           <br />
           {label('moving_time')} ~{formatDuration(route.estimated_moving_time)} estimated
           <br />
