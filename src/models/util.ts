@@ -29,6 +29,26 @@ const formatDurationInDays = (durationInSeconds: number): string => {
   return `${Math.floor(hourCount)}${suffix} days`;
 };
 
+const getZoneColor = (zone: number): string => {
+  switch (zone) {
+    case 1:
+      return 'blue';
+    case 2:
+      return 'green';
+    case 3:
+      return 'yellow';
+    case 4:
+      return 'orange';
+    case 5:
+      return 'red';
+    case 6:
+    case 7:
+      return 'purple';
+    default:
+      return 'gray';
+  }
+};
+
 const getWeekNumber = (date: Date): number => {
   date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   // Set to nearest Thursday: current date + 4 - current day number
@@ -162,6 +182,7 @@ export {
   getMonday,
   getMonthDiff,
   getWeekNumber,
+  getZoneColor,
   range,
   removeNull,
 };

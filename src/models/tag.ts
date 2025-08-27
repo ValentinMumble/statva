@@ -17,6 +17,7 @@ import {
   guessCalories,
   extractNormalizedPower,
   formatDistanceMeters,
+  getZoneColor,
 } from '../models';
 import {ActivityType, Activity, DetailedActivity} from './strava';
 
@@ -25,6 +26,7 @@ type Tag = {
   isRelevant: (activity: Activity, fullActivity: DetailedActivity | null) => boolean;
   tooltip?: (activity: Activity, ftp: number) => string | number | null;
   total: (activities: Activity[], getFtp: GetFtp) => string | number;
+  colorPalette?: (activity: Activity, fullActivity: DetailedActivity | null, ftp: number) => string | undefined;
   sortType: SortType;
   help: string;
   excludedTypes?: ActivityType[];
@@ -128,6 +130,7 @@ const TAGS: Tag[] = [
     isRelevant: (_, fullActivity) => null !== fullActivity && 0 < (extractNormalizedPower(fullActivity) ?? 0),
     total: activities => formatPower(getAverageValue(activities, 'weighted_average_watts')), //TODO
     sortType: 'normalized_power',
+    colorPalette: (_, fullActivity, ftp) => getZoneColor(getPowerZone(extractNormalizedPower(fullActivity) ?? 0, ftp)),
   },
   {
     help: 'Max power',
@@ -161,6 +164,7 @@ const TAGS: Tag[] = [
     tooltip: activity => `🫀 Zone ${getHeartZone(activity)}`,
     total: activities => Math.round(getAverageValue(activities, 'average_heartrate')),
     sortType: 'average_heartrate',
+    colorPalette: activity => getZoneColor(getHeartZone(activity)),
   },
   {
     help: 'Max heartrate',

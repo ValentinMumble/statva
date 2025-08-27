@@ -35,7 +35,6 @@ const DEFAULT_SORTS: SortType[] = [
   'average_speed',
   'distance',
   'total_elevation_gain',
-  'intensity',
   'max_speed',
   'moving_time',
   'normalized_power',

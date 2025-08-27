@@ -109,7 +109,7 @@ const ActivityListItem = ({activity, fullActivity = null, enabledSorts, bgOption
         }
 
         const tagContent = (
-          <Tag.Root variant="subtle">
+          <Tag.Root variant="subtle" colorPalette={tag.colorPalette?.(activity, fullActivity, ftp)}>
             <Tag.Label>{label}</Tag.Label>
           </Tag.Root>
         );
