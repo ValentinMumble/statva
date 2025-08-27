@@ -39,7 +39,7 @@ const TAGS: Tag[] = [
     tooltip: ({distance}) => `📍 ${formatDistance(distance, 2)}`,
     total: activities => formatDistance(getTotalValue(activities, 'distance')),
     sortType: 'distance',
-    excludedTypes: [ActivityType.Tennis, ActivityType.Yoga],
+    excludedTypes: [ActivityType.Yoga],
   },
   {
     help: 'D+',
