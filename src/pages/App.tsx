@@ -2,7 +2,6 @@ import {ChangeEvent, useState} from 'react';
 import {
   Badge,
   Button,
-  Code,
   Collapsible,
   Group,
   HStack,
