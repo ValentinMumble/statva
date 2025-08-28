@@ -1,5 +1,5 @@
 import {MouseEvent} from 'react';
-import {IconButton, HStack} from '@chakra-ui/react';
+import {IconButton} from '@chakra-ui/react';
 import {TbBusStop} from 'react-icons/tb';
 import {ActivityIcon} from '../components';
 import {ActivityType} from '../models/strava';
@@ -36,24 +36,22 @@ const ActivityTypeFilter = ({types, withCommute, onTypesChange, onWithCommuteCha
       <IconButton
         size="xs"
         title="Commute only"
-        variant={'only' === withCommute ? 'surface' : 'outline'}
+        variant={'only' === withCommute ? 'surface' : 'ghost'}
         onClick={handleCommuteToggle}
       >
         <TbBusStop />
       </IconButton>
-      <HStack>
-        {uniqueTypes.map(type => (
-          <IconButton
-            key={type}
-            size="xs"
-            variant={null === types || types.includes(type) ? 'surface' : 'outline'}
-            onClick={handleTypeToggle(type)}
-            onDoubleClick={handleIconClick(type)}
-          >
-            <ActivityIcon activityType={type} />
-          </IconButton>
-        ))}
-      </HStack>
+      {uniqueTypes.map(type => (
+        <IconButton
+          key={type}
+          size="xs"
+          variant={null === types || types.includes(type) ? 'surface' : 'ghost'}
+          onClick={handleTypeToggle(type)}
+          onDoubleClick={handleIconClick(type)}
+        >
+          <ActivityIcon activityType={type} />
+        </IconButton>
+      ))}
     </>
   );
 };

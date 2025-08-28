@@ -8,6 +8,7 @@ import {
   IconButton,
   Input,
   InputGroup,
+  Portal,
   Skeleton,
   Stack,
   Table,
@@ -138,38 +139,40 @@ const App = () => {
             </IconButton>
             <HoverCard.Root size="lg" openDelay={300}>
               <HoverCard.Trigger>
-                <IconButton transition="rotate ease .2s" variant="ghost" as="span">
+                <IconButton variant="ghost">
                   <MdFilterList />
                 </IconButton>
               </HoverCard.Trigger>
-              <HoverCard.Positioner>
-                <HoverCard.Content maxWidth="unset" gap="20px">
-                  <HoverCard.Arrow>
-                    <HoverCard.ArrowTip />
-                  </HoverCard.Arrow>
-                  <HStack justifyContent="space-between">
-                    {TAGS.map(tag => (
-                      <Tooltip key={tag.sortType} content={tag.help}>
-                        <Button
-                          size="xs"
-                          variant={displayedSorts.includes(tag.sortType) ? 'surface' : 'ghost'}
-                          onClick={handleSortToggle(tag.sortType)}
-                        >
-                          {label(tag.sortType)}
-                        </Button>
-                      </Tooltip>
-                    ))}
-                  </HStack>
-                  <HStack>
-                    <ActivityTypeFilter
-                      types={types}
-                      onTypesChange={setTypes}
-                      withCommute={withCommute}
-                      onWithCommuteChange={setWithCommute}
-                    />
-                  </HStack>
-                </HoverCard.Content>
-              </HoverCard.Positioner>
+              <Portal>
+                <HoverCard.Positioner>
+                  <HoverCard.Content maxWidth="unset" gap="10px" padding="10px">
+                    <HoverCard.Arrow>
+                      <HoverCard.ArrowTip />
+                    </HoverCard.Arrow>
+                    <HStack>
+                      {TAGS.map(tag => (
+                        <Tooltip key={tag.sortType} content={tag.help}>
+                          <IconButton
+                            size="xs"
+                            variant={displayedSorts.includes(tag.sortType) ? 'surface' : 'ghost'}
+                            onClick={handleSortToggle(tag.sortType)}
+                          >
+                            {label(tag.sortType)}
+                          </IconButton>
+                        </Tooltip>
+                      ))}
+                    </HStack>
+                    <HStack>
+                      <ActivityTypeFilter
+                        types={types}
+                        onTypesChange={setTypes}
+                        withCommute={withCommute}
+                        onWithCommuteChange={setWithCommute}
+                      />
+                    </HStack>
+                  </HoverCard.Content>
+                </HoverCard.Positioner>
+              </Portal>
             </HoverCard.Root>
           </Group>
         </Group>
