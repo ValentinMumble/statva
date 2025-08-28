@@ -128,6 +128,8 @@ const TAGS: Tag[] = [
       return null === np ? null : formatPower(np);
     },
     isRelevant: (_, fullActivity) => null !== fullActivity && 0 < (extractNormalizedPower(fullActivity) ?? 0),
+    tooltip: ({weighted_average_watts}) =>
+      undefined === weighted_average_watts ? null : `🏋️ ${formatPower(weighted_average_watts)}`,
     total: activities => formatPower(getAverageValue(activities, 'weighted_average_watts')), //TODO
     sortType: 'normalized_power',
     colorPalette: (_, fullActivity, ftp) => getZoneColor(getPowerZone(extractNormalizedPower(fullActivity) ?? 0, ftp)),

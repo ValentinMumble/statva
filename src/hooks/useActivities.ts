@@ -17,9 +17,10 @@ const useActivities = ({
 }: ActivityFilter): [
   Activity[] | null,
   (page: number, fetchNext?: boolean, items?: number) => Promise<void>,
-  Activity[]
+  Activity[],
+  (id: number) => void
 ] => {
-  const [activities, refetch] = useContext(ActivitiesContext);
+  const [activities, refetch, deleteActivity] = useContext(ActivitiesContext);
   const [getFtp] = useFtp();
 
   const unprocessedActivities = activities?.filter(activity => !activity.name.match(/[\p{Emoji}]/gu)) ?? [];
@@ -41,6 +42,7 @@ const useActivities = ({
           .sort((a, b) => sortActivities(sort, sortDirection, a, b, getFtp)),
     refetch,
     unprocessedActivities,
+    deleteActivity,
   ];
 };
 

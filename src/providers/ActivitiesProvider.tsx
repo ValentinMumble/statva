@@ -3,8 +3,8 @@ import {Activity} from '../models/strava';
 import {useFetcher} from '../hooks';
 
 const ActivitiesContext = createContext<
-  [Activity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>]
->([null, Promise.resolve]);
+  [Activity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>, (id: number) => void]
+>([null, Promise.resolve, Promise.resolve]);
 
 type ActivitiesProviderProps = {
   children?: ReactNode;
@@ -30,6 +30,14 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
     }
   };
 
+  const deleteActivity = (id: number) =>
+    setActivities(currentActivities => {
+      const newActivities = {...currentActivities};
+      delete newActivities[id];
+
+      return newActivities;
+    });
+
   useEffect(() => {
     setActivities(null);
     setPage(1);
@@ -37,7 +45,9 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
   }, [getActivities]);
 
   return (
-    <ActivitiesContext.Provider value={[null === activities ? null : Object.values(activities), fetchActivities]}>
+    <ActivitiesContext.Provider
+      value={[null === activities ? null : Object.values(activities), fetchActivities, deleteActivity]}
+    >
       {children}
     </ActivitiesContext.Provider>
   );

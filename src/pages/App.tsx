@@ -53,7 +53,7 @@ const App = () => {
   const [devMode, setDevMode] = useEnv();
   const [label] = useLabels();
   const [getFtp] = useFtp();
-  const [activities, refetch, unprocessedActivities] = useActivities({
+  const [activities, refetch, unprocessedActivities, deleteActivity] = useActivities({
     search,
     includedActivityTypes: types ?? undefined,
     sort: activeSort,
@@ -253,6 +253,8 @@ const App = () => {
                         fullActivity={activityMeta[activity.id] ?? null}
                         bgOption={bgOption}
                         enabledSorts={displayedSorts}
+                        showDeleteButton={true}
+                        onDeleteActivity={deleteActivity}
                       />
                     ))}
                     <Table.Row>

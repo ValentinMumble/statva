@@ -1,4 +1,5 @@
-import {Flex, Skeleton, Table, Tag} from '@chakra-ui/react';
+import {Flex, IconButton, Skeleton, Table, Tag} from '@chakra-ui/react';
+import {RxCross2} from 'react-icons/rx';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
 import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType, hasKom} from '../models';
@@ -40,9 +41,19 @@ type ActivityListItemProps = {
   enabledSorts: SortType[];
   bgOption: string;
   getFtp: GetFtp;
+  showDeleteButton?: boolean;
+  onDeleteActivity?: (id: number) => void;
 };
 
-const ActivityListItem = ({activity, fullActivity = null, enabledSorts, bgOption, getFtp}: ActivityListItemProps) => {
+const ActivityListItem = ({
+  activity,
+  fullActivity = null,
+  enabledSorts,
+  bgOption,
+  getFtp,
+  showDeleteButton = false,
+  onDeleteActivity,
+}: ActivityListItemProps) => {
   const [label] = useLabels();
 
   if (null === activity) {
@@ -97,7 +108,13 @@ const ActivityListItem = ({activity, fullActivity = null, enabledSorts, bgOption
               {activity.name}
             </a>
           </Tooltip>
-          <ActivityMeta activity={activity} />
+          {showDeleteButton ? (
+            <IconButton size="2xs" variant="ghost" onClick={() => onDeleteActivity?.(activity.id)}>
+              <RxCross2 />
+            </IconButton>
+          ) : (
+            <ActivityMeta activity={activity} />
+          )}
         </Flex>
       </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => {
