@@ -1,5 +1,5 @@
 import {MouseEvent} from 'react';
-import {CheckboxGroup, Checkbox} from '@chakra-ui/react';
+import {IconButton, HStack} from '@chakra-ui/react';
 import {TbBusStop} from 'react-icons/tb';
 import {ActivityIcon} from '../components';
 import {ActivityType} from '../models/strava';
@@ -8,7 +8,7 @@ import {useActivities} from '../hooks';
 type ActivityTypeFilterProps = {
   types: ActivityType[] | null;
   withCommute: boolean | 'only';
-  onTypesChange: (newTypes: ActivityType[]) => void;
+  onTypesChange: (newTypes: ActivityType[] | null) => void;
   onWithCommuteChange: (withCommute: boolean | 'only') => void;
 };
 
@@ -17,40 +17,43 @@ const ActivityTypeFilter = ({types, withCommute, onTypesChange, onWithCommuteCha
   const uniqueTypes = [...new Set((activities ?? []).map(({sport_type}) => sport_type))];
 
   const handleCommuteToggle = () => onWithCommuteChange(true === withCommute ? 'only' : true);
-  const handleTypeChange = (values: string[]) => onTypesChange(values as ActivityType[]);
   const handleIconClick = (type: ActivityType) => (event: MouseEvent) => {
     onTypesChange([type]);
     event.preventDefault();
   };
 
+  const handleTypeToggle = (type: ActivityType) => () => {
+    if (null === types || !types.includes(type)) {
+      onTypesChange([...(types ?? []), type]);
+    } else {
+      const newTypes = types.filter(t => t !== type);
+      onTypesChange(0 === newTypes.length ? null : newTypes);
+    }
+  };
+
   return (
     <>
-      <Checkbox.Root
+      <IconButton
+        size="xs"
         title="Commute only"
-        size="lg"
-        checked={'only' === withCommute}
-        onCheckedChange={handleCommuteToggle}
+        variant={'only' === withCommute ? 'surface' : 'outline'}
+        onClick={handleCommuteToggle}
       >
-        <Checkbox.HiddenInput />
-        <Checkbox.Control>
-          <TbBusStop />
-        </Checkbox.Control>
-      </Checkbox.Root>
-      <CheckboxGroup
-        value={null === types ? uniqueTypes : types}
-        onValueChange={handleTypeChange}
-        display="flex"
-        flexDirection="row"
-      >
+        <TbBusStop />
+      </IconButton>
+      <HStack>
         {uniqueTypes.map(type => (
-          <Checkbox.Root key={type} value={type} title={type} size="lg">
-            <Checkbox.HiddenInput />
-            <Checkbox.Control>
-              <ActivityIcon activityType={type} onDoubleClick={handleIconClick(type)} />
-            </Checkbox.Control>
-          </Checkbox.Root>
+          <IconButton
+            key={type}
+            size="xs"
+            variant={null === types || types.includes(type) ? 'surface' : 'outline'}
+            onClick={handleTypeToggle(type)}
+            onDoubleClick={handleIconClick(type)}
+          >
+            <ActivityIcon activityType={type} />
+          </IconButton>
         ))}
-      </CheckboxGroup>
+      </HStack>
     </>
   );
 };

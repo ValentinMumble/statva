@@ -39,7 +39,6 @@ type ActivityListItemProps = {
   activity: Activity | null;
   fullActivity?: DetailedActivity | null;
   enabledSorts: SortType[];
-  bgOption: string;
   getFtp: GetFtp;
   showDeleteButton?: boolean;
   onDeleteActivity?: (id: number) => void;
@@ -49,7 +48,6 @@ const ActivityListItem = ({
   activity,
   fullActivity = null,
   enabledSorts,
-  bgOption,
   getFtp,
   showDeleteButton = false,
   onDeleteActivity,
@@ -89,7 +87,7 @@ const ActivityListItem = ({
       </Table.Cell>
       <Table.Cell padding="2px">
         <Flex
-          bg={getBgColor(bgOption, activity, ftp)}
+          bg={getBgColor('date', activity, ftp)}
           borderRadius="8px"
           padding="2px 5px"
           justifyContent="space-between"

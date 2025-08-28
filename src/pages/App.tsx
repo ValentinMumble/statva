@@ -8,7 +8,6 @@ import {
   IconButton,
   Input,
   InputGroup,
-  SegmentGroupValueChangeDetails,
   Skeleton,
   Stack,
   Table,
@@ -16,25 +15,16 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import {BsDatabaseDown} from 'react-icons/bs';
-import {HiArrowDown, HiArrowUp, HiLockClosed} from 'react-icons/hi2';
+import {HiArrowDown, HiArrowUp, HiOutlineLockClosed} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
 import {PiBicycle} from 'react-icons/pi';
-import {Tooltip, Switch, SegmentedControl} from '../components/ui';
-import {
-  ActivityListItem,
-  ActivityTypeFilter,
-  ChartAccordion,
-  GearSelect,
-  Stats,
-  WeekView,
-  YearRangeSlider,
-} from '../components';
-import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, labelCollection, getTypes} from '../models';
+import {Tooltip, Switch} from '../components/ui';
+import {ActivityListItem, ActivityTypeFilter, ChartAccordion, GearSelect, Stats, WeekView} from '../components';
+import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, getTypes} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities, useActivityMeta, useEnv, useFtp, useLabels} from '../hooks';
 
 const DISPLAYED_ITEMS = 75;
-const BG_COLLECTION = ['date', 'average_watts', 'average_heartrate'];
 
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
@@ -46,7 +36,6 @@ const App = () => {
   const [displayedSorts, setDisplayedSorts] = useState<SortType[]>(DEFAULT_SORTS);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearIds, setGearIds] = useState<string[]>([]);
-  const [bgOption, setBgOption] = useState<string>('date');
   const [yearRange, setYearRange] = useState<number[]>([]);
   const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
 
@@ -79,13 +68,11 @@ const App = () => {
     setDisplayedSorts(DEFAULT_SORTS);
     setSortDirection('desc');
     setGearIds([]);
-    setBgOption('date');
     setYearRange([]);
     setDisplayedItems(DISPLAYED_ITEMS);
   };
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
-  const handleBgOptionChange = ({value}: SegmentGroupValueChangeDetails) => value && setBgOption(value);
   const handleDisplayMoreItems = () => setDisplayedItems(displayedItems => displayedItems + DISPLAYED_ITEMS);
 
   const handleSortToggle = (sortType: SortType) => () =>
@@ -138,13 +125,13 @@ const App = () => {
               />
             </InputGroup>
             <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
-            <IconButton title="With private" variant={withPrivate ? 'subtle' : 'ghost'} onClick={handlePrivateToggle}>
-              <HiLockClosed />
+            <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
+              <HiOutlineLockClosed />
             </IconButton>
             <Group hideBelow="md">
               <IconButton
                 title="Bike only"
-                variant={types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? 'subtle' : 'ghost'}
+                variant={types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? 'surface' : 'ghost'}
                 onClick={handleBikeOnlyToggle}
               >
                 <PiBicycle />
@@ -165,7 +152,6 @@ const App = () => {
             </Group>
           </Group>
           <Collapsible.Content padding="15px 0" display="flex" flexDirection="column" gap="20px">
-            <YearRangeSlider padding="0 15px" value={yearRange} onChange={setYearRange} />
             <HStack justifyContent="space-between">
               <ActivityTypeFilter
                 types={types}
@@ -173,20 +159,17 @@ const App = () => {
                 withCommute={withCommute}
                 onWithCommuteChange={setWithCommute}
               />
-              <SegmentedControl
-                size="sm"
-                value={bgOption}
-                onValueChange={handleBgOptionChange}
-                items={labelCollection(BG_COLLECTION, label).items}
-              />
             </HStack>
             <HStack justifyContent="space-between">
               {TAGS.map(tag => (
                 <Tooltip key={tag.sortType} content={tag.help}>
-                  <VStack cursor="pointer" onClick={handleSortToggle(tag.sortType)}>
-                    <span>{label(tag.sortType)}</span>
-                    <Switch size="xs" checked={displayedSorts.includes(tag.sortType)} />
-                  </VStack>
+                  <Button
+                    size="xs"
+                    variant={displayedSorts.includes(tag.sortType) ? 'surface' : 'ghost'}
+                    onClick={handleSortToggle(tag.sortType)}
+                  >
+                    {label(tag.sortType)}
+                  </Button>
                 </Tooltip>
               ))}
             </HStack>
@@ -223,13 +206,7 @@ const App = () => {
           <Table.Body>
             {isLoading ? (
               [...new Array(20)].map((_, index) => (
-                <ActivityListItem
-                  key={index}
-                  getFtp={getFtp}
-                  activity={null}
-                  bgOption={bgOption}
-                  enabledSorts={displayedSorts}
-                />
+                <ActivityListItem key={index} getFtp={getFtp} activity={null} enabledSorts={displayedSorts} />
               ))
             ) : 0 === activities.length ? (
               <Table.Row>
@@ -251,7 +228,6 @@ const App = () => {
                         getFtp={getFtp}
                         activity={activity}
                         fullActivity={activityMeta[activity.id] ?? null}
-                        bgOption={bgOption}
                         enabledSorts={displayedSorts}
                         showDeleteButton={true}
                         onDeleteActivity={deleteActivity}
@@ -269,7 +245,6 @@ const App = () => {
                     getFtp={getFtp}
                     activity={activity}
                     fullActivity={activityMeta[activity.id] ?? null}
-                    bgOption={bgOption}
                     enabledSorts={displayedSorts}
                   />
                 ))}
