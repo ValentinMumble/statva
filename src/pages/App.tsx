@@ -2,8 +2,8 @@ import {ChangeEvent, useState} from 'react';
 import {
   Badge,
   Button,
-  Collapsible,
   Group,
+  HoverCard,
   HStack,
   IconButton,
   Input,
@@ -30,7 +30,6 @@ const DISPLAYED_ITEMS = 75;
 const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
   const [withCommute, setWithCommute] = useState<boolean | 'only'>(true);
-  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
   const [types, setTypes] = useState<ActivityType[] | null>(getTypes(ActivityType.Ride));
   const [activeSort, setActiveSort] = useState<SortType>('date');
@@ -60,7 +59,6 @@ const App = () => {
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
   const handleResetFilters = () => {
-    setFiltersOpen(false);
     setWithPrivate(false);
     setWithCommute(true);
     setSearch('');
@@ -95,86 +93,86 @@ const App = () => {
         <WeekView />
       </VStack>
       <VStack align="stretch" flexBasis="60%" height="100vh" overflow="scroll">
-        <Collapsible.Root open={filtersOpen} onOpenChange={({open}) => setFiltersOpen(open)}>
-          <Group width="full">
-            {import.meta.env.DEV && (
-              <Switch
-                size="xs"
-                title="Use local"
-                checked={devMode}
-                onCheckedChange={({checked}) => setDevMode(checked)}
-              />
-            )}
-            <InputGroup
-              flex={1}
-              endElement={
-                <>
-                  <IconButton title="Clear" variant="ghost" size="xs" onClick={handleResetFilters}>
-                    <MdClear />
-                  </IconButton>
-                  {activities?.length ?? 0}
-                </>
-              }
+        <Group width="full">
+          {import.meta.env.DEV && (
+            <Switch
+              size="xs"
+              title="Use local"
+              checked={devMode}
+              onCheckedChange={({checked}) => setDevMode(checked)}
+            />
+          )}
+          <InputGroup
+            flex={1}
+            endElement={
+              <>
+                <IconButton title="Clear" variant="ghost" size="xs" onClick={handleResetFilters}>
+                  <MdClear />
+                </IconButton>
+                {activities?.length ?? 0}
+              </>
+            }
+          >
+            <Input
+              disabled={isLoading}
+              placeholder={devMode ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
+              autoFocus={true}
+              value={search}
+              onChange={handleSearchChange}
+            />
+          </InputGroup>
+          <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
+          <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
+            <HiOutlineLockClosed />
+          </IconButton>
+          <Group hideBelow="md">
+            <IconButton
+              title="Bike only"
+              variant={types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? 'surface' : 'ghost'}
+              onClick={handleBikeOnlyToggle}
             >
-              <Input
-                disabled={isLoading}
-                placeholder={devMode ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
-                autoFocus={true}
-                value={search}
-                onChange={handleSearchChange}
-              />
-            </InputGroup>
-            <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
-            <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
-              <HiOutlineLockClosed />
+              <PiBicycle />
             </IconButton>
-            <Group hideBelow="md">
-              <IconButton
-                title="Bike only"
-                variant={types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? 'surface' : 'ghost'}
-                onClick={handleBikeOnlyToggle}
-              >
-                <PiBicycle />
-              </IconButton>
-              <IconButton variant="ghost" onClick={handleRefetch}>
-                <BsDatabaseDown />
-              </IconButton>
-              <Collapsible.Trigger>
-                <IconButton
-                  transition="rotate ease .2s"
-                  rotate={filtersOpen ? '180deg' : undefined}
-                  variant="ghost"
-                  as="span"
-                >
+            <IconButton variant="ghost" onClick={handleRefetch}>
+              <BsDatabaseDown />
+            </IconButton>
+            <HoverCard.Root size="lg" openDelay={300}>
+              <HoverCard.Trigger>
+                <IconButton transition="rotate ease .2s" variant="ghost" as="span">
                   <MdFilterList />
                 </IconButton>
-              </Collapsible.Trigger>
-            </Group>
+              </HoverCard.Trigger>
+              <HoverCard.Positioner>
+                <HoverCard.Content maxWidth="unset" gap="20px">
+                  <HoverCard.Arrow>
+                    <HoverCard.ArrowTip />
+                  </HoverCard.Arrow>
+                  <HStack justifyContent="space-between">
+                    {TAGS.map(tag => (
+                      <Tooltip key={tag.sortType} content={tag.help}>
+                        <Button
+                          size="xs"
+                          variant={displayedSorts.includes(tag.sortType) ? 'surface' : 'ghost'}
+                          onClick={handleSortToggle(tag.sortType)}
+                        >
+                          {label(tag.sortType)}
+                        </Button>
+                      </Tooltip>
+                    ))}
+                  </HStack>
+                  <HStack>
+                    <ActivityTypeFilter
+                      types={types}
+                      onTypesChange={setTypes}
+                      withCommute={withCommute}
+                      onWithCommuteChange={setWithCommute}
+                    />
+                  </HStack>
+                </HoverCard.Content>
+              </HoverCard.Positioner>
+            </HoverCard.Root>
           </Group>
-          <Collapsible.Content padding="15px 0" display="flex" flexDirection="column" gap="20px">
-            <HStack justifyContent="space-between">
-              <ActivityTypeFilter
-                types={types}
-                onTypesChange={setTypes}
-                withCommute={withCommute}
-                onWithCommuteChange={setWithCommute}
-              />
-            </HStack>
-            <HStack justifyContent="space-between">
-              {TAGS.map(tag => (
-                <Tooltip key={tag.sortType} content={tag.help}>
-                  <Button
-                    size="xs"
-                    variant={displayedSorts.includes(tag.sortType) ? 'surface' : 'ghost'}
-                    onClick={handleSortToggle(tag.sortType)}
-                  >
-                    {label(tag.sortType)}
-                  </Button>
-                </Tooltip>
-              ))}
-            </HStack>
-          </Collapsible.Content>
-        </Collapsible.Root>
+        </Group>
         <Table.Root unstyled={true}>
           <Table.Header hideBelow="md">
             <Table.Row fontSize=".8em" cursor="pointer">
@@ -196,7 +194,9 @@ const App = () => {
                       <Tag.Root colorPalette={tag.sortType === activeSort ? 'orange' : 'gray'} variant="subtle">
                         <Tag.Label>{tag.total(activities, getFtp)}</Tag.Label>
                       </Tag.Root>
-                      {label(tag.sortType)}
+                      <Tooltip content={tag.help}>
+                        <span>{label(tag.sortType)}</span>
+                      </Tooltip>
                     </VStack>
                   )}
                 </Table.ColumnHeader>
