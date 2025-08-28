@@ -66,7 +66,6 @@ const App = () => {
     setSearch('');
     setTypes(getTypes(ActivityType.Ride));
     setActiveSort('date');
-    setDisplayedSorts(DEFAULT_SORTS);
     setSortDirection('desc');
     setGearIds([]);
     setYearRange([]);
