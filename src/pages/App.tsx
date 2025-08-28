@@ -14,6 +14,7 @@ import {
   Tag,
   VStack,
 } from '@chakra-ui/react';
+import {useLocalStorage} from 'usehooks-ts';
 import {BsDatabaseDown} from 'react-icons/bs';
 import {HiArrowDown, HiArrowUp, HiOutlineLockClosed} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
@@ -33,11 +34,11 @@ const App = () => {
   const [search, setSearch] = useState<string>('');
   const [types, setTypes] = useState<ActivityType[] | null>(getTypes(ActivityType.Ride));
   const [activeSort, setActiveSort] = useState<SortType>('date');
-  const [displayedSorts, setDisplayedSorts] = useState<SortType[]>(DEFAULT_SORTS);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearIds, setGearIds] = useState<string[]>([]);
   const [yearRange, setYearRange] = useState<number[]>([]);
   const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
+  const [displayedSorts, setDisplayedSorts] = useLocalStorage<SortType[]>('sort-types', DEFAULT_SORTS);
 
   const [devMode, setDevMode] = useEnv();
   const [label] = useLabels();
