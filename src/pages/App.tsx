@@ -22,7 +22,7 @@ import {MdClear, MdFilterList} from 'react-icons/md';
 import {PiBicycle} from 'react-icons/pi';
 import {Tooltip, Switch} from '../components/ui';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, GearSelect, Stats, WeekView} from '../components';
-import {SortType, SortDirection, range, TAGS, DEFAULT_SORTS, getTypes} from '../models';
+import {SortType, SortDirection, TAGS, DEFAULT_SORTS, getTypes} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities, useActivityMeta, useEnv, useFtp, useLabels} from '../hooks';
 
@@ -32,13 +32,13 @@ const App = () => {
   const [withPrivate, setWithPrivate] = useState<boolean>(false);
   const [withCommute, setWithCommute] = useState<boolean | 'only'>(true);
   const [search, setSearch] = useState<string>('');
-  const [types, setTypes] = useState<ActivityType[] | null>(getTypes(ActivityType.Ride));
   const [activeSort, setActiveSort] = useState<SortType>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearIds, setGearIds] = useState<string[]>([]);
-  const [yearRange, setYearRange] = useState<number[]>([]);
   const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
+
   const [displayedSorts, setDisplayedSorts] = useLocalStorage<SortType[]>('sort-types', DEFAULT_SORTS);
+  const [types, setTypes] = useLocalStorage<ActivityType[] | null>('activity-types', getTypes(ActivityType.Ride));
 
   const [devMode, setDevMode] = useEnv();
   const [label] = useLabels();
@@ -50,7 +50,6 @@ const App = () => {
     withPrivate,
     withCommute,
     gearId: gearIds[0],
-    years: 0 === yearRange.length ? [] : range(yearRange.at(0), yearRange.at(-1)),
     sortDirection,
   });
   const [activityMeta] = useActivityMeta();
@@ -67,7 +66,6 @@ const App = () => {
     setActiveSort('date');
     setSortDirection('desc');
     setGearIds([]);
-    setYearRange([]);
     setDisplayedItems(DISPLAYED_ITEMS);
   };
   const handleSortChange = (sortType: SortType) => () =>
