@@ -191,7 +191,7 @@ const App = () => {
                   ) : (
                     <VStack>
                       <Tag.Root colorPalette={tag.sortType === activeSort ? 'orange' : 'gray'} variant="subtle">
-                        <Tag.Label>{tag.total(activities, getFtp)}</Tag.Label>
+                        <Tag.Label>{tag.total(activities, Object.values(activityMeta), getFtp)}</Tag.Label>
                       </Tag.Root>
                       <Tooltip content={tag.help}>
                         <span>{label(tag.sortType)}</span>

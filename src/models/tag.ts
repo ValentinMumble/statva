@@ -25,7 +25,7 @@ type Tag = {
   label: (activity: Activity, fullActivity: DetailedActivity | null, ftp: number) => string | number | null;
   isRelevant: (activity: Activity, fullActivity: DetailedActivity | null) => boolean;
   tooltip?: (activity: Activity, ftp: number) => string | number | null;
-  total: (activities: Activity[], getFtp: GetFtp) => string | number;
+  total: (activities: Activity[], detailedActivities: DetailedActivity[], getFtp: GetFtp) => string | number;
   colorPalette?: (activity: Activity, fullActivity: DetailedActivity | null, ftp: number) => string | undefined;
   sortType: SortType;
   help: string;
@@ -130,7 +130,11 @@ const TAGS: Tag[] = [
     isRelevant: (_, fullActivity) => null !== fullActivity && 0 < (extractNormalizedPower(fullActivity) ?? 0),
     tooltip: ({weighted_average_watts}) =>
       undefined === weighted_average_watts ? null : `🏋️ ${formatPower(weighted_average_watts)}`,
-    total: activities => formatPower(getAverageValue(activities, 'weighted_average_watts')), //TODO
+    total: (_, activities) => {
+      const values = activities.map(extractNormalizedPower).filter(value => typeof value === 'number');
+
+      return formatPower(values.reduce((a, b) => a + b, 0) / values.length);
+    },
     sortType: 'normalized_power',
     colorPalette: (_, fullActivity, ftp) => getZoneColor(getPowerZone(extractNormalizedPower(fullActivity) ?? 0, ftp)),
   },
@@ -146,7 +150,7 @@ const TAGS: Tag[] = [
     label: ({weighted_average_watts}, _, ftp) =>
       undefined === weighted_average_watts ? null : formatPercent(weighted_average_watts / ftp),
     isRelevant: ({weighted_average_watts}) => 0 < (weighted_average_watts ?? 0),
-    total: (activities, getFtp) =>
+    total: (activities, _, getFtp) =>
       formatPercent(
         activities
           .filter(activity => undefined !== activity.weighted_average_watts)
