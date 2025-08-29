@@ -3,7 +3,7 @@ import Chart from 'react-apexcharts';
 import {useActivityMeta, useLabels} from '../../hooks';
 import {computeFinishCount, getOptions} from '../../models';
 
-const FinishChart = () => {
+const FinishPieChart = () => {
   const [activityMeta] = useActivityMeta();
   const [label] = useLabels();
 
@@ -17,7 +17,7 @@ const FinishChart = () => {
     <>
       <Group width="full" gap="20px">
         <Text>
-          <Span fontStyle="italic">Unique bars</Span> {labels.length}
+          <Span fontStyle="italic">Bar count</Span> {labels.length}
         </Text>
         <Text>
           <Span fontStyle="italic">μ</Span> {seriesAvg} finish
@@ -40,4 +40,4 @@ const FinishChart = () => {
   );
 };
 
-export {FinishChart};
+export {FinishPieChart};

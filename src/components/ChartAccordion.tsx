@@ -14,8 +14,9 @@ import {
   DataLineChart,
   EddingtonDayChart,
   EventTimelineChart,
-  FinishChart,
+  FinishPieChart,
   GroupChart,
+  PoolPieChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDistanceMeters, formatDuration} from '../models';
 import {ActivityType} from '../models/strava';
@@ -114,7 +115,11 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   },
   {
     label: 'N-Peloton finish pie 🍺',
-    component: <FinishChart />,
+    component: <FinishPieChart />,
+  },
+  {
+    label: 'Pool pie 🏊‍♂️',
+    component: <PoolPieChart />,
   },
   {
     label: 'Group chart 👥',
