@@ -137,9 +137,7 @@ const App = () => {
             </IconButton>
             <HoverCard.Root size="lg" openDelay={300}>
               <HoverCard.Trigger>
-                <IconButton variant="ghost">
-                  <MdFilterList />
-                </IconButton>
+                <MdFilterList size="20px" />
               </HoverCard.Trigger>
               <Portal>
                 <HoverCard.Positioner>

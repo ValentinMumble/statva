@@ -1,5 +1,5 @@
-import {GetFtp} from '../models';
-import {Activity} from './strava';
+import {extractNormalizedPower, GetFtp} from '../models';
+import {Activity, DetailedActivity} from './strava';
 
 type SortType =
   | 'achievement_count'
@@ -41,8 +41,17 @@ const DEFAULT_SORTS: SortType[] = [
   'suffer_score',
 ];
 
-const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Activity, b: Activity, getFtp: GetFtp) => {
+const sortActivities = (
+  sortType: SortType,
+  sortDirection: SortDirection,
+  a: Activity,
+  b: Activity,
+  da: DetailedActivity | null,
+  db: DetailedActivity | null,
+  getFtp: GetFtp
+) => {
   const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
+  const [dfirst, dsecond] = 'desc' === sortDirection ? [da, db] : [db, da];
 
   switch (sortType) {
     case 'achievement_count':
@@ -56,7 +65,15 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Act
     case 'average_speed':
       return second.average_speed - first.average_speed;
     case 'average_temp':
-      return (second.average_temp ?? -Infinity) - (first.average_temp ?? -Infinity);
+      if (undefined === first.average_temp) {
+        return 'desc' === sortDirection ? Infinity : -Infinity;
+      }
+
+      if (undefined === second.average_temp) {
+        return 'desc' === sortDirection ? -Infinity : Infinity;
+      }
+
+      return second.average_temp - first.average_temp;
     case 'average_watts':
       return (second.average_watts ?? 0) - (first.average_watts ?? 0);
     case 'date':
@@ -101,6 +118,18 @@ const sortActivities = (sortType: SortType, sortDirection: SortDirection, a: Act
     case 'total_elevation_gain':
       return second.total_elevation_gain - first.total_elevation_gain;
     case 'normalized_power':
+      const npA = extractNormalizedPower(dfirst) ?? null;
+      const npB = extractNormalizedPower(dsecond) ?? null;
+
+      if (null === npA) {
+        return 'desc' === sortDirection ? Infinity : -Infinity;
+      }
+
+      if (null === npB) {
+        return 'desc' === sortDirection ? -Infinity : Infinity;
+      }
+
+      return npB - npA;
     case 'weighted_average_watts':
       return (second.weighted_average_watts ?? 0) - (first.weighted_average_watts ?? 0);
   }

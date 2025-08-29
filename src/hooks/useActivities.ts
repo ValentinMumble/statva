@@ -3,6 +3,7 @@ import {ActivityFilter, sortActivities} from '../models';
 import {Activity} from '../models/strava';
 import {ActivitiesContext} from '../providers';
 import {useFtp} from './useFtp';
+import {useActivityMeta} from './useActivityMeta';
 
 const useActivities = ({
   withCommute = true,
@@ -22,6 +23,7 @@ const useActivities = ({
 ] => {
   const [activities, refetch, deleteActivity] = useContext(ActivitiesContext);
   const [getFtp] = useFtp();
+  const [activityMeta] = useActivityMeta();
 
   const unprocessedActivities = activities?.filter(activity => !activity.name.match(/[\p{Emoji}]/gu)) ?? [];
 
@@ -39,7 +41,9 @@ const useActivities = ({
           .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
           .filter(({sport_type}) => undefined === includedActivityTypes || includedActivityTypes.includes(sport_type))
           .filter(({moving_time}) => undefined === minTime || moving_time >= minTime)
-          .sort((a, b) => sortActivities(sort, sortDirection, a, b, getFtp)),
+          .sort((a, b) =>
+            sortActivities(sort, sortDirection, a, b, activityMeta[a.id] ?? null, activityMeta[b.id] ?? null, getFtp)
+          ),
     refetch,
     unprocessedActivities,
     deleteActivity,
