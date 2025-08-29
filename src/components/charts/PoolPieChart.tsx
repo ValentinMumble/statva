@@ -15,7 +15,7 @@ const PoolPieChart = () => {
   const [label] = useLabels();
 
   const poolMap = (activities ?? []).reduce((map: {[pool: string]: number}, activity) => {
-    const poolName = activity.name.match(/^Natation\s+(.+?)(?:\s+\p{Emoji_Presentation}.*)?$/u)?.[1] ?? 'Unknown';
+    const poolName = activity.name.match(/^Natation\s+(.+?)(?:\s+\p{Emoji}.*)?$/u)?.[1] ?? 'Unknown';
     map[poolName] = (map[poolName] ?? 0) + 1;
 
     return map;
