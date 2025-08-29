@@ -7,7 +7,7 @@ import {ActivityType} from '../../models/strava';
 const PoolPieChart = () => {
   const [activities] = useActivities({
     withCommute: false,
-    withPrivate: false,
+    withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
     includedActivityTypes: [ActivityType.Swim],
