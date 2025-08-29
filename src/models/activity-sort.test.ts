@@ -10,6 +10,8 @@ test('it can sort activities by date', async () => {
       'desc',
       buildActivity({start_date: '2024-02-02'}),
       buildActivity({start_date: '2023-02-02'}),
+      null,
+      null,
       getFtp
     )
   ).toBe(-1);
@@ -20,6 +22,8 @@ test('it can sort activities by date', async () => {
       'desc',
       buildActivity({start_date: '2023-02-02'}),
       buildActivity({start_date: '2024-02-02'}),
+      null,
+      null,
       getFtp
     )
   ).toBe(1);
@@ -30,6 +34,8 @@ test('it can sort activities by date', async () => {
       'asc',
       buildActivity({start_date: '2023-02-02'}),
       buildActivity({start_date: '2024-02-02'}),
+      null,
+      null,
       getFtp
     )
   ).toBe(-1);
