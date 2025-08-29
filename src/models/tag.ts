@@ -25,7 +25,7 @@ type Tag = {
   label: (activity: Activity, fullActivity: DetailedActivity | null, ftp: number) => string | number | null;
   isRelevant: (activity: Activity, fullActivity: DetailedActivity | null) => boolean;
   tooltip?: (activity: Activity, ftp: number) => string | number | null;
-  total: (activities: Activity[], detailedActivities: DetailedActivity[], getFtp: GetFtp) => string | number;
+  total: (activities: Activity[], activityMeta: Record<string, DetailedActivity>, getFtp: GetFtp) => string | number;
   colorPalette?: (activity: Activity, fullActivity: DetailedActivity | null, ftp: number) => string | undefined;
   sortType: SortType;
   help: string;
@@ -130,8 +130,11 @@ const TAGS: Tag[] = [
     isRelevant: (_, fullActivity) => null !== fullActivity && 0 < (extractNormalizedPower(fullActivity) ?? 0),
     tooltip: ({weighted_average_watts}) =>
       undefined === weighted_average_watts ? null : `🏋️ ${formatPower(weighted_average_watts)}`,
-    total: (_, activities) => {
-      const values = activities.map(extractNormalizedPower).filter(value => typeof value === 'number');
+    total: (activities, activityMeta) => {
+      const values = activities
+        .map(activity => activityMeta[activity.id])
+        .map(extractNormalizedPower)
+        .filter(value => typeof value === 'number');
 
       return formatPower(values.reduce((a, b) => a + b, 0) / values.length);
     },

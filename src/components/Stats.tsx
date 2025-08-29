@@ -1,8 +1,9 @@
 import {ReactNode, useState} from 'react';
 import {VStack, HStack, Text, BadgeProps, Badge, Stat, ProgressCircle} from '@chakra-ui/react';
-import {useActivities, useAthlete} from '../hooks';
+import {useActivities, useActivityMeta, useAthlete} from '../hooks';
 import {
   eddingtonNumber,
+  extractNormalizedPower,
   formatDistance,
   formatDistanceMeters,
   formatDuration,
@@ -17,7 +18,7 @@ import {
   getTotalValue,
   getTypes,
 } from '../models';
-import {ActivityType, Activity, Athlete} from '../models/strava';
+import {ActivityType, Activity, Athlete, DetailedActivity} from '../models/strava';
 import {StatComponent} from './StatComponent';
 import {WeekChart} from './WeekChart';
 
@@ -35,6 +36,7 @@ const YEAR_GOAL_KM = 10000;
 
 type StatEntry = (
   activities: Activity[],
+  activityMeta: Record<string, DetailedActivity>,
   athlete: Athlete
 ) => {
   label: ReactNode;
@@ -241,7 +243,7 @@ const STATS: {[key: string]: StatEntry[][]} = {
           )
         ),
       }),
-      (_, athlete) => ({
+      (_, __, athlete) => ({
         label: '⚡️',
         helpText: 'FTP: W 〰 W/kg',
         info: `${athlete.weight} kg`,
@@ -305,16 +307,18 @@ const STATS: {[key: string]: StatEntry[][]} = {
           )
         ),
       }),
-      activities => ({
-        label: '🏋',
-        helpText: 'N-P avg power',
-        value: formatPower(
-          getAverageValue(
-            activities.filter(({name}) => name.includes('N-Peloton')),
-            'weighted_average_watts'
-          )
-        ),
-      }),
+      (_, activityMeta) => {
+        const values = Object.values(activityMeta)
+          .filter(({name}) => name.includes('N-Peloton'))
+          .map(extractNormalizedPower)
+          .filter(value => typeof value === 'number');
+
+        return {
+          label: '⚡️®',
+          helpText: 'N-P avg NP',
+          value: formatPower(values.reduce((a, b) => a + b, 0) / values.length),
+        };
+      },
     ],
   ],
   Run: [
@@ -419,6 +423,7 @@ const Stats = () => {
     sort: 'date',
     sortDirection: 'asc',
   });
+  const [activityMeta] = useActivityMeta();
   const typeActivities = activities?.filter(({sport_type}) => getTypes(currentType).includes(sport_type)) ?? null;
 
   const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);
@@ -429,7 +434,13 @@ const Stats = () => {
       <HStack>
         <WeekChart activities={activities ?? []} />
         {GLOBAL_STATS.map((stat, index) => (
-          <StatComponent key={index} stat={stat} activities={activities} athlete={athlete} />
+          <StatComponent
+            key={index}
+            stat={stat}
+            activities={activities}
+            activityMeta={activityMeta}
+            athlete={athlete}
+          />
         ))}
       </HStack>
       <Text textStyle="xl" marginTop="10px">
@@ -442,6 +453,7 @@ const Stats = () => {
               key={index}
               stat={stat}
               activities={typeActivities}
+              activityMeta={activityMeta}
               athlete={athlete}
               onClick={toggleTypeChange}
             />
