@@ -17,6 +17,7 @@ import {
   FinishPieChart,
   GroupChart,
   PoolPieChart,
+  NPGroupPieChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDistanceMeters, formatDuration} from '../models';
 import {ActivityType} from '../models/strava';
@@ -116,6 +117,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'N-Peloton finish pie 🍺',
     component: <FinishPieChart />,
+  },
+  {
+    label: 'N-Peloton group pie 🥧',
+    component: <NPGroupPieChart />,
   },
   {
     label: 'Pool pie 🏊‍♂️',

@@ -11,6 +11,7 @@ export * from './FTPChart';
 export * from './GearChart';
 export * from './GroupChart';
 export * from './HeartChart';
+export * from './NPGroupPieChart';
 export * from './PoolPieChart';
 export * from './ProgressChart';
 export * from './TimeframeChart';
