@@ -29,8 +29,11 @@ const NPGroupPieChart = () => {
     return map;
   }, {});
 
-  const labels = Object.keys(groupMap).map(key => label(key));
-  const series = Object.values(groupMap);
+  const groupMapSortedByKey = Object.fromEntries(
+    Object.entries(groupMap).sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+  );
+  const labels = Object.keys(groupMapSortedByKey).map(key => label(key));
+  const series = Object.values(groupMapSortedByKey);
 
   const seriesAvg = Math.round(series.reduce((acc, val) => acc + val, 0) / series.length) ?? 0;
 
