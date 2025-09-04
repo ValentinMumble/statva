@@ -23,7 +23,6 @@ const NPGroupPieChart = () => {
         .match(/N-Peloton\s+#\d+\s+([A-Za-z0-9.-\s]+)/)?.[1]
         .trim() || 'Unknown';
 
-    console.log(activity.name.match(/N-Peloton\s+#\d+\s+(\w+)/));
     map[groupName] = (map[groupName] ?? 0) + 1;
 
     return map;
