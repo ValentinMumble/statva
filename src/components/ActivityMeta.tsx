@@ -36,7 +36,7 @@ const ActivityMeta = ({activity}: ActivityMetaProps) => {
         <IconButton
           size="2xs"
           variant="ghost"
-          opacity={hasMeta ? 0.2 : 0.05}
+          opacity={hasMeta ? 0.15 : 0.05}
           _hover={{opacity: hasMeta ? 1 : 0.2}}
           onClick={handleFetchActivity}
         >
