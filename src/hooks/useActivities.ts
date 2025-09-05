@@ -36,7 +36,7 @@ const useActivities = ({
               true === withCommute || ('only' === withCommute && commute) || (false === withCommute && !commute)
           )
           .filter(activity => activity.private === false || true === withPrivate)
-          .filter(({name}) => name.toLowerCase().includes(search.toLowerCase()))
+          .filter(({name}) => name.normalize('NFD').toLowerCase().includes(search.normalize('NFD').toLowerCase()))
           .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))
           .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
           .filter(({sport_type}) => undefined === includedActivityTypes || includedActivityTypes.includes(sport_type))
