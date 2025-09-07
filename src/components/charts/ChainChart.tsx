@@ -6,7 +6,7 @@ import {EditEvents, EditLabels} from '../../components';
 import {ChainEvent, formatDistance, getOptions, getRidesBetween, labelCollection, SUPER6} from '../../models';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 
-const RETIRED_CHAINS = ['🍍', '🧄', '🍪'];
+const RETIRED_CHAINS = ['🍍', '🧄', '🍪', '🍌'];
 const RETIRED_BIKES = ['b11897955', 'b12655849'];
 
 const ChainChart = () => {
