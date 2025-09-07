@@ -29,13 +29,16 @@ const ChainChart = () => {
     return null;
   }
 
-  const events = chainEvents.filter(({chain}) => withRetired || !RETIRED_CHAINS.includes(chain));
-  const relevantBikes = [...new Set(events.map(({bike}) => bike))].filter(
+  const relevantBikes = [...new Set(chainEvents.map(({bike}) => bike))].filter(
     bike => withRetired || !RETIRED_BIKES.includes(bike)
   );
-  const currentBikeEvents = events.filter(({bike}) => gearId === bike);
+  const currentBikeEvents = chainEvents.filter(({bike}) => gearId === bike);
 
   const chainOdometer = currentBikeEvents.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
+    if (RETIRED_CHAINS.includes(event.chain) && !withRetired) {
+      return chainOdometer;
+    }
+
     const nextEventDate = currentBikeEvents[index + 1]?.date;
     const periodDistance = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
       (sum, ride) => ride.distance + sum,
