@@ -57,7 +57,10 @@ const App = () => {
   const handleRefetch = () => refetch(1, false, 20);
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
-  const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => setSearch(target.value);
+  const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => {
+    setWithPrivate('' !== target.value);
+    setSearch(target.value);
+  };
   const handleResetFilters = () => {
     setWithPrivate(false);
     setWithCommute(true);
