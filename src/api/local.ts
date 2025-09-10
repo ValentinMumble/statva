@@ -18,10 +18,12 @@ const fetchLocalEvents = async (): Promise<Event[]> =>
   }));
 
 const fetchLocalFTPTests = async (): Promise<FTPTest[]> =>
-  Object.values<FTPTest>(await (await fetch('/local_ftp_tests.json')).json()).map(ftpTest => ({
-    ...ftpTest,
-    date: new Date(ftpTest.date),
-  }));
+  Object.values<FTPTest>(await (await fetch('/local_ftp_tests.json')).json())
+    .map(ftpTest => ({
+      ...ftpTest,
+      date: new Date(ftpTest.date),
+    }))
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
 
 export {
   fetchLocalActivities,

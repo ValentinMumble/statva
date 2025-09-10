@@ -7,7 +7,7 @@ const useFtp = (): [GetFtp, FTPTest[], () => Promise<void>] => {
 
   return [
     (date: Date) => {
-      const relevantTests = tests.filter(test => test.date < date).sort((a, b) => b.date.getTime() - a.date.getTime());
+      const relevantTests = tests.filter(test => test.date < date);
 
       return relevantTests[0]?.ftp ?? tests.at(-1)?.ftp ?? 0;
     },
