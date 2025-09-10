@@ -116,33 +116,19 @@ const ActivityListItem = ({
         </Flex>
       </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => {
-        const label = tag.label(activity, fullActivity, ftp);
-        const tooltip = tag.tooltip?.(activity, ftp) ?? null;
+        const {label, tooltip, isRelevant, colorPalette} = tag.value(activity, fullActivity, ftp);
 
         if (null === label || tag.excludedTypes?.includes(activity.sport_type)) {
           return <Table.Cell key={tag.sortType} />;
         }
 
-        const tagContent = (
-          <Tag.Root variant="subtle" colorPalette={tag.colorPalette?.(activity, fullActivity, ftp)}>
-            <Tag.Label>{label}</Tag.Label>
-          </Tag.Root>
-        );
-
         return (
-          <Table.Cell
-            key={tag.sortType}
-            hideBelow="md"
-            textAlign="center"
-            opacity={tag.isRelevant(activity, fullActivity) ? 0.9 : 0.4}
-          >
-            {null === tooltip ? (
-              tagContent
-            ) : (
-              <Tooltip portalled={true} content={tooltip}>
-                {tagContent}
-              </Tooltip>
-            )}
+          <Table.Cell key={tag.sortType} hideBelow="md" textAlign="center" opacity={isRelevant ? 0.9 : 0.4}>
+            <Tooltip portalled={true} disabled={null === tooltip} content={tooltip}>
+              <Tag.Root variant="subtle" colorPalette={colorPalette}>
+                <Tag.Label>{label}</Tag.Label>
+              </Tag.Root>
+            </Tooltip>
           </Table.Cell>
         );
       })}
