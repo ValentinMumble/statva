@@ -437,7 +437,6 @@ const Stats = () => {
 
   return (
     <VStack alignItems="stretch">
-      <Text textStyle="xl">Global</Text>
       <HStack>
         <SufferTrendChart activities={activities ?? []} timeframe={timeframe} onClick={toggleTimeframe} />
         {GLOBAL_STATS.map((stat, index) => (
