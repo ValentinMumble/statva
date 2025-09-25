@@ -17,10 +17,11 @@ import {
   getRidesBetween,
   getTotalValue,
   getTypes,
+  Timeframe,
 } from '../models';
 import {ActivityType, Activity, Athlete, DetailedActivity} from '../models/strava';
 import {StatComponent} from './StatComponent';
-import {WeekChart} from './WeekChart';
+import {SufferTrendChart} from './SufferTrendChart';
 
 const StatTrend = (props: BadgeProps & {up: boolean}) => {
   return (
@@ -415,6 +416,7 @@ const STATS: {[key: string]: StatEntry[][]} = {
 
 const Stats = () => {
   const [typeIndex, setTypeIndex] = useState<number>(0);
+  const [timeframe, setTimeframe] = useState<Timeframe>('week');
   const currentType = TYPES[typeIndex];
 
   const athlete = useAthlete();
@@ -428,11 +430,16 @@ const Stats = () => {
 
   const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);
 
+  const toggleTimeframe = () => {
+    const timeframes: Timeframe[] = ['week', 'month', 'year', 'day'];
+    setTimeframe(timeframes[(timeframes.indexOf(timeframe) + 1) % timeframes.length]);
+  };
+
   return (
     <VStack alignItems="stretch">
-      <Text textStyle="xl">Week</Text>
+      <Text textStyle="xl">Global</Text>
       <HStack>
-        <WeekChart activities={activities ?? []} />
+        <SufferTrendChart activities={activities ?? []} timeframe={timeframe} onClick={toggleTimeframe} />
         {GLOBAL_STATS.map((stat, index) => (
           <StatComponent
             key={index}

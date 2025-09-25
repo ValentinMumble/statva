@@ -29,7 +29,7 @@ import {useActivities, useActivityMeta, useEnv, useFtp, useLabels} from '../hook
 const DISPLAYED_ITEMS = 75;
 
 const App = () => {
-  const [withPrivate, setWithPrivate] = useState<boolean>(false);
+  const [withPrivate, setWithPrivate] = useLocalStorage<boolean>('withPrivate', false);
   const [withCommute, setWithCommute] = useState<boolean | 'only'>(true);
   const [search, setSearch] = useState<string>('');
   const [activeSort, setActiveSort] = useState<SortType>('date');
