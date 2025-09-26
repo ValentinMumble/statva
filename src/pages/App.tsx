@@ -1,4 +1,4 @@
-import {ChangeEvent, useState} from 'react';
+import {ChangeEvent, KeyboardEvent, useState} from 'react';
 import {
   Badge,
   Button,
@@ -71,6 +71,12 @@ const App = () => {
     setGearIds([]);
     setDisplayedItems(DISPLAYED_ITEMS);
   };
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      handleResetFilters();
+    }
+  };
+
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
   const handleDisplayMoreItems = () => setDisplayedItems(displayedItems => displayedItems + DISPLAYED_ITEMS);
@@ -121,6 +127,7 @@ const App = () => {
               autoFocus={true}
               value={search}
               onChange={handleSearchChange}
+              onKeyDown={handleSearchKeyDown}
             />
           </InputGroup>
           <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
