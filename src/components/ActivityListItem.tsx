@@ -116,7 +116,7 @@ const ActivityListItem = ({
         </Flex>
       </Table.Cell>
       {TAGS.filter(({sortType}) => enabledSorts.includes(sortType)).map(tag => {
-        const {label, tooltip, isRelevant, colorPalette} = tag.value(activity, fullActivity, ftp);
+        const {label, tooltip = null, isRelevant, colorPalette} = tag.value(activity, fullActivity, ftp);
 
         if (null === label || tag.excludedTypes?.includes(activity.sport_type)) {
           return <Table.Cell key={tag.sortType} />;

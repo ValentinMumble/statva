@@ -297,7 +297,8 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
   const locationCount: Record<string, number> = {};
 
   rideMeta.forEach(activity => {
-    const match = activity.description.match(/(?:^|\n)Finish\s+(?:au|à)?\s*([\w'’\s\p{L}]+)/iu);
+    const fullText = [activity.private_note ?? '', activity.description].join('\n');
+    const match = fullText.match(/(?:^|\n)Finish\s+(?:au|à)?\s*([\w'’\s\p{L}]+)/iu);
 
     if (match) {
       const location = match[1]
