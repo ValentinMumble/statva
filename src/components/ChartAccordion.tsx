@@ -50,6 +50,17 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
     component: <ActivityTimeChart />,
   },
   {
+    label: 'Commute / time 💼',
+    component: (
+      <TimeframeChart
+        data="distance"
+        formatter={value => formatDistance(value, 1)}
+        filter={{withCommute: 'only'}}
+        displayTypes={false}
+      />
+    ),
+  },
+  {
     label: 'Moving / time ⏱️',
     component: <TimeframeChart data="moving_time" formatter={formatDuration} />,
   },
