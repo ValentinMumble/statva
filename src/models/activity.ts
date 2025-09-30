@@ -297,6 +297,10 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
   const locationCount: Record<string, number> = {};
 
   rideMeta.forEach(activity => {
+    if (!activity.name.includes('N-Peloton')) {
+      return;
+    }
+
     const fullText = [activity.private_note ?? '', activity.description].join('\n');
     const match = fullText.match(/(?:^|\n)Finish\s+(?:au|à)?\s*([\w'’\s\p{L}]+)/iu);
 
