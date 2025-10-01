@@ -65,7 +65,6 @@ const App = () => {
     setWithPrivate(false);
     setWithCommute(true);
     setSearch('');
-    setTypes(getTypes(ActivityType.Ride));
     setActiveSort('date');
     setSortDirection('desc');
     setGearIds([]);
