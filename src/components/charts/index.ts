@@ -1,6 +1,7 @@
 export * from './ActivityTimeChart';
 export * from './AverageGearChart';
 export * from './ChainChart';
+export * from './CostPerKmChart';
 export * from './DataLineChart';
 export * from './EddingtonChart';
 export * from './EddingtonDayChart';

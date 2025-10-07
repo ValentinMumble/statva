@@ -18,6 +18,7 @@ import {
   GroupChart,
   PoolPieChart,
   NPGroupPieChart,
+  CostPerKmChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDistanceMeters, formatDuration} from '../models';
 import {ActivityType} from '../models/strava';
@@ -152,6 +153,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Cadence chart 🎡',
     component: <DataLineChart min={40} max={110} data="average_cadence" />,
+  },
+  {
+    label: 'Cost / km 💸',
+    component: <CostPerKmChart />,
   },
 ];
 

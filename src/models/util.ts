@@ -7,6 +7,7 @@ const formatPower = (power: number): string => `${Math.round(power)} W`;
 const formatCalories = (kilojoules: number, withSymbol = true): string =>
   `${Math.round(kilojoules * KJ_TO_CAL_RATIO)}${withSymbol ? ' kcal' : ''}`;
 const formatPercent = (ratio: number, precision = 0): string => `${(ratio * 100).toFixed(precision)}%`;
+const formatCurrency = (cents: number, precision = 2): string => `€${(cents / 100).toFixed(precision)}`;
 
 const formatDuration = (durationInSeconds: number, hoursOnly?: boolean): string => {
   const hours = durationInSeconds / 60 / 60;
@@ -171,6 +172,7 @@ export {
   backup,
   decodePolyline,
   formatCalories,
+  formatCurrency,
   formatDistance,
   formatDistanceMeters,
   formatDuration,
