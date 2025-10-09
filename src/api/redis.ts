@@ -1,5 +1,5 @@
 import {Redis} from '@upstash/redis';
-import {CheckIn, Event, FTPTest, Labels} from '../models';
+import {BikeExpense, CheckIn, Event, FTPTest, Labels} from '../models';
 import {DetailedActivity} from '../models/strava';
 
 enum Key {
@@ -8,6 +8,7 @@ enum Key {
   FTP_TESTS = 'ftp_tests',
   ACTIVITIES = 'activities',
   CHECK_INS = 'check_ins',
+  EXPENSES = 'expenses',
 }
 
 const client = () =>
@@ -88,6 +89,20 @@ const addCheckIn = async (checkIn: CheckIn) => {
   await client().hset(Key.CHECK_INS, {[checkIn.routeId]: checkIns});
 };
 
+const getExpenses = async (): Promise<BikeExpense[]> => {
+  const rawExpenses = await client().hgetall<Record<string, BikeExpense>>(Key.EXPENSES);
+
+  if (null === rawExpenses) return [];
+
+  return Object.values(rawExpenses)
+    .map(expense => ({...expense, date: new Date(expense.date)}))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+};
+
+const upsertExpense = async (expense: BikeExpense) => {
+  await client().hset(Key.EXPENSES, {[expense.id]: expense});
+};
+
 export {
   addCheckIn,
   deleteEvent,
@@ -95,10 +110,12 @@ export {
   getActivities,
   getCheckIns,
   getEvents,
+  getExpenses,
   getFTPTests,
   getLabels,
   upsertActivity,
   upsertEvent,
+  upsertExpense,
   upsertFTPTest,
   upsertLabel,
 };
