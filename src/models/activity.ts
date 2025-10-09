@@ -293,6 +293,11 @@ const isDetailedActivity = (activity: DetailedActivity): activity is DetailedAct
 const extractNormalizedPower = (activity: DetailedActivity | null): number | null =>
   Number(activity?.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null;
 
+const REPLACEMENTS = [
+  ['’', "'"],
+  ['cependant', ''],
+];
+
 const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number> => {
   const locationCount: Record<string, number> = {};
 
@@ -305,11 +310,10 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
     const match = fullText.match(/(?:^|\n)Finish\s+(?:au|à)?\s*([\w'’\s\p{L}]+)/iu);
 
     if (match) {
-      const location = match[1]
-        .split('\n')[0]
-        .trim()
-        .replace('’', "'")
-        .replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
+      let location = match[1].split('\n')[0];
+      REPLACEMENTS.forEach(([from, to]) => (location = location.replace(from, to)));
+
+      location = location.trim().replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
 
       if (locationCount[location]) {
         locationCount[location]++;
