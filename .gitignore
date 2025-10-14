@@ -26,3 +26,4 @@ test/coverage
 *.sw?
 .env
 .vercel
+.claude/settings.local.json
