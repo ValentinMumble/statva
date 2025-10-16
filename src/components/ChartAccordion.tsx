@@ -19,6 +19,7 @@ import {
   PoolPieChart,
   NPGroupPieChart,
   CostPerKmChart,
+  CommuteSpeedChart,
 } from './charts';
 import {formatCalories, formatDistance, formatDistanceMeters, formatDuration} from '../models';
 import {ActivityType} from '../models/strava';
@@ -60,6 +61,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
         displayTypes={false}
       />
     ),
+  },
+  {
+    label: 'Commute speed 🚴‍♂️',
+    component: <CommuteSpeedChart />,
   },
   {
     label: 'Moving / time ⏱️',
