@@ -17,6 +17,7 @@ import {
   FinishPieChart,
   GroupChart,
   PoolPieChart,
+  CourtPieChart,
   NPGroupPieChart,
   CostPerKmChart,
   CommuteSpeedChart,
@@ -142,6 +143,10 @@ const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
     label: 'Pool pie 🏊‍♂️',
     component: <PoolPieChart />,
+  },
+  {
+    label: 'Court pie 🎾',
+    component: <CourtPieChart />,
   },
   {
     label: 'Group chart 👥',

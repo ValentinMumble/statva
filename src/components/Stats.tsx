@@ -140,7 +140,7 @@ const GLOBAL_STATS: StatEntry[] = [
   },
 ];
 
-const STATS: {[key: string]: StatEntry[][]} = {
+const STATS: Record<string, StatEntry[][]> = {
   Ride: [
     [
       activities => ({

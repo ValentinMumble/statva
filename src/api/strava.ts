@@ -77,7 +77,7 @@ const fetchAllActivities = async () => {
 
   let page = 1;
   let resultCount = 0;
-  const activities: {[id: string]: Activity} = {};
+  const activities: Record<string, Activity> = {};
 
   do {
     const response = await fetch(

@@ -10,7 +10,7 @@ import {Activity} from '../models/strava';
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 type Week = {
-  days: {[weekday: string]: Activity};
+  days: Record<string, Activity>;
   effort: number;
 };
 
@@ -26,7 +26,7 @@ const WeekView = () => {
 
   const incrementWeekCount = () => setWeekCount(weekCount => weekCount + 1);
 
-  const dataPerWeek = (activities ?? []).reduce((weekMap: {[weekId: string]: Week}, activity) => {
+  const dataPerWeek = (activities ?? []).reduce((weekMap: Record<string, Week>, activity) => {
     const date = new Date(activity.start_date);
     const weekId = TIMEFRAMES.week.getPeriodKey(date);
     const weekday = WEEKDAYS[date.getDay()];

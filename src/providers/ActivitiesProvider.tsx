@@ -11,7 +11,7 @@ type ActivitiesProviderProps = {
 };
 
 const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
-  const [activities, setActivities] = useState<{[id: string]: Activity} | null>(null);
+  const [activities, setActivities] = useState<Record<string, Activity> | null>(null);
   const [page, setPage] = useState<number>(1);
   const getActivities = useFetcher<[Activity[], boolean]>('activities.get');
 

@@ -44,7 +44,7 @@ const EventTimelineChart = () => {
 
   const chainEvents = bikeEvents.filter(isChainEvent);
   const eventsIndexedByChain = chainEvents.reduce(
-    (eventsIndexedByChain: {[key: string]: ChainEvent[]}, event: ChainEvent) => {
+    (eventsIndexedByChain: Record<string, ChainEvent[]>, event: ChainEvent) => {
       const events = eventsIndexedByChain[event.chain] ?? [];
       eventsIndexedByChain[event.chain] = [...events, event];
 

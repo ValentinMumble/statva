@@ -27,7 +27,7 @@ import {useEnv} from './useEnv';
 
 type Fetcher<T> = (...args: any[]) => Promise<T>;
 
-const PROD_REGISTRY: {[key: string]: Fetcher<any>} = {
+const PROD_REGISTRY: Record<string, Fetcher<any>> = {
   'activities.get': fetchActivities,
   'activity.get': fetchActivity,
   'activities.meta.get': getActivities,
@@ -45,7 +45,7 @@ const PROD_REGISTRY: {[key: string]: Fetcher<any>} = {
   'ftp_tests.set': upsertFTPTest,
 };
 
-const DEV_REGISTRY: {[key: string]: Fetcher<any>} = {
+const DEV_REGISTRY: Record<string, Fetcher<any>> = {
   'activities.get': fetchLocalActivities,
   'activity.get': fetchActivity, //TODO: Implement local version
   'activities.meta.get': fetchLocalMeta,

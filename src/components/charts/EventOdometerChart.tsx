@@ -35,7 +35,7 @@ const EventOdometerChart = () => {
   const relevantEvents = events.filter(({bike, type}) => gearId === bike && eventType === type);
 
   const odometer = relevantEvents.reduce(
-    (odometer: {[id: string]: {id: string; label: string; value: number}}, event, index) => {
+    (odometer: Record<string, {id: string; label: string; value: number}>, event, index) => {
       const nextEventDate = relevantEvents[index + 1]?.date;
       const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
         (sum, ride) => Number(ride[data]) + sum,

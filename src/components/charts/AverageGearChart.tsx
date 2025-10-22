@@ -13,7 +13,7 @@ const AverageGearChart = () => {
 
   const filteredRides = (activities ?? []).filter(ride => !ride.commute || (ride.commute && SUPER6 !== ride.gear_id));
 
-  const dataPerGear = filteredRides.reduce((gearMap: {[gearId: string]: number[]}, activity) => {
+  const dataPerGear = filteredRides.reduce((gearMap: Record<string, number[]>, activity) => {
     if (null === activity.gear_id) return gearMap;
 
     const [cumulativeDistance, movingTime] = gearMap[activity.gear_id] ?? [0, 0];
@@ -22,7 +22,7 @@ const AverageGearChart = () => {
     return gearMap;
   }, {});
 
-  const averagePerGear = Object.keys(dataPerGear).reduce((gearMap: {[gearId: string]: number}, gearId) => {
+  const averagePerGear = Object.keys(dataPerGear).reduce((gearMap: Record<string, number>, gearId) => {
     const [cumulativeDistance, movingTime] = dataPerGear[gearId];
     gearMap[gearId] = cumulativeDistance / movingTime;
 

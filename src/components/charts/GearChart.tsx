@@ -15,7 +15,7 @@ const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
     includedActivityTypes: getTypes(ActivityType.Ride, ActivityType.Run),
   });
 
-  const dataPerGear = (activities ?? []).reduce((gearMap: {[gearId: string]: number}, activity) => {
+  const dataPerGear = (activities ?? []).reduce((gearMap: Record<string, number>, activity) => {
     if (null === activity.gear_id) return gearMap;
 
     const valueToAdd = 'number' === typeof data ? data : Number(activity[data]);

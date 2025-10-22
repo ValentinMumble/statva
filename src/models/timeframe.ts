@@ -51,7 +51,7 @@ const TIMEFRAMES: Record<Timeframe, TimeframeData> = {
 }; ;
 
 const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
-  const emptyValues: {[period: string]: any} = {};
+  const emptyValues: Record<string, any> = {};
   const {maxValue, getDatePeriod, separator, getPeriodKey} = TIMEFRAMES[timeframe];
 
   for (let year = firstDate.getUTCFullYear(); year <= lastDate.getUTCFullYear(); year++) {
@@ -88,7 +88,7 @@ const aggregateTimeframeData = (
 ) =>
   Object.fromEntries(
     Object.entries(
-      activities.reduce((periodMap: {[period: string]: number}, activity) => {
+      activities.reduce((periodMap: Record<string, number>, activity) => {
         const date = new Date(activity.start_date);
         const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
         const valueToAdd = 'number' === typeof data ? data : Number(activity[data] ?? 0);
@@ -105,7 +105,7 @@ const aggregateTimeframeData = (
 const aggregateActivityTypeCount = (activities: Activity[], timeframe: Timeframe, itemCount: number) =>
   Object.fromEntries(
     Object.entries(
-      activities.reduce((periodMap: {[period: string]: {[type: string]: number} | null}, activity) => {
+      activities.reduce((periodMap: Record<string, Record<string, number> | null>, activity) => {
         const date = new Date(activity.start_date);
         const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
         const data = periodMap[periodKey] ?? {};

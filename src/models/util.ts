@@ -86,7 +86,7 @@ const removeNull = (object: object) => Object.fromEntries(Object.entries(object)
 
 const backup = (array: {id: string}[]): string =>
   JSON.stringify(
-    array.reduce((map: {[key: string]: {id: string}}, item) => {
+    array.reduce((map: Record<string, {id: string}>, item) => {
       map[item.id] = item;
 
       return map;

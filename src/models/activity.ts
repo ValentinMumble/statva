@@ -28,7 +28,7 @@ const getTypes = (...types: (ActivityType | string)[]): ActivityType[] => [
   ),
 ];
 
-const WORKOUT_TYPE_MAP: {[key: string]: {[index: number]: WorkoutType}} = {
+const WORKOUT_TYPE_MAP: Record<string, Record<number, WorkoutType>> = {
   Ride: {
     10: WorkoutType.None,
     11: WorkoutType.Race,
@@ -73,7 +73,7 @@ const getRidesBetween = (rides: Activity[], from: Date, to?: Date | undefined): 
   );
 
 const eddingtonNumber = (rides: Activity[]) => {
-  const dailyDistances = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
+  const dailyDistances = rides.reduce((dayMap: Record<string, number>, activity) => {
     const dateString = new Date(activity.start_date).toISOString().slice(0, 10);
     dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
 
@@ -102,8 +102,8 @@ const eddingtonNumber = (rides: Activity[]) => {
   return [eddingtonNumber, daysForNextLevel];
 };
 
-const daysExceedingDistance = (rides: Activity[]): {[distance: number]: number} => {
-  const dailyDistances = rides.reduce((dayMap: {[dateString: string]: number}, activity) => {
+const daysExceedingDistance = (rides: Activity[]): Record<number, number> => {
+  const dailyDistances = rides.reduce((dayMap: Record<string, number>, activity) => {
     const dateString = new Date(activity.start_date).toISOString().slice(0, 10);
     dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
 

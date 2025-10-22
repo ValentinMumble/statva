@@ -34,7 +34,7 @@ const ChainChart = () => {
   );
   const currentBikeEvents = chainEvents.filter(({bike}) => gearId === bike);
 
-  const chainOdometer = currentBikeEvents.reduce((chainOdometer: {[chain: string]: number[]}, event, index) => {
+  const chainOdometer = currentBikeEvents.reduce((chainOdometer: Record<string, number[]>, event, index) => {
     if (RETIRED_CHAINS.includes(event.chain) && !withRetired) {
       return chainOdometer;
     }

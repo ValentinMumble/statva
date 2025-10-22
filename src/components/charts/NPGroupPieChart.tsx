@@ -13,7 +13,7 @@ const NPGroupPieChart = () => {
   });
   const [label] = useLabels();
 
-  const groupMap = (activities ?? []).reduce((map: {[group: string]: number}, activity) => {
+  const groupMap = (activities ?? []).reduce((map: Record<string, number>, activity) => {
     // match also group like `Chill 1` or `G2.3`
     const groupName =
       activity.name

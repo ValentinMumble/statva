@@ -35,7 +35,7 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
   const labels = Object.keys(dataPerPeriod).map(key => label(key));
 
   const distinctTypes: string[] = Object.values(dataPerPeriod).reduce(
-    (types: string[], entry: {[type: string]: number} | null) =>
+    (types: string[], entry: Record<string, number> | null) =>
       null === entry ? types : [...new Set([...types, ...Object.keys(entry)])],
     []
   );

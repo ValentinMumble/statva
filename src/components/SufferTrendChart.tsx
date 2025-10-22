@@ -24,7 +24,7 @@ const SufferTrendChart = ({activities, timeframe, ...rest}: SufferTrendChartProp
     event.stopPropagation();
   };
 
-  const dataPerWeek = (activities ?? []).reduce((weekMap: {[weekId: string]: number}, activity) => {
+  const dataPerWeek = (activities ?? []).reduce((weekMap: Record<string, number>, activity) => {
     const date = new Date(activity.start_date);
     const weekId = TIMEFRAMES[timeframe].getPeriodKey(date);
     weekMap[weekId] = (weekMap[weekId] ?? 0) + (activity.suffer_score ?? 0);

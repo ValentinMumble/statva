@@ -3,7 +3,7 @@ type Gear = {
   type: 'bike' | 'shoes';
 };
 
-const GEAR: {[key: string]: Gear} = {
+const GEAR: Record<string, Gear> = {
   b14644402: {id: 'b14644402', type: 'bike'},
   b12655849: {id: 'b12655849', type: 'bike'},
   b3121762: {id: 'b3121762', type: 'bike'},
