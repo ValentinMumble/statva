@@ -58,6 +58,9 @@ const ActivityListItem = ({
     return (
       <Table.Row>
         <Table.Cell>
+          <Skeleton>day</Skeleton>
+        </Table.Cell>
+        <Table.Cell>
           <Skeleton>i</Skeleton>
         </Table.Cell>
         <Table.Cell padding="4px">
@@ -76,6 +79,7 @@ const ActivityListItem = ({
 
   return (
     <Table.Row onClick={() => console.log(activity)} opacity={activity.private ? 0.6 : 1} _hover={{opacity: 1}}>
+      <Table.Cell>{new Date(activity.start_date).toLocaleDateString('en-US', {weekday: 'short'})}</Table.Cell>
       <Table.Cell>
         <ActivityIcon
           activityType={activity.sport_type}

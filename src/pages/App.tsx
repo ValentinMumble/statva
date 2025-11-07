@@ -185,6 +185,7 @@ const App = () => {
           <Table.Header hideBelow="md">
             <Table.Row fontSize=".8em" cursor="pointer">
               <Table.ColumnHeader />
+              <Table.ColumnHeader />
               <Table.ColumnHeader>
                 <VStack>
                   <span onClick={handleSortDirectionToggle}>
@@ -225,6 +226,7 @@ const App = () => {
                 {unprocessedActivities.length > 0 && (
                   <>
                     <Table.Row>
+                      <Table.Cell />
                       <Table.Cell />
                       <Table.Cell>
                         <Badge>Unprocessed</Badge>
