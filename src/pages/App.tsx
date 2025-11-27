@@ -185,7 +185,6 @@ const App = () => {
           <Table.Header hideBelow="md">
             <Table.Row fontSize=".8em" cursor="pointer">
               <Table.ColumnHeader />
-              <Table.ColumnHeader />
               <Table.ColumnHeader>
                 <VStack>
                   <span onClick={handleSortDirectionToggle}>
