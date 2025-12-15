@@ -1,5 +1,5 @@
 import {useState, ReactNode, createContext, useEffect} from 'react';
-import {Activity} from '../models/strava';
+import {Activity, DetailedActivity} from '../models/strava';
 import {useFetcher} from '../hooks';
 
 const ActivitiesContext = createContext<
@@ -11,9 +11,9 @@ type ActivitiesProviderProps = {
 };
 
 const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
-  const [activities, setActivities] = useState<Record<string, Activity> | null>(null);
-  const [page, setPage] = useState<number>(1);
+  const [activities, setActivities] = useState<Record<string, Activity | DetailedActivity> | null>(null);
   const getActivities = useFetcher<[Activity[], boolean]>('activities.get');
+  const getActivityMeta = useFetcher<Record<string, DetailedActivity>>('activities.meta.get');
 
   const fetchActivities = async (page: number, fetchNextPage = false, items?: number) => {
     const [activities, hasMore] = await getActivities(page, items);
@@ -26,7 +26,6 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
 
     if (fetchNextPage && hasMore) {
       fetchActivities(page + 1, true);
-      setPage(page + 1);
     }
   };
 
@@ -39,14 +38,25 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
     });
 
   useEffect(() => {
-    setActivities(null);
-    setPage(1);
-    fetchActivities(page, true);
-  }, [getActivities]);
+    const initializeActivities = async () => {
+      // First, load cached metadata for instant display
+      const meta = await getActivityMeta();
+      if (meta && Object.keys(meta).length > 0) {
+        setActivities(meta);
+      } else {
+        setActivities(null);
+      }
+
+      // Then fetch fresh activities from the API
+      fetchActivities(1, true);
+    };
+
+    initializeActivities();
+  }, [getActivities, getActivityMeta]);
 
   return (
     <ActivitiesContext.Provider
-      value={[null === activities ? null : Object.values(activities), fetchActivities, deleteActivity]}
+      value={[null === activities ? null : Object.values(activities) as Activity[], fetchActivities, deleteActivity]}
     >
       {children}
     </ActivitiesContext.Provider>
