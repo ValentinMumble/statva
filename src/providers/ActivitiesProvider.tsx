@@ -1,6 +1,7 @@
-import {useState, ReactNode, createContext, useEffect} from 'react';
+import {useState, ReactNode, createContext, useEffect, useContext} from 'react';
 import {Activity, DetailedActivity} from '../models/strava';
 import {useFetcher} from '../hooks';
+import {ActivityMetaContext} from './ActivityMetaProvider';
 
 const ActivitiesContext = createContext<
   [Activity[] | null, (page: number, fetchNext?: boolean, items?: number) => Promise<void>, (id: number) => void]
@@ -12,8 +13,8 @@ type ActivitiesProviderProps = {
 
 const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
   const [activities, setActivities] = useState<Record<string, Activity | DetailedActivity> | null>(null);
+  const [activityMeta] = useContext(ActivityMetaContext);
   const getActivities = useFetcher<[Activity[], boolean]>('activities.get');
-  const getActivityMeta = useFetcher<Record<string, DetailedActivity>>('activities.meta.get');
 
   const fetchActivities = async (page: number, fetchNextPage = false, items?: number) => {
     const [activities, hasMore] = await getActivities(page, items);
@@ -40,9 +41,8 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
   useEffect(() => {
     const initializeActivities = async () => {
       // First, load cached metadata for instant display
-      const meta = await getActivityMeta();
-      if (meta && Object.keys(meta).length > 0) {
-        setActivities(meta);
+      if (activityMeta && Object.keys(activityMeta).length > 0) {
+        setActivities(activityMeta);
       } else {
         setActivities(null);
       }
@@ -52,7 +52,7 @@ const ActivitiesProvider = ({children}: ActivitiesProviderProps) => {
     };
 
     initializeActivities();
-  }, [getActivities, getActivityMeta]);
+  }, [getActivities, activityMeta]);
 
   return (
     <ActivitiesContext.Provider

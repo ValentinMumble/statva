@@ -16,8 +16,9 @@ const AthleteProvider = ({children}: AthleteProviderProps) => {
   const getFTPTests = useFetcher<FTPTest[]>('ftp_tests.get');
 
   const fetchData = async () => {
-    setAthlete(await getAthlete());
-    setFtpTests(await getFTPTests());
+    const [athleteData, ftpTestsData] = await Promise.all([getAthlete(), getFTPTests()]);
+    setAthlete(athleteData);
+    setFtpTests(ftpTestsData);
   };
 
   useEffect(() => {

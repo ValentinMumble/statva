@@ -1,3 +1,4 @@
+import {memo, useMemo} from 'react';
 import {Skeleton, SkeletonText, Stat} from '@chakra-ui/react';
 import {Tooltip} from '../components/ui';
 import {Activity, Athlete, DetailedActivity} from '../models/strava';
@@ -11,7 +12,7 @@ type StatComponentProps = {
   onClick?: () => void;
 };
 
-const StatComponent = ({stat, activities, activityMeta, athlete, onClick}: StatComponentProps) => {
+const StatComponent = memo(({stat, activities, activityMeta, athlete, onClick}: StatComponentProps) => {
   if (null === activities || null === athlete) {
     return (
       <Stat.Root>
@@ -22,7 +23,11 @@ const StatComponent = ({stat, activities, activityMeta, athlete, onClick}: StatC
     );
   }
 
-  const {label, value, helpText, info} = stat(activities, activityMeta, athlete);
+  const {label, value, helpText, info} = useMemo(
+    () => stat(activities, activityMeta, athlete),
+    [stat, activities, activityMeta, athlete]
+  );
+
   const statContent = (
     <Stat.Root onClick={onClick}>
       <Stat.Label fontSize="1.2em">{label}</Stat.Label>
@@ -32,6 +37,8 @@ const StatComponent = ({stat, activities, activityMeta, athlete, onClick}: StatC
   );
 
   return info ? <Tooltip content={info}>{statContent}</Tooltip> : statContent;
-};
+});
+
+StatComponent.displayName = 'StatComponent';
 
 export {StatComponent};
