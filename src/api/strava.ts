@@ -4,7 +4,7 @@ const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
 const ACTIVITY_ENDPOINT = 'https://www.strava.com/api/v3/activities';
 const getAthleteRoutesEndpoint = (id: string) => `${ATHLETE_ENDPOINT}s/${id}/routes`;
-const ITEMS_PER_PAGE = 150;
+const ITEMS_PER_PAGE = 200;
 
 let token: string | null = null;
 let tokenTimestamp: number = 0;
