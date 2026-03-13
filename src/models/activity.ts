@@ -293,8 +293,9 @@ const isDetailedActivity = (activity: DetailedActivity): activity is DetailedAct
 const extractNormalizedPower = (activity: DetailedActivity | null): number | null =>
   Number(activity?.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null;
 
-const REPLACEMENTS = [
+const REPLACEMENTS: [string, string][] = [
   ['’', "'"],
+  ['‘', "'"],
   ['cependant', ''],
 ];
 
@@ -307,7 +308,7 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
     }
 
     const fullText = [activity.private_note ?? '', activity.description].join('\n');
-    const match = fullText.match(/(?:^|\n)Finish\s+(?:au\s+|à\s+)?([\w’’\s\p{L}]+)/iu);
+    const match = fullText.match(/(?:^|\n)Finish\s+(?:au\s+|à\s+)?([\w‘’'\s\p{L}]+)/iu);
 
     if (match) {
       let location = match[1].split('\n')[0];

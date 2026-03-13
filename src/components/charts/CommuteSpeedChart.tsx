@@ -18,7 +18,7 @@ const CommuteSpeedChart = () => {
   });
 
   const relevantActivities = (activities ?? []).slice(-itemCount);
-  const labels = relevantActivities.map(activity => new Date(activity.start_date).toLocaleDateString());
+  const labels = relevantActivities.map(activity => new Date(activity.start_date).toLocaleDateString('fr-FR'));
   const series = [
     {
       name: label('average_speed'),

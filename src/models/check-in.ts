@@ -8,7 +8,7 @@ type CheckIn = {
 
 const getCheckInText = (checkIn: CheckIn, isLast: boolean) => {
   const isToday = new Date().toDateString() === checkIn.date.toDateString();
-  const date = checkIn.date.toLocaleDateString();
+  const date = checkIn.date.toLocaleDateString('fr-FR');
   const time = checkIn.date.toLocaleTimeString(undefined, {
     hour: '2-digit',
     minute: '2-digit',

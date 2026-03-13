@@ -85,7 +85,7 @@ const EventTimelineChart = () => {
     .map(isEventType =>
       bikeEvents.filter(isEventType).map(event => {
         const ride = activities?.find(
-          ({start_date}) => event.date.toLocaleDateString() === new Date(start_date).toLocaleDateString()
+          ({start_date}) => event.date.toLocaleDateString('fr-FR') === new Date(start_date).toLocaleDateString('fr-FR')
         );
 
         return {

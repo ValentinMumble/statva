@@ -100,7 +100,7 @@ const ActivityListItem = ({
             positioning={{placement: 'right-end'}}
             content={
               <>
-                {new Date(activity.start_date).toLocaleDateString()} 〰
+                {new Date(activity.start_date).toLocaleDateString('fr-FR')} 〰
                 {label(activity.gear_id ?? activity.sport_type, true)}
               </>
             }

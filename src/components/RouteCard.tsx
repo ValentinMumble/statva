@@ -27,7 +27,7 @@ const RouteCard = ({route, checkIns}: RouteCardProps) => {
           <br />
           {label('moving_time')} ~{formatDuration(route.estimated_moving_time)} estimated
           <br />
-          {label('date')} Created on {new Date(route.created_at).toLocaleDateString()}
+          {label('date')} Created on {new Date(route.created_at).toLocaleDateString('fr-FR')}
           <br />
           📌 {lastCheckIn ? <>{getCheckInText(lastCheckIn, true)}</> : 'No check-in'}
           <br />

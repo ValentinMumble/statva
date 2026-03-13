@@ -71,7 +71,7 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
                 <Table.Body>
                   {(events ?? []).reverse().map(event => (
                     <Table.Row key={event.id} {...rowProps}>
-                      <Table.Cell>{event.date.toLocaleDateString()}</Table.Cell>
+                      <Table.Cell>{event.date.toLocaleDateString('fr-FR')}</Table.Cell>
                       <Table.Cell>{label(event.bike)}</Table.Cell>
                       <Table.Cell>{label(event.type)}</Table.Cell>
                       <EventCells event={event} />

@@ -1,7 +1,7 @@
 import {useState, MouseEvent} from 'react';
 import {IconButton, Stat, StatRootProps} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
-import {Area, AreaChart, Tooltip} from 'recharts';
+import {Area, AreaChart, ResponsiveContainer, Tooltip} from 'recharts';
 import {LuPlus, LuMinus} from 'react-icons/lu';
 import {Activity} from '../models/strava';
 import {Timeframe, TIMEFRAMES} from '../models';
@@ -32,47 +32,51 @@ const SufferTrendChart = ({activities, timeframe, ...rest}: SufferTrendChartProp
     return weekMap;
   }, {});
 
+  const chartData = Object.entries(dataPerWeek)
+    .slice(-displayedWeeks)
+    .map(([weekId, effort]) => ({
+      week: weekId,
+      value: effort,
+    }));
+
   const chart = useChart({
-    data: Object.entries(dataPerWeek)
-      .slice(-displayedWeeks)
-      .map(([weekId, effort]) => ({
-        week: weekId,
-        value: effort,
-      })),
+    data: chartData,
     series: [{name: 'value', color: 'orange.solid'}],
   });
 
   return (
     <Stat.Root {...rest}>
       <Chart.Root width="80%" height="57px" chart={chart}>
-        <AreaChart data={chart.data}>
-          <defs>
-            <Chart.Gradient
-              id="sp-gradient"
-              stops={[
-                {offset: 0, color: 'orange.solid', opacity: 0.8},
-                {offset: 1, color: 'orange.solid', opacity: 0.4},
-              ]}
-            />
-          </defs>
-          <Tooltip
-            cursor={{stroke: chart.color('orange.solid'), strokeWidth: 2}}
-            content={({payload}) => (payload && payload.length > 0 ? payload[0].value : null)}
-            isAnimationActive={false}
-          />
-          {chart.series.map(item => (
-            <Area
-              key={item.name}
-              activeDot={{stroke: chart.color('bg')}}
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chart.data}>
+            <defs>
+              <Chart.Gradient
+                id="sp-gradient"
+                stops={[
+                  {offset: 0, color: 'orange.solid', opacity: 0.8},
+                  {offset: 1, color: 'orange.solid', opacity: 0.4},
+                ]}
+              />
+            </defs>
+            <Tooltip
+              cursor={{stroke: chart.color('orange.solid'), strokeWidth: 2}}
+              content={({payload}) => (payload && payload.length > 0 ? payload[0].value : null)}
               isAnimationActive={false}
-              dataKey={chart.key(item.name)}
-              fill="url(#sp-gradient)"
-              fillOpacity={0.2}
-              stroke={chart.color(item.color)}
-              strokeWidth={2}
             />
-          ))}
-        </AreaChart>
+            {chart.series.map(item => (
+              <Area
+                key={item.name}
+                activeDot={{stroke: chart.color('bg')}}
+                isAnimationActive={false}
+                dataKey={chart.key(item.name)}
+                fill="url(#sp-gradient)"
+                fillOpacity={0.2}
+                stroke={chart.color(item.color)}
+                strokeWidth={2}
+              />
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
       </Chart.Root>
       <Stat.HelpText
         fontSize=".8em"
