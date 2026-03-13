@@ -307,13 +307,16 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
     }
 
     const fullText = [activity.private_note ?? '', activity.description].join('\n');
-    const match = fullText.match(/(?:^|\n)Finish\s+(?:au|à)?\s*([\w'’\s\p{L}]+)/iu);
+    const match = fullText.match(/(?:^|\n)Finish\s+(?:au\s+|à\s+)?([\w’’\s\p{L}]+)/iu);
 
     if (match) {
       let location = match[1].split('\n')[0];
       REPLACEMENTS.forEach(([from, to]) => (location = location.replace(from, to)));
 
-      location = location.trim().replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
+      // Strip French articles (l’, la)
+      location = location.replace(/^l[']\s*/i, '').replace(/^la\s+/i, '');
+
+      location = location.trim().replace(/(?:^|\s|["’([{])+\S/g, match => match.toUpperCase());
 
       if (locationCount[location]) {
         locationCount[location]++;

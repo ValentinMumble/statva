@@ -239,6 +239,7 @@ describe('computeFinishCount', () => {
       buildDetailedActivity({description: 'Finish à l’Atomics'}),
       buildDetailedActivity({description: 'Finish à l’atomics'}),
       buildDetailedActivity({description: "Finish à l'Atomics"}),
+      buildDetailedActivity({description: 'Finish Atomics'}),
       buildDetailedActivity({description: `🥰
 Finish au Chemin de Traverse`}),
     ];
@@ -248,10 +249,10 @@ Finish au Chemin de Traverse`}),
       Zazou: 1,
       'Belle De Jour': 2,
       Laloko: 2,
-      "L'Équipe": 2,
-      "L'Atlantide": 1,
-      'La Générale': 1,
-      "L'Atomics": 3,
+      Équipe: 2,
+      Atlantide: 1,
+      Générale: 1,
+      Atomics: 4,
       'Chemin De Traverse': 1,
     });
   });

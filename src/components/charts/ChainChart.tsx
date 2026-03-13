@@ -51,7 +51,7 @@ const ChainChart = () => {
   }, {});
 
   const labels: string[] = [];
-  const series: ApexAxisChartSeries = [];
+  const series: {name: string; data: (number | null)[]}[] = [];
 
   Object.entries(chainOdometer).forEach(([chain, distances], chainIndex) => {
     const totalDistance = distances.reduce((total, current) => total + current, 0);

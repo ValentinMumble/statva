@@ -55,7 +55,7 @@ const EventOdometerChart = () => {
   );
 
   const labels: string[] = [];
-  const series: ApexAxisChartSeries = [];
+  const series: {name: string; data: (number | null)[]}[] = [];
 
   Object.values(odometer).forEach((event, eventIndex) => {
     labels.push(event.label);
