@@ -2,7 +2,11 @@ import {IconButton, Image, HoverCard} from '@chakra-ui/react';
 import {MdOutlineNotes} from 'react-icons/md';
 import {Activity, DetailedActivity} from '../models/strava';
 import {cleanActivity, isDetailedActivity} from '../models';
-import {useActivityMeta, useFetcher} from '../hooks';
+import {useActivityMeta} from '../hooks';
+import {getFetcher} from '../hooks/useFetcher';
+
+const fetchActivity = getFetcher<DetailedActivity>('activity.get');
+const upsertActivity = getFetcher<Activity>('activities.meta.set');
 
 type ActivityMetaProps = {
   activity: Activity;
@@ -10,8 +14,6 @@ type ActivityMetaProps = {
 
 const ActivityMeta = ({activity}: ActivityMetaProps) => {
   const [activityMeta, refetch] = useActivityMeta();
-  const fetchActivity = useFetcher<DetailedActivity>('activity.get');
-  const upsertActivity = useFetcher<Activity>('activities.meta.set');
 
   const handleFetchActivity = async () => {
     const fullActivity = await fetchActivity(activity.id);

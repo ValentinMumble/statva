@@ -23,7 +23,6 @@ import {
   fetchLocalAthlete,
   fetchLocalMeta,
 } from '../api/local';
-import {useEnv} from './useEnv';
 
 type Fetcher<T> = (...args: any[]) => Promise<T>;
 
@@ -63,11 +62,8 @@ const DEV_REGISTRY: Record<string, Fetcher<any>> = {
   'ftp_tests.set': () => Promise.resolve(console.log('Local, not implemented')),
 };
 
-const useFetcher = <T>(key: string): Fetcher<T> => {
-  const [devMode] = useEnv();
-  const registry = devMode ? DEV_REGISTRY : PROD_REGISTRY;
+const REGISTRY = import.meta.env.MODE === 'development' ? DEV_REGISTRY : PROD_REGISTRY;
 
-  return registry[key];
-};
+const getFetcher = <T>(key: string): Fetcher<T> => REGISTRY[key];
 
-export {useFetcher};
+export {getFetcher};

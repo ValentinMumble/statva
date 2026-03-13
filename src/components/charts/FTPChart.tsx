@@ -1,8 +1,11 @@
 import {useState} from 'react';
 import Chart from 'react-apexcharts';
 import {Button, Group, Input, Clipboard, IconButton, NumberInput} from '@chakra-ui/react';
-import {useFetcher, useFtp} from '../../hooks';
+import {useFtp} from '../../hooks';
+import {getFetcher} from '../../hooks/useFetcher';
 import {backup, formatPower, FTPTest, getOptions} from '../../models';
+
+const upsertFTPTest = getFetcher<void>('ftp_tests.set');
 
 const options: ApexCharts.ApexOptions = {
   yaxis: [
@@ -32,7 +35,6 @@ const FTPChart = () => {
   const [weight, setWeight] = useState<number>();
   const [ftp, setFtp] = useState<number>();
   const [, ftpTests, refresh] = useFtp();
-  const upsertFTPTest = useFetcher<void>('ftp_tests.set');
 
   const canSubmit = undefined !== weight && undefined !== ftp;
 

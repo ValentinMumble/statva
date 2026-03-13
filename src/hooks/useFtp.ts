@@ -1,9 +1,18 @@
-import {useContext} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {FTPTest, GetFtp} from '../models';
-import {AthleteContext} from '../providers';
+import {getFetcher} from './useFetcher';
+
+const fetchFtpTests = getFetcher<FTPTest[]>('ftp_tests.get');
+
+const useFtpTests = () => {
+  return useQuery({
+    queryKey: ['ftpTests'],
+    queryFn: fetchFtpTests,
+  });
+};
 
 const useFtp = (): [GetFtp, FTPTest[], () => Promise<void>] => {
-  const [, tests, refresh] = useContext(AthleteContext);
+  const {data: tests = [], refetch} = useFtpTests();
 
   return [
     (date: Date) => {
@@ -12,8 +21,10 @@ const useFtp = (): [GetFtp, FTPTest[], () => Promise<void>] => {
       return relevantTests[0]?.ftp ?? tests.at(-1)?.ftp ?? 0;
     },
     tests,
-    refresh,
+    async () => {
+      await refetch();
+    },
   ];
 };
 
-export {useFtp};
+export {useFtp, useFtpTests};

@@ -1,18 +1,21 @@
-import {useEffect, useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {BikeExpense} from '../models';
-import {useFetcher} from '../hooks';
+import {getFetcher} from './useFetcher';
+
+const getExpenses = getFetcher<BikeExpense[]>('expenses.get');
 
 const useExpenses = (): [BikeExpense[], () => void] => {
-  const [expenses, setExpenses] = useState<BikeExpense[]>([]);
-  const getExpenses = useFetcher<BikeExpense[]>('expenses.get');
+  const {data: expenses = [], refetch} = useQuery({
+    queryKey: ['expenses'],
+    queryFn: getExpenses,
+  });
 
-  const fetchExpenses = async () => setExpenses(await getExpenses());
-
-  useEffect(() => {
-    fetchExpenses();
-  }, [getExpenses]);
-
-  return [expenses, fetchExpenses];
+  return [
+    expenses,
+    () => {
+      refetch();
+    },
+  ];
 };
 
 export {useExpenses};

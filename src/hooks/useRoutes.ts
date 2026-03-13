@@ -1,19 +1,12 @@
-import {useEffect, useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {fetchAthleteRoutes} from '../api';
 import {Route} from '../models/strava';
 
 const useRoutes = () => {
-  const [routes, setRoutes] = useState<Route[] | null>(null);
-
-  useEffect(() => {
-    const fetchRoutes = async () => {
-      const routes = await fetchAthleteRoutes();
-
-      setRoutes(routes);
-    };
-
-    fetchRoutes();
-  }, []);
+  const {data: routes = null} = useQuery<Route[]>({
+    queryKey: ['routes'],
+    queryFn: fetchAthleteRoutes,
+  });
 
   return routes;
 };

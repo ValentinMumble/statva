@@ -20,11 +20,11 @@ import {BsDatabaseDown} from 'react-icons/bs';
 import {HiArrowDown, HiArrowUp, HiOutlineLockClosed} from 'react-icons/hi2';
 import {MdClear, MdFilterList} from 'react-icons/md';
 import {PiBicycle} from 'react-icons/pi';
-import {Tooltip, Switch} from '../components/ui';
+import {Tooltip} from '../components/ui';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, GearSelect, Stats, WeekView} from '../components';
 import {SortType, SortDirection, TAGS, DEFAULT_SORTS, getTypes} from '../models';
 import {ActivityType} from '../models/strava';
-import {useActivities, useActivityMeta, useEnv, useFtp, useLabels} from '../hooks';
+import {useActivities, useActivityMeta, useFtp, useLabels} from '../hooks';
 
 const DISPLAYED_ITEMS = 75;
 
@@ -40,7 +40,6 @@ const App = () => {
   const [displayedSorts, setDisplayedSorts] = useLocalStorage<SortType[]>('sort-types', DEFAULT_SORTS);
   const [types, setTypes] = useLocalStorage<ActivityType[] | null>('activity-types', getTypes(ActivityType.Ride));
 
-  const [devMode, setDevMode] = useEnv();
   const [label] = useLabels();
   const [getFtp] = useFtp();
   const [activities, refetch, unprocessedActivities, deleteActivity] = useActivities({
@@ -54,7 +53,7 @@ const App = () => {
   });
   const [activityMeta] = useActivityMeta();
 
-  const handleRefetch = () => refetch(1, false, 20);
+  const handleRefetch = () => refetch();
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
   const handlePrivateToggle = () => setWithPrivate(!withPrivate);
   const handleSearchChange = ({target}: ChangeEvent<HTMLInputElement>) => {
@@ -101,14 +100,6 @@ const App = () => {
       </VStack>
       <VStack align="stretch" flexBasis="60%" height="100vh" overflow="scroll">
         <Group width="full">
-          {import.meta.env.DEV && (
-            <Switch
-              size="xs"
-              title="Use local"
-              checked={devMode}
-              onCheckedChange={({checked}) => setDevMode(checked)}
-            />
-          )}
           <InputGroup
             flex={1}
             endElement={
@@ -122,7 +113,7 @@ const App = () => {
           >
             <Input
               disabled={isLoading}
-              placeholder={devMode ? 'DEV MODE ☞ USING LOCAL ACTIVITIES' : 'Search'}
+              placeholder="Search"
               autoFocus={true}
               value={search}
               onChange={handleSearchChange}

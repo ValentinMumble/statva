@@ -1,10 +1,16 @@
-import {useContext} from 'react';
-import {AthleteContext} from '../providers';
+import {useQuery} from '@tanstack/react-query';
+import {Athlete} from '../models/strava';
+import {getFetcher} from './useFetcher';
 
-const useAthlete = () => {
-  const [athlete] = useContext(AthleteContext);
+const fetchAthlete = getFetcher<Athlete>('athlete.get');
 
-  return athlete;
+const useAthlete = (): Athlete | null => {
+  const {data} = useQuery({
+    queryKey: ['athlete'],
+    queryFn: fetchAthlete,
+  });
+
+  return data ?? null;
 };
 
 export {useAthlete};

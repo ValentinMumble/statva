@@ -3,7 +3,10 @@ import {LuMinus} from 'react-icons/lu';
 import {toaster} from '../../components/ui';
 import {Event, backup} from '../../models';
 import {AddEvent, EventCells} from '../../components';
-import {useEvents, useFetcher, useLabels} from '../../hooks';
+import {useEvents, useLabels} from '../../hooks';
+import {getFetcher} from '../../hooks/useFetcher';
+
+const deleteEvent = getFetcher<void>('events.delete');
 
 const HEADERS = ['Date', 'Bike', 'Type', 'Additional', '', ''];
 
@@ -20,7 +23,6 @@ type EditEventsProps = {
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
   const [label] = useLabels();
   const [events, refreshEvents] = useEvents();
-  const deleteEvent = useFetcher<void>('events.delete');
 
   const refresh = () => {
     onEditEvents();

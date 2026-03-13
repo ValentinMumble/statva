@@ -6,6 +6,14 @@ const ACTIVITY_ENDPOINT = 'https://www.strava.com/api/v3/activities';
 const getAthleteRoutesEndpoint = (id: string) => `${ATHLETE_ENDPOINT}s/${id}/routes`;
 const ITEMS_PER_PAGE = 200;
 
+const assertOk = async (response: Response): Promise<Response> => {
+  if (!response.ok) {
+    const body = await response.clone().json().catch(() => ({}));
+    throw new Error(`Strava API ${response.status}: ${body.message ?? response.statusText}`);
+  }
+  return response;
+};
+
 let token: string | null = null;
 let tokenTimestamp: number = 0;
 
@@ -29,6 +37,7 @@ const fetchAccessToken = async () => {
       body,
     });
 
+    await assertOk(response);
     token = (await response.json()).access_token;
     tokenTimestamp = Date.now();
   }
@@ -39,6 +48,7 @@ const fetchAccessToken = async () => {
 const fetchAthlete = async (): Promise<Athlete> => {
   const accessToken = await fetchAccessToken();
   const response = await fetch(`${ATHLETE_ENDPOINT}?access_token=${accessToken}`);
+  await assertOk(response);
 
   return await response.json();
 };
@@ -49,6 +59,7 @@ const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[A
   const response = await fetch(
     `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${items}`
   );
+  await assertOk(response);
   const activities = await response.json();
 
   return [activities, activities.length === items];
@@ -58,6 +69,7 @@ const fetchActivity = async (id: number): Promise<DetailedActivity> => {
   const accessToken = await fetchAccessToken();
 
   const response = await fetch(`${ACTIVITY_ENDPOINT}/${id}?access_token=${accessToken}`);
+  await assertOk(response);
 
   return await response.json();
 };
@@ -68,6 +80,7 @@ const fetchAthleteRoutes = async (): Promise<Route[]> => {
   const response = await fetch(
     `${getAthleteRoutesEndpoint(import.meta.env.VITE_STRAVA_USER_ID)}?access_token=${accessToken}`
   );
+  await assertOk(response);
 
   return await response.json();
 };
@@ -83,6 +96,7 @@ const fetchAllActivities = async () => {
     const response = await fetch(
       `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
     );
+    await assertOk(response);
 
     const data = (await response.json()) as Activity[];
 

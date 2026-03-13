@@ -3,8 +3,11 @@ import {Group, IconButton, Input, Select, SelectValueChangeDetails} from '@chakr
 import {LuPlus} from 'react-icons/lu';
 import {toaster} from '../../components/ui';
 import {EventForm, GearSelect} from '../../components';
-import {useFetcher, useLabels} from '../../hooks';
+import {useLabels} from '../../hooks';
+import {getFetcher} from '../../hooks/useFetcher';
 import {Event, isEventValid, labelCollection, SUPER6} from '../../models';
+
+const upsertEvent = getFetcher<void>('events.set');
 
 const EVENT_TYPES: Event['type'][] = [
   'chain',
@@ -25,7 +28,6 @@ type AddEventProps = {
 const AddEvent = ({onAddEvent}: AddEventProps) => {
   const [event, setEvent] = useState<Partial<Event>>({type: 'chain', date: new Date(), bike: SUPER6});
   const [label] = useLabels();
-  const upsertEvent = useFetcher<void>('events.set');
 
   const handleTypeChange = ({value}: SelectValueChangeDetails) =>
     setEvent(event => ({date: event.date, bike: event.bike, type: value[0] as Event['type']}));

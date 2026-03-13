@@ -5,23 +5,29 @@
 ## Install
 
 ```bash
-$ pnpm install
+$ npm install
 ```
 
-Fill in the `.env` file using provided `.env.dist`
+Fill in the `.env.local` file using provided `.env.dist`
 
 ```bash
-$ cp .env.dist .env
+$ cp .env.dist .env.local
 ```
 
 ## Run
 
 ```bash
-$ pnpm dev
+$ npm run dev
+```
+
+Uses local JSON data by default. To fetch from the real Strava API:
+
+```bash
+$ npm run dev -- --mode production
 ```
 
 ## Build
 
 ```bash
-$ pnpm build
+$ npm run build
 ```

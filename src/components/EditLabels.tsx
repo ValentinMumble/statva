@@ -11,7 +11,11 @@ import {
 } from '@chakra-ui/react';
 import {LuMinus} from 'react-icons/lu';
 import {toaster} from '../components/ui';
-import {useFetcher, useLabels} from '../hooks';
+import {useLabels} from '../hooks';
+import {getFetcher} from '../hooks/useFetcher';
+
+const upsertLabel = getFetcher<void>('labels.set');
+const deleteLabel = getFetcher<void>('labels.delete');
 
 const rowProps: Partial<Table.RowProps> = {
   width: '100%',
@@ -23,8 +27,6 @@ const EditLabels = () => {
   const [newKey, setNewKey] = useState<string>('');
   const [newLabel, setNewLabel] = useState<string>('');
   const [, labels, refreshLabels] = useLabels();
-  const upsertLabel = useFetcher<void>('labels.set');
-  const deleteLabel = useFetcher<void>('labels.delete');
 
   const handleLabelSave =
     (key: string) =>

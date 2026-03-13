@@ -3,31 +3,34 @@ import {BrowserRouter, Routes as RouterRoutes, Route} from 'react-router';
 import {injectSpeedInsights} from '@vercel/speed-insights';
 import {ChakraProvider, defaultSystem} from '@chakra-ui/react';
 import {ThemeProvider} from 'next-themes';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {AddCheckIn, App, Routes} from './pages';
 import {Toaster} from './components/ui';
 import {PageTitle} from './components';
-import {ActivitiesProvider, ActivityMetaProvider, AthleteProvider, EnvProvider, LabelProvider} from './providers';
-
 injectSpeedInsights();
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ChakraProvider value={defaultSystem}>
     <ThemeProvider enableSystem={true} attribute="class" defaultTheme="system">
-      <EnvProvider>
-        <LabelProvider>
-          <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
             <RouterRoutes>
               <Route
                 path="/"
                 element={
-                  <AthleteProvider>
-                    <ActivityMetaProvider>
-                      <ActivitiesProvider>
-                        <PageTitle title="Statva 📈" />
-                        <App />
-                      </ActivitiesProvider>
-                    </ActivityMetaProvider>
-                  </AthleteProvider>
+                  <>
+                    <PageTitle title="Statva 📈" />
+                    <App />
+                  </>
                 }
               />
               <Route
@@ -51,8 +54,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             </RouterRoutes>
             <Toaster />
           </BrowserRouter>
-        </LabelProvider>
-      </EnvProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   </ChakraProvider>
 );
