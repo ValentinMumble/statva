@@ -52,7 +52,7 @@ const ActivityListItem = ({
   showDeleteButton = false,
   onDeleteActivity,
 }: ActivityListItemProps) => {
-  const [label] = useLabels();
+  const {label} = useLabels();
 
   if (null === activity) {
     return (

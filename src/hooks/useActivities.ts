@@ -53,10 +53,10 @@ const useActivities = ({
   gearId,
   years = [],
   minTime,
-}: ActivityFilter): [Activity[] | null, () => void, Activity[], (id: number) => void] => {
+}: ActivityFilter) => {
   const {data: activities, refetch} = useAllActivities();
-  const [getFtp] = useFtp();
-  const [activityMeta] = useActivityMeta();
+  const {getFtp} = useFtp();
+  const {activityMeta} = useActivityMeta();
   const queryClient = useQueryClient();
 
   const deleteActivity = useCallback(
@@ -114,14 +114,12 @@ const useActivities = ({
     [activities],
   );
 
-  return [
-    filteredAndSortedActivities,
-    () => {
-      refetch();
-    },
+  return {
+    activities: filteredAndSortedActivities,
+    refetch: () => { refetch(); },
     unprocessedActivities,
     deleteActivity,
-  ];
+  };
 };
 
 export {useActivities, useAllActivities};

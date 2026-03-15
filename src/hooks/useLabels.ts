@@ -4,20 +4,16 @@ import {getFetcher} from './useFetcher';
 
 const fetchLabels = getFetcher<Labels>('labels.get');
 
-const useLabels = (): [GetLabel, Labels, () => Promise<void>] => {
+const useLabels = () => {
   const {data: labels = {}, refetch} = useQuery({
     queryKey: ['labels'],
     queryFn: fetchLabels,
   });
 
-  return [
-    (key, emojiOnly = false) =>
-      null === key ? '🤷' : emojiOnly ? extractEmoji(labels[key] ?? key) : labels[key] ?? key,
-    labels,
-    async () => {
-      await refetch();
-    },
-  ];
+  const label: GetLabel = (key, emojiOnly = false) =>
+    null === key ? '🤷' : emojiOnly ? extractEmoji(labels[key] ?? key) : labels[key] ?? key;
+
+  return {label, labels, refetch: async () => { await refetch(); }};
 };
 
 export {useLabels};

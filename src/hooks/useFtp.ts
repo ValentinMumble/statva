@@ -11,20 +11,15 @@ const useFtpTests = () => {
   });
 };
 
-const useFtp = (): [GetFtp, FTPTest[], () => Promise<void>] => {
+const useFtp = () => {
   const {data: tests = [], refetch} = useFtpTests();
 
-  return [
-    (date: Date) => {
-      const relevantTests = tests.filter(test => test.date < date);
+  const getFtp: GetFtp = (date: Date) => {
+    const relevantTests = tests.filter(test => test.date < date);
+    return relevantTests[0]?.ftp ?? tests.at(-1)?.ftp ?? 0;
+  };
 
-      return relevantTests[0]?.ftp ?? tests.at(-1)?.ftp ?? 0;
-    },
-    tests,
-    async () => {
-      await refetch();
-    },
-  ];
+  return {getFtp, tests, refetch: async () => { await refetch(); }};
 };
 
 export {useFtp, useFtpTests};

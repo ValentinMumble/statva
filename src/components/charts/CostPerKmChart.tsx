@@ -14,14 +14,14 @@ const CostPerKmChart = () => {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState<number>();
   const [description, setDescription] = useState<string>('');
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
     gearId: SUPER6,
   });
-  const [expenses] = useExpenses();
+  const {expenses} = useExpenses();
 
   const canSubmit = undefined !== amount && description.trim() !== '';
 

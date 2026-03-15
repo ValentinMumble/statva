@@ -34,7 +34,7 @@ const FTPChart = () => {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [weight, setWeight] = useState<number>();
   const [ftp, setFtp] = useState<number>();
-  const [, ftpTests, refresh] = useFtp();
+  const {tests: ftpTests, refetch: refresh} = useFtp();
 
   const canSubmit = undefined !== weight && undefined !== ftp;
 

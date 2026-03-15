@@ -39,7 +39,7 @@ const options: ApexCharts.ApexOptions = {
 
 const HeartChart = () => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',

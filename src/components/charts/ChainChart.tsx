@@ -12,10 +12,10 @@ const RETIRED_BIKES = ['b11897955', 'b12655849'];
 const ChainChart = () => {
   const [withRetired, setWithRetired] = useState<boolean>(false);
   const [gearId, setGearId] = useState<string>(SUPER6);
-  const [label] = useLabels();
-  const [chainEvents, refreshEvents] = useEvents<ChainEvent>('chain');
+  const {label} = useLabels();
+  const {events: chainEvents, refetch: refreshEvents} = useEvents<ChainEvent>('chain');
 
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',

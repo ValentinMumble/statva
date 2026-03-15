@@ -4,7 +4,7 @@ import {ActivityType} from '../../models/strava';
 import {CountPieChart} from './CountPieChart';
 
 const CourtPieChart = () => {
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: false,
     withPrivate: true,
     sort: 'date',

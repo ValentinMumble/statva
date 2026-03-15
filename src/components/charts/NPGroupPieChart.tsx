@@ -3,14 +3,14 @@ import {countBy, extractNPGroup} from '../../models';
 import {CountPieChart} from './CountPieChart';
 
 const NPGroupPieChart = () => {
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: false,
     withPrivate: true,
     search: 'N-Peloton',
     sort: 'date',
     sortDirection: 'asc',
   });
-  const [label] = useLabels();
+  const {label} = useLabels();
 
   const groupMap = countBy(activities ?? [], activity => extractNPGroup(activity.name));
   const data = Object.fromEntries(Object.entries(groupMap).sort(([a], [b]) => a.localeCompare(b)));

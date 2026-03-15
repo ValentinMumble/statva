@@ -25,9 +25,9 @@ import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 
 const EventTimelineChart = () => {
   const [gearId, setGearId] = useState<string>(SUPER6);
-  const [label] = useLabels();
-  const [allEvents, refreshEvents] = useEvents();
-  const [activities] = useActivities({
+  const {label} = useLabels();
+  const {events: allEvents, refetch: refreshEvents} = useEvents();
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     gearId,

@@ -16,12 +16,17 @@ const assertOk = async (response: Response): Promise<Response> => {
 
 let token: string | null = null;
 let tokenTimestamp: number = 0;
+let refreshPromise: Promise<string> | null = null;
 
 const TOKEN_TTL_MS = 6 * 3_600_000;
 const isTokenExpired = () => tokenTimestamp + TOKEN_TTL_MS < Date.now();
 
 const fetchAccessToken = async () => {
-  if (null === token || isTokenExpired()) {
+  if (token !== null && !isTokenExpired()) return token;
+
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
     const body = JSON.stringify({
       client_id: import.meta.env.VITE_STRAVA_CLIENT_ID,
       client_secret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
@@ -41,9 +46,11 @@ const fetchAccessToken = async () => {
     await assertOk(response);
     token = (await response.json()).access_token;
     tokenTimestamp = Date.now();
-  }
 
-  return token;
+    return token!;
+  })().finally(() => { refreshPromise = null; });
+
+  return refreshPromise;
 };
 
 const fetchAthlete = async (): Promise<Athlete> => {

@@ -14,9 +14,9 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month', ...re
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
   const [itemCount, setItemCount] = useState<number>(TIMEFRAMES[initialTimeframe].initialItemCount);
   const [withCommute, setWithCommute] = useState<boolean>(true);
-  const [label] = useLabels();
+  const {label} = useLabels();
 
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: withCommute,
     withPrivate: true,
     sort: 'date',

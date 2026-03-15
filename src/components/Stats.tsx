@@ -15,12 +15,12 @@ const Stats = () => {
   const currentType = TYPES[typeIndex];
 
   const athlete = useAthlete();
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
   });
-  const [activityMeta] = useActivityMeta();
+  const {activityMeta} = useActivityMeta();
   const typeActivities = activities?.filter(({sport_type}) => getTypes(currentType).includes(sport_type)) ?? null;
 
   const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);

@@ -41,6 +41,35 @@ const DEFAULT_SORTS: SortType[] = [
   'suffer_score',
 ];
 
+type SortContext = {activity: Activity; detailed: DetailedActivity | null; getFtp: GetFtp};
+
+const sortValueGetters: Record<SortType, (ctx: SortContext) => number | null> = {
+  achievement_count: ({activity}) => activity.achievement_count,
+  athlete_count: ({activity}) => activity.athlete_count,
+  average_cadence: ({activity}) => activity.average_cadence ?? 0,
+  average_heartrate: ({activity}) => activity.average_heartrate ?? 0,
+  average_speed: ({activity}) => activity.average_speed,
+  average_temp: ({activity}) => activity.average_temp ?? null,
+  average_watts: ({activity}) => activity.average_watts ?? 0,
+  date: ({activity}) => new Date(activity.start_date).getTime(),
+  distance: ({activity}) => activity.distance,
+  elapsed_time: ({activity}) => activity.elapsed_time,
+  elevation_percent: ({activity}) => activity.distance === 0 ? null : activity.total_elevation_gain / activity.distance,
+  intensity: ({activity, getFtp}) => (activity.weighted_average_watts ?? 0) / getFtp(new Date(activity.start_date)),
+  kilojoules: ({activity}) => activity.kilojoules ?? 0,
+  kudos_count: ({activity}) => activity.kudos_count,
+  max_heartrate: ({activity}) => activity.max_heartrate ?? 0,
+  max_speed: ({activity}) => activity.max_speed,
+  max_watts: ({activity}) => activity.max_watts ?? 0,
+  moving_time: ({activity}) => activity.moving_time,
+  normalized_power: ({detailed}) => extractNormalizedPower(detailed) ?? null,
+  photo_count: ({activity}) => activity.total_photo_count,
+  pr_count: ({activity}) => activity.pr_count,
+  suffer_score: ({activity}) => activity.suffer_score ?? 0,
+  total_elevation_gain: ({activity}) => activity.total_elevation_gain,
+  weighted_average_watts: ({activity}) => activity.weighted_average_watts ?? 0,
+};
+
 const sortActivities = (
   sortType: SortType,
   sortDirection: SortDirection,
@@ -50,89 +79,14 @@ const sortActivities = (
   db: DetailedActivity | null,
   getFtp: GetFtp
 ) => {
-  const [first, second] = 'desc' === sortDirection ? [a, b] : [b, a];
-  const [dfirst, dsecond] = 'desc' === sortDirection ? [da, db] : [db, da];
+  const getValue = sortValueGetters[sortType];
+  const valA = getValue({activity: a, detailed: da, getFtp});
+  const valB = getValue({activity: b, detailed: db, getFtp});
 
-  switch (sortType) {
-    case 'achievement_count':
-      return second.achievement_count - first.achievement_count;
-    case 'athlete_count':
-      return second.athlete_count - first.athlete_count;
-    case 'average_cadence':
-      return (second.average_cadence ?? 0) - (first.average_cadence ?? 0);
-    case 'average_heartrate':
-      return (second.average_heartrate ?? 0) - (first.average_heartrate ?? 0);
-    case 'average_speed':
-      return second.average_speed - first.average_speed;
-    case 'average_temp':
-      if (undefined === first.average_temp) {
-        return 'desc' === sortDirection ? Infinity : -Infinity;
-      }
+  if (valA === null) return sortDirection === 'desc' ? 1 : -1;
+  if (valB === null) return sortDirection === 'desc' ? -1 : 1;
 
-      if (undefined === second.average_temp) {
-        return 'desc' === sortDirection ? -Infinity : Infinity;
-      }
-
-      return second.average_temp - first.average_temp;
-    case 'average_watts':
-      return (second.average_watts ?? 0) - (first.average_watts ?? 0);
-    case 'date':
-      return first.start_date < second.start_date ? 1 : -1;
-    case 'distance':
-      return second.distance - first.distance;
-    case 'elapsed_time':
-      return second.elapsed_time - first.elapsed_time;
-    case 'elevation_percent':
-      if (0 === first.distance) {
-        return Infinity;
-      }
-
-      if (0 === second.distance) {
-        return -Infinity;
-      }
-
-      return second.total_elevation_gain / second.distance - first.total_elevation_gain / first.distance;
-    case 'intensity':
-      return (
-        (second.weighted_average_watts ?? 0) / getFtp(new Date(second.start_date)) -
-        (first.weighted_average_watts ?? 0) / getFtp(new Date(first.start_date))
-      );
-    case 'kilojoules':
-      return (second.kilojoules ?? 0) - (first.kilojoules ?? 0);
-    case 'kudos_count':
-      return second.kudos_count - first.kudos_count;
-    case 'max_heartrate':
-      return (second.max_heartrate ?? 0) - (first.max_heartrate ?? 0);
-    case 'max_speed':
-      return second.max_speed - first.max_speed;
-    case 'max_watts':
-      return (second.max_watts ?? 0) - (first.max_watts ?? 0);
-    case 'moving_time':
-      return second.moving_time - first.moving_time;
-    case 'photo_count':
-      return second.total_photo_count - first.total_photo_count;
-    case 'pr_count':
-      return second.pr_count - first.pr_count;
-    case 'suffer_score':
-      return (second.suffer_score ?? 0) - (first.suffer_score ?? 0);
-    case 'total_elevation_gain':
-      return second.total_elevation_gain - first.total_elevation_gain;
-    case 'normalized_power':
-      const npA = extractNormalizedPower(dfirst) ?? null;
-      const npB = extractNormalizedPower(dsecond) ?? null;
-
-      if (null === npA) {
-        return 'desc' === sortDirection ? Infinity : -Infinity;
-      }
-
-      if (null === npB) {
-        return 'desc' === sortDirection ? -Infinity : Infinity;
-      }
-
-      return npB - npA;
-    case 'weighted_average_watts':
-      return (second.weighted_average_watts ?? 0) - (first.weighted_average_watts ?? 0);
-  }
+  return sortDirection === 'desc' ? valB - valA : valA - valB;
 };
 
 export {DEFAULT_SORTS, sortActivities};

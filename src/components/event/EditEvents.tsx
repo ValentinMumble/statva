@@ -21,8 +21,8 @@ type EditEventsProps = {
 };
 
 const EditEvents = ({onEditEvents}: EditEventsProps) => {
-  const [label] = useLabels();
-  const [events, refreshEvents] = useEvents();
+  const {label} = useLabels();
+  const {events, refetch: refreshEvents} = useEvents();
 
   const refresh = () => {
     onEditEvents();

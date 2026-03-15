@@ -34,7 +34,7 @@ const TimeframeChart = ({
   const [timeframe, setTimeframe] = useState<Timeframe>(initialTimeframe);
   const [type, setType] = useState<ActivityType>(ActivityType.Ride);
   const [itemCount, setItemCount] = useState<number>(TIMEFRAMES[initialTimeframe].initialItemCount);
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
@@ -42,7 +42,7 @@ const TimeframeChart = ({
     includedActivityTypes: displayTypes ? getTypes(type) : undefined,
     ...filter,
   });
-  const [label] = useLabels();
+  const {label} = useLabels();
 
   const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) => setType(value as ActivityType);
   const handleTimeframeChange = (newTimeframe: Timeframe) => {

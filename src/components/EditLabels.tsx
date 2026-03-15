@@ -26,7 +26,7 @@ const rowProps: Partial<Table.RowProps> = {
 const EditLabels = () => {
   const [newKey, setNewKey] = useState<string>('');
   const [newLabel, setNewLabel] = useState<string>('');
-  const [, labels, refreshLabels] = useLabels();
+  const {labels, refetch: refreshLabels} = useLabels();
 
   const handleLabelSave =
     (key: string) =>

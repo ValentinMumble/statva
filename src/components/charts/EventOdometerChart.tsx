@@ -13,9 +13,9 @@ const EventOdometerChart = () => {
   const [gearId, setGearId] = useState<string>(SUPER6);
   const [data, setData] = useState<keyof Activity>('distance');
   const [eventType, setEventType] = useState<string>('tire');
-  const [label] = useLabels();
-  const [events] = useEvents();
-  const [activities] = useActivities({
+  const {label} = useLabels();
+  const {events} = useEvents();
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',

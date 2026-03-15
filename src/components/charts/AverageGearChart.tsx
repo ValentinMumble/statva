@@ -4,12 +4,12 @@ import {formatSpeed, getOptions, getTypes, SUPER6} from '../../models';
 import {ActivityType} from '../../models/strava';
 
 const AverageGearChart = () => {
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     includedActivityTypes: getTypes(ActivityType.Ride),
   });
-  const [label] = useLabels();
+  const {label} = useLabels();
 
   const filteredRides = (activities ?? []).filter(ride => !ride.commute || (ride.commute && SUPER6 !== ride.gear_id));
 

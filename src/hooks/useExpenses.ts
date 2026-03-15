@@ -4,18 +4,13 @@ import {getFetcher} from './useFetcher';
 
 const getExpenses = getFetcher<BikeExpense[]>('expenses.get');
 
-const useExpenses = (): [BikeExpense[], () => void] => {
+const useExpenses = () => {
   const {data: expenses = [], refetch} = useQuery({
     queryKey: ['expenses'],
     queryFn: getExpenses,
   });
 
-  return [
-    expenses,
-    () => {
-      refetch();
-    },
-  ];
+  return {expenses, refetch: () => { refetch(); }};
 };
 
 export {useExpenses};

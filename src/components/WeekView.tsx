@@ -16,13 +16,13 @@ type Week = {
 
 const WeekView = () => {
   const [weekCount, setWeekCount] = useState<number>(5);
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
   });
-  const [label] = useLabels();
+  const {label} = useLabels();
 
   const incrementWeekCount = () => setWeekCount(weekCount => weekCount + 1);
 

@@ -14,8 +14,8 @@ type DataLineChartProps = ChartProps & {
 
 const DataLineChart = ({data, min, max}: DataLineChartProps) => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
-  const [label] = useLabels();
-  const [activities] = useActivities({
+  const {label} = useLabels();
+  const {activities} = useActivities({
     withCommute: false,
     withPrivate: false,
     sort: 'date',

@@ -3,8 +3,8 @@ import {computeFinishCount} from '../../models';
 import {CountPieChart} from './CountPieChart';
 
 const FinishPieChart = () => {
-  const [activityMeta] = useActivityMeta();
-  const [label] = useLabels();
+  const {activityMeta} = useActivityMeta();
+  const {label} = useLabels();
 
   const data = computeFinishCount(Object.values(activityMeta));
   const labels = Object.keys(data).map(key => label(key));

@@ -33,7 +33,7 @@ type ProgressChartProps = {
 
 const ProgressChart = ({search}: ProgressChartProps) => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     search,
     withCommute: false,
     withPrivate: false,

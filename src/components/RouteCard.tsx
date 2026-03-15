@@ -9,7 +9,7 @@ type RouteCardProps = {
 };
 
 const RouteCard = ({route, checkIns}: RouteCardProps) => {
-  const [label] = useLabels();
+  const {label} = useLabels();
   const lastCheckIn = checkIns.at(-1);
 
   if (!route) {

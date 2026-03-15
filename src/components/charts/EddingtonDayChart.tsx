@@ -11,7 +11,7 @@ const INITIAL_RANGE = [10, 120];
 
 const EddingtonDayChart = () => {
   const [distanceRange, setDistanceRange] = useState<number[]>(INITIAL_RANGE);
-  const [activities] = useActivities({
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     sort: 'date',

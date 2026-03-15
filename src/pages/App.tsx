@@ -40,9 +40,9 @@ const App = () => {
   const [displayedSorts, setDisplayedSorts] = useLocalStorage<SortType[]>('sort-types', DEFAULT_SORTS);
   const [types, setTypes] = useLocalStorage<ActivityType[] | null>('activity-types', getTypes(ActivityType.Ride));
 
-  const [label] = useLabels();
-  const [getFtp] = useFtp();
-  const [activities, refetch, unprocessedActivities, deleteActivity] = useActivities({
+  const {label} = useLabels();
+  const {getFtp} = useFtp();
+  const {activities, refetch, unprocessedActivities, deleteActivity} = useActivities({
     search,
     includedActivityTypes: types ?? undefined,
     sort: activeSort,
@@ -51,7 +51,7 @@ const App = () => {
     gearId: gearIds[0],
     sortDirection,
   });
-  const [activityMeta] = useActivityMeta();
+  const {activityMeta} = useActivityMeta();
 
   const handleRefetch = () => refetch();
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');

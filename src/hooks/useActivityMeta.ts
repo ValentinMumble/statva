@@ -4,18 +4,13 @@ import {getFetcher} from './useFetcher';
 
 const fetchMeta = getFetcher<Record<string, DetailedActivity>>('activities.meta.get');
 
-const useActivityMeta = (): [Record<string, DetailedActivity>, () => Promise<void>] => {
-  const {data = {}, refetch} = useQuery({
+const useActivityMeta = () => {
+  const {data: activityMeta = {}, refetch} = useQuery({
     queryKey: ['activityMeta'],
     queryFn: fetchMeta,
   });
 
-  return [
-    data,
-    async () => {
-      await refetch();
-    },
-  ];
+  return {activityMeta, refetch: async () => { await refetch(); }};
 };
 
 export {useActivityMeta};

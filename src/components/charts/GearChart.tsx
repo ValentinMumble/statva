@@ -8,8 +8,8 @@ import {GearSelect} from '../../components';
 const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
   const [includedGear, setIncludedGear] = useState<string[] | null>(null);
 
-  const [label] = useLabels();
-  const [activities] = useActivities({
+  const {label} = useLabels();
+  const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
     includedActivityTypes: getTypes(ActivityType.Ride, ActivityType.Run),

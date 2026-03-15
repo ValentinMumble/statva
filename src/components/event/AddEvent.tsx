@@ -27,7 +27,7 @@ type AddEventProps = {
 
 const AddEvent = ({onAddEvent}: AddEventProps) => {
   const [event, setEvent] = useState<Partial<Event>>({type: 'chain', date: new Date(), bike: SUPER6});
-  const [label] = useLabels();
+  const {label} = useLabels();
 
   const handleTypeChange = ({value}: SelectValueChangeDetails) =>
     setEvent(event => ({date: event.date, bike: event.bike, type: value[0] as Event['type']}));

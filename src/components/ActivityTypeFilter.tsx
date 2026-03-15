@@ -13,7 +13,7 @@ type ActivityTypeFilterProps = {
 };
 
 const ActivityTypeFilter = ({types, withCommute, onTypesChange, onWithCommuteChange}: ActivityTypeFilterProps) => {
-  const [activities] = useActivities({withPrivate: true});
+  const {activities} = useActivities({withPrivate: true});
   const uniqueTypes = [...new Set((activities ?? []).map(({sport_type}) => sport_type))];
 
   const handleCommuteToggle = () => onWithCommuteChange(true === withCommute ? 'only' : true);

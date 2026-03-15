@@ -9,8 +9,8 @@ const DEFAULT_ITEM_COUNT = 150;
 
 const CommuteSpeedChart = () => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
-  const [label] = useLabels();
-  const [activities] = useActivities({
+  const {label} = useLabels();
+  const {activities} = useActivities({
     withCommute: 'only',
     withPrivate: true,
     sort: 'date',

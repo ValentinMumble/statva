@@ -18,7 +18,7 @@ const GearSelect = ({
   excludedGearTypes = [],
   ...rest
 }: GearSelectProps) => {
-  const [label] = useLabels();
+  const {label} = useLabels();
 
   const handleGearChange = ({value}: SelectValueChangeDetails) => onSelectedGearChange(value);
 

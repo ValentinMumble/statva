@@ -13,7 +13,7 @@ type ActivityMetaProps = {
 };
 
 const ActivityMeta = ({activity}: ActivityMetaProps) => {
-  const [activityMeta, refetch] = useActivityMeta();
+  const {activityMeta, refetch} = useActivityMeta();
 
   const handleFetchActivity = async () => {
     const fullActivity = await fetchActivity(activity.id);

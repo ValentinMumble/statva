@@ -14,8 +14,8 @@ const isGroupRide = (ride: Activity, meta: DetailedActivity | null): boolean =>
   GROUP_TAGS.some(tag => (meta?.description ?? '').toLowerCase().includes(tag.toLowerCase()));
 
 const GroupChart = () => {
-  const [activityMeta] = useActivityMeta();
-  const [activities] = useActivities({
+  const {activityMeta} = useActivityMeta();
+  const {activities} = useActivities({
     withCommute: false,
     withPrivate: false,
     includedActivityTypes: getTypes(ActivityType.Ride),
