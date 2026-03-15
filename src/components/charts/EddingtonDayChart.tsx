@@ -52,7 +52,7 @@ const EddingtonDayChart = () => {
           dataLabels: {
             enabled: true,
             offsetY: -25,
-            formatter: (_value, {dataPointIndex}) => (eddington === dataPointIndex + distanceRange[0] ? eddington : []),
+            formatter: (_value, opts) => (eddington === (opts?.dataPointIndex ?? 0) + distanceRange[0] ? eddington : []),
           },
           colors: [
             ({dataPointIndex}: {dataPointIndex: number}) =>

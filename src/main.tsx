@@ -1,13 +1,11 @@
 import ReactDOM from 'react-dom/client';
 import {BrowserRouter, Routes as RouterRoutes, Route} from 'react-router';
-import {injectSpeedInsights} from '@vercel/speed-insights';
 import {ChakraProvider, defaultSystem} from '@chakra-ui/react';
 import {ThemeProvider} from 'next-themes';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {AddCheckIn, App, Routes} from './pages';
 import {Toaster} from './components/ui';
 import {PageTitle} from './components';
-injectSpeedInsights();
 
 const queryClient = new QueryClient({
   defaultOptions: {

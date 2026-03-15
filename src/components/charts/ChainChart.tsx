@@ -64,7 +64,9 @@ const ChainChart = () => {
     });
   });
 
-  const totalFormatter = (value: string, {dataPointIndex}: {dataPointIndex: number}) => {
+  const totalFormatter = (value: string, opts?: {dataPointIndex: number}) => {
+    if (!opts) return value;
+    const {dataPointIndex} = opts;
     const chains = Object.keys(chainOdometer);
     const isCurrentChain = dataPointIndex === chains.indexOf(currentBikeEvents.at(-1)?.chain ?? '');
     const chainEventCount = chainOdometer[chains[dataPointIndex]].length;

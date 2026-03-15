@@ -122,7 +122,7 @@ const EventTimelineChart = () => {
           },
           dataLabels: {
             enabled: true,
-            formatter: (val: number[], opts) => (val[0] === val[1] ? opts.globals.seriesNames[opts.seriesIndex] : ''),
+            formatter: (val: number[], opts) => (val[0] === val[1] ? opts?.globals?.seriesNames?.[opts.seriesIndex] : ''),
           },
           legend: {show: false},
         })}

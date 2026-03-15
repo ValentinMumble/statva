@@ -28,7 +28,7 @@ const CountPieChart = ({data, labels, entityName, unitName}: CountPieChartProps)
           legend: {show: false},
           dataLabels: {
             enabled: true,
-            formatter: (_, {seriesIndex}) => labels[seriesIndex],
+            formatter: (_, opts) => labels[opts?.seriesIndex ?? 0],
             dropShadow: {enabled: false},
           },
         })}

@@ -17,10 +17,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks: {
-          '@chakra-ui/react': ['@chakra-ui/react'],
-          'react-apexcharts': ['react-apexcharts'],
-          'recharts': ['recharts'],
+        manualChunks(id) {
+          if (id.includes('node_modules/@chakra-ui/react')) return '@chakra-ui/react';
+          if (id.includes('node_modules/react-apexcharts') || id.includes('node_modules/apexcharts')) return 'react-apexcharts';
+          if (id.includes('node_modules/recharts')) return 'recharts';
         },
       },
     },

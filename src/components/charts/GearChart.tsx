@@ -50,7 +50,7 @@ const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
                 legend: {show: false},
                 dataLabels: {
                   enabled: true,
-                  formatter: (_, {seriesIndex}) => labels[seriesIndex],
+                  formatter: (_, opts) => labels[opts?.seriesIndex ?? 0],
                   dropShadow: {enabled: false},
                 },
               }
