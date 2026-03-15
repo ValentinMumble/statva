@@ -1,4 +1,5 @@
 import {useActivities} from '../../hooks';
+import {countBy} from '../../models';
 import {ActivityType} from '../../models/strava';
 import {CountPieChart} from './CountPieChart';
 
@@ -11,13 +12,9 @@ const CourtPieChart = () => {
     includedActivityTypes: [ActivityType.Tennis],
   });
 
-  const data = (activities ?? []).reduce((map: Record<string, number>, activity) => {
-    const courtName =
-      activity.name.replace(/^Tennis\s+/, '').split(/\s+\p{Emoji}|[-–]/u)[0].trim() || 'Unknown';
-    map[courtName] = (map[courtName] ?? 0) + 1;
-
-    return map;
-  }, {});
+  const data = countBy(activities ?? [], activity =>
+    activity.name.replace(/^Tennis\s+/, '').split(/\s+\p{Emoji}|[-–]/u)[0].trim() || 'Unknown'
+  );
 
   const labels = Object.keys(data);
 

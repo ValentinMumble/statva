@@ -4,7 +4,7 @@ import {Chart, useChart} from '@chakra-ui/charts';
 import {Area, AreaChart, ResponsiveContainer, Tooltip} from 'recharts';
 import {LuPlus, LuMinus} from 'react-icons/lu';
 import {Activity} from '../models/strava';
-import {Timeframe, TIMEFRAMES} from '../models';
+import {countBy, Timeframe, TIMEFRAMES} from '../models';
 
 type SufferTrendChartProps = {
   activities: Activity[];
@@ -24,13 +24,11 @@ const SufferTrendChart = ({activities, timeframe, ...rest}: SufferTrendChartProp
     event.stopPropagation();
   };
 
-  const dataPerWeek = (activities ?? []).reduce((weekMap: Record<string, number>, activity) => {
-    const date = new Date(activity.start_date);
-    const weekId = TIMEFRAMES[timeframe].getPeriodKey(date);
-    weekMap[weekId] = (weekMap[weekId] ?? 0) + (activity.suffer_score ?? 0);
-
-    return weekMap;
-  }, {});
+  const dataPerWeek = countBy(
+    activities ?? [],
+    activity => TIMEFRAMES[timeframe].getPeriodKey(new Date(activity.start_date)),
+    activity => activity.suffer_score ?? 0
+  );
 
   const chartData = Object.entries(dataPerWeek)
     .slice(-displayedWeeks)

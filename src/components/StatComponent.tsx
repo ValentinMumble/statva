@@ -2,7 +2,7 @@ import {memo, useMemo} from 'react';
 import {Skeleton, SkeletonText, Stat} from '@chakra-ui/react';
 import {Tooltip} from '../components/ui';
 import {Activity, Athlete, DetailedActivity} from '../models/strava';
-import {StatEntry} from './Stats';
+import {StatEntry} from './stats-config';
 
 type StatComponentProps = {
   stat: StatEntry;

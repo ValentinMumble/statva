@@ -1,4 +1,5 @@
 import {useActivities, useLabels} from '../../hooks';
+import {countBy} from '../../models';
 import {ActivityType} from '../../models/strava';
 import {CountPieChart} from './CountPieChart';
 
@@ -12,12 +13,9 @@ const PoolPieChart = () => {
   });
   const [label] = useLabels();
 
-  const data = (activities ?? []).reduce((map: Record<string, number>, activity) => {
-    const poolName = activity.name.match(/^Natation\s+(.+?)(?:\s+\p{Emoji}.*)?$/u)?.[1] ?? 'Unknown';
-    map[poolName] = (map[poolName] ?? 0) + 1;
-
-    return map;
-  }, {});
+  const data = countBy(activities ?? [], activity =>
+    activity.name.match(/^Natation\s+(.+?)(?:\s+\p{Emoji}.*)?$/u)?.[1] ?? 'Unknown'
+  );
 
   const labels = Object.keys(data).map(key => `${key} ${label(key)}`);
 

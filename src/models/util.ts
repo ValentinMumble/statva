@@ -137,9 +137,18 @@ const decodePolyline = (encoded: string): number[][] => {
   return coordinates;
 };
 
+const countBy = <T>(items: T[], keyFn: (item: T) => string, valueFn: (item: T) => number = () => 1): Record<string, number> =>
+  items.reduce((map: Record<string, number>, item) => {
+    const key = keyFn(item);
+    map[key] = (map[key] ?? 0) + valueFn(item);
+
+    return map;
+  }, {});
+
 export {
   arrayRotate,
   backup,
+  countBy,
   decodePolyline,
   formatCalories,
   formatCurrency,
