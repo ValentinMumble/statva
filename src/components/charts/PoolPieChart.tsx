@@ -1,8 +1,6 @@
-import {Group, Span, Text} from '@chakra-ui/react';
-import Chart from 'react-apexcharts';
 import {useActivities, useLabels} from '../../hooks';
-import {getOptions} from '../../models';
 import {ActivityType} from '../../models/strava';
+import {CountPieChart} from './CountPieChart';
 
 const PoolPieChart = () => {
   const [activities] = useActivities({
@@ -14,43 +12,16 @@ const PoolPieChart = () => {
   });
   const [label] = useLabels();
 
-  const poolMap = (activities ?? []).reduce((map: Record<string, number>, activity) => {
+  const data = (activities ?? []).reduce((map: Record<string, number>, activity) => {
     const poolName = activity.name.match(/^Natation\s+(.+?)(?:\s+\p{Emoji}.*)?$/u)?.[1] ?? 'Unknown';
     map[poolName] = (map[poolName] ?? 0) + 1;
 
     return map;
   }, {});
 
-  const labels = Object.keys(poolMap).map(key => `${key} ${label(key)}`);
-  const series = Object.values(poolMap);
+  const labels = Object.keys(data).map(key => `${key} ${label(key)}`);
 
-  const seriesAvg = Math.round(series.reduce((acc, val) => acc + val, 0) / series.length) ?? 0;
-
-  return (
-    <>
-      <Group width="full" gap="20px">
-        <Text>
-          <Span fontStyle="italic">Pool count</Span> {labels.length}
-        </Text>
-        <Text>
-          <Span fontStyle="italic">μ</Span> {seriesAvg} sessions by pool
-        </Text>
-      </Group>
-      <Chart
-        options={getOptions(labels, undefined, {
-          legend: {show: false},
-          dataLabels: {
-            enabled: true,
-            formatter: (_, {seriesIndex}) => labels[seriesIndex],
-            dropShadow: {enabled: false},
-          },
-        })}
-        series={series}
-        type="pie"
-        height={400}
-      />
-    </>
-  );
+  return <CountPieChart data={data} labels={labels} entityName="Pool" unitName="sessions by pool" />;
 };
 
 export {PoolPieChart};

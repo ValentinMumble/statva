@@ -8,7 +8,6 @@ const useLabels = (): [GetLabel, Labels, () => Promise<void>] => {
   const {data: labels = {}, refetch} = useQuery({
     queryKey: ['labels'],
     queryFn: fetchLabels,
-    staleTime: 5 * 60 * 1000,
   });
 
   return [

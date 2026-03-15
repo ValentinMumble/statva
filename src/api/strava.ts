@@ -17,7 +17,8 @@ const assertOk = async (response: Response): Promise<Response> => {
 let token: string | null = null;
 let tokenTimestamp: number = 0;
 
-const isTokenExpired = () => tokenTimestamp + 6 * 3600 * 1000 < Date.now(); // 6 hours
+const TOKEN_TTL_MS = 6 * 3_600_000;
+const isTokenExpired = () => tokenTimestamp + TOKEN_TTL_MS < Date.now();
 
 const fetchAccessToken = async () => {
   if (null === token || isTokenExpired()) {
@@ -85,28 +86,4 @@ const fetchAthleteRoutes = async (): Promise<Route[]> => {
   return await response.json();
 };
 
-const fetchAllActivities = async () => {
-  const accessToken = await fetchAccessToken();
-
-  let page = 1;
-  let resultCount = 0;
-  const activities: Record<string, Activity> = {};
-
-  do {
-    const response = await fetch(
-      `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${ITEMS_PER_PAGE}`
-    );
-    await assertOk(response);
-
-    const data = (await response.json()) as Activity[];
-
-    data.forEach(activity => (activities[activity.id] = activity));
-
-    resultCount = data.length;
-    page++;
-  } while (resultCount === ITEMS_PER_PAGE);
-
-  return Object.values(activities);
-};
-
-export {fetchAllActivities, fetchActivity, fetchActivities, fetchAthlete, fetchAthleteRoutes};
+export {fetchActivity, fetchActivities, fetchAthlete, fetchAthleteRoutes};

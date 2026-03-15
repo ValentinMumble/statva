@@ -1,8 +1,6 @@
-import {Group, Span, Text} from '@chakra-ui/react';
-import Chart from 'react-apexcharts';
 import {useActivities} from '../../hooks';
-import {getOptions} from '../../models';
 import {ActivityType} from '../../models/strava';
+import {CountPieChart} from './CountPieChart';
 
 const CourtPieChart = () => {
   const [activities] = useActivities({
@@ -13,7 +11,7 @@ const CourtPieChart = () => {
     includedActivityTypes: [ActivityType.Tennis],
   });
 
-  const courtMap = (activities ?? []).reduce((map: Record<string, number>, activity) => {
+  const data = (activities ?? []).reduce((map: Record<string, number>, activity) => {
     const courtName =
       activity.name.replace(/^Tennis\s+/, '').split(/\s+\p{Emoji}|[-–]/u)[0].trim() || 'Unknown';
     map[courtName] = (map[courtName] ?? 0) + 1;
@@ -21,36 +19,9 @@ const CourtPieChart = () => {
     return map;
   }, {});
 
-  const labels = Object.keys(courtMap);
-  const series = Object.values(courtMap);
+  const labels = Object.keys(data);
 
-  const seriesAvg = Math.round(series.reduce((acc, val) => acc + val, 0) / series.length) ?? 0;
-
-  return (
-    <>
-      <Group width="full" gap="20px">
-        <Text>
-          <Span fontStyle="italic">Court count</Span> {labels.length}
-        </Text>
-        <Text>
-          <Span fontStyle="italic">μ</Span> {seriesAvg} sessions by court
-        </Text>
-      </Group>
-      <Chart
-        options={getOptions(labels, undefined, {
-          legend: {show: false},
-          dataLabels: {
-            enabled: true,
-            formatter: (_, {seriesIndex}) => labels[seriesIndex],
-            dropShadow: {enabled: false},
-          },
-        })}
-        series={series}
-        type="pie"
-        height={400}
-      />
-    </>
-  );
+  return <CountPieChart data={data} labels={labels} entityName="Court" unitName="sessions by court" />;
 };
 
 export {CourtPieChart};

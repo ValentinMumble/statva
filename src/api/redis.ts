@@ -11,11 +11,13 @@ enum Key {
   EXPENSES = 'expenses',
 }
 
+let _client: Redis | null = null;
+
 const client = () =>
-  new Redis({
+  (_client ??= new Redis({
     url: import.meta.env.VITE_KV_REST_API_URL,
     token: import.meta.env.VITE_KV_REST_API_TOKEN,
-  });
+  }));
 
 const getEvents = async (): Promise<Event[] | null> => {
   const rawEvents = await client().hgetall<Record<string, Event>>(Key.EVENTS);

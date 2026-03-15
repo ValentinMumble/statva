@@ -8,7 +8,6 @@ const useActivityMeta = (): [Record<string, DetailedActivity>, () => Promise<voi
   const {data = {}, refetch} = useQuery({
     queryKey: ['activityMeta'],
     queryFn: fetchMeta,
-    staleTime: 5 * 60 * 1000,
   });
 
   return [
