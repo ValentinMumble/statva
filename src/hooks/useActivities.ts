@@ -1,6 +1,6 @@
 import {useMemo, useCallback} from 'react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
-import {ActivityFilter, sortActivities} from '../models';
+import {ActivityFilter, normalizeString, sortActivities} from '../models';
 import {Activity} from '../models/strava';
 import {getFetcher} from './useFetcher';
 import {useFtp} from './useFtp';
@@ -75,18 +75,7 @@ const useActivities = ({
           true === withCommute || ('only' === withCommute && commute) || (false === withCommute && !commute),
       )
       .filter(activity => activity.private === false || true === withPrivate)
-      .filter(({name}) =>
-        name
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase()
-          .includes(
-            search
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .toLowerCase(),
-          ),
-      )
+      .filter(({name}) => normalizeString(name).includes(normalizeString(search)))
       .filter(({gear_id}) => gearId === undefined || gear_id === gearId || (null === gear_id && 'null' === gearId))
       .filter(({start_date}) => 0 === years.length || years.includes(new Date(start_date).getUTCFullYear()))
       .filter(({sport_type}) => undefined === includedActivityTypes || includedActivityTypes.includes(sport_type))

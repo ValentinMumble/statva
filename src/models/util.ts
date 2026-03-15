@@ -137,6 +137,9 @@ const decodePolyline = (encoded: string): number[][] => {
   return coordinates;
 };
 
+const normalizeString = (value: string): string =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 const countBy = <T>(items: T[], keyFn: (item: T) => string, valueFn: (item: T) => number = () => 1): Record<string, number> =>
   items.reduce((map: Record<string, number>, item) => {
     const key = keyFn(item);
@@ -149,6 +152,7 @@ export {
   arrayRotate,
   backup,
   countBy,
+  normalizeString,
   decodePolyline,
   formatCalories,
   formatCurrency,
