@@ -1,8 +1,9 @@
+import {useState} from 'react';
 import {Flex, IconButton, Skeleton, Table, Tag} from '@chakra-ui/react';
 import {RxCross2} from 'react-icons/rx';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
-import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType, hasKom} from '../models';
+import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType, getRandomUnusedEmoji, hasKom} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
 import {useLabels} from '../hooks';
 
@@ -41,6 +42,7 @@ type ActivityListItemProps = {
   enabledSorts: SortType[];
   getFtp: GetFtp;
   showDeleteButton?: boolean;
+  usedEmojis?: Set<string>;
   onDeleteActivity?: (id: number) => void;
 };
 
@@ -50,9 +52,11 @@ const ActivityListItem = ({
   enabledSorts,
   getFtp,
   showDeleteButton = false,
+  usedEmojis,
   onDeleteActivity,
 }: ActivityListItemProps) => {
   const {label} = useLabels();
+  const [randomEmoji, setRandomEmoji] = useState<string | null>(null);
 
   if (null === activity) {
     return (
@@ -96,19 +100,33 @@ const ActivityListItem = ({
           justifyContent="space-between"
           alignItems="center"
         >
-          <Tooltip
-            positioning={{placement: 'right-end'}}
-            content={
-              <>
-                {new Date(activity.start_date).toLocaleDateString('fr-FR')} 〰
-                {label(activity.gear_id ?? activity.sport_type, true)}
-              </>
-            }
-          >
-            <a target="_blank" href={getActivityUrl(activity)}>
-              {activity.name}
-            </a>
-          </Tooltip>
+          <Flex gap="1" alignItems="center">
+            <Tooltip
+              positioning={{placement: 'right-end'}}
+              content={
+                <>
+                  {new Date(activity.start_date).toLocaleDateString('fr-FR')} 〰
+                  {label(activity.gear_id ?? activity.sport_type, true)}
+                </>
+              }
+            >
+              <a target="_blank" href={getActivityUrl(activity)}>
+                {activity.name}
+              </a>
+            </Tooltip>
+            {showDeleteButton && (
+              <span
+                style={{cursor: 'pointer'}}
+                onClick={() => {
+                  const emoji = getRandomUnusedEmoji(usedEmojis ?? new Set());
+                  setRandomEmoji(emoji);
+                  navigator.clipboard.writeText(emoji);
+                }}
+              >
+                {randomEmoji ?? '🎲'}
+              </span>
+            )}
+          </Flex>
           {showDeleteButton ? (
             <IconButton size="2xs" variant="ghost" onClick={() => onDeleteActivity?.(activity.id)}>
               <RxCross2 />

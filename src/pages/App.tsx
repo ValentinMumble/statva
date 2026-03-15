@@ -1,4 +1,4 @@
-import {ChangeEvent, KeyboardEvent, useState} from 'react';
+import {ChangeEvent, KeyboardEvent, useMemo, useState} from 'react';
 import {
   Badge,
   Button,
@@ -22,9 +22,9 @@ import {MdClear, MdFilterList} from 'react-icons/md';
 import {PiBicycle} from 'react-icons/pi';
 import {Tooltip} from '../components/ui';
 import {ActivityListItem, ActivityTypeFilter, ChartAccordion, GearSelect, Stats, WeekView} from '../components';
-import {SortType, SortDirection, TAGS, DEFAULT_SORTS, getTypes} from '../models';
+import {SortType, SortDirection, TAGS, DEFAULT_SORTS, getTypes, extractEmoji} from '../models';
 import {ActivityType} from '../models/strava';
-import {useActivities, useActivityMeta, useFtp, useLabels} from '../hooks';
+import {useActivities, useActivityMeta, useFtp, useLabels, useAllActivities} from '../hooks';
 
 const DISPLAYED_ITEMS = 75;
 
@@ -52,6 +52,12 @@ const App = () => {
     sortDirection,
   });
   const {activityMeta} = useActivityMeta();
+  const {data: allActivities} = useAllActivities();
+
+  const usedEmojis = useMemo(
+    () => new Set((allActivities ?? []).flatMap(({name}) => [...extractEmoji(name)])),
+    [allActivities],
+  );
 
   const handleRefetch = () => refetch();
   const handleSortDirectionToggle = () => setSortDirection('asc' === sortDirection ? 'desc' : 'asc');
@@ -230,6 +236,7 @@ const App = () => {
                         fullActivity={activityMeta[activity.id] ?? null}
                         enabledSorts={displayedSorts}
                         showDeleteButton={true}
+                        usedEmojis={usedEmojis}
                         onDeleteActivity={deleteActivity}
                       />
                     ))}
