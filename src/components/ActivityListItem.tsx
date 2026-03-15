@@ -64,7 +64,7 @@ const ActivityListItem = ({
         <Table.Cell>
           <Skeleton>🚴</Skeleton>
         </Table.Cell>
-        <Table.Cell padding="2px" fontFamily="mono" fontSize="xs">
+        <Table.Cell padding="2px" fontSize="xs" width="36px">
           <Skeleton>mon</Skeleton>
         </Table.Cell>
         <Table.Cell padding="2px">
@@ -92,7 +92,7 @@ const ActivityListItem = ({
           workoutType={getWorkoutType(activity)}
         />
       </Table.Cell>
-      <Table.Cell padding="2px" textAlign="center"  fontSize="xs">
+      <Table.Cell padding="2px" textAlign="center" fontSize="xs" width="36px">
         {new Date(activity.start_date).toLocaleDateString('en-US', {weekday: 'short'}).toLowerCase()}
       </Table.Cell>
       <Table.Cell padding="2px">
