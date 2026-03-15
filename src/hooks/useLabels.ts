@@ -13,7 +13,7 @@ const useLabels = () => {
   const label: GetLabel = (key, emojiOnly = false) =>
     null === key ? '🤷' : emojiOnly ? extractEmoji(labels[key] ?? key) : labels[key] ?? key;
 
-  return {label, labels, refetch: async () => { await refetch(); }};
+  return {label, labels, refetch};
 };
 
 export {useLabels};

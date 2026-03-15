@@ -26,8 +26,9 @@ const GearSelect = ({
     .filter(({type}) => !excludedGearTypes.includes(type))
     .map(({id}) => id);
 
-  const gearCollection = labelCollection(relevantGearIds, label);
-  gearCollection.items.push({value: 'null', label: '🤷'});
+  const gearCollection = labelCollection([...relevantGearIds, 'null'], key =>
+    key === 'null' ? '🤷' : label(key),
+  );
 
   return (
     <Select.Root

@@ -1,4 +1,4 @@
-import {useState, MouseEvent} from 'react';
+import {useState, useMemo, MouseEvent} from 'react';
 import {IconButton, Stat, StatRootProps} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Area, AreaChart, ResponsiveContainer, Tooltip} from 'recharts';
@@ -24,18 +24,26 @@ const SufferTrendChart = ({activities, timeframe, ...rest}: SufferTrendChartProp
     event.stopPropagation();
   };
 
-  const dataPerWeek = countBy(
-    activities ?? [],
-    activity => TIMEFRAMES[timeframe].getPeriodKey(new Date(activity.start_date)),
-    activity => activity.suffer_score ?? 0
+  const dataPerWeek = useMemo(
+    () =>
+      countBy(
+        activities ?? [],
+        activity => TIMEFRAMES[timeframe].getPeriodKey(new Date(activity.start_date)),
+        activity => activity.suffer_score ?? 0
+      ),
+    [activities, timeframe]
   );
 
-  const chartData = Object.entries(dataPerWeek)
-    .slice(-displayedWeeks)
-    .map(([weekId, effort]) => ({
-      week: weekId,
-      value: effort,
-    }));
+  const chartData = useMemo(
+    () =>
+      Object.entries(dataPerWeek)
+        .slice(-displayedWeeks)
+        .map(([weekId, effort]) => ({
+          week: weekId,
+          value: effort,
+        })),
+    [dataPerWeek, displayedWeeks]
+  );
 
   const chart = useChart({
     data: chartData,

@@ -105,7 +105,7 @@ const useActivities = ({
 
   return {
     activities: filteredAndSortedActivities,
-    refetch: () => { refetch(); },
+    refetch,
     unprocessedActivities,
     deleteActivity,
   };

@@ -41,7 +41,7 @@ export interface DetailedActivity {
   id: number;
   kilojoules: number;
   kudos_count: number;
-  laps: any[];
+  laps: unknown[];
   location_city: string | null;
   location_country: string | null;
   location_state: string | null;
@@ -54,20 +54,29 @@ export interface DetailedActivity {
   name: string;
   perceived_exertion: number | null;
   photo_count: number;
-  photos: any;
+  photos: {
+    primary?: {
+      unique_id: string;
+      urls: Record<number, string>;
+      source: number;
+      media_type: number;
+    };
+    use_primary_photo: boolean;
+    count: number;
+  };
   pr_count: number;
   prefer_perceived_exertion: boolean;
   private: boolean;
   private_note?: string;
   resource_state: number;
   segment_efforts: SegmentEffort[];
-  splits_metric: any[];
-  splits_standard: any[];
+  splits_metric: unknown[];
+  splits_standard: unknown[];
   sport_type: string;
   start_date_local: string;
   start_date: string;
   start_latlng: number[];
-  stats_visibility: any;
+  stats_visibility: {type: string; visibility: string}[];
   suffer_score: number;
   timezone: string;
   total_elevation_gain: number;

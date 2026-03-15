@@ -69,7 +69,7 @@ const getMonday = (date: Date = new Date()): Date => {
   return new Date(d.setDate(diff));
 };
 
-const arrayRotate = (originalArray: any[], count: number): typeof originalArray => {
+const arrayRotate = <T>(originalArray: T[], count: number): T[] => {
   const array = [...originalArray];
   const length = array.length;
   array.push(...array.splice(0, ((-count % length) + length) % length));

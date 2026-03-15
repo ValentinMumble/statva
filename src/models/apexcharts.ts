@@ -10,7 +10,7 @@ type ChartProps = {
 
 const getOptions: (
   labels: string[],
-  formatter?: (value: number, opts?: any) => string,
+  formatter?: (value: number, opts?: unknown) => string,
   additionalOptions?: Partial<ApexCharts.ApexOptions>
 ) => ApexCharts.ApexOptions = (labels, formatter, additionalOptions) => ({
   labels,

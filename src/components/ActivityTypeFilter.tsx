@@ -1,4 +1,4 @@
-import {MouseEvent} from 'react';
+import {MouseEvent, useMemo} from 'react';
 import {IconButton} from '@chakra-ui/react';
 import {TbBusStop} from 'react-icons/tb';
 import {ActivityIcon} from '../components';
@@ -14,7 +14,7 @@ type ActivityTypeFilterProps = {
 
 const ActivityTypeFilter = ({types, withCommute, onTypesChange, onWithCommuteChange}: ActivityTypeFilterProps) => {
   const {activities} = useActivities({withPrivate: true});
-  const uniqueTypes = [...new Set((activities ?? []).map(({sport_type}) => sport_type))];
+  const uniqueTypes = useMemo(() => [...new Set((activities ?? []).map(({sport_type}) => sport_type))], [activities]);
 
   const handleCommuteToggle = () => onWithCommuteChange(true === withCommute ? 'only' : true);
   const handleIconClick = (type: ActivityType) => (event: MouseEvent) => {

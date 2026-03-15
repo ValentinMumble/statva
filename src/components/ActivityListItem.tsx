@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {memo, useState} from 'react';
 import {Flex, IconButton, Skeleton, Table, Tag} from '@chakra-ui/react';
 import {RxCross2} from 'react-icons/rx';
 import {Tooltip} from '../components/ui';
@@ -160,4 +160,5 @@ const ActivityListItem = ({
   );
 };
 
-export {ActivityListItem};
+const MemoizedActivityListItem = memo(ActivityListItem);
+export {MemoizedActivityListItem as ActivityListItem};

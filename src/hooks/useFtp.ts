@@ -19,7 +19,7 @@ const useFtp = () => {
     return relevantTests[0]?.ftp ?? tests.at(-1)?.ftp ?? 0;
   };
 
-  return {getFtp, tests, refetch: async () => { await refetch(); }};
+  return {getFtp, tests, refetch};
 };
 
 export {useFtp, useFtpTests};

@@ -9,8 +9,8 @@ type Route = {
   elevation_gain: number;
   type: number;
   estimated_moving_time: number;
-  waypoints: any[];
-  segments: any[];
+  waypoints: unknown[];
+  segments: unknown[];
   starred: boolean;
   updated_at: string;
   sub_type: number;

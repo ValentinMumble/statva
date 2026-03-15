@@ -78,37 +78,8 @@ const CostPerKmChart = () => {
     const padding = (maxCost - minCost) * 0.1;
     const yDomain = [Math.max(0, minCost - padding), maxCost + padding];
 
-    // Calculate expense points for scatter plot
-    const firstVisibleDate = visibleDataPoints.length > 0 ? new Date(visibleDataPoints[0].date) : null;
-    const positiveExpenses: any[] = [];
-    const negativeExpenses: any[] = [];
-
-    expenses
-      .filter(expense => firstVisibleDate && new Date(expense.date) >= firstVisibleDate)
-      .forEach(expense => {
-        const expenseTime = new Date(expense.date).getTime();
-        const closestPoint = dataPoints.find(point => point.timestamp >= expenseTime);
-
-        if (closestPoint) {
-          const point = {
-            timestamp: expenseTime,
-            costPerKm: closestPoint.costPerKm,
-            description: expense.description,
-            amount: expense.amount,
-          };
-
-          if (expense.amount > 0) {
-            positiveExpenses.push(point);
-          } else {
-            negativeExpenses.push(point);
-          }
-        }
-      });
-
     return {
       lineData: visibleDataPoints,
-      positiveExpenses,
-      negativeExpenses,
       lastPoint: dataPoints[dataPoints.length - 1],
       yDomain,
     };

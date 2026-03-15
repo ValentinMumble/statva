@@ -10,7 +10,7 @@ const useExpenses = () => {
     queryFn: getExpenses,
   });
 
-  return {expenses, refetch: () => { refetch(); }};
+  return {expenses, refetch};
 };
 
 export {useExpenses};

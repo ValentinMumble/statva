@@ -16,7 +16,7 @@ const useEvents = <T extends Event>(type?: string) => {
       : (events.filter(event => undefined === type || type === event.type) as T[]).sort((a, b) =>
           a.date < b.date ? -1 : 1
         ),
-    refetch: () => { refetch(); },
+    refetch,
   };
 };
 

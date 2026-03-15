@@ -10,7 +10,7 @@ const useActivityMeta = () => {
     queryFn: fetchMeta,
   });
 
-  return {activityMeta, refetch: async () => { await refetch(); }};
+  return {activityMeta, refetch};
 };
 
 export {useActivityMeta};
