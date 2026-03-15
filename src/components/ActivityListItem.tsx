@@ -62,17 +62,17 @@ const ActivityListItem = ({
     return (
       <Table.Row>
         <Table.Cell>
-          <Skeleton>day</Skeleton>
+          <Skeleton>🚴</Skeleton>
         </Table.Cell>
-        <Table.Cell>
-          <Skeleton>i</Skeleton>
+        <Table.Cell padding="2px" fontFamily="mono" fontSize="xs">
+          <Skeleton>mon</Skeleton>
         </Table.Cell>
-        <Table.Cell padding="4px">
-          <Skeleton>name</Skeleton>
+        <Table.Cell padding="2px">
+          <Skeleton>Morning ride with the crew</Skeleton>
         </Table.Cell>
         {enabledSorts.map(sort => (
           <Table.Cell key={sort} padding="4px" width="60px" hideBelow="md">
-            <Skeleton>tag</Skeleton>
+            <Skeleton>12.3</Skeleton>
           </Table.Cell>
         ))}
       </Table.Row>
@@ -91,6 +91,9 @@ const ActivityListItem = ({
           isGranFondo={activity.distance > 100 * 1000}
           workoutType={getWorkoutType(activity)}
         />
+      </Table.Cell>
+      <Table.Cell padding="2px" textAlign="center"  fontSize="xs">
+        {new Date(activity.start_date).toLocaleDateString('en-US', {weekday: 'short'}).toLowerCase()}
       </Table.Cell>
       <Table.Cell padding="2px">
         <Flex
