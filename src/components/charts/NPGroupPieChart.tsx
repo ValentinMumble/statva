@@ -1,7 +1,7 @@
 import {Group, Span, Text} from '@chakra-ui/react';
 import Chart from 'react-apexcharts';
 import {useActivities, useLabels} from '../../hooks';
-import {getOptions} from '../../models';
+import {extractNPGroup, getOptions} from '../../models';
 
 const NPGroupPieChart = () => {
   const [activities] = useActivities({
@@ -14,14 +14,7 @@ const NPGroupPieChart = () => {
   const [label] = useLabels();
 
   const groupMap = (activities ?? []).reduce((map: Record<string, number>, activity) => {
-    // match also group like `Chill 1` or `G2.3`
-    const groupName =
-      activity.name
-        .replace('préchauffé', '')
-        .replace('précramé', '')
-        .replace('Chill 1', 'C1')
-        .match(/N-Peloton\s+#\d+\s+([A-Za-z0-9.-\s]+)/)?.[1]
-        .trim() || 'Unknown';
+    const groupName = extractNPGroup(activity.name);
 
     map[groupName] = (map[groupName] ?? 0) + 1;
 

@@ -253,6 +253,7 @@ const STATS: Record<string, StatEntry[][]> = {
       activities => ({
         label: '🥾',
         helpText: 'Gran Fondos',
+        info: `${activities.filter(({distance}) => distance >= 200 * 1000).length} × 200 km`,
         value: activities.filter(({distance}) => distance >= 100 * 1000).length,
       }),
     ],

@@ -1,15 +1,16 @@
 import {buildActivity, buildDetailedActivity} from '../../test/test-util';
 import {
+  calculateRunCalories,
+  calculateSwimCalories,
+  computeFinishCount,
+  daysExceedingDistance,
   eddingtonNumber,
+  extractNPGroup,
   formatLaps,
   getRidesBetween,
   getTypes,
   getWorkoutType,
-  daysExceedingDistance,
-  calculateRunCalories,
-  calculateSwimCalories,
-  computeFinishCount,
-} from './activity';
+} from '.';
 import {ActivityType, WorkoutType} from './strava';
 
 describe('getTypes', () => {
@@ -218,6 +219,21 @@ describe.skip('calculateSwimCalories', () => {
     [74, 2218, 1500, 150, 509],
   ])('it can calculate calories for a swim', (weight, movingTime, distance, average_heartrate, expected) => {
     expect(calculateSwimCalories(weight, movingTime, distance, average_heartrate)).toEqual(expected);
+  });
+});
+
+describe('extractNPGroup', () => {
+  test.each([
+    ['N-Peloton #575 G2', 'G2'],
+    ['N-Peloton #561 G2 préchauffé 🎸', 'G2'],
+    ['N-Peloton #550 G2.3', 'G2.3'],
+    ['N-Peloton #540 Chill 1', 'C1'],
+    ['N-Peloton #530 G3 précramé', 'G3'],
+    ['N-Peloton #520 G1 🏴‍☠️', 'Pirate'],
+    ['N-Peloton #510 🏴‍☠️', 'Pirate'],
+    ['Random ride name', 'Unknown'],
+  ])('extractNPGroup(%s) = %s', (name, expected) => {
+    expect(extractNPGroup(name)).toBe(expected);
   });
 });
 
