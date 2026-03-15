@@ -258,10 +258,9 @@ const App = () => {
                 ))}
               </>
             )}
-            {(activities?.length ?? 0) > displayedItems && (
+            {(activities?.length ?? 0) >= displayedItems && (
               <Table.Row>
-                <Table.Cell />
-                <Table.Cell textAlign="center" padding="10px">
+                <Table.Cell colSpan={3 + displayedSorts.length} textAlign="center" padding="10px">
                   <Button variant="outline" onClick={handleDisplayMoreItems}>
                     More
                   </Button>
