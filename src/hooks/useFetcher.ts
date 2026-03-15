@@ -26,43 +26,26 @@ import {
 
 type Fetcher<T> = (...args: any[]) => Promise<T>;
 
-const PROD_REGISTRY: Record<string, Fetcher<any>> = {
-  'activities.get': fetchActivities,
-  'activity.get': fetchActivity,
-  'activities.meta.get': getActivities,
-  'activities.meta.set': upsertActivity,
-  'athlete.get': fetchAthlete,
-  'events.get': getEvents,
-  'events.set': upsertEvent,
-  'events.delete': deleteEvent,
-  'expenses.get': getExpenses,
-  'expenses.set': upsertExpense,
-  'labels.get': getLabels,
-  'labels.set': upsertLabel,
-  'labels.delete': deleteLabel,
-  'ftp_tests.get': getFTPTests,
-  'ftp_tests.set': upsertFTPTest,
-};
+const isDev = import.meta.env.MODE === 'development';
+const noop: Fetcher<any> = () => Promise.resolve(console.log('Local, not implemented'));
 
-const DEV_REGISTRY: Record<string, Fetcher<any>> = {
-  'activities.get': fetchLocalActivities,
+const REGISTRY: Record<string, Fetcher<any>> = {
+  'activities.get': isDev ? fetchLocalActivities : fetchActivities,
   'activity.get': fetchActivity, //TODO: Implement local version
-  'activities.meta.get': fetchLocalMeta,
-  'activities.meta.set': () => Promise.resolve(console.log('Local, not implemented')),
-  'athlete.get': fetchLocalAthlete,
-  'events.get': fetchLocalEvents,
-  'events.set': () => Promise.resolve(console.log('Local, not implemented')),
-  'events.delete': () => Promise.resolve(console.log('Local, not implemented')),
-  'expenses.get': () => Promise.resolve([]),
-  'expenses.set': () => Promise.resolve(console.log('Local, not implemented')),
-  'labels.get': fetchLocalLabels,
-  'labels.set': () => Promise.resolve(console.log('Local, not implemented')),
-  'labels.delete': () => Promise.resolve(console.log('Local, not implemented')),
-  'ftp_tests.get': fetchLocalFTPTests,
-  'ftp_tests.set': () => Promise.resolve(console.log('Local, not implemented')),
+  'activities.meta.get': isDev ? fetchLocalMeta : getActivities,
+  'activities.meta.set': isDev ? noop : upsertActivity,
+  'athlete.get': isDev ? fetchLocalAthlete : fetchAthlete,
+  'events.get': isDev ? fetchLocalEvents : getEvents,
+  'events.set': isDev ? noop : upsertEvent,
+  'events.delete': isDev ? noop : deleteEvent,
+  'expenses.get': isDev ? () => Promise.resolve([]) : getExpenses,
+  'expenses.set': isDev ? noop : upsertExpense,
+  'labels.get': isDev ? fetchLocalLabels : getLabels,
+  'labels.set': isDev ? noop : upsertLabel,
+  'labels.delete': isDev ? noop : deleteLabel,
+  'ftp_tests.get': isDev ? fetchLocalFTPTests : getFTPTests,
+  'ftp_tests.set': isDev ? noop : upsertFTPTest,
 };
-
-const REGISTRY = import.meta.env.MODE === 'development' ? DEV_REGISTRY : PROD_REGISTRY;
 
 const getFetcher = <T>(key: string): Fetcher<T> => REGISTRY[key];
 

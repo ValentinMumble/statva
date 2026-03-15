@@ -3,36 +3,19 @@ import {Flex, IconButton, Skeleton, Table, Tag} from '@chakra-ui/react';
 import {RxCross2} from 'react-icons/rx';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
-import {GetFtp, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType, getRandomUnusedEmoji, hasKom} from '../models';
+import {GetFtp, HEART_ZONE_BG_COLORS, MONTH_BG_COLORS, POWER_ZONE_BG_COLORS, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType, getRandomUnusedEmoji, hasKom} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
 import {useLabels} from '../hooks';
-
-const HEART_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
-const POWER_COLORS = [...HEART_COLORS, '#ff0d0d50', '#ff0d0d50'];
-const MONTH_COLORS = [
-  '#FF000015', // Red
-  '#0000FF15', // Blue
-  '#00800015', // Green
-  '#FFFF0015', // Yellow
-  '#80008015', // Purple
-  '#FFA50015', // Orange
-  '#FFC0CB15', // Pink
-  '#A52A2A15', // Brown
-  '#80808015', // Gray
-  '#00FFFF15', // Cyan
-  '#FF634715', // Tomato (Red-Orange)
-  '#00FF7F15', // Spring Green
-];
 
 const getBgColor = (bgOption: string, activity: Activity, ftp: number): string => {
   switch (bgOption) {
     case 'average_watts':
-      return POWER_COLORS[getPowerZone(activity.weighted_average_watts ?? 0, ftp)];
+      return POWER_ZONE_BG_COLORS[getPowerZone(activity.weighted_average_watts ?? 0, ftp)];
     case 'average_heartrate':
-      return HEART_COLORS[getHeartZone(activity)];
+      return HEART_ZONE_BG_COLORS[getHeartZone(activity)];
     case 'date':
     default:
-      return MONTH_COLORS[new Date(activity.start_date).getMonth()];
+      return MONTH_BG_COLORS[new Date(activity.start_date).getMonth()];
   }
 };
 

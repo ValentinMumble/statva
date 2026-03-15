@@ -1,29 +1,42 @@
-import {ReactNode, useState} from 'react';
-import {Accordion, Span} from '@chakra-ui/react';
-import {
-  ProgressChart,
-  TimeframeChart,
-  EddingtonChart,
-  GearChart,
-  AverageGearChart,
-  HeartChart,
-  FTPChart,
-  ActivityTimeChart,
-  ChainChart,
-  EventOdometerChart,
-  DataLineChart,
-  EddingtonDayChart,
-  EventTimelineChart,
-  FinishPieChart,
-  GroupChart,
-  PoolPieChart,
-  CourtPieChart,
-  NPGroupPieChart,
-  CostPerKmChart,
-  CommuteSpeedChart,
-} from './charts';
+import {lazy, ReactNode, Suspense, useState} from 'react';
+import {Accordion, Span, Spinner} from '@chakra-ui/react';
 import {formatCalories, formatDistance, formatDistanceMeters, formatDuration} from '../models';
 import {ActivityType} from '../models/strava';
+
+// Lazy-load each chart module for code-splitting.
+// Named exports require remapping to default for React.lazy.
+const ChainChart = lazy(() => import('./charts/ChainChart').then(m => ({default: m.ChainChart})));
+const EventOdometerChart = lazy(() =>
+  import('./charts/EventOdometerChart').then(m => ({default: m.EventOdometerChart})),
+);
+const EventTimelineChart = lazy(() =>
+  import('./charts/EventTimelineChart').then(m => ({default: m.EventTimelineChart})),
+);
+const TimeframeChart = lazy(() => import('./charts/TimeframeChart').then(m => ({default: m.TimeframeChart})));
+const ActivityTimeChart = lazy(() =>
+  import('./charts/ActivityTimeChart').then(m => ({default: m.ActivityTimeChart})),
+);
+const CommuteSpeedChart = lazy(() =>
+  import('./charts/CommuteSpeedChart').then(m => ({default: m.CommuteSpeedChart})),
+);
+const FTPChart = lazy(() => import('./charts/FTPChart').then(m => ({default: m.FTPChart})));
+const EddingtonChart = lazy(() => import('./charts/EddingtonChart').then(m => ({default: m.EddingtonChart})));
+const EddingtonDayChart = lazy(() =>
+  import('./charts/EddingtonDayChart').then(m => ({default: m.EddingtonDayChart})),
+);
+const GearChart = lazy(() => import('./charts/GearChart').then(m => ({default: m.GearChart})));
+const AverageGearChart = lazy(() => import('./charts/AverageGearChart').then(m => ({default: m.AverageGearChart})));
+const ProgressChart = lazy(() => import('./charts/ProgressChart').then(m => ({default: m.ProgressChart})));
+const FinishPieChart = lazy(() => import('./charts/FinishPieChart').then(m => ({default: m.FinishPieChart})));
+const NPGroupPieChart = lazy(() => import('./charts/NPGroupPieChart').then(m => ({default: m.NPGroupPieChart})));
+const PoolPieChart = lazy(() => import('./charts/PoolPieChart').then(m => ({default: m.PoolPieChart})));
+const CourtPieChart = lazy(() => import('./charts/CourtPieChart').then(m => ({default: m.CourtPieChart})));
+const GroupChart = lazy(() => import('./charts/GroupChart').then(m => ({default: m.GroupChart})));
+const HeartChart = lazy(() => import('./charts/HeartChart').then(m => ({default: m.HeartChart})));
+const DataLineChart = lazy(() => import('./charts/DataLineChart').then(m => ({default: m.DataLineChart})));
+const CostPerKmChart = lazy(() => import('./charts/CostPerKmChart').then(m => ({default: m.CostPerKmChart})));
+
+const ChartFallback = () => <Spinner size="lg" margin={8} />;
 
 const ACCORDION_ITEMS: {label: string; component: ReactNode}[] = [
   {
@@ -182,7 +195,9 @@ const ChartAccordion = () => {
             <Accordion.ItemIndicator />
           </Accordion.ItemTrigger>
           <Accordion.ItemContent padding={0} fontSize=".8em">
-            {item.component}
+            {value.includes(item.label) && (
+              <Suspense fallback={<ChartFallback />}>{item.component}</Suspense>
+            )}
           </Accordion.ItemContent>
         </Accordion.Item>
       ))}

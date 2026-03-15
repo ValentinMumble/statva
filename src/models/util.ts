@@ -30,6 +30,23 @@ const formatDurationInDays = (durationInSeconds: number): string => {
   return `${Math.floor(hourCount)}${suffix} days`;
 };
 
+const HEART_ZONE_BG_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
+const POWER_ZONE_BG_COLORS = [...HEART_ZONE_BG_COLORS, '#ff0d0d50', '#ff0d0d50'];
+const MONTH_BG_COLORS = [
+  '#FF000015', // Red
+  '#0000FF15', // Blue
+  '#00800015', // Green
+  '#FFFF0015', // Yellow
+  '#80008015', // Purple
+  '#FFA50015', // Orange
+  '#FFC0CB15', // Pink
+  '#A52A2A15', // Brown
+  '#80808015', // Gray
+  '#00FFFF15', // Cyan
+  '#FF634715', // Tomato (Red-Orange)
+  '#00FF7F15', // Spring Green
+];
+
 const getZoneColor = (zone: number): string => {
   switch (zone) {
     case 1:
@@ -168,6 +185,9 @@ export {
   getMonthDiff,
   getWeekNumber,
   getZoneColor,
+  HEART_ZONE_BG_COLORS,
+  MONTH_BG_COLORS,
+  POWER_ZONE_BG_COLORS,
   range,
   removeNull,
 };
