@@ -44,6 +44,22 @@ type OptionalNumericField = keyof {
   [K in keyof Activity as Activity[K] extends number | undefined ? K : never]: Activity[K];
 };
 
+type TotalAgg = 'sum' | 'avg' | 'max';
+
+/** Resolve a total-aggregation function for a given field and formatter. */
+const totalFn = <F extends NumericField | OptionalNumericField>(
+  field: F,
+  agg: TotalAgg,
+  format: (v: number) => string | number = v => v
+): Tag['total'] => {
+  const aggFns = {sum: getTotalValue, avg: getAverageValue, max: getMaxValue};
+  return activities => format(aggFns[agg](activities, field));
+};
+
+// ---------------------------------------------------------------------------
+// Factory helpers
+// ---------------------------------------------------------------------------
+
 /** Tag that displays a raw numeric field (always present), with getTotalValue as total. */
 const simpleTag = (
   help: string,
@@ -59,10 +75,7 @@ const simpleTag = (
       label: activity[field] as number,
       isRelevant: threshold < (activity[field] as number),
     }),
-    total:
-      totalAgg === 'avg'
-        ? activities => Math.round(getAverageValue(activities, field))
-        : activities => getTotalValue(activities, field),
+    total: totalAgg === 'avg' ? totalFn(field, 'avg', Math.round) : totalFn(field, 'sum'),
   };
 };
 
@@ -71,33 +84,68 @@ const optionalRoundedTag = (
   help: string,
   sortType: SortType,
   field: OptionalNumericField,
-  totalAgg: 'sum' | 'avg' | 'max',
+  agg: TotalAgg,
   extra?: {
     tooltip?: (activity: Activity) => string | number | null;
     colorPalette?: (activity: Activity) => string | undefined;
   }
-): Tag => {
-  const totalFns = {
-    sum: (activities: Activity[]) => Math.round(getTotalValue(activities, field)),
-    avg: (activities: Activity[]) => Math.round(getAverageValue(activities, field)),
-    max: (activities: Activity[]) => getMaxValue(activities, field),
-  };
+): Tag => ({
+  help,
+  sortType,
+  value: activity => {
+    const val = activity[field] as number | undefined;
+    return {
+      label: undefined === val ? null : Math.round(val),
+      isRelevant: 0 < (val ?? 0),
+      tooltip: extra?.tooltip?.(activity),
+      colorPalette: extra?.colorPalette?.(activity),
+    };
+  },
+  total: totalFn(field, agg, Math.round),
+});
 
-  return {
-    help,
-    sortType,
-    value: activity => {
-      const val = activity[field] as number | undefined;
-      return {
-        label: undefined === val ? null : Math.round(val),
-        isRelevant: 0 < (val ?? 0),
-        tooltip: extra?.tooltip?.(activity),
-        colorPalette: extra?.colorPalette?.(activity),
-      };
-    },
-    total: totalFns[totalAgg],
-  };
-};
+/** Tag for an optional field displayed with a custom formatter (formatPower, formatSpeed, etc.). */
+const optionalFormattedTag = (
+  help: string,
+  sortType: SortType,
+  field: OptionalNumericField,
+  format: (v: number) => string,
+  agg: TotalAgg,
+  opts?: {excludedTypes?: ActivityType[]}
+): Tag => ({
+  help,
+  sortType,
+  excludedTypes: opts?.excludedTypes,
+  value: activity => {
+    const val = activity[field] as number | undefined;
+    return {
+      label: undefined === val ? null : format(val),
+      isRelevant: 0 < (val ?? 0),
+    };
+  },
+  total: totalFn(field, agg, format),
+});
+
+/** Tag for a duration field (always present), formatted with formatDuration / formatDurationInDays. */
+const durationTag = (
+  help: string,
+  sortType: SortType,
+  field: NumericField,
+  tooltipField?: NumericField
+): Tag => ({
+  help,
+  sortType,
+  value: activity => ({
+    label: formatDuration(activity[field] as number),
+    isRelevant: 0 < (activity[field] as number),
+    tooltip: tooltipField ? `⏳ ${formatDuration(activity[tooltipField] as number)}` : undefined,
+  }),
+  total: totalFn(field, 'sum', formatDurationInDays),
+});
+
+// ---------------------------------------------------------------------------
+// Tag definitions
+// ---------------------------------------------------------------------------
 
 const TAGS: Tag[] = [
   {
@@ -139,25 +187,8 @@ const TAGS: Tag[] = [
     total: activities =>
       formatPercent(getTotalValue(activities, 'total_elevation_gain') / getTotalValue(activities, 'distance'), 2),
   },
-  {
-    help: 'Moving time',
-    sortType: 'moving_time',
-    value: ({moving_time, elapsed_time}) => ({
-      label: formatDuration(moving_time),
-      isRelevant: 0 < moving_time,
-      tooltip: `⏳ ${formatDuration(elapsed_time)}`,
-    }),
-    total: activities => formatDurationInDays(getTotalValue(activities, 'moving_time')),
-  },
-  {
-    help: 'Elapsed time',
-    sortType: 'elapsed_time',
-    value: ({elapsed_time}) => ({
-      label: formatDuration(elapsed_time),
-      isRelevant: 0 < elapsed_time,
-    }),
-    total: activities => formatDurationInDays(getTotalValue(activities, 'elapsed_time')),
-  },
+  durationTag('Moving time', 'moving_time', 'moving_time', 'elapsed_time'),
+  durationTag('Elapsed time', 'elapsed_time', 'elapsed_time'),
   {
     help: 'Average speed',
     sortType: 'average_speed',
@@ -167,18 +198,11 @@ const TAGS: Tag[] = [
       isRelevant: 0 < activity.average_speed,
       tooltip: `🏁 ${formatPaceOrSpeed(activity, 3, true)}`,
     }),
-    total: activities => formatSpeed(getAverageValue(activities, 'average_speed')),
+    total: totalFn('average_speed', 'avg', formatSpeed),
   },
-  {
-    help: 'Max speed',
-    sortType: 'max_speed',
+  optionalFormattedTag('Max speed', 'max_speed', 'max_speed', formatSpeed, 'max', {
     excludedTypes: [ActivityType.Tennis, ActivityType.Swim, ActivityType.Hike, ActivityType.Yoga],
-    value: ({max_speed}) => ({
-      label: formatSpeed(max_speed),
-      isRelevant: 0 < max_speed,
-    }),
-    total: activities => formatSpeed(getMaxValue(activities, 'max_speed')),
-  },
+  }),
   {
     help: 'Average power',
     sortType: 'average_watts',
@@ -190,7 +214,7 @@ const TAGS: Tag[] = [
           ? null
           : `🏋️ ${formatPower(weighted_average_watts)} 〰 Zone ${getPowerZone(average_watts ?? 0, ftp)}`,
     }),
-    total: activities => formatPower(getAverageValue(activities, 'average_watts')),
+    total: totalFn('average_watts', 'avg', formatPower),
   },
   {
     help: 'Weighted average power',
@@ -203,7 +227,7 @@ const TAGS: Tag[] = [
           ? null
           : `⚡️ ${formatPower(average_watts)} 〰 Zone ${getPowerZone(weighted_average_watts ?? 0, ftp)}`,
     }),
-    total: activities => formatPower(getAverageValue(activities, 'weighted_average_watts')),
+    total: totalFn('weighted_average_watts', 'avg', formatPower),
   },
   {
     help: 'Normalized power',
@@ -225,15 +249,7 @@ const TAGS: Tag[] = [
       return formatPower(values.reduce((a, b) => a + b, 0) / values.length);
     },
   },
-  {
-    help: 'Max power',
-    sortType: 'max_watts',
-    value: ({max_watts}) => ({
-      label: undefined === max_watts ? null : formatPower(max_watts),
-      isRelevant: 0 < (max_watts ?? 0),
-    }),
-    total: activities => formatPower(getMaxValue(activities, 'max_watts')),
-  },
+  optionalFormattedTag('Max power', 'max_watts', 'max_watts', formatPower, 'max'),
   {
     help: 'Intensity',
     sortType: 'intensity',
@@ -253,12 +269,10 @@ const TAGS: Tag[] = [
           )
       ),
   },
-  {
-    ...optionalRoundedTag('Average heartrate', 'average_heartrate', 'average_heartrate', 'avg', {
-      tooltip: activity => `🫀 Zone ${getHeartZone(activity)}`,
-      colorPalette: activity => getZoneColor(getHeartZone(activity)),
-    }),
-  },
+  optionalRoundedTag('Average heartrate', 'average_heartrate', 'average_heartrate', 'avg', {
+    tooltip: activity => `🫀 Zone ${getHeartZone(activity)}`,
+    colorPalette: activity => getZoneColor(getHeartZone(activity)),
+  }),
   optionalRoundedTag('Max heartrate', 'max_heartrate', 'max_heartrate', 'max'),
   optionalRoundedTag('Suffer score', 'suffer_score', 'suffer_score', 'avg'),
   {
@@ -268,18 +282,10 @@ const TAGS: Tag[] = [
       label: guessCalories(activity),
       isRelevant: 0 < (activity.kilojoules ?? 0),
     }),
-    total: activities => Math.round(getTotalValue(activities, 'kilojoules')),
+    total: totalFn('kilojoules', 'sum', Math.round),
   },
   optionalRoundedTag('Average cadence', 'average_cadence', 'average_cadence', 'avg'),
-  {
-    help: 'Average temperature',
-    sortType: 'average_temp',
-    value: activity => ({
-      label: undefined === activity.average_temp ? null : `${Math.round(activity.average_temp)} °C`,
-      isRelevant: undefined !== activity.average_temp,
-    }),
-    total: activities => `${Math.round(getAverageValue(activities, 'average_temp'))} °C`,
-  },
+  optionalFormattedTag('Average temperature', 'average_temp', 'average_temp', v => `${Math.round(v)} °C`, 'avg'),
   simpleTag('PR count', 'pr_count', 'pr_count'),
   simpleTag('Achievement count', 'achievement_count', 'achievement_count'),
   simpleTag('Athlete count', 'athlete_count', 'athlete_count', {threshold: 1, totalAgg: 'avg'}),
