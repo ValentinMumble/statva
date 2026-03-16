@@ -27,7 +27,7 @@ const EventOdometerChart = () => {
   const handleEventTypeChange = ({value}: SegmentGroupValueChangeDetails) => value && setEventType(value);
   const handleGearChange = ({value}: SegmentGroupValueChangeDetails) => value && setGearId(value);
 
-  if (null === events) {
+  if (0 === events.length) {
     return null;
   }
 

@@ -48,8 +48,8 @@ const EditEvents = ({onEditEvents}: EditEventsProps) => {
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.Header display="flex" alignItems="center" justifyContent="space-between">
-              <Dialog.Title>{events?.length ?? 0} events 🪭</Dialog.Title>
-              <Clipboard.Root value={backup(events ?? [])}>
+              <Dialog.Title>{events.length} events 🪭</Dialog.Title>
+              <Clipboard.Root value={backup(events)}>
                 <Clipboard.Trigger asChild={true}>
                   <Button variant="outline">
                     <Clipboard.Indicator />

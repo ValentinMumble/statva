@@ -1,28 +1,8 @@
 import {ChangeEvent, KeyboardEvent, useMemo, useState} from 'react';
-import {
-  Badge,
-  Button,
-  Group,
-  HoverCard,
-  HStack,
-  IconButton,
-  Input,
-  InputGroup,
-  Portal,
-  Skeleton,
-  Stack,
-  Table,
-  Tag,
-  VStack,
-} from '@chakra-ui/react';
+import {Stack, VStack} from '@chakra-ui/react';
 import {useLocalStorage} from 'usehooks-ts';
-import {BsDatabaseDown} from 'react-icons/bs';
-import {HiArrowDown, HiArrowUp, HiOutlineLockClosed} from 'react-icons/hi2';
-import {MdClear, MdFilterList} from 'react-icons/md';
-import {PiBicycle} from 'react-icons/pi';
-import {Tooltip} from '../components/ui';
-import {ActivityListItem, ActivityTypeFilter, ChartAccordion, GearSelect, Stats, WeekView} from '../components';
-import {SortType, SortDirection, TAGS, DEFAULT_SORTS, getTypes, extractEmoji} from '../models';
+import {ActivityTable, ChartAccordion, FilterControls, Stats, WeekView} from '../components';
+import {SortType, SortDirection, DEFAULT_SORTS, getTypes, extractEmoji} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities, useActivityMeta, useFtp, useLabels, useAllActivities} from '../hooks';
 
@@ -95,8 +75,6 @@ const App = () => {
   const handleBikeOnlyToggle = () =>
     setTypes(types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? null : getTypes(ActivityType.Ride));
 
-  const isLoading = null === activities;
-
   return (
     <Stack padding={[undefined, '0 20px']} gap="20px" direction={['column-reverse', 'row']}>
       <VStack align="stretch" flexBasis="40%" gap="20px" width={['100vw', null]} height="100vh" overflowY="scroll">
@@ -105,170 +83,43 @@ const App = () => {
         <WeekView />
       </VStack>
       <VStack align="stretch" flexBasis="60%" height="100vh" overflow="scroll">
-        <Group width="full">
-          <InputGroup
-            flex={1}
-            endElement={
-              <>
-                <IconButton title="Clear" variant="ghost" size="xs" onClick={handleResetFilters}>
-                  <MdClear />
-                </IconButton>
-                {activities?.length ?? 0}
-              </>
-            }
-          >
-            <Input
-              disabled={isLoading}
-              placeholder="Search"
-              autoFocus={true}
-              value={search}
-              onChange={handleSearchChange}
-              onKeyDown={handleSearchKeyDown}
-            />
-          </InputGroup>
-          <GearSelect selectedGear={gearIds} onSelectedGearChange={setGearIds} clearable={true} />
-          <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={handlePrivateToggle}>
-            <HiOutlineLockClosed />
-          </IconButton>
-          <Group hideBelow="md">
-            <IconButton
-              title="Bike only"
-              variant={types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? 'surface' : 'ghost'}
-              onClick={handleBikeOnlyToggle}
-            >
-              <PiBicycle />
-            </IconButton>
-            <IconButton variant="ghost" onClick={handleRefetch}>
-              <BsDatabaseDown />
-            </IconButton>
-            <HoverCard.Root size="lg" openDelay={300}>
-              <HoverCard.Trigger>
-                <MdFilterList size="20px" />
-              </HoverCard.Trigger>
-              <Portal>
-                <HoverCard.Positioner>
-                  <HoverCard.Content maxWidth="unset" gap="10px" padding="10px">
-                    <HoverCard.Arrow>
-                      <HoverCard.ArrowTip />
-                    </HoverCard.Arrow>
-                    <HStack>
-                      {TAGS.map(tag => (
-                        <Tooltip key={tag.sortType} content={tag.help}>
-                          <IconButton
-                            size="xs"
-                            variant={displayedSorts.includes(tag.sortType) ? 'surface' : 'ghost'}
-                            onClick={handleSortToggle(tag.sortType)}
-                          >
-                            {label(tag.sortType)}
-                          </IconButton>
-                        </Tooltip>
-                      ))}
-                    </HStack>
-                    <HStack>
-                      <ActivityTypeFilter
-                        types={types}
-                        onTypesChange={setTypes}
-                        withCommute={withCommute}
-                        onWithCommuteChange={setWithCommute}
-                      />
-                    </HStack>
-                  </HoverCard.Content>
-                </HoverCard.Positioner>
-              </Portal>
-            </HoverCard.Root>
-          </Group>
-        </Group>
-        <Table.Root unstyled={true}>
-          <Table.Header hideBelow="md">
-            <Table.Row fontSize=".8em" cursor="pointer">
-              <Table.ColumnHeader />
-              <Table.ColumnHeader width="36px" />
-              <Table.ColumnHeader>
-                <VStack>
-                  <span onClick={handleSortDirectionToggle}>
-                    {'asc' === sortDirection ? <HiArrowUp /> : <HiArrowDown />}
-                  </span>
-                  <span onClick={handleSortChange('date')}>📅</span>
-                </VStack>
-              </Table.ColumnHeader>
-              {TAGS.filter(({sortType}) => displayedSorts.includes(sortType)).map(tag => (
-                <Table.ColumnHeader key={tag.sortType} onClick={handleSortChange(tag.sortType)}>
-                  {isLoading ? (
-                    <Skeleton margin="0 5px">i</Skeleton>
-                  ) : (
-                    <VStack>
-                      <Tag.Root colorPalette={tag.sortType === activeSort ? 'orange' : 'gray'} variant="subtle">
-                        <Tag.Label>{tag.total(activities, activityMeta, getFtp)}</Tag.Label>
-                      </Tag.Root>
-                      <Tooltip content={tag.help}>
-                        <span>{label(tag.sortType)}</span>
-                      </Tooltip>
-                    </VStack>
-                  )}
-                </Table.ColumnHeader>
-              ))}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {isLoading ? (
-              [...new Array(20)].map((_, index) => (
-                <ActivityListItem key={index} getFtp={getFtp} activity={null} enabledSorts={displayedSorts} />
-              ))
-            ) : 0 === activities.length ? (
-              <Table.Row>
-                <Table.Cell>No activities... 🏜️</Table.Cell>
-              </Table.Row>
-            ) : (
-              <>
-                {unprocessedActivities.length > 0 && (
-                  <>
-                    <Table.Row>
-                      <Table.Cell />
-                      <Table.Cell />
-                      <Table.Cell>
-                        <Badge>Unprocessed</Badge>
-                      </Table.Cell>
-                    </Table.Row>
-                    {unprocessedActivities.map(activity => (
-                      <ActivityListItem
-                        key={activity.id}
-                        getFtp={getFtp}
-                        activity={activity}
-                        fullActivity={activityMeta[activity.id] ?? null}
-                        enabledSorts={displayedSorts}
-                        showDeleteButton={true}
-                        usedEmojis={usedEmojis}
-                        onDeleteActivity={deleteActivity}
-                      />
-                    ))}
-                    <Table.Row>
-                      <Table.Cell />
-                      <Table.Cell>&nbsp;</Table.Cell>
-                    </Table.Row>
-                  </>
-                )}
-                {activities.slice(0, displayedItems).map(activity => (
-                  <ActivityListItem
-                    key={activity.id}
-                    getFtp={getFtp}
-                    activity={activity}
-                    fullActivity={activityMeta[activity.id] ?? null}
-                    enabledSorts={displayedSorts}
-                  />
-                ))}
-              </>
-            )}
-            {(activities?.length ?? 0) >= displayedItems && (
-              <Table.Row>
-                <Table.Cell colSpan={3 + displayedSorts.length} textAlign="center" padding="10px">
-                  <Button variant="outline" onClick={handleDisplayMoreItems}>
-                    More
-                  </Button>
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table.Root>
+        <FilterControls
+          search={search}
+          isLoading={null === activities}
+          activityCount={activities?.length ?? 0}
+          withPrivate={withPrivate}
+          withCommute={withCommute}
+          types={types}
+          gearIds={gearIds}
+          displayedSorts={displayedSorts}
+          label={label}
+          onSearchChange={handleSearchChange}
+          onSearchKeyDown={handleSearchKeyDown}
+          onResetFilters={handleResetFilters}
+          onPrivateToggle={handlePrivateToggle}
+          onBikeOnlyToggle={handleBikeOnlyToggle}
+          onRefetch={handleRefetch}
+          onGearChange={setGearIds}
+          onTypesChange={setTypes}
+          onWithCommuteChange={setWithCommute}
+          onSortToggle={handleSortToggle}
+        />
+        <ActivityTable
+          activities={activities}
+          unprocessedActivities={unprocessedActivities}
+          activityMeta={activityMeta}
+          displayedSorts={displayedSorts}
+          displayedItems={displayedItems}
+          activeSort={activeSort}
+          sortDirection={sortDirection}
+          getFtp={getFtp}
+          label={label}
+          usedEmojis={usedEmojis}
+          onSortChange={handleSortChange}
+          onSortDirectionToggle={handleSortDirectionToggle}
+          onDisplayMoreItems={handleDisplayMoreItems}
+          onDeleteActivity={deleteActivity}
+        />
       </VStack>
     </Stack>
   );

@@ -5,7 +5,7 @@ import {Route} from '../models/strava';
 
 type RouteDrawerProps = {
   selectedRoute: Route | undefined;
-  routes: Route[] | null;
+  routes: Route[];
   defaultOpen?: boolean;
 };
 
@@ -14,7 +14,6 @@ const RouteDrawer = ({routes, selectedRoute, defaultOpen}: RouteDrawerProps) => 
 
   const handleRouteClick = (route: Route) => () => {
     navigate(`/routes/${route.id}`);
-    console.log(route);
   };
 
   return (
@@ -33,7 +32,7 @@ const RouteDrawer = ({routes, selectedRoute, defaultOpen}: RouteDrawerProps) => 
             </Drawer.Header>
             <Drawer.Body>
               <List.Root gap="10px" variant="plain">
-                {null === routes
+                {0 === routes.length
                   ? [...new Array(20)].map((_, index) => (
                       <Skeleton key={index}>
                         <List.Item key={index}>Loading...</List.Item>

@@ -45,7 +45,6 @@ const AddCheckIn = () => {
     setLoading(true);
     await addCheckIn(checkIn);
     toaster.create({title: `✅ Checked-in`});
-    console.log(checkIn);
     setLoading(false);
   };
 

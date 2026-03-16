@@ -3,7 +3,7 @@ import {fetchAthleteRoutes} from '../api';
 import {Route} from '../models/strava';
 
 const useRoutes = () => {
-  const {data: routes = null} = useQuery<Route[]>({
+  const {data: routes = []} = useQuery<Route[]>({
     queryKey: ['routes'],
     queryFn: fetchAthleteRoutes,
   });
