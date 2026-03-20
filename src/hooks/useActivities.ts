@@ -12,7 +12,7 @@ const FIRST_PAGE_SIZE = 30;
 const useAllActivities = () => {
   const queryClient = useQueryClient();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['activities'],
     queryFn: async (): Promise<Activity[]> => {
       const activities: Record<string, Activity> = {};
@@ -41,6 +41,18 @@ const useAllActivities = () => {
       return Object.values(activities);
     },
   });
+
+  const refreshLatest = useCallback(async () => {
+    const [latest] = await fetchActivities(1, FIRST_PAGE_SIZE);
+    queryClient.setQueryData<Activity[]>(['activities'], old => {
+      if (!old) return latest;
+      const existing = new Map(old.map(a => [a.id, a]));
+      latest.forEach(a => existing.set(a.id, a));
+      return [...existing.values()];
+    });
+  }, [queryClient]);
+
+  return {...query, refreshLatest};
 };
 
 const useActivities = ({
@@ -54,7 +66,7 @@ const useActivities = ({
   years = [],
   minTime,
 }: ActivityFilter) => {
-  const {data: activities, refetch} = useAllActivities();
+  const {data: activities, refreshLatest} = useAllActivities();
   const {getFtp} = useFtp();
   const {activityMeta} = useActivityMeta();
   const queryClient = useQueryClient();
@@ -105,7 +117,7 @@ const useActivities = ({
 
   return {
     activities: filteredAndSortedActivities,
-    refetch,
+    refetch: refreshLatest,
     unprocessedActivities,
     deleteActivity,
   };

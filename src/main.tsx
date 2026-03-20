@@ -10,7 +10,8 @@ import {PageTitle} from './components';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60_000,
+      staleTime: Infinity,
+      gcTime: Infinity,
       refetchOnWindowFocus: false,
       retry: 1,
     },
