@@ -1,13 +1,23 @@
 import {useMemo, useState} from 'react';
 import {Button, Group, Input, NumberInput, Text} from '@chakra-ui/react';
-import {Chart, useChart} from '@chakra-ui/charts';
-import {Line, ComposedChart, Tooltip, YAxis, XAxis} from 'recharts';
+import {Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../ui';
 import {useActivities, useExpenses} from '../../hooks';
-import {BikeExpense, formatCurrency, formatDistance, SUPER6} from '../../models';
+import {BikeExpense, formatCurrency, formatDistance, formatDuration, SUPER6} from '../../models';
 import {upsertExpense} from '../../api';
 
 const DEFAULT_SKIP_PERCENT = 10;
+
+type DataPoint = {
+  month: string;
+  timestamp: number;
+  costPerKm: number;
+  costPerHour: number;
+  monthlySpend: number;
+  totalCost: number;
+  cumulativeDistance: number;
+  cumulativeHours: number;
+};
 
 const CostPerKmChart = () => {
   const [skipPercent, setSkipPercent] = useState<number>(DEFAULT_SKIP_PERCENT);
@@ -42,67 +52,103 @@ const CostPerKmChart = () => {
 
   const chartData = useMemo(() => {
     if (!activities || activities.length === 0) {
-      return {lineData: [], expenseData: [], lastPoint: undefined, yDomain: [0, 100]};
+      return {data: [], lastPoint: undefined, yDomain: [0, 100]};
     }
 
-    let cumulativeDistance = 0;
-    const dataPoints: {date: string; costPerKm: number; distance: number; totalCost: number; timestamp: number}[] = [];
+    const sortedExpenses = [...expenses].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
 
-    activities.forEach(activity => {
-      cumulativeDistance += activity.distance;
+    // Build monthly aggregates
+    const monthMap = new Map<string, {distance: number; time: number; spend: number}>();
 
-      const activityDate = new Date(activity.start_date);
-      const totalCost = expenses
-        .filter(expense => new Date(expense.date) <= activityDate)
-        .reduce((sum, expense) => sum + expense.amount, 0);
+    for (const activity of activities) {
+      const d = new Date(activity.start_date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const entry = monthMap.get(key) ?? {distance: 0, time: 0, spend: 0};
+      entry.distance += activity.distance;
+      entry.time += activity.moving_time;
+      monthMap.set(key, entry);
+    }
 
-      const costPerKm = (totalCost * 100) / (cumulativeDistance / 1000);
+    for (const expense of sortedExpenses) {
+      const d = new Date(expense.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const entry = monthMap.get(key) ?? {distance: 0, time: 0, spend: 0};
+      entry.spend += expense.amount;
+      monthMap.set(key, entry);
+    }
 
-      dataPoints.push({
-        date: new Date(activity.start_date).toISOString().split('T')[0],
-        costPerKm,
-        distance: cumulativeDistance,
-        totalCost,
-        timestamp: new Date(activity.start_date).getTime(),
+    // Fill gaps and build cumulative data
+    const allKeys = [...monthMap.keys()].sort();
+    if (allKeys.length === 0) return {data: [], lastPoint: undefined, yDomain: [0, 100]};
+
+    const [startYear, startMonth] = allKeys[0].split('-').map(Number);
+    const endDate = new Date();
+    const result: DataPoint[] = [];
+    let cumDistance = 0;
+    let cumTime = 0;
+    let cumCost = 0;
+
+    const current = new Date(startYear, startMonth - 1, 1);
+    const end = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+
+    while (current <= end) {
+      const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+      const entry = monthMap.get(key);
+
+      cumDistance += entry?.distance ?? 0;
+      cumTime += entry?.time ?? 0;
+      cumCost += entry?.spend ?? 0;
+
+      const cumKm = cumDistance / 1000;
+      const cumHours = cumTime / 3600;
+
+      result.push({
+        month: key,
+        timestamp: current.getTime(),
+        costPerKm: cumKm > 0 ? (cumCost * 100) / cumKm : 0,
+        costPerHour: cumHours > 0 ? Math.round((cumCost / cumHours) * 100) / 100 : 0,
+        monthlySpend: entry?.spend ?? 0,
+        totalCost: Math.round(cumCost),
+        cumulativeDistance: cumDistance,
+        cumulativeHours: Math.round(cumHours * 10) / 10,
       });
-    });
 
-    // Skip the oldest data points based on skipPercent
-    const skipCount = Math.floor((dataPoints.length * skipPercent) / 100);
-    const visibleDataPoints = dataPoints.slice(skipCount);
+      current.setMonth(current.getMonth() + 1);
+    }
 
-    // Calculate Y domain from visible data
-    const costValues = visibleDataPoints.map(d => d.costPerKm);
+    // Skip oldest data points
+    const skipCount = Math.floor((result.length * skipPercent) / 100);
+    const visible = result.slice(skipCount);
+
+    const costValues = visible.map(d => d.costPerKm);
     const minCost = Math.min(...costValues);
     const maxCost = Math.max(...costValues);
     const padding = (maxCost - minCost) * 0.1;
     const yDomain = [Math.max(0, minCost - padding), maxCost + padding];
 
     return {
-      lineData: visibleDataPoints,
-      lastPoint: dataPoints[dataPoints.length - 1],
+      data: visible,
+      lastPoint: result[result.length - 1],
       yDomain,
     };
   }, [activities, expenses, skipPercent]);
-
-  const chart = useChart({
-    data: chartData.lineData,
-    series: [{name: 'costPerKm', color: 'orange.solid'}],
-  });
 
   if (!activities || activities.length === 0) {
     return <Text>No data available</Text>;
   }
 
-  const {lineData, lastPoint, yDomain} = chartData;
+  const {data, lastPoint, yDomain} = chartData;
 
   return (
     <>
       <Group width="full" justifyContent="space-between" gap="20px">
         {lastPoint && (
           <Text fontSize="sm">
-            {formatCurrency(lastPoint.costPerKm)}/km • {formatDistance(lastPoint.distance)} total • €
-            {lastPoint.totalCost.toLocaleString()} invested ({expenses.length} expenses)
+            {formatCurrency(lastPoint.costPerKm)}/km • {formatCurrency(lastPoint.costPerHour * 100)}/h •{' '}
+            {formatDistance(lastPoint.cumulativeDistance)} • €{lastPoint.totalCost.toLocaleString()} invested •{' '}
+            {formatDuration(lastPoint.cumulativeHours * 3600, true)} ({expenses.length} expenses)
           </Text>
         )}
         <Group gap="10px" alignItems="center">
@@ -119,37 +165,37 @@ const CostPerKmChart = () => {
           />
         </Group>
       </Group>
-      <Chart.Root width="100%" height="400px" chart={chart}>
-        <ComposedChart data={lineData}>
+      <ResponsiveContainer width="100%" height={400}>
+        <ComposedChart data={data}>
           <XAxis
             dataKey="timestamp"
             type="number"
             domain={['dataMin', 'dataMax']}
-            tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})}
+            tickFormatter={ts => new Date(ts).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})}
           />
-          <YAxis domain={yDomain} hide />
+          <YAxis yAxisId="costPerKm" domain={yDomain} hide />
+          <YAxis yAxisId="costPerHour" hide />
+          <YAxis yAxisId="spend" orientation="right" hide />
           <Tooltip
             content={({payload, active}) => {
               if (!active || !payload?.[0]?.payload) return null;
-              const data = payload[0].payload;
+              const d = payload[0].payload as DataPoint;
               return (
-                <div style={{padding: '8px', background: 'rgba(0,0,0,0.8)', color: 'white', borderRadius: '4px'}}>
-                  {formatCurrency(data.costPerKm)}/km
+                <div style={{padding: '8px', background: 'rgba(0,0,0,0.85)', color: 'white', borderRadius: '4px', fontSize: '12px'}}>
+                  <div style={{marginBottom: '4px'}}>{d.month}</div>
+                  <div style={{color: '#ca8c19'}}>{formatCurrency(d.costPerKm)}/km</div>
+                  <div style={{color: '#ED9564'}}>{formatCurrency(d.costPerHour * 100)}/h</div>
+                  {d.monthlySpend > 0 && <div style={{color: '#6495ED'}}>Monthly: €{d.monthlySpend}</div>}
+                  <div>Total: €{d.totalCost} • {d.cumulativeHours}h</div>
                 </div>
               );
             }}
           />
-          <Line
-            type="monotone"
-            dataKey="costPerKm"
-            stroke="#ca8c19"
-            strokeWidth={3}
-            dot={false}
-            activeDot={{r: 6}}
-            isAnimationActive={true}
-          />
+          <Bar dataKey="monthlySpend" yAxisId="spend" fill="#6495ED30" radius={[2, 2, 0, 0]} />
+          <Line type="monotone" dataKey="costPerKm" yAxisId="costPerKm" stroke="#ca8c19" strokeWidth={2.5} dot={false} activeDot={{r: 5}} />
+          <Line type="monotone" dataKey="costPerHour" yAxisId="costPerHour" stroke="#ED9564" strokeWidth={2} dot={false} strokeDasharray="4 2" />
         </ComposedChart>
-      </Chart.Root>
+      </ResponsiveContainer>
       <Group marginBottom="20px">
         <Input type="date" size="sm" width="220px" value={date} onChange={({target}) => setDate(target.value)} />
         <NumberInput.Root size="sm" value={amount?.toString()} onValueChange={({value}) => setAmount(Number(value))}>

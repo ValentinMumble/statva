@@ -1,11 +1,12 @@
+import {useRef} from 'react';
 import {
   Badge,
-  Button,
   Skeleton,
   Table,
   Tag,
   VStack,
 } from '@chakra-ui/react';
+import {useVirtualizer} from '@tanstack/react-virtual';
 import {HiArrowDown, HiArrowUp} from 'react-icons/hi2';
 import {Tooltip} from './ui';
 import {ActivityListItem} from './ActivityListItem';
@@ -13,12 +14,13 @@ import {SortType, SortDirection, TAGS, GetFtp} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
 import {GetLabel} from '../models/label';
 
+const ROW_HEIGHT = 36;
+
 type ActivityTableProps = {
   activities: Activity[] | null;
   unprocessedActivities: Activity[];
   activityMeta: Record<string, DetailedActivity>;
   displayedSorts: SortType[];
-  displayedItems: number;
   activeSort: SortType;
   sortDirection: SortDirection;
   getFtp: GetFtp;
@@ -26,7 +28,6 @@ type ActivityTableProps = {
   usedEmojis: Set<string>;
   onSortChange: (sortType: SortType) => () => void;
   onSortDirectionToggle: () => void;
-  onDisplayMoreItems: () => void;
   onDeleteActivity: (id: number) => void;
 };
 
@@ -35,7 +36,6 @@ const ActivityTable = ({
   unprocessedActivities,
   activityMeta,
   displayedSorts,
-  displayedItems,
   activeSort,
   sortDirection,
   getFtp,
@@ -43,13 +43,27 @@ const ActivityTable = ({
   usedEmojis,
   onSortChange,
   onSortDirectionToggle,
-  onDisplayMoreItems,
   onDeleteActivity,
 }: ActivityTableProps) => {
   const isLoading = null === activities;
+  const tableRef = useRef<HTMLTableElement>(null);
+
+  const rowCount = activities?.length ?? 0;
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => tableRef.current?.closest('[data-scroll-root]') as HTMLElement | null,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 20,
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom =
+    virtualItems.length > 0 ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end : 0;
 
   return (
-    <Table.Root unstyled={true}>
+    <Table.Root unstyled={true} ref={tableRef}>
       <Table.Header hideBelow="md">
         <Table.Row fontSize=".8em" cursor="pointer">
           <Table.ColumnHeader />
@@ -118,25 +132,29 @@ const ActivityTable = ({
                 </Table.Row>
               </>
             )}
-            {activities.slice(0, displayedItems).map(activity => (
-              <ActivityListItem
-                key={activity.id}
-                getFtp={getFtp}
-                activity={activity}
-                fullActivity={activityMeta[activity.id] ?? null}
-                enabledSorts={displayedSorts}
-              />
-            ))}
+            {paddingTop > 0 && (
+              <Table.Row>
+                <Table.Cell style={{height: paddingTop, padding: 0}} />
+              </Table.Row>
+            )}
+            {virtualItems.map(virtualRow => {
+              const activity = activities[virtualRow.index];
+              return (
+                <ActivityListItem
+                  key={activity.id}
+                  getFtp={getFtp}
+                  activity={activity}
+                  fullActivity={activityMeta[activity.id] ?? null}
+                  enabledSorts={displayedSorts}
+                />
+              );
+            })}
+            {paddingBottom > 0 && (
+              <Table.Row>
+                <Table.Cell style={{height: paddingBottom, padding: 0}} />
+              </Table.Row>
+            )}
           </>
-        )}
-        {(activities?.length ?? 0) >= displayedItems && (
-          <Table.Row>
-            <Table.Cell colSpan={3 + displayedSorts.length} textAlign="center" padding="10px">
-              <Button variant="outline" onClick={onDisplayMoreItems}>
-                More
-              </Button>
-            </Table.Cell>
-          </Table.Row>
         )}
       </Table.Body>
     </Table.Root>

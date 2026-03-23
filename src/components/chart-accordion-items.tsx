@@ -32,6 +32,9 @@ const GroupChart = lazy(() => import('./charts/GroupChart').then(m => ({default:
 const HeartChart = lazy(() => import('./charts/HeartChart').then(m => ({default: m.HeartChart})));
 const DataLineChart = lazy(() => import('./charts/DataLineChart').then(m => ({default: m.DataLineChart})));
 const CostPerKmChart = lazy(() => import('./charts/CostPerKmChart').then(m => ({default: m.CostPerKmChart})));
+const TrainingLoadChart = lazy(() =>
+  import('./charts/TrainingLoadChart').then(m => ({default: m.TrainingLoadChart})),
+);
 
 export type AccordionItem = {label: string; component: ReactNode};
 
@@ -93,4 +96,5 @@ export const ACCORDION_ITEMS: AccordionItem[] = [
   {label: 'Suffer chart 🌶️', component: <DataLineChart data="suffer_score" />},
   {label: 'Cadence chart 🎡', component: <DataLineChart min={40} max={110} data="average_cadence" />},
   {label: 'Cost / km 💸', component: <CostPerKmChart />},
+  {label: 'Training load 🏋️', component: <TrainingLoadChart />},
 ];

@@ -6,8 +6,6 @@ import {SortType, SortDirection, DEFAULT_SORTS, getTypes, extractEmoji} from '..
 import {ActivityType} from '../models/strava';
 import {useActivities, useActivityMeta, useFtp, useLabels, useAllActivities} from '../hooks';
 
-const DISPLAYED_ITEMS = 75;
-
 const App = () => {
   const [withPrivate, setWithPrivate] = useLocalStorage<boolean>('withPrivate', false);
   const [withCommute, setWithCommute] = useState<boolean | 'only'>(true);
@@ -15,7 +13,6 @@ const App = () => {
   const [activeSort, setActiveSort] = useState<SortType>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [gearIds, setGearIds] = useState<string[]>([]);
-  const [displayedItems, setDisplayedItems] = useState<number>(DISPLAYED_ITEMS);
 
   const [displayedSorts, setDisplayedSorts] = useLocalStorage<SortType[]>('sort-types', DEFAULT_SORTS);
   const [types, setTypes] = useLocalStorage<ActivityType[] | null>('activity-types', getTypes(ActivityType.Ride));
@@ -53,7 +50,6 @@ const App = () => {
     setActiveSort('date');
     setSortDirection('desc');
     setGearIds([]);
-    setDisplayedItems(DISPLAYED_ITEMS);
   };
   const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Escape') {
@@ -63,7 +59,6 @@ const App = () => {
 
   const handleSortChange = (sortType: SortType) => () =>
     sortType === activeSort ? handleSortDirectionToggle() : setActiveSort(sortType);
-  const handleDisplayMoreItems = () => setDisplayedItems(displayedItems => displayedItems + DISPLAYED_ITEMS);
 
   const handleSortToggle = (sortType: SortType) => () =>
     setDisplayedSorts(displayedSorts =>
@@ -82,7 +77,7 @@ const App = () => {
         <ChartAccordion />
         <WeekView />
       </VStack>
-      <VStack align="stretch" flexBasis="60%" height="100vh" overflow="scroll">
+      <VStack align="stretch" flexBasis="60%" height="100vh" overflow="scroll" data-scroll-root>
         <FilterControls
           search={search}
           isLoading={null === activities}
@@ -109,7 +104,6 @@ const App = () => {
           unprocessedActivities={unprocessedActivities}
           activityMeta={activityMeta}
           displayedSorts={displayedSorts}
-          displayedItems={displayedItems}
           activeSort={activeSort}
           sortDirection={sortDirection}
           getFtp={getFtp}
@@ -117,7 +111,6 @@ const App = () => {
           usedEmojis={usedEmojis}
           onSortChange={handleSortChange}
           onSortDirectionToggle={handleSortDirectionToggle}
-          onDisplayMoreItems={handleDisplayMoreItems}
           onDeleteActivity={deleteActivity}
         />
       </VStack>
