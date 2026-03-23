@@ -13,4 +13,5 @@ export * from './gear';
 export * from './label';
 export * from './tag';
 export * from './timeframe';
+export * from './tss';
 export * from './util';

@@ -2,6 +2,10 @@ import {useMemo} from 'react';
 import {Text} from '@chakra-ui/react';
 import {Area, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {useActivities} from '../../hooks';
+import {useFtp} from '../../hooks/useFtp';
+import {computeTSS} from '../../models';
+import {Activity} from '../../models/strava';
+import {GetFtp} from '../../models/ftp';
 
 const CTL_DAYS = 42;
 const ATL_DAYS = 7;
@@ -15,7 +19,7 @@ type DayData = {
   tsb: number;
 };
 
-const buildTrainingLoad = (activities: {start_date: string; suffer_score?: number}[]): DayData[] => {
+const buildTrainingLoad = (activities: Activity[], getFtp: GetFtp): DayData[] => {
   if (activities.length === 0) return [];
 
   const sorted = [...activities].sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
@@ -28,7 +32,8 @@ const buildTrainingLoad = (activities: {start_date: string; suffer_score?: numbe
   const dailyLoad: Record<string, number> = {};
   for (const activity of sorted) {
     const day = new Date(activity.start_date).toISOString().split('T')[0];
-    dailyLoad[day] = (dailyLoad[day] ?? 0) + (activity.suffer_score ?? 0);
+    const tss = computeTSS(activity, getFtp(new Date(activity.start_date)));
+    dailyLoad[day] = (dailyLoad[day] ?? 0) + (tss?.value ?? 0);
   }
 
   const ctlDecay = Math.exp(-1 / CTL_DAYS);
@@ -67,13 +72,17 @@ const TrainingLoadChart = () => {
     sort: 'date',
     sortDirection: 'asc',
   });
+  const {getFtp} = useFtp();
 
   const data = useMemo(
-    () => buildTrainingLoad((activities ?? []).filter(a => a.suffer_score)),
-    [activities],
+    () => buildTrainingLoad(
+      (activities ?? []).filter(a => a.weighted_average_watts || a.average_heartrate),
+      getFtp,
+    ),
+    [activities, getFtp],
   );
 
-  if (data.length === 0) return <Text>No suffer score data available</Text>;
+  if (data.length === 0) return <Text>No TSS data available</Text>;
 
   const sixMonthsAgo = Date.now() - 180 * MS_PER_DAY;
   const visibleData = data.filter(d => d.timestamp >= sixMonthsAgo);
