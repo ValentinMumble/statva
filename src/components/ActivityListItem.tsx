@@ -39,7 +39,7 @@ const ActivityListItem = ({
   onDeleteActivity,
 }: ActivityListItemProps) => {
   const {label} = useLabels();
-  const [randomEmoji, setRandomEmoji] = useState<string | null>(null);
+  const [randomEmoji, setRandomEmoji] = useState<string>(() => getRandomUnusedEmoji(usedEmojis ?? new Set()));
 
   if (null === activity) {
     return (
@@ -104,12 +104,11 @@ const ActivityListItem = ({
               <span
                 style={{cursor: 'pointer'}}
                 onClick={() => {
-                  const emoji = getRandomUnusedEmoji(usedEmojis ?? new Set());
-                  setRandomEmoji(emoji);
-                  navigator.clipboard.writeText(emoji);
+                  setRandomEmoji(getRandomUnusedEmoji(usedEmojis ?? new Set()));
+                  navigator.clipboard.writeText(randomEmoji);
                 }}
               >
-                {randomEmoji ?? '🎲'}
+                {randomEmoji}
               </span>
             )}
           </Flex>
