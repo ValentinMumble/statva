@@ -1,4 +1,4 @@
-import {Activity, Athlete, DetailedActivity, Route} from '../models/strava';
+import {Activity, ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
@@ -93,4 +93,13 @@ const fetchAthleteRoutes = async (): Promise<Route[]> => {
   return await response.json();
 };
 
-export {fetchActivity, fetchActivities, fetchAthlete, fetchAthleteRoutes};
+const fetchActivityZones = async (id: number): Promise<ActivityZone[]> => {
+  const accessToken = await fetchAccessToken();
+
+  const response = await fetch(`${ACTIVITY_ENDPOINT}/${id}/zones?access_token=${accessToken}`);
+  await assertOk(response);
+
+  return await response.json();
+};
+
+export {fetchActivity, fetchActivities, fetchActivityZones, fetchAthlete, fetchAthleteRoutes};

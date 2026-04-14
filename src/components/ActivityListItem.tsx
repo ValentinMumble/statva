@@ -3,21 +3,13 @@ import {Flex, IconButton, Skeleton, Table, Tag} from '@chakra-ui/react';
 import {RxCross2} from 'react-icons/rx';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
-import {GetFtp, HEART_ZONE_BG_COLORS, MONTH_BG_COLORS, POWER_ZONE_BG_COLORS, SortType, TAGS, getActivityUrl, getHeartZone, getPowerZone, getWorkoutType, getRandomUnusedEmoji, hasKom} from '../models';
+import {ZoneTooltip} from './ZoneTooltip';
+import {GetFtp, MONTH_BG_COLORS, SortType, TAGS, getActivityUrl, getWorkoutType, getRandomUnusedEmoji, hasKom} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
 import {useLabels} from '../hooks';
 
-const getBgColor = (bgOption: string, activity: Activity, ftp: number): string => {
-  switch (bgOption) {
-    case 'average_watts':
-      return POWER_ZONE_BG_COLORS[getPowerZone(activity.weighted_average_watts ?? 0, ftp)];
-    case 'average_heartrate':
-      return HEART_ZONE_BG_COLORS[getHeartZone(activity)];
-    case 'date':
-    default:
-      return MONTH_BG_COLORS[new Date(activity.start_date).getMonth()];
-  }
-};
+const getBgColor = (activity: Activity): string =>
+  MONTH_BG_COLORS[new Date(activity.start_date).getMonth()];
 
 type ActivityListItemProps = {
   activity: Activity | null;
@@ -80,7 +72,7 @@ const ActivityListItem = ({
       </Table.Cell>
       <Table.Cell padding="2px">
         <Flex
-          bg={getBgColor('date', activity, ftp)}
+          bg={getBgColor(activity)}
           borderRadius="8px"
           padding="2px 5px"
           justifyContent="space-between"
@@ -128,13 +120,23 @@ const ActivityListItem = ({
           return <Table.Cell key={tag.sortType} />;
         }
 
+        const tagContent = (
+          <Tag.Root variant="subtle" colorPalette={colorPalette}>
+            <Tag.Label>{label}</Tag.Label>
+          </Tag.Root>
+        );
+
         return (
           <Table.Cell key={tag.sortType} hideBelow="md" textAlign="center" opacity={isRelevant ? 0.9 : 0.4}>
-            <Tooltip portalled={true} disabled={null === tooltip} content={tooltip}>
-              <Tag.Root variant="subtle" colorPalette={colorPalette}>
-                <Tag.Label>{label}</Tag.Label>
-              </Tag.Root>
-            </Tooltip>
+            {tag.sortType === 'average_heartrate' ? (
+              <ZoneTooltip activityId={activity.id} hasHeartrate={activity.has_heartrate}>
+                {tagContent}
+              </ZoneTooltip>
+            ) : (
+              <Tooltip portalled={true} disabled={null === tooltip} content={tooltip}>
+                {tagContent}
+              </Tooltip>
+            )}
           </Table.Cell>
         );
       })}

@@ -3,6 +3,7 @@ export * from './activity-stats';
 export * from './activity-total';
 export * from './activity-type';
 export * from './activity-zone';
+export * from './activity-zone-type';
 export * from './athlete';
 export * from './comment';
 export * from './detailed-activity';
