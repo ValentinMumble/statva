@@ -102,7 +102,8 @@ const RIDE_STATS: StatEntry[][] = [
         getAverageValue(
           activities.filter(({commute}) => !commute),
           'distance'
-        )
+        ),
+        1
       ),
     }),
     activities => ({
