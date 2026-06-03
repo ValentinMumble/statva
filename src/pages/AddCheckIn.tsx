@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {Button, createListCollection, Select, SelectValueChangeDetails, VStack} from '@chakra-ui/react';
 import {TbCircleCheck, TbCurrentLocation, TbShare2} from 'react-icons/tb';
 import {LocationMarker, RouteMap} from '../components';
@@ -15,17 +15,19 @@ const generateShareUrl = (route: Route | undefined) =>
 
 const AddCheckIn = () => {
   const routes = useRoutes();
-  const [route, setRoute] = useState<Route>();
+  const [selectedRoute, setSelectedRoute] = useState<Route>();
   const [isLoading, setLoading] = useState<boolean>(false);
   const [[latitude, longitude], refreshLocation] = useGeolocation();
+
+  // Default to the first route until the user picks one, derived during render rather than synced via an effect.
+  const route = selectedRoute ?? routes?.[0];
 
   const routeCollection = createListCollection({
     items: (routes ?? []).map(route => ({value: route.id.toString(), label: route.name})),
   });
 
   const handleRouteChange = ({value}: SelectValueChangeDetails) => {
-    const selectedRoute = (routes ?? []).find(route => route.id.toString() === value[0]);
-    setRoute(selectedRoute);
+    setSelectedRoute((routes ?? []).find(route => route.id.toString() === value[0]));
   };
 
   const handleCheckIn = async () => {
@@ -51,12 +53,6 @@ const AddCheckIn = () => {
   const handleShareLink = async () => {
     await navigator.share({title: 'View route', url: generateShareUrl(route)});
   };
-
-  useEffect(() => {
-    if (routes && routes.length > 0) {
-      setRoute(routes[0]);
-    }
-  }, [routes]);
 
   return (
     <VStack height="80vh" width="100vw" overflow="hidden" gap="30px" justifyContent="center">

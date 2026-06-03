@@ -17,7 +17,7 @@ interface Activity {
 
 interface DetailedActivity extends Activity {
   // Additional fields from cached activities
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface DeletedActivityInfo {

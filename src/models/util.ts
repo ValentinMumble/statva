@@ -99,7 +99,7 @@ const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
     .fill(start)
     .map((x, y) => x + y * step);
 
-const removeNull = (object: object) => Object.fromEntries(Object.entries(object).filter(([_, v]) => v != null));
+const removeNull = (object: object) => Object.fromEntries(Object.entries(object).filter(([, value]) => value != null));
 
 const backup = (array: {id: string}[]): string =>
   JSON.stringify(

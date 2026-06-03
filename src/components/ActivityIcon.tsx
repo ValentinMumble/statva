@@ -1,3 +1,4 @@
+import {createElement} from 'react';
 import {Icon, IconProps} from '@chakra-ui/react';
 import {GiMountainClimbing} from 'react-icons/gi';
 import {PiBicycleFill, PiBicycle, PiTennisBallBold, PiQuestionBold} from 'react-icons/pi';
@@ -96,14 +97,12 @@ const ActivityIcon = ({
   workoutType = WorkoutType.None,
   ...rest
 }: ActivityIconProps) => {
-  const ActivityIconType = getActivityIcon(activityType, isCommute, hasKom);
+  const activityIcon = getActivityIcon(activityType, isCommute, hasKom);
 
   return (
     // The span is to prevent React whining about passing a ref to the react-icon component
     <Icon {...rest} color={getIconColor(workoutType, isGranFondo, hasKom)}>
-      <span>
-        <ActivityIconType />
-      </span>
+      <span>{createElement(activityIcon)}</span>
     </Icon>
   );
 };

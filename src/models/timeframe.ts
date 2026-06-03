@@ -50,8 +50,13 @@ const TIMEFRAMES: Record<Timeframe, TimeframeData> = {
   },
 }; ;
 
-const generatePeriodKeys = (firstDate: Date, lastDate: Date, timeframe: Timeframe, emptyValue: number | null = 0) => {
-  const emptyValues: Record<string, any> = {};
+const generatePeriodKeys = <Value = number | null>(
+  firstDate: Date,
+  lastDate: Date,
+  timeframe: Timeframe,
+  emptyValue: Value = 0 as Value
+): Record<string, Value> => {
+  const emptyValues: Record<string, Value> = {};
   const {maxValue, getDatePeriod, separator, getPeriodKey} = TIMEFRAMES[timeframe];
 
   for (let year = firstDate.getUTCFullYear(); year <= lastDate.getUTCFullYear(); year++) {
@@ -95,7 +100,7 @@ const aggregateTimeframeData = (
         periodMap[periodKey] = (periodMap[periodKey] ?? 0) + valueToAdd;
 
         return periodMap;
-      }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
+      }, generatePeriodKeys<number>(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
     )
       .sort()
       .slice(-itemCount)
@@ -113,7 +118,7 @@ const aggregateActivityTypeCount = (activities: Activity[], timeframe: Timeframe
         periodMap[periodKey] = {...data, [key]: (data[key] ?? 0) + 1};
 
         return periodMap;
-      }, generatePeriodKeys(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
+      }, generatePeriodKeys<Record<string, number> | null>(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
     )
       .sort()
       .slice(-itemCount)

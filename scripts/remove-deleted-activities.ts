@@ -77,7 +77,7 @@ const loadEnvVariables = async (): Promise<void> => {
         }
       }
     });
-  } catch (error) {
+  } catch {
     console.warn(`Warning: Could not read .env file at ${envPath}`);
   }
 };
@@ -112,9 +112,9 @@ const readDeletedActivities = async (reportPath: string): Promise<DeletedActivit
     return report.deleted_activities;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new Error(`Report file not found: ${reportPath}`);
+      throw new Error(`Report file not found: ${reportPath}`, {cause: error});
     }
-    throw new Error(`Failed to read report file: ${(error as Error).message}`);
+    throw new Error(`Failed to read report file: ${(error as Error).message}`, {cause: error});
   }
 };
 
@@ -126,7 +126,7 @@ const getActivitiesCount = async (client: Redis): Promise<number> => {
     const activities = await client.hgetall('activities');
     return activities ? Object.keys(activities).length : 0;
   } catch (error) {
-    throw new Error(`Failed to get activities count: ${(error as Error).message}`);
+    throw new Error(`Failed to get activities count: ${(error as Error).message}`, {cause: error});
   }
 };
 

@@ -74,14 +74,16 @@ const getEventLabel = (event: Event, label: GetLabel, short: boolean = false): s
       return `${label(event.bike)} ${label(event.type)}`;
     case 'tire':
       return `${short ? '' : event.brand} ${event.model} ${event.width}`.trim();
-    case 'saddle':
+    case 'saddle': {
       const [saddleMain] = event.model.split(' ');
 
       return `${event.brand} ${short ? saddleMain : event.model} ${short ? '' : event.width}`.trim();
-    case 'cassette':
+    }
+    case 'cassette': {
       const [cassetteMain] = event.model.split(' ');
 
       return `${event.brand} ${short ? cassetteMain : event.model} ${event.range}`.trim();
+    }
     default:
       return label(event.type);
   }

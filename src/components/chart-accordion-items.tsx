@@ -1,40 +1,29 @@
-import {lazy, ReactNode} from 'react';
+import {ReactNode} from 'react';
 import {formatCalories, formatDistance, formatDistanceMeters, formatDuration} from '../models';
 import {ActivityType} from '../models/strava';
-
-const ChainChart = lazy(() => import('./charts/ChainChart').then(m => ({default: m.ChainChart})));
-const EventOdometerChart = lazy(() =>
-  import('./charts/EventOdometerChart').then(m => ({default: m.EventOdometerChart})),
-);
-const EventTimelineChart = lazy(() =>
-  import('./charts/EventTimelineChart').then(m => ({default: m.EventTimelineChart})),
-);
-const TimeframeChart = lazy(() => import('./charts/TimeframeChart').then(m => ({default: m.TimeframeChart})));
-const ActivityTimeChart = lazy(() =>
-  import('./charts/ActivityTimeChart').then(m => ({default: m.ActivityTimeChart})),
-);
-const CommuteSpeedChart = lazy(() =>
-  import('./charts/CommuteSpeedChart').then(m => ({default: m.CommuteSpeedChart})),
-);
-const FTPChart = lazy(() => import('./charts/FTPChart').then(m => ({default: m.FTPChart})));
-const EddingtonChart = lazy(() => import('./charts/EddingtonChart').then(m => ({default: m.EddingtonChart})));
-const EddingtonDayChart = lazy(() =>
-  import('./charts/EddingtonDayChart').then(m => ({default: m.EddingtonDayChart})),
-);
-const GearChart = lazy(() => import('./charts/GearChart').then(m => ({default: m.GearChart})));
-const AverageGearChart = lazy(() => import('./charts/AverageGearChart').then(m => ({default: m.AverageGearChart})));
-const ProgressChart = lazy(() => import('./charts/ProgressChart').then(m => ({default: m.ProgressChart})));
-const FinishPieChart = lazy(() => import('./charts/FinishPieChart').then(m => ({default: m.FinishPieChart})));
-const NPGroupPieChart = lazy(() => import('./charts/NPGroupPieChart').then(m => ({default: m.NPGroupPieChart})));
-const PoolPieChart = lazy(() => import('./charts/PoolPieChart').then(m => ({default: m.PoolPieChart})));
-const CourtPieChart = lazy(() => import('./charts/CourtPieChart').then(m => ({default: m.CourtPieChart})));
-const GroupChart = lazy(() => import('./charts/GroupChart').then(m => ({default: m.GroupChart})));
-const HeartChart = lazy(() => import('./charts/HeartChart').then(m => ({default: m.HeartChart})));
-const DataLineChart = lazy(() => import('./charts/DataLineChart').then(m => ({default: m.DataLineChart})));
-const CostPerKmChart = lazy(() => import('./charts/CostPerKmChart').then(m => ({default: m.CostPerKmChart})));
-const TrainingLoadChart = lazy(() =>
-  import('./charts/TrainingLoadChart').then(m => ({default: m.TrainingLoadChart})),
-);
+import {
+  ActivityTimeChart,
+  AverageGearChart,
+  ChainChart,
+  CommuteSpeedChart,
+  CostPerKmChart,
+  CourtPieChart,
+  DataLineChart,
+  EddingtonChart,
+  EddingtonDayChart,
+  EventOdometerChart,
+  EventTimelineChart,
+  FinishPieChart,
+  FTPChart,
+  GearChart,
+  GroupChart,
+  HeartChart,
+  NPGroupPieChart,
+  PoolPieChart,
+  ProgressChart,
+  TimeframeChart,
+  TrainingLoadChart,
+} from './charts/lazy-charts';
 
 export type AccordionItem = {label: string; component: ReactNode};
 

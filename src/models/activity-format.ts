@@ -51,18 +51,20 @@ const formatPaceOrSpeed = (activity: Activity, precision?: number, elapsed?: boo
   switch (activity.sport_type) {
     case ActivityType.Run:
     case ActivityType.TrailRun:
-    case ActivityType.Hike:
+    case ActivityType.Hike: {
       const secsPerKm = (time / activity.distance) * 1000;
       const minutesPerKm = Math.floor(secsPerKm / 60);
       const secondsPerKm = Math.round(secsPerKm - minutesPerKm * 60);
 
       return `${minutesPerKm}:${secondsPerKm.toString().padStart(2, '0')} /km`;
-    case ActivityType.Swim:
+    }
+    case ActivityType.Swim: {
       const secsPer100m = (time / activity.distance) * 100;
       const minutesPer100m = Math.floor(secsPer100m / 60);
       const secondsPer100m = Math.round(secsPer100m - minutesPer100m * 60);
 
       return `${minutesPer100m}:${secondsPer100m.toString().padStart(2, '0')} /100m`;
+    }
     default:
       return formatSpeed(activity.average_speed, precision);
   }

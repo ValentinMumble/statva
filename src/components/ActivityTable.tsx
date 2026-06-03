@@ -50,6 +50,9 @@ const ActivityTable = ({
 
   const rowCount = activities?.length ?? 0;
 
+  // @tanstack/react-virtual's useVirtualizer returns functions the React Compiler can't track; this is a
+  // library API shape, not an anti-pattern in our code.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => tableRef.current?.closest('[data-scroll-root]') as HTMLElement | null,

@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useMemo, useState} from 'react';
 import {Text} from '@chakra-ui/react';
 import {Area, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {useActivities} from '../../hooks';
@@ -82,10 +82,11 @@ const TrainingLoadChart = () => {
     [activities, getFtp],
   );
 
-  if (data.length === 0) return <Text>No TSS data available</Text>;
+  // Capture the cutoff once at mount so render stays pure (no Date.now() during render).
+  const [sixMonthsAgo] = useState(() => Date.now() - 180 * MS_PER_DAY);
+  const visibleData = useMemo(() => data.filter(d => d.timestamp >= sixMonthsAgo), [data, sixMonthsAgo]);
 
-  const sixMonthsAgo = Date.now() - 180 * MS_PER_DAY;
-  const visibleData = data.filter(d => d.timestamp >= sixMonthsAgo);
+  if (data.length === 0) return <Text>No TSS data available</Text>;
 
   return (
     <ResponsiveContainer width="100%" height={400}>

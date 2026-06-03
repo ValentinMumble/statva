@@ -24,12 +24,15 @@ import {
   fetchLocalMeta,
 } from '../api/local';
 
+// Heterogeneous registry: each fetcher has its own concrete arg signature and is
+// called with concrete args downstream, so the args are intentionally untyped here.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Fetcher<T> = (...args: any[]) => Promise<T>;
 
 const isDev = import.meta.env.MODE === 'development';
-const noop: Fetcher<any> = () => Promise.resolve(console.log('Local, not implemented'));
+const noop: Fetcher<unknown> = () => Promise.resolve(console.log('Local, not implemented'));
 
-const REGISTRY: Record<string, Fetcher<any>> = {
+const REGISTRY: Record<string, Fetcher<unknown>> = {
   'activities.get': isDev ? fetchLocalActivities : fetchActivities,
   'activity.get': fetchActivity, //TODO: Implement local version
   'activities.meta.get': isDev ? fetchLocalMeta : getActivities,
@@ -47,6 +50,6 @@ const REGISTRY: Record<string, Fetcher<any>> = {
   'ftp_tests.set': isDev ? noop : upsertFTPTest,
 };
 
-const getFetcher = <T>(key: string): Fetcher<T> => REGISTRY[key];
+const getFetcher = <T>(key: string): Fetcher<T> => REGISTRY[key] as Fetcher<T>;
 
 export {getFetcher};

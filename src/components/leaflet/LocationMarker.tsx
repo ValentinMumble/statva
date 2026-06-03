@@ -9,7 +9,7 @@ const LocationMarker = ({position, ...rest}: LocationMarkerProps) => {
 
   useEffect(() => {
     map.flyTo(position, map.getZoom());
-  }, [position]);
+  }, [map, position]);
 
   return <EmojiMarker position={position} {...rest} />;
 };

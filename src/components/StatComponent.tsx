@@ -13,7 +13,12 @@ type StatComponentProps = {
 };
 
 const StatComponent = memo(({stat, activities, activityMeta, athlete, onClick}: StatComponentProps) => {
-  if (null === activities || null === athlete) {
+  const computed = useMemo(
+    () => (null === activities || null === athlete ? null : stat(activities, activityMeta, athlete)),
+    [stat, activities, activityMeta, athlete]
+  );
+
+  if (null === computed) {
     return (
       <Stat.Root>
         <Skeleton width="40%">l</Skeleton>
@@ -23,10 +28,7 @@ const StatComponent = memo(({stat, activities, activityMeta, athlete, onClick}: 
     );
   }
 
-  const {label, value, helpText, info} = useMemo(
-    () => stat(activities, activityMeta, athlete),
-    [stat, activities, activityMeta, athlete]
-  );
+  const {label, value, helpText, info} = computed;
 
   const statContent = (
     <Stat.Root onClick={onClick}>
