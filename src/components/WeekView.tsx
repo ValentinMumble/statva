@@ -81,8 +81,15 @@ const WeekView = () => {
   const {activities} = useActivities({withCommute: true, withPrivate: true, sort: 'date', sortDirection: 'asc'});
   const {label} = useLabels();
   const tableRef = useRef<HTMLTableElement>(null);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
+    // Only scroll the newly-added row into view when the user expands weekCount, not on first load
+    // (scrollIntoView scrolls the left column's scroll container, which would land it at the bottom).
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     tableRef.current?.querySelector('tr:last-child')?.scrollIntoView({behavior: 'smooth'});
   }, [weekCount]);
 
