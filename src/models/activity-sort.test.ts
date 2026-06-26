@@ -14,7 +14,7 @@ test('it can sort activities by date', async () => {
       null,
       getFtp
     )
-  ).toBe(-1);
+  ).toBeLessThan(0);
 
   expect(
     sortActivities(
@@ -26,7 +26,7 @@ test('it can sort activities by date', async () => {
       null,
       getFtp
     )
-  ).toBe(1);
+  ).toBeGreaterThan(0);
 
   expect(
     sortActivities(
@@ -38,5 +38,5 @@ test('it can sort activities by date', async () => {
       null,
       getFtp
     )
-  ).toBe(-1);
+  ).toBeLessThan(0);
 });

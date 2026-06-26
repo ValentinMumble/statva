@@ -51,7 +51,7 @@ type TotalAgg = 'sum' | 'avg' | 'max';
 const totalFn = <F extends NumericField | OptionalNumericField>(
   field: F,
   agg: TotalAgg,
-  format: (v: number) => string | number = v => v
+  format: (v: number) => string | number = v => v,
 ): Tag['total'] => {
   const aggFns = {sum: getTotalValue, avg: getAverageValue, max: getMaxValue};
   return activities => format(aggFns[agg](activities, field));
@@ -66,7 +66,7 @@ const simpleTag = (
   help: string,
   sortType: SortType,
   field: NumericField,
-  opts: {threshold?: number; totalAgg?: 'sum' | 'avg'} = {}
+  opts: {threshold?: number; totalAgg?: 'sum' | 'avg'} = {},
 ): Tag => {
   const {threshold = 0, totalAgg = 'sum'} = opts;
   return {
@@ -89,7 +89,7 @@ const optionalRoundedTag = (
   extra?: {
     tooltip?: (activity: Activity) => string | number | null;
     colorPalette?: (activity: Activity) => string | undefined;
-  }
+  },
 ): Tag => ({
   help,
   sortType,
@@ -112,7 +112,7 @@ const optionalFormattedTag = (
   field: OptionalNumericField,
   format: (v: number) => string,
   agg: TotalAgg,
-  opts?: {excludedTypes?: ActivityType[]}
+  opts?: {excludedTypes?: ActivityType[]},
 ): Tag => ({
   help,
   sortType,
@@ -128,12 +128,7 @@ const optionalFormattedTag = (
 });
 
 /** Tag for a duration field (always present), formatted with formatDuration / formatDurationInDays. */
-const durationTag = (
-  help: string,
-  sortType: SortType,
-  field: NumericField,
-  tooltipField?: NumericField
-): Tag => ({
+const durationTag = (help: string, sortType: SortType, field: NumericField, tooltipField?: NumericField): Tag => ({
   help,
   sortType,
   value: activity => ({
@@ -266,8 +261,8 @@ const TAGS: Tag[] = [
             (total, activity, _index, activities) =>
               total +
               (activity.weighted_average_watts ?? 0) / getFtp(new Date(activity.start_date)) / activities.length,
-            0
-          )
+            0,
+          ),
       ),
   },
   optionalRoundedTag('Average heartrate', 'average_heartrate', 'average_heartrate', 'avg', {
