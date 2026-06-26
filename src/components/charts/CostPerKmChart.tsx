@@ -1,10 +1,14 @@
 import {useMemo, useState} from 'react';
-import {Button, Group, Input, NumberInput, Text} from '@chakra-ui/react';
+import {Button, Group, IconButton, Input, NumberInput, Stack, Text} from '@chakra-ui/react';
+import {LuMinus} from 'react-icons/lu';
 import {Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../ui';
 import {useActivities, useExpenses} from '../../hooks';
+import {getFetcher} from '../../hooks/useFetcher';
 import {BikeExpense, formatCurrency, formatDistance, formatDuration, SUPER6} from '../../models';
-import {upsertExpense} from '../../api';
+
+const upsertExpense = getFetcher<void>('expenses.set');
+const deleteExpense = getFetcher<void>('expenses.delete');
 
 const DEFAULT_SKIP_PERCENT = 10;
 
@@ -31,7 +35,7 @@ const CostPerKmChart = () => {
     sortDirection: 'asc',
     gearId: SUPER6,
   });
-  const {expenses} = useExpenses();
+  const {expenses, refetch} = useExpenses();
 
   const canSubmit = undefined !== amount && description.trim() !== '';
 
@@ -48,6 +52,12 @@ const CostPerKmChart = () => {
     await upsertExpense(expense);
     setAmount(undefined);
     setDescription('');
+    await refetch();
+  };
+
+  const handleRemove = (expense: BikeExpense) => async () => {
+    await deleteExpense(expense.id);
+    await refetch();
   };
 
   const chartData = useMemo(() => {
@@ -196,9 +206,13 @@ const CostPerKmChart = () => {
           <Line type="monotone" dataKey="costPerHour" yAxisId="costPerHour" stroke="#ED9564" strokeWidth={2} dot={false} strokeDasharray="4 2" />
         </ComposedChart>
       </ResponsiveContainer>
-      <Group marginBottom="20px">
+      <Group marginBottom="20px" onKeyDown={({key}) => key === 'Enter' && handleAdd()}>
         <Input type="date" size="sm" width="220px" value={date} onChange={({target}) => setDate(target.value)} />
-        <NumberInput.Root size="sm" value={amount?.toString()} onValueChange={({value}) => setAmount(Number(value))}>
+        <NumberInput.Root
+          size="sm"
+          value={amount?.toString() ?? ''}
+          onValueChange={({value}) => setAmount('' === value ? undefined : Number(value))}
+        >
           <NumberInput.Input placeholder="Amount" />
         </NumberInput.Root>
         <Input
@@ -211,6 +225,40 @@ const CostPerKmChart = () => {
           Add
         </Button>
       </Group>
+      {expenses.length > 0 && (
+        <Stack gap="0" maxHeight="240px" overflowY="auto" marginBottom="20px">
+          {[...expenses]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map(expense => (
+              <Group
+                key={expense.id}
+                justifyContent="space-between"
+                paddingY="6px"
+                gap="10px"
+                borderBottomWidth="1px"
+                borderColor="gray.700"
+              >
+                <Text fontSize="xs" color="gray.400" width="90px" flexShrink={0}>
+                  {new Date(expense.date).toLocaleDateString('en-US', {day: 'numeric', month: 'short', year: '2-digit'})}
+                </Text>
+                <Text fontSize="sm" flex="1" truncate>
+                  {expense.description}
+                </Text>
+                <Text
+                  fontSize="sm"
+                  color={expense.amount >= 0 ? 'orange.solid' : 'green.solid'}
+                  fontWeight="medium"
+                  flexShrink={0}
+                >
+                  {formatCurrency(expense.amount * 100)}
+                </Text>
+                <IconButton variant="ghost" title="Remove expense" size="xs" flexShrink={0} onClick={handleRemove(expense)}>
+                  <LuMinus />
+                </IconButton>
+              </Group>
+            ))}
+        </Stack>
+      )}
     </>
   );
 };

@@ -105,9 +105,14 @@ const upsertExpense = async (expense: BikeExpense) => {
   await client().hset(Key.EXPENSES, {[expense.id]: expense});
 };
 
+const deleteExpense = async (expenseId: string) => {
+  await client().hdel(Key.EXPENSES, expenseId);
+};
+
 export {
   addCheckIn,
   deleteEvent,
+  deleteExpense,
   deleteLabel,
   getActivities,
   getCheckIns,

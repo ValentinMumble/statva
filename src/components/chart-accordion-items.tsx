@@ -84,6 +84,6 @@ export const ACCORDION_ITEMS: AccordionItem[] = [
   {label: 'Average 🫀 & ⚡️', component: <HeartChart />},
   {label: 'Suffer chart 🌶️', component: <DataLineChart data="suffer_score" />},
   {label: 'Cadence chart 🎡', component: <DataLineChart min={40} max={110} data="average_cadence" />},
-  {label: 'Cost / km 💸', component: <CostPerKmChart />},
+  {label: 'Cost / km 💸 🦈', component: <CostPerKmChart />},
   {label: 'Training load 🏋️', component: <TrainingLoadChart />},
 ];

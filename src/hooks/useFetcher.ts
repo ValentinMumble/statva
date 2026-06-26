@@ -1,5 +1,6 @@
 import {
   deleteEvent,
+  deleteExpense,
   deleteLabel,
   fetchActivities,
   fetchActivity,
@@ -41,8 +42,9 @@ const REGISTRY: Record<string, Fetcher<unknown>> = {
   'events.get': isDev ? fetchLocalEvents : getEvents,
   'events.set': isDev ? noop : upsertEvent,
   'events.delete': isDev ? noop : deleteEvent,
-  'expenses.get': isDev ? () => Promise.resolve([]) : getExpenses,
-  'expenses.set': isDev ? noop : upsertExpense,
+  'expenses.get': getExpenses,
+  'expenses.set': upsertExpense,
+  'expenses.delete': deleteExpense,
   'labels.get': isDev ? fetchLocalLabels : getLabels,
   'labels.set': isDev ? noop : upsertLabel,
   'labels.delete': isDev ? noop : deleteLabel,
