@@ -157,6 +157,38 @@ const decodePolyline = (encoded: string): number[][] => {
 const normalizeString = (value: string): string =>
   value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
+const MONTHS_LONG = [
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december',
+];
+const MONTHS_SHORT = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+// Builds a searchable string of the many ways one might type an activity's date,
+// so a free-text search can match "november 2", "2 nov", "2024-11-02" or the
+// "02/11/2024" shown in the list. Uses local date parts to match the displayed date.
+const dateSearchHaystack = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  const long = MONTHS_LONG[month];
+  const short = MONTHS_SHORT[month];
+  const dd = String(day).padStart(2, '0');
+  const mm = String(month + 1).padStart(2, '0');
+
+  return [
+    `${year}-${mm}-${dd}`, // 2024-11-02
+    `${dd}/${mm}/${year}`, // 02/11/2024 (fr-FR, as shown in the list)
+    `${long} ${day}`, // november 2
+    `${day} ${long}`, // 2 november
+    `${short} ${day}`, // nov 2
+    `${day} ${short}`, // 2 nov
+    `${long} ${year}`, // november 2024
+    `${short} ${year}`, // nov 2024
+    `${long} ${day} ${year}`, // november 2 2024
+    `${day} ${long} ${year}`, // 2 november 2024
+  ].join(' | ');
+};
+
 const countBy = <T>(items: T[], keyFn: (item: T) => string, valueFn: (item: T) => number = () => 1): Record<string, number> =>
   items.reduce((map: Record<string, number>, item) => {
     const key = keyFn(item);
@@ -169,6 +201,7 @@ export {
   arrayRotate,
   backup,
   countBy,
+  dateSearchHaystack,
   normalizeString,
   decodePolyline,
   formatCalories,

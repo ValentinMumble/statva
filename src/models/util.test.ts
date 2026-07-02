@@ -1,4 +1,4 @@
-import {getMonday, getMonthDiff, getWeekNumber} from './util';
+import {dateSearchHaystack, getMonday, getMonthDiff, getWeekNumber, normalizeString} from './util';
 
 test.each([
   [new Date('2024-02-03'), new Date('2024-02-28'), 0],
@@ -30,4 +30,23 @@ test.each([
   [new Date('2025-03-13'), new Date('2025-03-10')],
 ])('it can get monday for a date', (date, expected) => {
   expect(getMonday(date)).toEqual(expected);
+});
+
+// Local date parts (month is 0-indexed) so the test is timezone-independent.
+const NOV_2_2024 = new Date(2024, 10, 2);
+
+test.each([
+  ['november 2', true],
+  ['2 november', true],
+  ['nov 2', true],
+  ['2 nov', true],
+  ['november 2024', true],
+  ['november 2 2024', true],
+  ['2024-11-02', true],
+  ['02/11/2024', true],
+  ['december 2', false],
+  ['november 3', false],
+  ['2023', false],
+])('date "%s" matches Nov 2 2024 haystack: %s', (query, expected) => {
+  expect(dateSearchHaystack(NOV_2_2024).includes(normalizeString(query))).toBe(expected);
 });
