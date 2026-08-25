@@ -1,14 +1,15 @@
 // Categorical palette for the Chakra/recharts charts. Chakra color tokens, so the
 // charts follow the theme instead of the hardcoded hex palette the Apex charts use.
+// Ordered so neighbouring entries stay easy to tell apart, and red is left out:
+// it reads as an alert rather than just another category.
 const SERIES_COLORS = [
   'orange.solid',
   'teal.solid',
-  'yellow.solid',
-  'green.solid',
   'purple.solid',
-  'pink.solid',
-  'red.solid',
+  'yellow.solid',
   'blue.solid',
+  'pink.solid',
+  'green.solid',
   'cyan.solid',
   'gray.solid',
 ];

@@ -10,11 +10,13 @@ Next improvements for Statva. Newest ideas at the top; move to **Done** when shi
 
 ## In progress
 
-- [ ] Review lazy loading: every chart is in `lazy-charts.ts`, but the per-chart
-      chunks are 1–6 kB while `recharts` (386 kB) is the real cost. Lazy loading
-      matters for the shared recharts chunk, not for individual charts.
+Nothing right now.
 
 ## Done
+
+- [x] Checked lazy loading: leave `lazy-charts.ts` as it is. Per-chart chunks are
+      only 1–6 kB, so the win is deferring the shared `recharts` chunk (386 kB)
+      until a chart accordion opens, which the current setup already does.
 
 - [x] Drop ApexCharts: all 17 charts now use `@chakra-ui/charts` + recharts, one
       chart runtime instead of two. Shared pieces in `components/charts/ChartTooltip.tsx`

@@ -158,14 +158,17 @@ const EventOdometerChart = () => {
               shared={false}
               cursor={false}
               isAnimationActive={false}
-              content={({payload, label: rowLabel, active}) => {
+              content={({payload, active}) => {
                 if (!active || !payload || 0 === payload.length) return null;
 
-                const [{dataKey, value}] = payload;
+                const [{dataKey, value, payload: rowData}] = payload;
 
                 if ('cap' === dataKey || 0 >= Number(value)) return null;
 
-                const row = rows.find(({label: candidate}) => candidate === rowLabel);
+                // Read the row from its own data: recharts does not reliably pass
+                // `label` for a vertical layout with shared={false}.
+                const row = rowData as Record<string, string | number | boolean> | undefined;
+                const rowLabel = row?.label;
                 const rotationNumber = Number(String(dataKey).replace('period', '')) + 1;
                 const hasMultiplePeriods = undefined !== row && periodKeys.filter(key => key in row).length > 1;
 

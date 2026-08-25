@@ -143,13 +143,16 @@ const ChainChart = () => {
               shared={false}
               cursor={false}
               isAnimationActive={false}
-              content={({payload, label: rowLabel, active}) => {
+              content={({payload, active}) => {
                 if (!active || !payload || 0 === payload.length) return null;
 
-                const [{dataKey, value}] = payload;
+                const [{dataKey, value, payload: rowData}] = payload;
 
                 if ('cap' === dataKey || 0 >= Number(value)) return null;
 
+                // Read the row from its own data: recharts does not reliably pass
+                // `label` for a vertical layout with shared={false}.
+                const rowLabel = (rowData as {label?: string} | undefined)?.label;
                 const rotationNumber = Number(String(dataKey).replace('period', '')) + 1;
 
                 return (

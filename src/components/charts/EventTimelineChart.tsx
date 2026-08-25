@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
-import {Bar, BarChart, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
+import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl} from '../../components/ui';
 import {EditEvents} from '../../components';
 import {useActivities, useEvents, useLabels} from '../../hooks';
@@ -21,12 +21,16 @@ const DURATION_TYPES: Event['type'][] = [
 ];
 // Types that happen at a single point in time.
 const ONE_SHOT_TYPES: Event['type'][] = ['fall', 'puncture'];
+const CHARACTER_WIDTH = 6.4;
+const LABEL_PADDING = 6;
+const MIN_LABEL_CHARACTERS = 3;
 
 type Segment = {
   start: number;
   end: number;
   label: string;
   isOngoing: boolean;
+  isOneShot: boolean;
 };
 
 const EventTimelineChart = () => {
@@ -47,8 +51,9 @@ const EventTimelineChart = () => {
   const firstDate = bikeEvents.at(0)?.date.getTime() ?? now - DAY;
   const domainStart = firstDate - DAY;
   const span = Math.max(now - domainStart, DAY);
-  // One-shot events have no duration, so they get a thin fixed-width mark instead.
-  const markWidth = span / 150;
+  // One-shot events have no duration, so they get a fixed-width mark instead. Keep it
+  // wide enough to be visible and to hover for a tooltip.
+  const markWidth = span / 80;
 
   const segmentsPerRow = [...DURATION_TYPES, ...ONE_SHOT_TYPES].reduce(
     (rows: {row: string; segments: Segment[]}[], type) => {
@@ -72,6 +77,7 @@ const EventTimelineChart = () => {
           end: isOneShot ? start + markWidth : nextStart ?? now,
           label: isOneShot && ride ? extractEmoji(ride.name) : getEventLabel(event, label, true),
           isOngoing: !isOneShot && undefined === nextStart,
+          isOneShot,
         };
       });
 
@@ -103,7 +109,8 @@ const EventTimelineChart = () => {
 
   const chart = useChart({
     data: rows,
-    series: segmentKeys.map(index => ({name: `duration${index}`, color: getSeriesColor(index)})),
+    // Colour comes from the row (one hue per part type), set per Cell below.
+    series: segmentKeys.map(index => ({name: `duration${index}`})),
   });
 
   const relevantBikes = [...new Set(allEvents.map(({bike}) => bike))];
@@ -120,7 +127,7 @@ const EventTimelineChart = () => {
       </Group>
       <Chart.Root width="100%" height="450px" chart={chart}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chart.data} layout="vertical" barCategoryGap="20%">
+          <BarChart data={chart.data} layout="vertical" barCategoryGap="20%" margin={{left: 0, right: 24, top: 8}}>
             <XAxis
               type="number"
               domain={[0, span]}
@@ -131,7 +138,7 @@ const EventTimelineChart = () => {
             <YAxis
               type="category"
               dataKey="row"
-              width={110}
+              width={44}
               stroke={chart.color('fg.muted')}
               tickLine={false}
               axisLine={false}
@@ -140,15 +147,21 @@ const EventTimelineChart = () => {
               shared={false}
               cursor={false}
               isAnimationActive={false}
-              content={({payload, label: rowLabel, active}) => {
+              content={({payload, active}) => {
                 if (!active || !payload?.length) return null;
 
-                const [{dataKey, payload: rowData}] = payload;
-                const index = Number(String(dataKey).replace('duration', ''));
-                const rowSegments = segmentsPerRow.find(({row}) => row === rowLabel)?.segments;
-                const segment = rowSegments?.[index];
+                // Everything comes from the hovered row's own data: recharts does not
+                // reliably pass `label` for a vertical layout with shared={false}.
+                const [{dataKey, name, payload: rowData}] = payload;
+                const key = String(dataKey ?? name ?? '');
+                const rowLabel = (rowData as {row?: string} | undefined)?.row;
 
-                if (undefined === segment || undefined === rowData) return null;
+                if (!key.startsWith('duration') || undefined === rowLabel) return null;
+
+                const index = Number(key.replace('duration', ''));
+                const segment = segmentsPerRow.find(({row}) => row === rowLabel)?.segments[index];
+
+                if (undefined === segment) return null;
 
                 const days = Math.round((segment.end - segment.start) / DAY);
 
@@ -159,7 +172,7 @@ const EventTimelineChart = () => {
                     </div>
                     <div>
                       {new Date(segment.start).toLocaleDateString('fr-FR')}
-                      {ONE_SHOT_TYPES.some(type => label(type) === rowLabel)
+                      {segment.isOneShot
                         ? ''
                         : ` 〰 ${segment.isOngoing ? 'now' : new Date(segment.end).toLocaleDateString('fr-FR')} · ${days} days`}
                     </div>
@@ -167,29 +180,57 @@ const EventTimelineChart = () => {
                 );
               }}
             />
-            {segmentKeys.map(index => (
-              <Bar key={`gap${index}`} dataKey={`gap${index}`} stackId="timeline" fill="transparent" isAnimationActive={false} />
-            ))}
-            {chart.series.map((item, index) => (
+            {/* Spacer and duration must alternate: recharts stacks in JSX order. */}
+            {segmentKeys.flatMap(index => [
               <Bar
-                key={item.name}
-                dataKey={chart.key(item.name)}
+                key={`gap${index}`}
+                dataKey={`gap${index}`}
                 stackId="timeline"
-                fill={chart.color(item.color)}
-                fillOpacity={0.75}
+                fill="transparent"
+                style={{pointerEvents: 'none'}}
+                isAnimationActive={false}
+              />,
+              <Bar
+                key={`duration${index}`}
+                dataKey={`duration${index}`}
+                stackId="timeline"
                 stroke={chart.color('bg')}
                 strokeWidth={1}
                 isAnimationActive={false}
               >
+                {segmentsPerRow.map(({row}, rowIndex) => (
+                  <Cell
+                    key={row}
+                    fill={chart.color(getSeriesColor(rowIndex))}
+                    fillOpacity={0 === index % 2 ? 0.85 : 0.5}
+                  />
+                ))}
                 <LabelList
                   dataKey={`label${index}`}
-                  position="insideLeft"
-                  fill={chart.color('fg')}
-                  fontSize={11}
-                  offset={6}
+                  content={({x, y, width, height, value}) => {
+                    const text = String(value ?? '');
+                    // Skip the label when the bar is too narrow for it: overlapping
+                    // text made the timeline unreadable. The tooltip still has it.
+                    const maxCharacters = Math.floor((Number(width) - LABEL_PADDING * 2) / CHARACTER_WIDTH);
+
+                    if ('' === text || maxCharacters < MIN_LABEL_CHARACTERS) return null;
+
+                    return (
+                      <text
+                        x={Number(x) + LABEL_PADDING}
+                        y={Number(y) + Number(height) / 2}
+                        dominantBaseline="central"
+                        fontSize={11}
+                        fill={chart.color('fg')}
+                        pointerEvents="none"
+                      >
+                        {text.length > maxCharacters ? `${text.slice(0, maxCharacters - 1)}…` : text}
+                      </text>
+                    );
+                  }}
                 />
-              </Bar>
-            ))}
+              </Bar>,
+            ])}
           </BarChart>
         </ResponsiveContainer>
       </Chart.Root>
