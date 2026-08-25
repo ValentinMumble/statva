@@ -1,34 +1,15 @@
 import {useState} from 'react';
-import Chart from 'react-apexcharts';
 import {Button, Group, Input, Clipboard, IconButton, NumberInput} from '@chakra-ui/react';
+import {Chart, useChart} from '@chakra-ui/charts';
+import {Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {useFtp} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {backup, formatPower, FTPTest, getOptions} from '../../models';
+import {backup, formatPower, FTPTest} from '../../models';
+import {ChartTooltip} from './ChartTooltip';
 
 const upsertFTPTest = getFetcher<void>('ftp_tests.set');
 
-const options: ApexCharts.ApexOptions = {
-  yaxis: [
-    {
-      labels: {
-        formatter: formatPower,
-      },
-      min: 150,
-      max: 350,
-    },
-    {
-      opposite: true,
-      labels: {
-        formatter: (value: number) => `${value.toFixed(1)} W/kg`,
-      },
-      min: 2,
-      max: 4,
-    },
-  ],
-  xaxis: {type: 'datetime'},
-  colors: ['#e09200', '#ebcf6c'],
-  stroke: {width: 4, curve: 'smooth'},
-};
+const formatRatio = (value: number): string => `${value.toFixed(1)} W/kg`;
 
 const FTPChart = () => {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -54,14 +35,97 @@ const FTPChart = () => {
     refresh();
   };
 
-  const series = [
-    {name: 'W', data: ftpTests.map(({ftp, date}) => [date.getTime(), ftp])},
-    {name: 'W/kg', data: ftpTests.map(({ftp, weight, date}) => [date.getTime(), ftp / weight])},
-  ];
+  const chart = useChart({
+    data: [...ftpTests]
+      .sort((testA, testB) => testA.date.getTime() - testB.date.getTime())
+      .map(test => ({
+        timestamp: test.date.getTime(),
+        power: test.ftp,
+        ratio: test.ftp / test.weight,
+      })),
+    series: [
+      {name: 'power', color: 'orange.solid'},
+      {name: 'ratio', color: 'yellow.solid'},
+    ],
+  });
 
   return (
     <>
-      <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
+      <Chart.Root width="100%" height="400px" chart={chart}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chart.data}>
+            <XAxis
+              dataKey="timestamp"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              stroke={chart.color('fg.muted')}
+              tickLine={false}
+              tickFormatter={timestamp =>
+                new Date(timestamp).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})
+              }
+            />
+            <YAxis
+              yAxisId="power"
+              domain={[150, 350]}
+              stroke={chart.color('fg.muted')}
+              width={70}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={value => formatPower(Number(value))}
+            />
+            <YAxis
+              yAxisId="ratio"
+              orientation="right"
+              domain={[2, 4]}
+              stroke={chart.color('fg.muted')}
+              width={80}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={value => formatRatio(Number(value))}
+            />
+            <Tooltip
+              cursor={{stroke: chart.color('fg.muted'), strokeWidth: 1}}
+              isAnimationActive={false}
+              content={({payload, active}) => {
+                if (!active || !payload?.length) return null;
+
+                const {timestamp, power, ratio} = payload[0].payload as {
+                  timestamp: number;
+                  power: number;
+                  ratio: number;
+                };
+
+                return (
+                  <ChartTooltip>
+                    <div>{new Date(timestamp).toLocaleDateString('fr-FR')}</div>
+                    <div>{formatPower(power)}</div>
+                    <div>{formatRatio(ratio)}</div>
+                  </ChartTooltip>
+                );
+              }}
+            />
+            <Line
+              yAxisId="power"
+              dataKey={chart.key('power')}
+              type="monotone"
+              stroke={chart.color('orange.solid')}
+              strokeWidth={4}
+              dot={{r: 3}}
+              isAnimationActive={false}
+            />
+            <Line
+              yAxisId="ratio"
+              dataKey={chart.key('ratio')}
+              type="monotone"
+              stroke={chart.color('yellow.solid')}
+              strokeWidth={4}
+              strokeDasharray="6 3"
+              dot={{r: 3}}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Chart.Root>
       <Group marginBottom="20px">
         <Input type="date" size="sm" width="200px" value={date} onChange={({target}) => setDate(target.value)} />
         <NumberInput.Root size="sm" value={weight?.toString()} onValueChange={({value}) => setWeight(Number(value))}>

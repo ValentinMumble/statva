@@ -1,41 +1,15 @@
 import {useState} from 'react';
 import {Group} from '@chakra-ui/react';
-import Chart from 'react-apexcharts';
+import {Chart, useChart} from '@chakra-ui/charts';
+import {Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../../components/ui';
 import {useActivities} from '../../hooks';
 import {ActivityType} from '../../models/strava';
-import {getOptions, getTypes} from '../../models';
+import {formatPower, getTypes} from '../../models';
+import {ChartTooltip} from './ChartTooltip';
 
 const MIN_DISTANCE_METERS = 30 * 1000;
 const DEFAULT_ITEM_COUNT = 50;
-
-const options: ApexCharts.ApexOptions = {
-  colors: ['#8ac448', '#bfaf7d'],
-  stroke: {
-    curve: 'smooth',
-    width: 3,
-  },
-  fill: {
-    type: 'gradient',
-    gradient: {
-      type: 'vertical',
-      gradientToColors: ['#fd8f35', '#fdc135'],
-    },
-  },
-  markers: {size: [0]},
-  xaxis: {type: 'datetime'},
-  yaxis: [
-    {
-      min: 60,
-      max: 190,
-    },
-    {
-      opposite: true,
-      min: 80,
-      max: 320,
-    },
-  ],
-};
 
 const HeartChart = () => {
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
@@ -52,18 +26,17 @@ const HeartChart = () => {
       (0 < (average_heartrate ?? 0) || 0 < (weighted_average_watts ?? 0)) && MIN_DISTANCE_METERS < distance
   );
 
-  const heartRateSerie = rides.map(({average_heartrate, start_date}) => [
-    new Date(start_date).getTime(),
-    average_heartrate ? Math.round(average_heartrate) : null,
-  ]);
-  const powerSerie = rides.map(({weighted_average_watts, start_date}) => [
-    new Date(start_date).getTime(),
-    weighted_average_watts ? Math.round(weighted_average_watts) : null,
-  ]);
-  const series = [
-    {name: '🫀', data: heartRateSerie.slice(-itemCount) as number[][]},
-    {name: '⚡️', data: powerSerie.slice(-itemCount) as number[][]},
-  ];
+  const chart = useChart({
+    data: rides.slice(-itemCount).map(({average_heartrate, weighted_average_watts, start_date}) => ({
+      timestamp: new Date(start_date).getTime(),
+      heartRate: average_heartrate ? Math.round(average_heartrate) : null,
+      power: weighted_average_watts ? Math.round(weighted_average_watts) : null,
+    })),
+    series: [
+      {name: 'heartRate', color: 'green.solid'},
+      {name: 'power', color: 'orange.solid'},
+    ],
+  });
 
   return (
     <>
@@ -74,7 +47,84 @@ const HeartChart = () => {
           onValueChange={({valueAsNumber}) => setItemCount(valueAsNumber)}
         />
       </Group>
-      <Chart options={getOptions([], undefined, options)} series={series} type="line" height={400} />
+      <Chart.Root width="100%" height="400px" chart={chart}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chart.data}>
+            <XAxis
+              dataKey="timestamp"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              stroke={chart.color('fg.muted')}
+              tickLine={false}
+              tickFormatter={timestamp =>
+                new Date(timestamp).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})
+              }
+            />
+            <YAxis
+              yAxisId="heartRate"
+              domain={[60, 190]}
+              stroke={chart.color('fg.muted')}
+              width={50}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              yAxisId="power"
+              orientation="right"
+              domain={[80, 320]}
+              stroke={chart.color('fg.muted')}
+              width={60}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={value => formatPower(Number(value))}
+            />
+            <Tooltip
+              cursor={{stroke: chart.color('fg.muted'), strokeWidth: 1}}
+              isAnimationActive={false}
+              content={({payload, active}) => {
+                if (!active || !payload?.length) return null;
+
+                const {timestamp, heartRate, power} = payload[0].payload as {
+                  timestamp: number;
+                  heartRate: number | null;
+                  power: number | null;
+                };
+
+                return (
+                  <ChartTooltip>
+                    <div>{new Date(timestamp).toLocaleDateString('fr-FR')}</div>
+                    {null !== heartRate && <div>🫀 {heartRate}</div>}
+                    {null !== power && <div>⚡️ {formatPower(power)}</div>}
+                  </ChartTooltip>
+                );
+              }}
+            />
+            <Line
+              yAxisId="heartRate"
+              dataKey={chart.key('heartRate')}
+              type="monotone"
+              stroke={chart.color('green.solid')}
+              strokeWidth={3}
+              dot={false}
+              activeDot={{r: 4}}
+              connectNulls={true}
+              isAnimationActive={false}
+            />
+            <Line
+              yAxisId="power"
+              dataKey={chart.key('power')}
+              type="monotone"
+              stroke={chart.color('orange.solid')}
+              strokeWidth={3}
+              strokeDasharray="6 3"
+              dot={false}
+              activeDot={{r: 4}}
+              connectNulls={true}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Chart.Root>
     </>
   );
 };

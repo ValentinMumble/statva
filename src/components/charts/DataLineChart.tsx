@@ -1,9 +1,11 @@
 import {useState} from 'react';
-import Chart from 'react-apexcharts';
 import {Group} from '@chakra-ui/react';
+import {Chart, useChart} from '@chakra-ui/charts';
+import {Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, extractEmoji, getOptions} from '../../models';
+import {ChartProps, extractEmoji} from '../../models';
+import {ChartTooltip} from './ChartTooltip';
 
 const DEFAULT_ITEM_COUNT = 50;
 
@@ -22,13 +24,22 @@ const DataLineChart = ({data, min, max}: DataLineChartProps) => {
     sortDirection: 'asc',
   });
 
-  if ('number' === typeof data) {
+  const isDataKey = 'number' !== typeof data;
+  const relevantActivities = !isDataKey
+    ? []
+    : (activities ?? []).filter(activity => undefined !== activity[data]).slice(-itemCount);
+
+  const chart = useChart({
+    data: relevantActivities.map(activity => ({
+      activity: extractEmoji(activity.name),
+      value: Number(isDataKey ? activity[data] ?? 0 : 0),
+    })),
+    series: [{name: 'value', color: 'green.solid'}],
+  });
+
+  if (!isDataKey) {
     return null;
   }
-
-  const relevantActivities = (activities ?? []).filter(activity => undefined !== activity[data]).slice(-itemCount);
-  const labels = relevantActivities.map(({name}) => extractEmoji(name));
-  const series = [{name: label(data), data: relevantActivities.map(activity => Number(activity[data] ?? 0))}];
 
   return (
     <>
@@ -39,27 +50,49 @@ const DataLineChart = ({data, min, max}: DataLineChartProps) => {
           onValueChange={({valueAsNumber}) => setItemCount(valueAsNumber)}
         />
       </Group>
-      <Chart
-        options={getOptions(labels, undefined, {
-          yaxis: {min, max},
-          colors: ['#446a30'],
-          fill: {
-            type: 'gradient',
-            gradient: {
-              type: 'vertical',
-              gradientToColors: ['#da340a'],
-            },
-          },
-          stroke: {
-            curve: 'smooth',
-            width: 3,
-          },
-          markers: {size: [0]},
-        })}
-        series={series}
-        type="line"
-        height={400}
-      />
+      <Chart.Root width="100%" height="400px" chart={chart}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chart.data}>
+            <defs>
+              <Chart.Gradient
+                id="data-line-gradient"
+                stops={[
+                  {offset: 0, color: 'green.solid'},
+                  {offset: 1, color: 'red.solid'},
+                ]}
+              />
+            </defs>
+            <XAxis dataKey="activity" stroke={chart.color('fg.muted')} tickLine={false} minTickGap={20} />
+            <YAxis
+              stroke={chart.color('fg.muted')}
+              domain={[min ?? 'auto', max ?? 'auto']}
+              width={60}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              cursor={{stroke: chart.color('fg.muted'), strokeWidth: 1}}
+              isAnimationActive={false}
+              content={({payload, label: activity, active}) =>
+                !active || !payload?.length ? null : (
+                  <ChartTooltip>
+                    {activity} · {label(data)} {payload[0].value}
+                  </ChartTooltip>
+                )
+              }
+            />
+            <Line
+              dataKey={chart.key('value')}
+              type="monotone"
+              stroke="url(#data-line-gradient)"
+              strokeWidth={3}
+              dot={false}
+              activeDot={{r: 4, fill: chart.color('green.solid')}}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Chart.Root>
     </>
   );
 };

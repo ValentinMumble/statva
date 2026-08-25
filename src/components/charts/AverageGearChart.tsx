@@ -1,7 +1,9 @@
-import Chart from 'react-apexcharts';
+import {Chart, useChart} from '@chakra-ui/charts';
+import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {useActivities, useLabels} from '../../hooks';
-import {formatSpeed, getOptions, getTypes, SUPER6} from '../../models';
+import {formatSpeed, getTypes, SUPER6} from '../../models';
 import {ActivityType} from '../../models/strava';
+import {ChartTooltip} from './ChartTooltip';
 
 const AverageGearChart = () => {
   const {activities} = useActivities({
@@ -29,17 +31,50 @@ const AverageGearChart = () => {
     return gearMap;
   }, {});
 
-  const sortedDesc = Object.fromEntries(Object.entries(averagePerGear).sort(([, a], [, b]) => b - a));
+  const chart = useChart({
+    data: Object.entries(averagePerGear)
+      .sort(([, speedA], [, speedB]) => speedB - speedA)
+      .map(([gearId, speed]) => ({gear: label(gearId, true), speed})),
+    series: [{name: 'speed', color: 'orange.solid'}],
+  });
 
-  const labels = Object.keys(sortedDesc).map(gearId => label(gearId, true));
-  const series = [
-    {
-      name: '🏁',
-      data: Object.values(sortedDesc),
-    },
-  ];
-
-  return <Chart options={getOptions(labels, value => formatSpeed(value))} series={series} type="bar" height={400} />;
+  return (
+    <Chart.Root width="100%" height="400px" chart={chart}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chart.data}>
+          <XAxis dataKey="gear" stroke={chart.color('fg.muted')} tickLine={false} />
+          <YAxis
+            stroke={chart.color('fg.muted')}
+            tickFormatter={value => formatSpeed(Number(value))}
+            width={80}
+            tickLine={false}
+            axisLine={false}
+          />
+          <Tooltip
+            cursor={{fill: chart.color('bg.muted')}}
+            isAnimationActive={false}
+            content={({payload, label: gear, active}) =>
+              !active || !payload?.length ? null : (
+                <ChartTooltip>
+                  {gear} · 🏁 {formatSpeed(Number(payload[0].value))}
+                </ChartTooltip>
+              )
+            }
+          />
+          {chart.series.map(item => (
+            <Bar
+              key={item.name}
+              dataKey={chart.key(item.name)}
+              fill={chart.color(item.color)}
+              fillOpacity={0.55}
+              radius={[4, 4, 0, 0]}
+              isAnimationActive={false}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </Chart.Root>
+  );
 };
 
 export {AverageGearChart};

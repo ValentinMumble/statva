@@ -1,11 +1,13 @@
 import {useState} from 'react';
-import Chart from 'react-apexcharts';
+import {Chart, useChart} from '@chakra-ui/charts';
+import {Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {useActivities, useLabels} from '../../hooks';
-import {ChartProps, getOptions, getTypes} from '../../models';
+import {ChartProps, getSeriesColor, getTypes} from '../../models';
 import {ActivityType} from '../../models/strava';
 import {GearSelect} from '../../components';
+import {ChartTooltip} from './ChartTooltip';
 
-const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
+const GearChart = ({data, formatter, type}: ChartProps) => {
   const [includedGear, setIncludedGear] = useState<string[] | null>(null);
 
   const {label} = useLabels();
@@ -24,43 +26,84 @@ const GearChart = ({data, formatter, type, ...rest}: ChartProps) => {
     return gearMap;
   }, {});
 
-  const sortedDesc = Object.fromEntries(
-    Object.entries(dataPerGear)
-      .filter(([gearId]) => null === includedGear || includedGear.includes(gearId))
-      .sort(([, a], [, b]) => b - a)
+  const sortedGear = Object.entries(dataPerGear)
+    .filter(([gearId]) => null === includedGear || includedGear.includes(gearId))
+    .sort(([, valueA], [, valueB]) => valueB - valueA);
+
+  const chart = useChart({
+    data: sortedGear.map(([gearId, value]) => ({gear: label(gearId, true), value})),
+    series: [{name: 'value', color: 'orange.solid'}],
+  });
+
+  const renderTooltip = () => (
+    <Tooltip
+      cursor={{fill: chart.color('bg.muted')}}
+      isAnimationActive={false}
+      content={({payload, active}) => {
+        if (!active || !payload?.length) return null;
+
+        const {gear, value} = payload[0].payload as {gear: string; value: number};
+
+        return (
+          <ChartTooltip>
+            {gear} · {formatter?.(value) ?? value}
+          </ChartTooltip>
+        );
+      }}
+    />
   );
-  const selectedGear = Object.keys(sortedDesc);
-  const labels = selectedGear.map(gearId => label(gearId, true));
-  const series =
-    'pie' === type ? Object.values(sortedDesc) : [{name: label(data.toString()), data: Object.values(sortedDesc)}];
 
   return (
     <>
       <GearSelect
         multiple={true}
-        selectedGear={null === includedGear ? selectedGear : includedGear}
+        selectedGear={null === includedGear ? sortedGear.map(([gearId]) => gearId) : includedGear}
         onSelectedGearChange={setIncludedGear}
       />
-      <Chart
-        options={getOptions(
-          labels,
-          formatter,
-          'pie' === type
-            ? {
-                legend: {show: false},
-                dataLabels: {
-                  enabled: true,
-                  formatter: (_, opts) => labels[opts?.seriesIndex ?? 0],
-                  dropShadow: {enabled: false},
-                },
-              }
-            : {}
-        )}
-        series={series}
-        type={type ?? 'bar'}
-        height={400}
-        {...rest}
-      />
+      <Chart.Root width="100%" height="400px" chart={chart}>
+        <ResponsiveContainer width="100%" height="100%">
+          {'pie' === type ? (
+            <PieChart>
+              {renderTooltip()}
+              <Pie
+                data={chart.data}
+                dataKey={chart.key('value')}
+                nameKey="gear"
+                innerRadius="35%"
+                outerRadius="75%"
+                isAnimationActive={false}
+                label={({payload}) => (payload as {gear: string}).gear}
+                labelLine={false}
+                stroke={chart.color('bg')}
+                strokeWidth={2}
+              >
+                {chart.data.map((row, index) => (
+                  <Cell key={row.gear} fill={chart.color(getSeriesColor(index))} fillOpacity={0.75} />
+                ))}
+              </Pie>
+            </PieChart>
+          ) : (
+            <BarChart data={chart.data}>
+              <XAxis dataKey="gear" stroke={chart.color('fg.muted')} tickLine={false} />
+              <YAxis
+                stroke={chart.color('fg.muted')}
+                width={70}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={value => formatter?.(Number(value)) ?? String(value)}
+              />
+              {renderTooltip()}
+              <Bar
+                dataKey={chart.key('value')}
+                fill={chart.color('orange.solid')}
+                fillOpacity={0.55}
+                radius={[4, 4, 0, 0]}
+                isAnimationActive={false}
+              />
+            </BarChart>
+          )}
+        </ResponsiveContainer>
+      </Chart.Root>
     </>
   );
 };
