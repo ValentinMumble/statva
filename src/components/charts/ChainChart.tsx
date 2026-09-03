@@ -8,10 +8,15 @@ import {ChainEvent, formatDistance, getPeriodColor, getRidesBetween, labelCollec
 import {useActivities, useEvents, useLabels} from '../../hooks';
 import {ChartTooltip} from './ChartTooltip';
 
+// A chain gets rotated off the bike once it has done this much on its current stint.
+const ROTATION_LIMIT = 400 * 1000;
 const RETIRED_CHAINS = ['🍍', '🧄', '🍪', '🍌', '🍋'];
 const RETIRED_BIKES = ['b11897955', 'b12655849'];
 
 const getTotal = (distances: number[]): number => distances.reduce((total, current) => total + current, 0);
+
+const getRowColor = (isCurrent: boolean, isSuggested: boolean): string =>
+  isCurrent ? 'orange.solid' : isSuggested ? 'green.solid' : 'fg.muted';
 
 const ChainChart = () => {
   const [withRetired, setWithRetired] = useState<boolean>(false);
@@ -49,6 +54,12 @@ const ChainChart = () => {
 
   const currentChain = currentBikeEvents.at(-1)?.chain ?? '';
   const currentRotation = chainOdometer[currentChain]?.at(-1) ?? 0;
+  const isDue = ROTATION_LIMIT <= currentRotation;
+
+  // Swap in the least used chain, so the whole set wears down together.
+  const [suggestedChain] = Object.keys(chainOdometer)
+    .filter(chain => chain !== currentChain && !RETIRED_CHAINS.includes(chain))
+    .sort((chainA, chainB) => getTotal(chainOdometer[chainA]) - getTotal(chainOdometer[chainB]));
 
   const retiredTotals = RETIRED_CHAINS.filter(chain => chain in chainOdometer).map(chain =>
     getTotal(chainOdometer[chain])
@@ -66,7 +77,8 @@ const ChainChart = () => {
       label: `${chain} ${formatDistance(total / distances.length)} avg`,
       cap: 0,
       isCurrent: chain === currentChain,
-      totalLabel: `${formatDistance(total)} 〰 ${distances.length}`,
+      isSuggested: isDue && chain === suggestedChain,
+      totalLabel: `${formatDistance(total)} 〰 ${distances.length}${isDue && chain === suggestedChain ? ' ← next' : ''}`,
     };
 
     distances.forEach((distance, index) => (row[`period${index}`] = distance));
@@ -75,6 +87,7 @@ const ChainChart = () => {
   });
 
   const currentRowLabel = rows.find(({isCurrent}) => isCurrent)?.label;
+  const suggestedRowLabel = rows.find(({isSuggested}) => isSuggested)?.label;
 
   const chart = useChart({
     data: rows,
@@ -99,8 +112,20 @@ const ChainChart = () => {
           🗄️
         </Switch>
         <Spacer />
-        <Text>
+        <Text color={isDue ? 'red.solid' : undefined}>
           <Span fontStyle="italic">rotation</Span> {currentChain} {formatDistance(currentRotation)}
+          {isDue ? (
+            undefined === suggestedChain ? (
+              ' · due'
+            ) : (
+              <>
+                {' · due, swap to '}
+                <Span color="green.solid">{suggestedChain}</Span>
+              </>
+            )
+          ) : (
+            <Span color="fg.muted"> · {formatDistance(ROTATION_LIMIT - currentRotation)} left</Span>
+          )}
         </Text>
         <Text>
           <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
@@ -132,8 +157,8 @@ const ChainChart = () => {
                   textAnchor="end"
                   dominantBaseline="central"
                   fontSize={12}
-                  fontWeight={payload.value === currentRowLabel ? 700 : 400}
-                  fill={payload.value === currentRowLabel ? chart.color('orange.solid') : chart.color('fg.muted')}
+                  fontWeight={payload.value === currentRowLabel || payload.value === suggestedRowLabel ? 700 : 400}
+                  fill={chart.color(getRowColor(payload.value === currentRowLabel, payload.value === suggestedRowLabel))}
                 >
                   {payload.value}
                 </text>
@@ -195,6 +220,7 @@ const ChainChart = () => {
                 dataKey="totalLabel"
                 content={({x, y, height, value, index}) => {
                   const isCurrent = undefined !== index && Boolean(rows[index]?.isCurrent);
+                  const isSuggested = undefined !== index && Boolean(rows[index]?.isSuggested);
 
                   return (
                     <text
@@ -202,8 +228,8 @@ const ChainChart = () => {
                       y={Number(y) + Number(height) / 2}
                       dominantBaseline="central"
                       fontSize={12}
-                      fontWeight={isCurrent ? 700 : 400}
-                      fill={isCurrent ? chart.color('orange.solid') : chart.color('fg.muted')}
+                      fontWeight={isCurrent || isSuggested ? 700 : 400}
+                      fill={chart.color(getRowColor(isCurrent, isSuggested))}
                     >
                       {value}
                     </text>
