@@ -1,4 +1,4 @@
-import {useActivities, useLabels} from '../../hooks';
+import {useActivities, useActivityMeta, useLabels} from '../../hooks';
 import {countBy, extractNPGroup} from '../../models';
 import {CountPieChart} from './CountPieChart';
 
@@ -11,8 +11,11 @@ const NPGroupPieChart = () => {
     sortDirection: 'asc',
   });
   const {label} = useLabels();
+  const {activityMeta} = useActivityMeta();
 
-  const groupMap = countBy(activities ?? [], activity => extractNPGroup(activity.name));
+  const groupMap = countBy(activities ?? [], activity =>
+    extractNPGroup(activity.name, activityMeta[activity.id] ?? null)
+  );
   const data = Object.fromEntries(Object.entries(groupMap).sort(([a], [b]) => a.localeCompare(b)));
   const labels = Object.keys(data).map(key => label(key));
 

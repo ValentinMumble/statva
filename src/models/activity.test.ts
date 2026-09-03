@@ -235,6 +235,46 @@ describe('extractNPGroup', () => {
   ])('extractNPGroup(%s) = %s', (name, expected) => {
     expect(extractNPGroup(name)).toBe(expected);
   });
+
+  test.each([
+    ['N-Peloton #575 G2', 'Sortie pirate ce matin', 'Pirate'],
+    ['N-Peloton #575 G2', 'On etait en Pirate', 'Pirate'],
+    ['N-Peloton #575 G2', 'PIRATE', 'Pirate'],
+    ['N-Peloton #575 G2', 'Avec les pirates', 'Pirate'],
+    ['N-Peloton #575 G2', 'Avec les 🏴‍☠️', 'Pirate'],
+    ['N-Peloton #670 🍍', 'Sortie Pirate', 'Pirate'],
+    ['N-Peloton #575 G2', 'Grosse sortie tranquille', 'G2'],
+    ['N-Peloton #575 G2', 'On a fait du piratage de roue', 'G2'],
+    ['N-Peloton #575 G2', '', 'G2'],
+  ])('extractNPGroup(%s) with a description saying "%s" = %s', (name, description, expected) => {
+    expect(extractNPGroup(name, buildDetailedActivity({description}))).toBe(expected);
+  });
+
+  test.each([
+    ['N-Peloton #575 G2', 'Pirate', 'Pirate'],
+    ['N-Peloton #670 🍍', '🏴‍☠️', 'Pirate'],
+    ['N-Peloton #575 G2', 'NP: 211', 'G2'],
+  ])('extractNPGroup(%s) with a private note saying "%s" = %s', (name, privateNote, expected) => {
+    expect(extractNPGroup(name, buildDetailedActivity({private_note: privateNote, description: ''}))).toBe(expected);
+  });
+
+  test.each([
+    ['N-Peloton #670 🍍 pirate', 'Pirate'],
+    ['N-Peloton #670 🍊', 'PCC'],
+    ['N-Peloton #670 🍍', 'Unknown'],
+  ])('extractNPGroup(%s) without any meta = %s', (name, expected) => {
+    expect(extractNPGroup(name)).toBe(expected);
+  });
+
+  test.each([
+    ['N-Peloton #575 G2', 'Avec le 🍊', 'PCC'],
+    ['N-Peloton #670 🍍', 'Sortie 🍊 tranquille', 'PCC'],
+    ['N-Peloton #575 G2 🍊', '', 'PCC'],
+    ['N-Peloton #575 G2 🍊', '🏴‍☠️', 'Pirate'],
+  ])('extractNPGroup(%s) with "%s" in the notes = %s', (name, note, expected) => {
+    expect(extractNPGroup(name, buildDetailedActivity({description: note}))).toBe(expected);
+    expect(extractNPGroup(name, buildDetailedActivity({private_note: note, description: ''}))).toBe(expected);
+  });
 });
 
 describe('computeFinishCount', () => {

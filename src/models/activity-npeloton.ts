@@ -37,8 +37,22 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
   return Object.fromEntries(Object.entries(locationCount).sort());
 };
 
-const extractNPGroup = (activityName: string): string => {
-  if (activityName.includes('🏴‍☠️')) return 'Pirate';
+// Groups called out by a marker in the ride name, description or private note,
+// rather than by the usual "N-Peloton #123 G2" naming. First match wins.
+const GROUP_MARKERS: {group: string; emoji: string; pattern?: RegExp}[] = [
+  {group: 'Pirate', emoji: '🏴‍☠️', pattern: /\bpirates?\b/i},
+  {group: 'PCC', emoji: '🍊'},
+];
+
+// Notes live in either field depending on how the ride was written up.
+const getNotes = (meta?: DetailedActivity | null): string =>
+  [meta?.private_note ?? '', meta?.description ?? ''].join('\n');
+
+const extractNPGroup = (activityName: string, meta?: DetailedActivity | null): string => {
+  const fullText = `${activityName}\n${getNotes(meta)}`;
+  const marker = GROUP_MARKERS.find(({emoji, pattern}) => fullText.includes(emoji) || pattern?.test(fullText));
+
+  if (marker) return marker.group;
 
   return (
     activityName
