@@ -77,8 +77,8 @@ const ChainChart = () => {
       label: `${chain} ${formatDistance(total / distances.length)} avg`,
       cap: 0,
       isCurrent: chain === currentChain,
-      isSuggested: isDue && chain === suggestedChain,
-      totalLabel: `${formatDistance(total)} 〰 ${distances.length}${isDue && chain === suggestedChain ? ' ← next' : ''}`,
+      isSuggested: chain === suggestedChain,
+      totalLabel: `${formatDistance(total)} 〰 ${distances.length}${chain === suggestedChain ? ' ← next' : ''}`,
     };
 
     distances.forEach((distance, index) => (row[`period${index}`] = distance));
@@ -115,16 +115,15 @@ const ChainChart = () => {
         <Text color={isDue ? 'red.solid' : undefined}>
           <Span fontStyle="italic">rotation</Span> {currentChain} {formatDistance(currentRotation)}
           {isDue ? (
-            undefined === suggestedChain ? (
-              ' · due'
-            ) : (
-              <>
-                {' · due, swap to '}
-                <Span color="green.solid">{suggestedChain}</Span>
-              </>
-            )
+            ' · due'
           ) : (
             <Span color="fg.muted"> · {formatDistance(ROTATION_LIMIT - currentRotation)} left</Span>
+          )}
+          {undefined !== suggestedChain && (
+            <>
+              {' · next '}
+              <Span color="green.solid">{suggestedChain}</Span>
+            </>
           )}
         </Text>
         <Text>
