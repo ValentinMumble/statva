@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {Group, SegmentGroupValueChangeDetails, Spacer, Span, Text} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
-import {Bar, BarChart, Cell, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
+import {Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl, Switch} from '../../components/ui';
 import {EditEvents, EditLabels} from '../../components';
 import {ChainEvent, formatDistance, getPeriodColor, getRidesBetween, labelCollection, SUPER6} from '../../models';
@@ -74,11 +74,11 @@ const ChainChart = () => {
     const distances = chainOdometer[chain];
     const total = getTotal(distances);
     const row: Record<string, number | string | boolean> = {
-      label: `${chain} ${formatDistance(total / distances.length)} avg`,
-      cap: 0,
+      label: `${chain} ${formatDistance(total)}`,
+      avgLabel: `${formatDistance(total / distances.length)} avg`,
+      chain,
       isCurrent: chain === currentChain,
       isSuggested: chain === suggestedChain,
-      totalLabel: `${formatDistance(total)} 〰 ${distances.length}${chain === suggestedChain ? ' ← next' : ''}`,
     };
 
     distances.forEach((distance, index) => (row[`period${index}`] = distance));
@@ -107,12 +107,12 @@ const ChainChart = () => {
 
   return (
     <>
-      <Group width="full" justifyContent="end" gap="20px">
+      <Group width="full" justifyContent="end" gap="12px">
         <Switch size="xs" checked={withRetired} onCheckedChange={({checked}) => setWithRetired(checked)}>
           🗄️
         </Switch>
         <Spacer />
-        <Text color={isDue ? 'red.solid' : undefined}>
+        <Text fontSize="sm" whiteSpace="nowrap" color={isDue ? 'red.solid' : undefined}>
           <Span fontStyle="italic">rotation</Span> {currentChain} {formatDistance(currentRotation)}
           {isDue ? (
             ' · due'
@@ -126,7 +126,7 @@ const ChainChart = () => {
             </>
           )}
         </Text>
-        <Text>
+        <Text fontSize="sm" whiteSpace="nowrap">
           <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
         </Text>
         <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
@@ -135,7 +135,7 @@ const ChainChart = () => {
       </Group>
       <Chart.Root width="100%" height="400px" chart={chart}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chart.data} layout="vertical" margin={{right: 90}}>
+          <BarChart data={chart.data} layout="vertical" margin={{right: 90, top: 4}} barCategoryGap="30%">
             <XAxis
               type="number"
               stroke={chart.color('fg.muted')}
@@ -145,23 +145,31 @@ const ChainChart = () => {
             <YAxis
               type="category"
               dataKey="label"
-              width={110}
+              width={120}
               tickLine={false}
               axisLine={false}
               stroke={chart.color('fg.muted')}
-              tick={({x, y, payload}: {x: number | string; y: number | string; payload: {value: string}}) => (
-                <text
-                  x={Number(x)}
-                  y={Number(y)}
-                  textAnchor="end"
-                  dominantBaseline="central"
-                  fontSize={12}
-                  fontWeight={payload.value === currentRowLabel || payload.value === suggestedRowLabel ? 700 : 400}
-                  fill={chart.color(getRowColor(payload.value === currentRowLabel, payload.value === suggestedRowLabel))}
-                >
-                  {payload.value}
-                </text>
-              )}
+              tick={({x, y, payload}: {x: number | string; y: number | string; payload: {value: string}}) => {
+                const isCurrent = payload.value === currentRowLabel;
+                const isSuggested = payload.value === suggestedRowLabel;
+
+                return (
+                  <text x={Number(x)} y={Number(y)} textAnchor="end" dominantBaseline="central">
+                    <tspan
+                      x={Number(x)}
+                      dy="-0.3em"
+                      fontSize={13}
+                      fontWeight={isCurrent || isSuggested ? 700 : 400}
+                      fill={chart.color(getRowColor(isCurrent, isSuggested))}
+                    >
+                      {payload.value}
+                    </tspan>
+                    <tspan x={Number(x)} dy="1.4em" fontSize={11} fill={chart.color('fg.muted')}>
+                      {rows.find(({label: rowLabel}) => rowLabel === payload.value)?.avgLabel}
+                    </tspan>
+                  </text>
+                );
+              }}
             />
             <Tooltip
               shared={false}
@@ -172,16 +180,16 @@ const ChainChart = () => {
 
                 const [{dataKey, value, payload: rowData}] = payload;
 
-                if ('cap' === dataKey || 0 >= Number(value)) return null;
+                if (0 >= Number(value)) return null;
 
                 // Read the row from its own data: recharts does not reliably pass
                 // `label` for a vertical layout with shared={false}.
-                const rowLabel = (rowData as {label?: string} | undefined)?.label;
+                const chain = (rowData as {chain?: string} | undefined)?.chain;
                 const rotationNumber = Number(String(dataKey).replace('period', '')) + 1;
 
                 return (
                   <ChartTooltip>
-                    {rowLabel} · 〰 {rotationNumber} · {formatDistance(Number(value))}
+                    {chain} · 〰 {rotationNumber} · {formatDistance(Number(value))}
                   </ChartTooltip>
                 );
               }}
@@ -192,8 +200,8 @@ const ChainChart = () => {
                 stroke={chart.color('fg.muted')}
                 strokeDasharray="5 4"
                 label={{
-                  value: `μ retired ${formatDistance(wearLimit)}`,
-                  position: 'insideTop',
+                  value: `retired ${formatDistance(wearLimit)}`,
+                  position: 'insideBottomLeft',
                   fill: chart.color('fg.muted'),
                   fontSize: 12,
                 }}
@@ -204,6 +212,7 @@ const ChainChart = () => {
                 key={item.name}
                 dataKey={chart.key(item.name)}
                 stackId="chain"
+                maxBarSize={44}
                 fill={chart.color(item.color)}
                 stroke={chart.color('bg')}
                 strokeWidth={2}
@@ -214,28 +223,6 @@ const ChainChart = () => {
                 ))}
               </Bar>
             ))}
-            <Bar dataKey="cap" stackId="chain" fill="transparent" isAnimationActive={false}>
-              <LabelList
-                dataKey="totalLabel"
-                content={({x, y, height, value, index}) => {
-                  const isCurrent = undefined !== index && Boolean(rows[index]?.isCurrent);
-                  const isSuggested = undefined !== index && Boolean(rows[index]?.isSuggested);
-
-                  return (
-                    <text
-                      x={Number(x) + 6}
-                      y={Number(y) + Number(height) / 2}
-                      dominantBaseline="central"
-                      fontSize={12}
-                      fontWeight={isCurrent || isSuggested ? 700 : 400}
-                      fill={chart.color(getRowColor(isCurrent, isSuggested))}
-                    >
-                      {value}
-                    </text>
-                  );
-                }}
-              />
-            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </Chart.Root>
