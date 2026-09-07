@@ -1,11 +1,14 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {Box, IconButton, Table} from '@chakra-ui/react';
+import {Box, Editable, EditableValueChangeDetails, IconButton, Table} from '@chakra-ui/react';
 import {LuPlus} from 'react-icons/lu';
-import {Tooltip} from '../components/ui';
+import {toaster, Tooltip} from '../components/ui';
 import {ActivityIcon, EditLabels} from '../components';
 import {useActivities, useLabels} from '../hooks';
+import {getFetcher} from '../hooks/useFetcher';
 import {arrayRotate, getActivityUrl, TIMEFRAMES} from '../models';
 import {Activity} from '../models/strava';
+
+const upsertLabel = getFetcher<void>('labels.set');
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONDAY_FIRST = arrayRotate(WEEKDAYS, -1);
@@ -79,7 +82,7 @@ const DayCell = ({activity, label}: {activity: Activity | null; label: (key: str
 const WeekView = () => {
   const [weekCount, setWeekCount] = useState(5);
   const {activities} = useActivities({withCommute: true, withPrivate: true, sort: 'date', sortDirection: 'asc'});
-  const {label} = useLabels();
+  const {label, refetch: refreshLabels} = useLabels();
   const tableRef = useRef<HTMLTableElement>(null);
   const isInitialMount = useRef(true);
 
@@ -92,6 +95,19 @@ const WeekView = () => {
     }
     tableRef.current?.querySelector('tr:last-child')?.scrollIntoView({behavior: 'smooth'});
   }, [weekCount]);
+
+  const handleWeekLabelSave =
+    (week: string) =>
+    async ({value}: EditableValueChangeDetails) => {
+      const trimmed = value.trim();
+
+      if ('' === trimmed || trimmed === label(week)) return;
+
+      await upsertLabel(week, trimmed);
+      refreshLabels();
+
+      toaster.create({title: `🆙 ${week} renamed to ${trimmed}`});
+    };
 
   const dataPerWeek = useMemo(() => buildWeekMap(activities ?? []), [activities]);
   const lastWeeks = Object.fromEntries(Object.entries(dataPerWeek).slice(-weekCount).reverse());
@@ -125,7 +141,18 @@ const WeekView = () => {
       <Table.Body>
         {weekKeys.map((week, i) => (
           <Table.Row key={week}>
-            <Table.Cell>{label(week)}</Table.Cell>
+            <Table.Cell>
+              <Editable.Root
+                defaultValue={label(week)}
+                submitMode="enter"
+                activationMode="click"
+                title={`Rename ${week}`}
+                onValueCommit={handleWeekLabelSave(week)}
+              >
+                <Editable.Preview cursor="text" />
+                <Editable.Input />
+              </Editable.Root>
+            </Table.Cell>
             {MONDAY_FIRST.map(weekDay => (
               <DayCell key={weekDay} activity={lastWeeks[week].days[weekDay] ?? null} label={label} />
             ))}
