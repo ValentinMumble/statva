@@ -15,4 +15,3 @@ export * from './RouteDrawer';
 export * from './StatComponent';
 export * from './Stats';
 export * from './WeekView';
-export * from './YearRangeSlider';
