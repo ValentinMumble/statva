@@ -4,6 +4,15 @@ Next improvements for Statva. Newest ideas at the top; move to **Done** when shi
 
 ## Ideas / Backlog
 
+- [ ] Search activities by the people they were with. **Blocked: no API for it.**
+      Checked against a real group ride (activity 20061645410, 3 athletes): the
+      detailed activity only carries `athlete_count` and the owner's own
+      `athlete.id`, with no participants anywhere in its 78 fields. The old
+      `/activities/{id}/related` endpoint now answers 401 (internal only), so the
+      "Other Athletes" list on strava.com is not reachable from the API.
+      Possible routes if it is ever worth it: `/activities/{id}/kudos` does return
+      names (truncated surnames) and could serve as a noisy proxy, or add a people
+      field to the activity meta we already store and fill it by hand.
 - [ ] Merge odometer info into the event timeline (km labels or color intensity on the gantt bars)
 - [ ] Cost per km per part (link expense price to part lifespans)
 - [ ] Part wear gauges: km on the current part vs average life, with a km/weeks-left estimate
