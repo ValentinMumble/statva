@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
 import {Group} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
@@ -21,8 +21,8 @@ const EddingtonDayChart = () => {
     includedActivityTypes: getTypes(ActivityType.Ride),
   });
 
-  const [eddington] = eddingtonNumber(activities ?? []);
-  const ridesByDistance = daysExceedingDistance(activities ?? []);
+  const [eddington] = useMemo(() => eddingtonNumber(activities ?? []), [activities]);
+  const ridesByDistance = useMemo(() => daysExceedingDistance(activities ?? []), [activities]);
 
   const chart = useChart({
     data: Object.entries(ridesByDistance)
@@ -42,7 +42,7 @@ const EddingtonDayChart = () => {
           width="90%"
           size="sm"
           value={distanceRange}
-          onValueChangeEnd={({value}) => setDistanceRange(value)}
+          onValueChange={({value}) => setDistanceRange(value)}
           min={BOUNDARIES[0]}
           max={BOUNDARIES[1]}
           marks={range(BOUNDARIES[0], BOUNDARIES[1], Math.round(BOUNDARIES[1] / 5)).map(value => ({
