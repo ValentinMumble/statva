@@ -41,6 +41,7 @@ const partOf = (event: Event): Partial<Event> =>
 
 type LogEventProps = {
   bike?: string;
+  date?: Date;
   onLogged: () => void;
   trigger: ReactNode;
 };
@@ -49,7 +50,7 @@ type LogEventProps = {
  * Logging in two steps: pick what happened, then confirm. The date, the bike and the
  * part are already filled in, so the common events are two taps and nothing typed.
  */
-const LogEvent = ({bike = SUPER6, onLogged, trigger}: LogEventProps) => {
+const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Partial<Event>>({});
   const [withFields, setWithFields] = useState(false);
@@ -70,7 +71,7 @@ const LogEvent = ({bike = SUPER6, onLogged, trigger}: LogEventProps) => {
   const handleTypeChoice = (type: Event['type']) => () => {
     const [suggested] = 'chain' === type ? suggestChains(events, activities ?? [], bike) : [];
 
-    setDraft({type, date: new Date(), bike, ...(undefined === suggested ? {} : {chain: suggested.chain})});
+    setDraft({type, date: date ?? new Date(), bike, ...(undefined === suggested ? {} : {chain: suggested.chain})});
     setWithFields(false);
   };
 

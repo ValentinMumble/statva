@@ -1,7 +1,9 @@
 import {useState} from 'react';
-import {VStack, HStack, Text} from '@chakra-ui/react';
+import {HStack, SegmentGroupValueChangeDetails, VStack} from '@chakra-ui/react';
+import {SegmentedControl} from './ui';
 import {useActivities, useActivityMeta, useAthlete} from '../hooks';
-import {getTypes, Timeframe} from '../models';
+import {getTypes, labelCollection, Timeframe, TIMEFRAMES} from '../models';
+import {useLabels} from '../hooks';
 import {ActivityType} from '../models/strava';
 import {StatComponent} from './StatComponent';
 import {GLOBAL_STATS, STATS} from './stats-config';
@@ -10,9 +12,9 @@ import {SufferTrendChart} from './SufferTrendChart';
 const TYPES: ActivityType[] = [ActivityType.Ride, ActivityType.Run, ActivityType.Swim, ActivityType.Tennis];
 
 const Stats = () => {
-  const [typeIndex, setTypeIndex] = useState<number>(0);
+  const [currentType, setCurrentType] = useState<ActivityType>(TYPES[0]);
   const [timeframe, setTimeframe] = useState<Timeframe>('week');
-  const currentType = TYPES[typeIndex];
+  const {label} = useLabels();
 
   const athlete = useAthlete();
   const {activities} = useActivities({
@@ -23,17 +25,13 @@ const Stats = () => {
   const {activityMeta} = useActivityMeta();
   const typeActivities = activities?.filter(({sport_type}) => getTypes(currentType).includes(sport_type)) ?? null;
 
-  const toggleTypeChange = () => setTypeIndex((typeIndex + 1) % TYPES.length);
-
-  const toggleTimeframe = () => {
-    const timeframes: Timeframe[] = ['week', 'month', 'year', 'day'];
-    setTimeframe(timeframes[(timeframes.indexOf(timeframe) + 1) % timeframes.length]);
-  };
+  const handleTypeChange = ({value}: SegmentGroupValueChangeDetails) => value && setCurrentType(value as ActivityType);
+  const handleTimeframeChange = ({value}: SegmentGroupValueChangeDetails) => value && setTimeframe(value as Timeframe);
 
   return (
     <VStack alignItems="stretch">
       <HStack>
-        <SufferTrendChart activities={activities ?? []} timeframe={timeframe} onClick={toggleTimeframe} />
+        <SufferTrendChart activities={activities ?? []} timeframe={timeframe} />
         {GLOBAL_STATS.map((stat, index) => (
           <StatComponent
             key={index}
@@ -44,9 +42,20 @@ const Stats = () => {
           />
         ))}
       </HStack>
-      <Text textStyle="xl" marginTop="10px">
-        {currentType}
-      </Text>
+      <HStack justifyContent="space-between" gap="8px" flexWrap="wrap" marginTop="10px">
+        <SegmentedControl
+          size="xs"
+          value={currentType}
+          onValueChange={handleTypeChange}
+          items={labelCollection(TYPES, label).items}
+        />
+        <SegmentedControl
+          size="xs"
+          value={timeframe}
+          onValueChange={handleTimeframeChange}
+          items={labelCollection(Object.keys(TIMEFRAMES), label).items}
+        />
+      </HStack>
       {STATS[currentType].map((statGroup, index) => (
         <HStack key={index}>
           {statGroup.map((stat, index) => (
@@ -56,7 +65,6 @@ const Stats = () => {
               activities={typeActivities}
               activityMeta={activityMeta}
               athlete={athlete}
-              onClick={toggleTypeChange}
             />
           ))}
         </HStack>

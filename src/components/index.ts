@@ -5,6 +5,7 @@ export * from './ActivityTable';
 export * from './ActivityTypeFilter';
 export * from './FilterControls';
 export * from './BikeParts';
+export * from './TopBar';
 export * from './ChartAccordion';
 export * from './event';
 export * from './EditLabels';

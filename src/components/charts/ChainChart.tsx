@@ -3,7 +3,6 @@ import {Group, SegmentGroupValueChangeDetails, Spacer, Span, Text} from '@chakra
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl, Switch} from '../../components/ui';
-import {EditEvents, EditLabels} from '../../components';
 import {
   ChainEvent,
   formatDistance,
@@ -27,7 +26,7 @@ const ChainChart = () => {
   const [withRetired, setWithRetired] = useState<boolean>(false);
   const [gearId, setGearId] = useState<string>(SUPER6);
   const {label} = useLabels();
-  const {events: chainEvents, refetch: refreshEvents} = useEvents<ChainEvent>('chain');
+  const {events: chainEvents} = useEvents<ChainEvent>('chain');
 
   const {activities} = useActivities({
     withCommute: true,
@@ -135,8 +134,6 @@ const ChainChart = () => {
           <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
         </Text>
         <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
-        <EditEvents onEditEvents={refreshEvents} />
-        <EditLabels />
       </Group>
       <Chart.Root width="100%" height="400px" chart={chart}>
         <ResponsiveContainer width="100%" height="100%">

@@ -2,7 +2,7 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import {Box, Editable, EditableValueChangeDetails, IconButton, Table} from '@chakra-ui/react';
 import {LuPlus} from 'react-icons/lu';
 import {toaster, Tooltip} from '../components/ui';
-import {ActivityIcon, EditLabels} from '../components';
+import {ActivityIcon} from '../components';
 import {useActivities, useLabels} from '../hooks';
 import {getFetcher} from '../hooks/useFetcher';
 import {arrayRotate, getActivityUrl, TIMEFRAMES} from '../models';
@@ -124,7 +124,6 @@ const WeekView = () => {
             <IconButton title="More" variant="ghost" onClick={() => setWeekCount(c => c + 1)} marginLeft="10px">
               <LuPlus />
             </IconButton>
-            <EditLabels />
           </Table.ColumnHeader>
           {MONDAY_FIRST.map(weekDay => (
             <Table.ColumnHeader

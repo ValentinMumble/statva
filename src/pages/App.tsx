@@ -1,7 +1,16 @@
 import {ChangeEvent, KeyboardEvent, useMemo, useState} from 'react';
 import {Stack, VStack} from '@chakra-ui/react';
 import {useLocalStorage} from 'usehooks-ts';
-import {ActivityTable, BikeParts, ChartAccordion, FilterControls, Stats, WeekView} from '../components';
+import {
+  ActivityTable,
+  BikeParts,
+  ChartAccordion,
+  FilterControls,
+  Stats,
+  TopBar,
+  TOP_BAR_HEIGHT,
+  WeekView,
+} from '../components';
 import {SortType, SortDirection, DEFAULT_SORTS, getTypes, extractEmoji} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities, useActivityMeta, useFtp, useLabels, useAllActivities} from '../hooks';
@@ -70,15 +79,19 @@ const App = () => {
   const handleBikeOnlyToggle = () =>
     setTypes(types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? null : getTypes(ActivityType.Ride));
 
+  const columnHeight = `calc(100vh - ${TOP_BAR_HEIGHT})`;
+
   return (
-    <Stack padding={[undefined, '0 20px']} gap="20px" direction={['column-reverse', 'row']}>
-      <VStack align="stretch" flexBasis="40%" gap="20px" width={['100vw', null]} height="100vh" overflowY="scroll">
+    <>
+      <TopBar />
+      <Stack padding={[undefined, '0 20px']} gap="20px" direction={['column-reverse', 'row']}>
+      <VStack align="stretch" flexBasis="40%" gap="20px" width={['100vw', null]} height={columnHeight} overflowY="scroll">
         <Stats />
         <BikeParts />
         <ChartAccordion />
         <WeekView />
       </VStack>
-      <VStack align="stretch" flexBasis="60%" height="100vh" overflow="scroll" data-scroll-root>
+      <VStack align="stretch" flexBasis="60%" height={columnHeight} overflow="scroll" data-scroll-root>
         <FilterControls
           search={search}
           isLoading={null === activities}
@@ -115,7 +128,8 @@ const App = () => {
           onDeleteActivity={deleteActivity}
         />
       </VStack>
-    </Stack>
+      </Stack>
+    </>
   );
 };
 
