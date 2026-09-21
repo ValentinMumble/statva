@@ -1,0 +1,114 @@
+import {buildActivity} from '../../test/test-util';
+import {computeBikeParts, recentFittings, suggestChains} from './parts';
+import {Event} from './event';
+
+const BIKE = 'b1';
+const label = (key: string | null) => (null === key ? '🤷' : `[${key}]`);
+
+// One ride per day named, so the distance between two dates is exact. The last part
+// fitted runs to today, which is well past January, so it picks up every later ride.
+const ridesOn = (days: number[], km = 100) =>
+  days.map(day =>
+    buildActivity({
+      id: day,
+      gear_id: BIKE,
+      distance: km * 1000,
+      start_date: `2025-01-${String(day).padStart(2, '0')}T08:00:00Z`,
+    }),
+  );
+
+const activities = ridesOn([...Array(31).keys()].map(day => day + 1));
+
+const on = (day: number, event: Partial<Event> & {type: Event['type']}): Event =>
+  ({id: `${event.type}-${day}`, bike: BIKE, date: new Date(`2025-01-${String(day).padStart(2, '0')}`), ...event}) as Event;
+
+test('it reports nothing for a bike with no events', () => {
+  expect(computeBikeParts([], activities, BIKE, label)).toEqual([]);
+});
+
+test('it measures a part against how long the previous ones lasted', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const events = [on(1, {type: 'battery'}), on(11, {type: 'battery'})];
+  const [battery] = computeBikeParts(events, rides, BIKE, label);
+
+  // the first lasted days 1 to 10, and the one fitted now has done days 11 to 20
+  expect(battery.expected).toBe(1000000);
+  expect(battery.distance).toBe(1000000);
+  expect(battery.state).toBe('overdue');
+});
+
+test('it calls a part due before it is overdue', () => {
+  const rides = ridesOn([...Array(18).keys()].map(day => day + 1));
+  const events = [on(1, {type: 'battery'}), on(11, {type: 'battery'})];
+  const [battery] = computeBikeParts(events, rides, BIKE, label);
+
+  // 800 km of the 1000 the first one managed
+  expect(battery.distance).toBe(800000);
+  expect(battery.state).toBe('due');
+});
+
+test('it has no expectation for the first of its kind', () => {
+  const [battery] = computeBikeParts([on(21, {type: 'battery'})], activities, BIKE, label);
+
+  expect(battery.expected).toBeNull();
+  expect(battery.state).toBe('ok');
+});
+
+test('it measures the chain against the rotation limit, not its past lives', () => {
+  const rides = ridesOn([...Array(10).keys()].map(day => day + 1), 50);
+  const events = [on(1, {type: 'chain', chain: '🍓'}), on(4, {type: 'chain', chain: '🍒'})];
+  const [chain] = computeBikeParts(events, rides, BIKE, label);
+
+  expect(chain.detail).toBe('🍒');
+  expect(chain.expected).toBe(400000);
+  // days 4 to 10 at 50 km, so 350 of the 400 km stint
+  expect(chain.distance).toBe(350000);
+  expect(chain.state).toBe('due');
+});
+
+test('it puts the part needing attention first', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const events = [
+    on(1, {type: 'battery'}),
+    on(11, {type: 'battery'}),
+    on(20, {type: 'chain', chain: '🍒'}),
+  ];
+
+  // the battery is at 100% of its expected life, the chain a quarter into its stint
+  expect(computeBikeParts(events, rides, BIKE, label).map(({type}) => type)).toEqual(['battery', 'chain']);
+});
+
+test('it ignores another bike"s events', () => {
+  const events = [{...on(1, {type: 'battery'}), bike: 'b2'} as Event];
+
+  expect(computeBikeParts(events, activities, BIKE, label)).toEqual([]);
+});
+
+test('it suggests the least used chain, leaving out the fitted and the retired ones', () => {
+  const events = [
+    on(1, {type: 'chain', chain: '🍓'}),
+    on(6, {type: 'chain', chain: '🍒'}),
+    on(8, {type: 'chain', chain: '🍇'}),
+    on(11, {type: 'chain', chain: '🍍'}),
+    on(21, {type: 'chain', chain: '🍓'}),
+  ];
+
+  // 🍒 did 2 days, 🍇 did 3, 🍓 is on the bike, 🍍 is retired
+  expect(suggestChains(events, activities, BIKE)).toEqual([
+    {chain: '🍒', distance: 200000},
+    {chain: '🍇', distance: 300000},
+  ]);
+});
+
+test('it offers the last few distinct fittings, newest first', () => {
+  const events = [
+    on(1, {type: 'tire', brand: 'Pirelli', model: 'P Zero', width: 32}),
+    on(11, {type: 'tire', brand: 'Continental', model: 'GP 5000', width: 32}),
+    on(21, {type: 'tire', brand: 'Continental', model: 'GP 5000', width: 32}),
+  ];
+
+  expect(recentFittings(events, 'tire', BIKE, label).map(({detail}) => detail)).toEqual([
+    'Continental GP 5000 32',
+    'Pirelli P Zero 32',
+  ]);
+});

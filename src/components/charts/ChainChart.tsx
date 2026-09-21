@@ -4,14 +4,19 @@ import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl, Switch} from '../../components/ui';
 import {EditEvents, EditLabels} from '../../components';
-import {ChainEvent, formatDistance, getPeriodColor, getRidesBetween, labelCollection, SUPER6} from '../../models';
+import {
+  ChainEvent,
+  formatDistance,
+  getPeriodColor,
+  getRidesBetween,
+  labelCollection,
+  RETIRED_BIKES,
+  RETIRED_CHAINS,
+  ROTATION_LIMIT,
+  SUPER6,
+} from '../../models';
 import {useActivities, useEvents, useLabels} from '../../hooks';
 import {ChartTooltip} from './ChartTooltip';
-
-// A chain gets rotated off the bike once it has done this much on its current stint.
-const ROTATION_LIMIT = 400 * 1000;
-const RETIRED_CHAINS = ['🍍', '🧄', '🍪', '🍌', '🍋'];
-const RETIRED_BIKES = ['b11897955', 'b12655849'];
 
 const getTotal = (distances: number[]): number => distances.reduce((total, current) => total + current, 0);
 

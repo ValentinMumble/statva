@@ -1,7 +1,7 @@
 import {ChangeEvent, KeyboardEvent, useMemo, useState} from 'react';
 import {Stack, VStack} from '@chakra-ui/react';
 import {useLocalStorage} from 'usehooks-ts';
-import {ActivityTable, ChartAccordion, FilterControls, Stats, WeekView} from '../components';
+import {ActivityTable, BikeParts, ChartAccordion, FilterControls, Stats, WeekView} from '../components';
 import {SortType, SortDirection, DEFAULT_SORTS, getTypes, extractEmoji} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities, useActivityMeta, useFtp, useLabels, useAllActivities} from '../hooks';
@@ -74,6 +74,7 @@ const App = () => {
     <Stack padding={[undefined, '0 20px']} gap="20px" direction={['column-reverse', 'row']}>
       <VStack align="stretch" flexBasis="40%" gap="20px" width={['100vw', null]} height="100vh" overflowY="scroll">
         <Stats />
+        <BikeParts />
         <ChartAccordion />
         <WeekView />
       </VStack>

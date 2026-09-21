@@ -14,6 +14,7 @@ export * from './event';
 export * from './ftp';
 export * from './gear';
 export * from './label';
+export * from './parts';
 export * from './tag';
 export * from './timeframe';
 export * from './tss';

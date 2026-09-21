@@ -12,3 +12,4 @@ export * from './SaddleEventCells';
 export * from './SaddleEventForm';
 export * from './TireEventCells';
 export * from './TireEventForm';
+export * from './LogEvent';
