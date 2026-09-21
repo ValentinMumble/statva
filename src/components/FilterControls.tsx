@@ -8,9 +8,10 @@ import {
   InputGroup,
   Portal,
 } from '@chakra-ui/react';
+import {Link} from 'react-router';
 import {BsDatabaseDown} from 'react-icons/bs';
 import {HiOutlineLockClosed} from 'react-icons/hi2';
-import {MdClear, MdFilterList} from 'react-icons/md';
+import {MdClear, MdFilterList, MdInsights} from 'react-icons/md';
 import {PiBicycle} from 'react-icons/pi';
 import {Tooltip} from './ui';
 import {ActivityTypeFilter} from './ActivityTypeFilter';
@@ -86,6 +87,11 @@ const FilterControls = ({
     <GearSelect selectedGear={gearIds} onSelectedGearChange={onGearChange} clearable={true} />
     <IconButton title="With private" variant={withPrivate ? 'surface' : 'ghost'} onClick={onPrivateToggle}>
       <HiOutlineLockClosed />
+    </IconButton>
+    <IconButton asChild={true} title="Dashboard" variant="ghost">
+      <Link to="/dashboard">
+        <MdInsights />
+      </Link>
     </IconButton>
     <Group hideBelow="md">
       <IconButton
