@@ -1,4 +1,6 @@
+import {extractNormalizedPower} from './activity-meta';
 import {computeFinishCount, extractNPGroup} from './activity-npeloton';
+import {daysExceedingDistance, eddingtonNumber} from './activity-stats';
 import {countBy} from './util';
 import {GetLabel} from './label';
 import {BikeExpense} from './bike-expense';
@@ -7,7 +9,7 @@ import {FTPTest} from './ftp';
 import {DetailedActivity} from './strava';
 
 type Named = {name: string; value: number};
-type Record_ = {name: string; date: string; value: number};
+type Record_ = {id: number; name: string; date: string; value: number; label: string};
 
 type Dashboard = {
   totals: {
@@ -27,26 +29,87 @@ type Dashboard = {
     indoor: number;
     solo: number;
     maxHeartRate: number;
+    activeDays: number;
+    longestStreak: number;
+    biggestWeek: number;
+    biggestMonth: number;
+    eddington: number;
     firstDate: string | null;
     lastDate: string | null;
   };
   years: {year: number; distance: number; elevation: number; hours: number; rides: number}[];
   months: {year: number; month: number; distance: number}[];
+  yearProgress: {years: number[]; rows: Record<string, number | null>[]};
+  eddington: {distance: number; days: number}[];
+  // The next Eddington level needs (E+1) days of at least (E+1) km; this is how many are still missing.
+  eddingtonNext: {target: number; have: number; needed: number};
   gear: {name: string; distance: number; rides: number}[];
   startHours: Named[];
   weekdays: Named[];
   sports: {type: string; rides: number; distance: number}[];
-  records: {key: string; heading: string; unit: string; rides: Record_[]}[];
+  records: {key: string; heading: string; note: string; rides: Record_[]}[];
   npeloton: {rides: number; distance: number; groups: Named[]; finishes: Named[]};
   ftp: {date: string; label: string; power: number; wattsPerKilo: number; weight: number}[];
   maintenance: {total: number; byType: Named[]};
   spending: {count: number; total: number; centsPerKm: number | null};
-  conditions: {temperatures: Named[]; devices: Named[]; heartRates: Named[]; places: Named[]};
+  conditions: {temperatures: Named[]; devices: Named[]; heartRates: Named[]};
 };
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const WEEKS_IN_YEAR = 53;
+// Ski takes every altitude and speed record, which buries the riding.
+const SKI_TYPES = ['AlpineSki', 'BackcountrySki', 'NordicSki', 'RollerSki', 'Snowboard'];
+// Four years is enough to read the trend without the chart turning into spaghetti.
+const COMPARED_YEARS = 4;
 
 const sum = (values: number[]): number => values.reduce((total, value) => total + value, 0);
+
+const dayOfYear = (date: Date): number =>
+  Math.floor((date.getTime() - Date.UTC(date.getUTCFullYear(), 0, 1)) / 86_400_000);
+
+const weekOfYear = (date: Date): number => Math.min(WEEKS_IN_YEAR - 1, Math.floor(dayOfYear(date) / 7));
+
+// How far into the year each season had got, so this year can be read against the last few.
+const buildYearProgress = (activities: DetailedActivity[]): Dashboard['yearProgress'] => {
+  const years = [...new Set(activities.map(activity => utcDate(activity).getUTCFullYear()))]
+    .sort((a, b) => a - b)
+    .slice(-COMPARED_YEARS);
+
+  if (0 === years.length) return {years: [], rows: []};
+
+  const weekly: Record<number, number[]> = Object.fromEntries(
+    years.map(year => [year, new Array<number>(WEEKS_IN_YEAR).fill(0)]),
+  );
+  const lastWeek: Record<number, number> = Object.fromEntries(years.map(year => [year, 0]));
+
+  activities.forEach(activity => {
+    const date = utcDate(activity);
+    const year = date.getUTCFullYear();
+
+    if (!(year in weekly)) return;
+
+    const week = weekOfYear(date);
+    weekly[year][week] += activity.distance / 1000;
+    lastWeek[year] = Math.max(lastWeek[year], week);
+  });
+
+  const currentYear = years[years.length - 1];
+  const running: Record<number, number> = Object.fromEntries(years.map(year => [year, 0]));
+
+  const rows = [...Array(WEEKS_IN_YEAR).keys()].map(week => {
+    const row: Record<string, number | null> = {week: week + 1};
+
+    years.forEach(year => {
+      running[year] += weekly[year][week];
+      // The year in progress stops where it got to, instead of flatlining to December.
+      row[String(year)] = year === currentYear && week > lastWeek[year] ? null : Math.round(running[year]);
+    });
+
+    return row;
+  });
+
+  return {years, rows};
+};
 
 const median = (values: number[]): number => {
   if (0 === values.length) return 0;
@@ -55,9 +118,6 @@ const median = (values: number[]): number => {
 
   return sorted[Math.floor(sorted.length / 2)];
 };
-
-// "(GMT+01:00) Europe/Paris" is the shape Strava sends.
-const placeName = (timezone: string): string => (timezone.split(') ').at(-1) ?? timezone).split('/').at(-1) ?? timezone;
 
 const bucketed = (values: number[], size: number, unit: string): Named[] =>
   Object.entries(
@@ -76,6 +136,33 @@ const bucketed = (values: number[], size: number, unit: string): Named[] =>
 const localDate = (activity: DetailedActivity): Date => new Date(activity.start_date_local);
 const utcDate = (activity: DetailedActivity): Date => new Date(activity.start_date);
 
+const distanceBy = (
+  activities: DetailedActivity[],
+  getKey: (date: Date) => string,
+): Record<string, number> =>
+  activities.reduce((map: Record<string, number>, activity) => {
+    const key = getKey(utcDate(activity));
+    map[key] = (map[key] ?? 0) + activity.distance / 1000;
+
+    return map;
+  }, {});
+
+// Longest run of days in a row with something recorded.
+const longestStreak = (days: string[]): number => {
+  let longest = 0;
+  let current = 0;
+  let previous: number | null = null;
+
+  days.forEach(day => {
+    const time = new Date(`${day}T00:00:00Z`).getTime();
+    current = null !== previous && 86_400_000 === time - previous ? current + 1 : 1;
+    previous = time;
+    longest = Math.max(longest, current);
+  });
+
+  return longest;
+};
+
 const toSorted = (counts: Record<string, number>, limit?: number): Named[] => {
   const entries = Object.entries(counts)
     .map(([name, value]) => ({name, value}))
@@ -86,19 +173,35 @@ const toSorted = (counts: Record<string, number>, limit?: number): Named[] => {
 
 const topRides = (
   activities: DetailedActivity[],
-  getValue: (activity: DetailedActivity) => number | undefined,
-  count = 3,
+  getValue: (activity: DetailedActivity) => number | undefined | null,
+  format: (value: number) => string,
+  {count = 3, lowest = false} = {},
 ): Record_[] =>
   activities
-    .map(activity => ({activity, value: getValue(activity) ?? 0}))
-    .filter(({value}) => 0 < value)
-    .sort((a, b) => b.value - a.value)
+    .map(activity => ({activity, value: getValue(activity)}))
+    .filter((entry): entry is {activity: DetailedActivity; value: number} => 'number' === typeof entry.value)
+    .sort((a, b) => (lowest ? a.value - b.value : b.value - a.value))
     .slice(0, count)
     .map(({activity, value}) => ({
+      id: activity.id,
       name: activity.name,
       date: utcDate(activity).toLocaleDateString('fr-FR'),
       value,
+      label: format(value),
     }));
+
+const round = (value: number, digits = 0): string =>
+  value.toLocaleString('fr-FR', {minimumFractionDigits: digits, maximumFractionDigits: digits});
+
+// Local start time as minutes past midnight; start_date_local is wall time with a Z suffix.
+const startMinutes = (activity: DetailedActivity): number => {
+  const date = localDate(activity);
+
+  return date.getUTCHours() * 60 + date.getUTCMinutes();
+};
+
+const clock = (minutes: number): string =>
+  `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 
 // Everything comes from the records cached in Redis, so the page never calls Strava
 // and is not affected by its rate limit. Run scripts/backfill-activities.mjs to fill it.
@@ -151,6 +254,13 @@ const computeDashboard = (
   const npRides = sorted.filter(({name}) => name.includes('N-Peloton'));
   const npGroups = countBy(npRides, activity => extractNPGroup(activity.name, activity));
 
+  const onFoot = sorted.filter(({sport_type}) => !SKI_TYPES.includes(sport_type));
+  const rides = sorted.filter(({sport_type}) => sport_type.includes('Ride'));
+  // Speed, gradient and weather only mean something on a real road.
+  const outdoor = onFoot.filter(({trainer, sport_type}) => !trainer && 'VirtualRide' !== sport_type);
+  const [eddington] = eddingtonNumber(rides);
+  const daysByDistance = daysExceedingDistance(rides);
+  const activeDays = [...new Set(sorted.map(activity => activity.start_date_local.slice(0, 10)))].sort();
   const expenseTotal = sum(expenses.map(({amount}) => amount));
   const mainBike = gear.at(0);
 
@@ -179,11 +289,27 @@ const computeDashboard = (
       indoor: sorted.filter(({trainer}) => trainer).length,
       solo: sorted.filter(({athlete_count}) => 2 > (athlete_count ?? 1)).length,
       maxHeartRate: Math.max(0, ...sorted.map(({max_heartrate}) => max_heartrate ?? 0)),
+      activeDays: activeDays.length,
+      longestStreak: longestStreak(activeDays),
+      biggestWeek: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${weekOfYear(date)}`))),
+      biggestMonth: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${date.getUTCMonth()}`))),
+      eddington,
       firstDate: sorted.at(0) ? utcDate(sorted[0]).toLocaleDateString('fr-FR') : null,
       lastDate: sorted.at(-1) ? utcDate(sorted[sorted.length - 1]).toLocaleDateString('fr-FR') : null,
     },
     years,
     months,
+    yearProgress: buildYearProgress(sorted),
+    // How many days beat each distance, with the Eddington number where the two meet.
+    eddington: Object.entries(daysByDistance)
+      .map(([distance, days]) => ({distance: Number(distance), days}))
+      .filter(({distance}) => 0 < distance)
+      .sort((a, b) => a.distance - b.distance),
+    eddingtonNext: {
+      target: eddington + 1,
+      have: daysByDistance[eddington + 1] ?? 0,
+      needed: eddington + 1 - (daysByDistance[eddington + 1] ?? 0),
+    },
     gear,
     startHours: Object.entries(countBy(sorted, activity => String(localDate(activity).getUTCHours())))
       .map(([hour, value]) => ({name: `${hour}h`, value, hour: Number(hour)}))
@@ -199,24 +325,91 @@ const computeDashboard = (
       distance: sum(sorted.filter(({sport_type}) => sport_type === name).map(({distance}) => distance)),
     })),
     records: [
-      {key: 'distance', heading: 'Longest', unit: 'km', rides: topRides(sorted, a => a.distance / 1000)},
-      {key: 'elevation', heading: 'Most climbing', unit: 'm', rides: topRides(sorted, a => a.total_elevation_gain)},
-      {key: 'suffer', heading: 'Hardest', unit: '', rides: topRides(sorted, a => a.suffer_score)},
-      {key: 'kudos', heading: 'Most kudos', unit: '', rides: topRides(sorted, a => a.kudos_count)},
-      {key: 'power', heading: 'Biggest spike', unit: 'W', rides: topRides(sorted, a => a.max_watts)},
       {
-        key: 'calories',
-        heading: 'Most calories',
-        unit: 'kcal',
-        rides: topRides(sorted, ({calories}) => calories),
+        key: 'distance',
+        heading: 'Longest',
+        note: 'distance',
+        rides: topRides(onFoot, a => a.distance / 1000, v => `${round(v)} km`),
       },
-      {key: 'speed', heading: 'Fastest', unit: 'km/h', rides: topRides(sorted, ({max_speed}) => (max_speed ?? 0) * 3.6)},
-      {key: 'height', heading: 'Highest point', unit: 'm', rides: topRides(sorted, ({elev_high}) => elev_high)},
+      {
+        key: 'elevation',
+        heading: 'Most climbing',
+        note: 'metres gained',
+        rides: topRides(onFoot, a => a.total_elevation_gain, v => `${round(v)} m`),
+      },
+      {
+        key: 'hilliest',
+        heading: 'Hilliest',
+        note: 'climbing per km, rides over 30 km',
+        rides: topRides(
+          outdoor.filter(({distance}) => 30_000 <= distance),
+          a => (a.total_elevation_gain ?? 0) / (a.distance / 1000),
+          v => `${round(v, 1)} m/km`,
+        ),
+      },
+      {
+        key: 'speed',
+        heading: 'Fastest',
+        note: 'average speed, rides over 50 km',
+        rides: topRides(
+          outdoor.filter(({distance}) => 50_000 <= distance),
+          a => a.average_speed * 3.6,
+          v => `${round(v, 1)} km/h`,
+        ),
+      },
+      {
+        key: 'power',
+        heading: 'Strongest',
+        note: 'normalized power from the ride notes, rides over an hour',
+        // Strava estimates a power figure for runs too, which would put trail runs on top.
+        // The NP logged in the private note only exists for rides with a real power meter.
+        rides: topRides(
+          rides.filter(({moving_time}) => 3600 <= moving_time),
+          extractNormalizedPower,
+          v => `${round(v)} W`,
+        ),
+      },
+      {
+        key: 'suffer',
+        heading: 'Hardest',
+        note: 'suffer score',
+        rides: topRides(onFoot, a => a.suffer_score || null, v => round(v)),
+      },
+      {
+        key: 'prs',
+        heading: 'Most records',
+        note: 'personal records in one ride',
+        rides: topRides(onFoot, a => a.pr_count || null, v => `${round(v)} PRs`),
+      },
+      {
+        key: 'coldest',
+        heading: 'Coldest',
+        note: 'average temperature',
+        rides: topRides(outdoor, a => a.average_temp, v => `${round(v)} °C`, {lowest: true}),
+      },
+      {
+        key: 'hottest',
+        heading: 'Hottest',
+        note: 'average temperature',
+        rides: topRides(outdoor, a => a.average_temp, v => `${round(v)} °C`),
+      },
+      {
+        key: 'earliest',
+        heading: 'Earliest start',
+        note: 'local time',
+        rides: topRides(outdoor, startMinutes, clock, {lowest: true}),
+      },
+      {
+        key: 'kudos',
+        heading: 'Most kudos',
+        note: 'from other riders',
+        rides: topRides(onFoot, a => a.kudos_count || null, v => round(v)),
+      },
       {
         key: 'company',
         heading: 'Biggest group',
-        unit: 'riders',
-        rides: topRides(sorted, ({athlete_count}) => (1 < (athlete_count ?? 1) ? athlete_count : 0)),
+        note: 'riders on the activity',
+        rides: topRides(onFoot, a => (1 < (a.athlete_count ?? 1) ? a.athlete_count : null), v => `${round(v)} riders`),
       },
     ],
     ftp: [...ftpTests]
@@ -262,7 +455,6 @@ const computeDashboard = (
         10,
         ' bpm',
       ),
-      places: toSorted(countBy(sorted, ({timezone}) => placeName(timezone ?? 'unknown')), 8),
     },
   };
 };

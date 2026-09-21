@@ -1,7 +1,7 @@
 import {formatSpeed, formatCalories} from './util';
 import {ActivityType, Activity} from './strava';
 
-const getActivityUrl = ({id}: Activity): string => `https://www.strava.com/activities/${id}`;
+const getActivityUrl = ({id}: {id: number}): string => `https://www.strava.com/activities/${id}`;
 
 const getHeartZone = ({average_heartrate = 0}: Activity): number => {
   switch (true) {

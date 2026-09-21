@@ -134,7 +134,9 @@ const main = async () => {
   let tokenFetchedAt = Date.now();
 
   const allIds = await fetchAllActivityIds(token);
-  const storedIds = new Set(await redis.hkeys('activities'));
+  // The client parses every reply as JSON, so numeric field names come back as numbers.
+  // Compare as strings or nothing ever counts as cached and the whole archive is refetched.
+  const storedIds = new Set((await redis.hkeys('activities')).map(String));
   const todo = allIds.filter(id => !storedIds.has(String(id)));
 
   log(`${allIds.length} activities on Strava, ${storedIds.size} already cached, ${todo.length} to fetch`);
@@ -153,6 +155,19 @@ const main = async () => {
   let stored = 0;
   const failed = [];
 
+  // Fetch one activity, waiting out the window on a 429 rather than giving up on the id.
+  const fetchActivity = async id => {
+    for (;;) {
+      const response = await fetch(`${ACTIVITIES_ENDPOINT}/${id}`, {
+        headers: {Authorization: `Bearer ${token}`},
+      });
+
+      if (429 !== response.status) return response;
+
+      await waitForNextWindow();
+    }
+  };
+
   for (const id of todo) {
     if (Date.now() - tokenFetchedAt > TOKEN_LIFETIME_MS) {
       token = await fetchAccessToken();
@@ -160,14 +175,7 @@ const main = async () => {
       log('Refreshed the access token');
     }
 
-    const response = await fetch(`${ACTIVITIES_ENDPOINT}/${id}`, {
-      headers: {Authorization: `Bearer ${token}`},
-    });
-
-    if (429 === response.status) {
-      await waitForNextWindow();
-      continue;
-    }
+    const response = await fetchActivity(id);
 
     if (!response.ok) {
       failed.push(id);

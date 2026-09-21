@@ -27,7 +27,10 @@ const getRidesBetween = (rides: Activity[], from: Date, to?: Date | undefined): 
       new Date(ride.start_date) < new Date(to?.toDateString() ?? new Date())
   );
 
-const eddingtonNumber = (rides: Activity[]) => {
+// Only the date and the distance matter, so a cached detailed record fits too.
+type DatedDistance = {start_date: string; distance: number};
+
+const eddingtonNumber = (rides: DatedDistance[]) => {
   const dailyDistances = rides.reduce((dayMap: Record<string, number>, activity) => {
     const dateString = new Date(activity.start_date).toISOString().slice(0, 10);
     dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
@@ -57,7 +60,7 @@ const eddingtonNumber = (rides: Activity[]) => {
   return [eddingtonNumber, daysForNextLevel];
 };
 
-const daysExceedingDistance = (rides: Activity[]): Record<number, number> => {
+const daysExceedingDistance = (rides: DatedDistance[]): Record<number, number> => {
   const dailyDistances = rides.reduce((dayMap: Record<string, number>, activity) => {
     const dateString = new Date(activity.start_date).toISOString().slice(0, 10);
     dayMap[dateString] = (dayMap[dateString] ?? 0) + activity.distance;
