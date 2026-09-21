@@ -13,9 +13,9 @@ const STRAVA_ORANGE = '#fc4c02';
 // Faint enough that a road ridden once barely shows and a daily one glows.
 const TRACK_OPACITY = 0.16;
 const TRACK_WEIGHT = 1.5;
-// StatsHunters style: a light grid for explored tiles, the cluster tinted, the square outlined.
+// A light grid for explored tiles, the yard tinted, the übersquadrat outlined.
 const TILE_STYLE = {color: '#ffffff', weight: 0.5, opacity: 0.35, fillColor: '#ffffff', fillOpacity: 0.07};
-const CLUSTER_STYLE = {color: '#1D9E75', weight: 0.5, opacity: 0.6, fillColor: '#1D9E75', fillOpacity: 0.22};
+const YARD_STYLE = {color: '#1D9E75', weight: 0.5, opacity: 0.6, fillColor: '#1D9E75', fillOpacity: 0.22};
 const SQUARE_STYLE = {color: '#ffd966', weight: 2.5, opacity: 0.95, fill: false};
 
 // GeoJSON wants [longitude, latitude], the opposite of Leaflet.
@@ -63,21 +63,20 @@ const collection = (features: Feature[]): FeatureCollection => ({type: 'FeatureC
 
 type RideHeatmapProps = {
   tracks: number[][][];
-  explorer?: ExplorerTiles;
+  explorer: ExplorerTiles;
   zoom?: number;
 } & BoxProps;
 
 const RideHeatmap = ({tracks, explorer, zoom = 9, ...boxProps}: RideHeatmapProps) => {
   // One GeoJSON layer per kind, instead of thousands of rectangle components.
-  const layers = useMemo(() => {
-    if (undefined === explorer) return null;
-
-    return {
+  const layers = useMemo(
+    () => ({
       tiles: collection([tilesToFeature(explorer.tiles, explorer.zoom)]),
-      cluster: collection(explorer.cluster.length > 0 ? [tilesToFeature(explorer.cluster, explorer.zoom)] : []),
+      yard: collection(explorer.yard.length > 0 ? [tilesToFeature(explorer.yard, explorer.zoom)] : []),
       square: collection(null === explorer.square ? [] : [squareToFeature(explorer.square, explorer.zoom)]),
-    };
-  }, [explorer]);
+    }),
+    [explorer],
+  );
 
   return (
     <Box {...boxProps}>
@@ -90,13 +89,9 @@ const RideHeatmap = ({tracks, explorer, zoom = 9, ...boxProps}: RideHeatmapProps
         style={{height: '100%', width: '100%', borderRadius: '8px'}}
       >
         <TileLayer url={TILE_URL} />
-        {null !== layers && (
-          <>
-            {/* GeoJSON only reads its data once, so the key forces a redraw when the tiles change. */}
-            <GeoJSON key={`tiles-${explorer?.explored}`} data={layers.tiles} style={TILE_STYLE} />
-            <GeoJSON key={`cluster-${explorer?.cluster.length}`} data={layers.cluster} style={CLUSTER_STYLE} />
-          </>
-        )}
+        {/* GeoJSON only reads its data once, so the keys force a redraw when the tiles change. */}
+        <GeoJSON key={`tiles-${explorer.explored}`} data={layers.tiles} style={TILE_STYLE} />
+        <GeoJSON key={`yard-${explorer.yard.length}`} data={layers.yard} style={YARD_STYLE} />
         {tracks.map((points, index) => (
           <Polyline
             key={index}
@@ -104,9 +99,7 @@ const RideHeatmap = ({tracks, explorer, zoom = 9, ...boxProps}: RideHeatmapProps
             pathOptions={{color: STRAVA_ORANGE, weight: TRACK_WEIGHT, opacity: TRACK_OPACITY}}
           />
         ))}
-        {null !== layers && (
-          <GeoJSON key={`square-${explorer?.maxSquare}`} data={layers.square} style={SQUARE_STYLE} />
-        )}
+        <GeoJSON key={`square-${explorer.maxSquare}`} data={layers.square} style={SQUARE_STYLE} />
       </MapContainer>
     </Box>
   );

@@ -36,6 +36,15 @@ Nothing right now.
       `node scripts/backfill-activities.mjs` any time to pick up new rides; it only
       fetches what is missing.
 
+- [x] Dashboard, second pass from what VeloViewer, StatsHunters and Strava's Year in
+      Sport show: milestone counters (100/150/200/300 km+, 1000 m+ days), this year
+      against last year up to the same day, a wall of the latest ride photos,
+      Eddington per season, commuting distance and CO₂ not driven, ride length
+      bands, and the weekday/weekend split. Explorer tiles drawn on the route map from
+      the full-resolution routes, with the max square outlined and the yard tinted,
+      using Squadrats' definition: the biggest connected group of tiles that each have
+      all four neighbours explored.
+
 - [x] Dashboard at `/dashboard`, reading the Redis cache only (never Strava, so the
       rate limit cannot touch it). Totals, season pace year on year, month heatmap,
       the fleet, riding rhythm, FTP, a route heatmap with explorer tiles, Eddington

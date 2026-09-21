@@ -35,6 +35,7 @@ const activities = [
     commute: false,
     trainer: false,
     timezone: '(GMT+01:00) Europe/Paris',
+    photos: {primary: {unique_id: 'p1', urls: {100: 'small-1.jpg', 600: 'big-1.jpg'}, source: 1, media_type: 1}, use_primary_photo: false, count: 1},
   }),
   buildDetailedActivity({
     id: 2,
@@ -61,6 +62,7 @@ const activities = [
     commute: true,
     trainer: false,
     timezone: '(GMT+02:00) Europe/Stockholm',
+    photos: {primary: {unique_id: 'p2', urls: {100: 'small-2.jpg'}, source: 1, media_type: 1}, use_primary_photo: false, count: 1},
   }),
 ];
 
@@ -344,4 +346,84 @@ test('it ranks strength by the logged normalized power, so estimated running pow
   const strongest = computeDashboard(withRun, [], [], [], label).records.find(({key}) => 'power' === key);
 
   expect(strongest?.rides).toEqual([{id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 211, label: '211 W'}]);
+});
+
+test('it counts the milestone rides', () => {
+  const {bigRides} = computeDashboard(
+    [
+      ...activities,
+      buildDetailedActivity({id: 50, distance: 210000, total_elevation_gain: 1500, start_date: '2024-08-01T06:00:00Z', start_date_local: '2024-08-01T08:00:00Z'}),
+    ],
+    [],
+    [],
+    [],
+    label,
+  );
+
+  expect(bigRides).toEqual([
+    {label: '100 km+', count: 1},
+    {label: '150 km+', count: 1},
+    {label: '200 km+', count: 1},
+    {label: '300 km+', count: 0},
+    {label: '1000 m+ climbing', count: 1},
+  ]);
+});
+
+test('it compares this year with last year up to the same day', () => {
+  // the latest ride is 13 July 2025, so 2024 only counts up to 13 July
+  const withLateRide = [
+    ...activities,
+    buildDetailedActivity({id: 60, distance: 100000, kudos_count: 3, start_date: '2024-11-20T06:00:00Z', start_date_local: '2024-11-20T08:00:00Z'}),
+  ];
+  const {yearOverYear} = computeDashboard(withLateRide, [], [], [], label);
+
+  expect(yearOverYear.year).toBe(2025);
+  expect(yearOverYear.previousYear).toBe(2024);
+  expect(yearOverYear.rows.find(({metric}) => 'Distance' === metric)).toEqual({
+    metric: 'Distance',
+    format: 'km',
+    current: 40000,
+    previous: 60000,
+  });
+  // the November ride is after the cut-off and must not count for 2024
+  expect(yearOverYear.rows.find(({metric}) => 'Activities' === metric)?.previous).toBe(1);
+});
+
+test('it lists the latest photos, newest first, preferring the large size', () => {
+  const {photos} = build();
+
+  expect(photos).toEqual([
+    {id: 2, name: 'Sortie du dimanche', date: '13/07/2025', url: 'small-2.jpg'},
+    {id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', url: 'big-1.jpg'},
+  ]);
+});
+
+test('it works out an eddington number per year', () => {
+  expect(build().eddingtonByYear).toEqual([
+    {year: 2024, eddington: 1},
+    {year: 2025, eddington: 1},
+  ]);
+});
+
+test('it turns commuting into distance and emissions not driven', () => {
+  const {commute} = build();
+
+  expect(commute.count).toBe(1);
+  expect(commute.distance).toBe(40000);
+  // 40 km at 120 g per km
+  expect(commute.co2Kg).toBeCloseTo(4.8);
+});
+
+test('it puts rides into 20 km bands with an open top band', () => {
+  const {distanceBands} = build();
+
+  expect(distanceBands).toHaveLength(11);
+  expect(distanceBands.find(({name}) => '40–60' === name)?.value).toBe(1);
+  expect(distanceBands.find(({name}) => '60–80' === name)?.value).toBe(1);
+  expect(distanceBands.at(-1)).toEqual({name: '200+', value: 0});
+});
+
+test('it splits distance between weekdays and the weekend', () => {
+  // Wednesday 6 March 2024 and Sunday 13 July 2025
+  expect(build().weekendShare).toEqual({weekday: 60000, weekend: 40000});
 });

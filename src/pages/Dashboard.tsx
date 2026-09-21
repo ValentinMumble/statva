@@ -1,5 +1,18 @@
 import {Fragment, ReactNode, useMemo} from 'react';
-import {Box, Grid, Group, Heading, HStack, IconButton, Link as ChakraLink, Span, Spinner, Stack, Text} from '@chakra-ui/react';
+import {
+  Box,
+  Grid,
+  Group,
+  Heading,
+  HStack,
+  IconButton,
+  Image,
+  Link as ChakraLink,
+  Span,
+  Spinner,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Link} from 'react-router';
 import {MdArrowBack} from 'react-icons/md';
@@ -19,6 +32,7 @@ import {ChartTooltip} from '../components/charts/ChartTooltip';
 import {PageTitle} from '../components';
 import {RideHeatmap} from '../components/leaflet';
 import {useActivityMeta, useEvents, useExpenses, useFtp, useLabels} from '../hooks';
+import {DetailedActivity} from '../models/strava';
 import {
   computeDashboard,
   computeExplorerTiles,
@@ -36,6 +50,15 @@ const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
+
+const decodeRoutes = (
+  activityMeta: Record<string, DetailedActivity>,
+  key: 'summary_polyline' | 'polyline',
+): number[][][] =>
+  Object.values(activityMeta)
+    .map(({map}) => map?.[key])
+    .filter((polyline): polyline is string => Boolean(polyline))
+    .map(polyline => decodePolyline(polyline));
 
 const count = (value: number): string => Math.round(value).toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g, ' ');
 
@@ -330,6 +353,51 @@ const EddingtonChart = ({eddington, number}: {eddington: DashboardData['eddingto
   );
 };
 
+const formatMeasure = (value: number, format: DashboardData['yearOverYear']['rows'][number]['format']): string => {
+  switch (format) {
+    case 'km':
+      return formatDistance(value);
+    case 'm':
+      return `${count(value)} m`;
+    case 'h':
+      return `${count(value / 3600)} h`;
+    default:
+      return count(value);
+  }
+};
+
+const YearOverYear = ({comparison}: {comparison: DashboardData['yearOverYear']}) => (
+  <Stack gap="0">
+    {comparison.rows.map(({metric, current, previous, format}) => {
+      const change = 0 === previous ? null : Math.round(((current - previous) / previous) * 100);
+
+      return (
+        <HStack key={metric} justifyContent="space-between" gap="10px" paddingY="7px" borderBottomWidth="1px" borderColor="border.subtle">
+          <Text fontSize="sm" color="fg.muted" flex="1">
+            {metric}
+          </Text>
+          <Text fontSize="sm" whiteSpace="nowrap">
+            {formatMeasure(current, format)}
+          </Text>
+          <Text fontSize="xs" color="fg.muted" whiteSpace="nowrap" width="64px" textAlign="right">
+            {formatMeasure(previous, format)}
+          </Text>
+          <Text
+            fontSize="xs"
+            fontWeight="semibold"
+            whiteSpace="nowrap"
+            width="48px"
+            textAlign="right"
+            color={null === change ? 'fg.muted' : 0 <= change ? 'green.solid' : 'orange.solid'}
+          >
+            {null === change ? '—' : `${0 <= change ? '+' : ''}${change}%`}
+          </Text>
+        </HStack>
+      );
+    })}
+  </Stack>
+);
+
 const FtpChart = ({ftp}: {ftp: DashboardData['ftp']}) => {
   const chart = useChart({data: ftp, series: [{name: 'power', color: 'orange.solid'}]});
 
@@ -424,16 +492,11 @@ const Dashboard = () => {
     [activityMeta, events, ftpTests, expenses, label],
   );
 
-  // Decoding every route is the heavy part of this page, so it happens once.
-  const tracks = useMemo(
-    () =>
-      Object.values(activityMeta)
-        .map(({map}) => map?.summary_polyline)
-        .filter((polyline): polyline is string => Boolean(polyline))
-        .map(polyline => decodePolyline(polyline)),
-    [activityMeta],
-  );
-  const explorer = useMemo(() => computeExplorerTiles(tracks), [tracks]);
+  // Decoding every route is the heavy part of this page, so it happens once. The map is
+  // drawn from the light summary routes; the tiles are counted from the full ones, since
+  // a downsampled route skips tiles on fast roads and leaves holes in the yard.
+  const tracks = useMemo(() => decodeRoutes(activityMeta, 'summary_polyline'), [activityMeta]);
+  const explorer = useMemo(() => computeExplorerTiles(decodeRoutes(activityMeta, 'polyline')), [activityMeta]);
 
   if (isError) {
     return (
@@ -497,6 +560,12 @@ const Dashboard = () => {
         <Readout value={count(totals.kilojoules / 1000)} unit="MJ" caption="of work done" />
       </Grid>
 
+      <Grid templateColumns="repeat(auto-fit, minmax(140px, 1fr))" gap="10px">
+        {data.bigRides.map(({label: milestone, count: rides}) => (
+          <Readout key={milestone} value={count(rides)} caption={`rides of ${milestone}`} />
+        ))}
+      </Grid>
+
       <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
         <Panel title="Distance per year">
           <Bars
@@ -512,29 +581,63 @@ const Dashboard = () => {
         </Panel>
       </Grid>
 
-      <Panel title="Season pace" note="kilometres so far, week by week">
-        <YearProgress progress={data.yearProgress} />
-      </Panel>
+      <Grid templateColumns={{base: '1fr', lg: '2fr 1fr'}} gap="16px">
+        <Panel title="Season pace" note="kilometres so far, week by week">
+          <YearProgress progress={data.yearProgress} />
+        </Panel>
+        <Panel title={`${data.yearOverYear.year} vs ${data.yearOverYear.previousYear}`} note="up to the same day">
+          <YearOverYear comparison={data.yearOverYear} />
+        </Panel>
+      </Grid>
 
       <Panel
         title="Where the wheels went"
-        note={`${count(tracks.length)} rides · ${count(explorer.explored)} tiles · square ${explorer.maxSquare}×${explorer.maxSquare} · cluster ${count(explorer.cluster.length)}`}
+        note={`${count(tracks.length)} rides · ${count(explorer.explored)} tiles · square ${explorer.maxSquare}×${explorer.maxSquare} · yard ${count(explorer.yard.length)}`}
       >
         <RideHeatmap tracks={tracks} explorer={explorer} height="480px" />
         <Text fontSize="xs" color="fg.muted">
           Every road ridden, drawn faintly so the ones ridden often stand out. The grid is the explorer tiles, the
-          squares a slippy map uses at zoom {explorer.zoom} (about 2.4 km wide here): the yellow outline is the biggest
-          square with no hole in it, and the green tint is the biggest cluster, tiles whose four neighbours are all
-          explored, the way StatsHunters counts it.
+          squares a slippy map uses at zoom {explorer.zoom} (about 2.4 km wide here). The yellow outline is the biggest
+          square with no hole in it, and the green tint is the yard as Squadrats defines it: the biggest connected
+          group of tiles that each have all four neighbours explored.
         </Text>
       </Panel>
 
+      {0 < data.photos.length && (
+        <Panel title="Latest photos" note="from the most recent rides with one">
+          <Grid templateColumns="repeat(auto-fill, minmax(150px, 1fr))" gap="8px">
+            {data.photos.map(photo => (
+              <ChakraLink key={photo.id} href={getActivityUrl(photo)} target="_blank" title={`${photo.name} · ${photo.date}`}>
+                <Image
+                  src={photo.url}
+                  alt={photo.name}
+                  loading="lazy"
+                  width="100%"
+                  aspectRatio="4 / 3"
+                  objectFit="cover"
+                  borderRadius="6px"
+                />
+              </ChakraLink>
+            ))}
+          </Grid>
+        </Panel>
+      )}
+
+      <Grid templateColumns={{base: '1fr', lg: '2fr 1fr'}} gap="16px">
       <Panel
         title={`Eddington ${count(totals.eddington)}`}
         note={`${count(totals.eddington)} days of ${count(totals.eddington)} km or more · ${count(data.eddingtonNext.needed)} more ${1 === data.eddingtonNext.needed ? 'day' : 'days'} of ${count(data.eddingtonNext.target)} km for E${count(data.eddingtonNext.target)}`}
       >
         <EddingtonChart eddington={data.eddington} number={totals.eddington} />
       </Panel>
+        <Panel title="Eddington by year" note="each season on its own">
+          <Bars
+            data={data.eddingtonByYear.map(({year, eddington}) => ({name: String(year), value: eddington}))}
+            format={value => `E${count(value)}`}
+            height={240}
+          />
+        </Panel>
+      </Grid>
 
       <Panel title="Month by month" note="darkest is the biggest month">
         <MonthHeatmap months={data.months} />
@@ -560,6 +663,9 @@ const Dashboard = () => {
         </Panel>
         <Panel title="Weekday">
           <Bars data={data.weekdays} format={value => `${count(value)} rides`} height={190} />
+        </Panel>
+        <Panel title="Ride length" note="rides per 20 km band">
+          <Bars data={data.distanceBands} format={value => `${count(value)} rides`} height={190} />
         </Panel>
       </Grid>
 
@@ -615,8 +721,13 @@ const Dashboard = () => {
               ['Photos taken', count(totals.photos)],
               ['Rides with a power meter', `${count(totals.withPowerMeter)} of ${count(totals.rides)}`],
               ['Ridden alone', `${count(totals.solo)} of ${count(totals.rides)}`],
-              ['Commutes', count(totals.commutes)],
+              ['Commutes', `${count(data.commute.count)} · ${formatDistance(data.commute.distance)}`],
+              ['CO₂ not driven', `${count(data.commute.co2Kg)} kg`],
               ['Indoor', count(totals.indoor)],
+              [
+                'Weekday vs weekend km',
+                `${Math.round((data.weekendShare.weekday / Math.max(1, data.weekendShare.weekday + data.weekendShare.weekend)) * 100)}% · ${Math.round((data.weekendShare.weekend / Math.max(1, data.weekendShare.weekday + data.weekendShare.weekend)) * 100)}%`,
+              ],
               ['Typical stop per ride', `${count(totals.medianStopMinutes)} min`],
               ['Days out', `${count(totals.activeDays)} days`],
               ['Longest streak', `${count(totals.longestStreak)} days in a row`],

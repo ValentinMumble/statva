@@ -41,6 +41,17 @@ type Dashboard = {
   months: {year: number; month: number; distance: number}[];
   yearProgress: {years: number[]; rows: Record<string, number | null>[]};
   eddington: {distance: number; days: number}[];
+  eddingtonByYear: {year: number; eddington: number}[];
+  bigRides: {label: string; count: number}[];
+  yearOverYear: {
+    year: number;
+    previousYear: number;
+    rows: {metric: string; current: number; previous: number; format: 'count' | 'km' | 'm' | 'h'}[];
+  };
+  photos: {id: number; name: string; date: string; url: string}[];
+  commute: {count: number; distance: number; co2Kg: number};
+  distanceBands: Named[];
+  weekendShare: {weekday: number; weekend: number};
   // The next Eddington level needs (E+1) days of at least (E+1) km; this is how many are still missing.
   eddingtonNext: {target: number; have: number; needed: number};
   gear: {name: string; distance: number; rides: number}[];
@@ -59,6 +70,14 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 const WEEKS_IN_YEAR = 53;
 // Ski takes every altitude and speed record, which buries the riding.
 const SKI_TYPES = ['AlpineSki', 'BackcountrySki', 'NordicSki', 'RollerSki', 'Snowboard'];
+// Milestone distances the counters look for, in km, plus one climbing threshold in metres.
+const BIG_RIDE_KM = [100, 150, 200, 300];
+const BIG_CLIMB_M = 1000;
+// A typical car, so the commute total can be read as emissions avoided.
+const CAR_CO2_G_PER_KM = 120;
+const DISTANCE_BAND_KM = 20;
+const DISTANCE_BAND_CAP_KM = 200;
+const PHOTO_COUNT = 12;
 // Four years is enough to read the trend without the chart turning into spaghetti.
 const COMPARED_YEARS = 4;
 
@@ -109,6 +128,41 @@ const buildYearProgress = (activities: DetailedActivity[]): Dashboard['yearProgr
   });
 
   return {years, rows};
+};
+
+// This year against last year up to the same day, so a September comparison is fair.
+const buildYearOverYear = (activities: DetailedActivity[]): Dashboard['yearOverYear'] => {
+  const last = activities.at(-1);
+
+  if (undefined === last) return {year: 0, previousYear: 0, rows: []};
+
+  const year = utcDate(last).getUTCFullYear();
+  const cutoff = dayOfYear(utcDate(last));
+  const upTo = (target: number) =>
+    activities.filter(activity => {
+      const date = utcDate(activity);
+
+      return date.getUTCFullYear() === target && dayOfYear(date) <= cutoff;
+    });
+  const current = upTo(year);
+  const previous = upTo(year - 1);
+  const measure = (
+    metric: string,
+    format: Dashboard['yearOverYear']['rows'][number]['format'],
+    pick: (activity: DetailedActivity) => number,
+  ) => ({metric, format, current: sum(current.map(pick)), previous: sum(previous.map(pick))});
+
+  return {
+    year,
+    previousYear: year - 1,
+    rows: [
+      measure('Activities', 'count', () => 1),
+      measure('Distance', 'km', ({distance}) => distance),
+      measure('Climbing', 'm', ({total_elevation_gain}) => total_elevation_gain ?? 0),
+      measure('Time moving', 'h', ({moving_time}) => moving_time),
+      measure('Kudos', 'count', ({kudos_count}) => kudos_count ?? 0),
+    ],
+  };
 };
 
 const median = (values: number[]): number => {
@@ -259,6 +313,7 @@ const computeDashboard = (
   // Speed, gradient and weather only mean something on a real road.
   const outdoor = onFoot.filter(({trainer, sport_type}) => !trainer && 'VirtualRide' !== sport_type);
   const [eddington] = eddingtonNumber(rides);
+  const commutes = sorted.filter(({commute}) => commute);
   const daysByDistance = daysExceedingDistance(rides);
   const activeDays = [...new Set(sorted.map(activity => activity.start_date_local.slice(0, 10)))].sort();
   const expenseTotal = sum(expenses.map(({amount}) => amount));
@@ -309,6 +364,53 @@ const computeDashboard = (
       target: eddington + 1,
       have: daysByDistance[eddington + 1] ?? 0,
       needed: eddington + 1 - (daysByDistance[eddington + 1] ?? 0),
+    },
+    eddingtonByYear: [...new Set(rides.map(ride => utcDate(ride).getUTCFullYear()))]
+      .sort((a, b) => a - b)
+      .map(year => ({
+        year,
+        eddington: eddingtonNumber(rides.filter(ride => utcDate(ride).getUTCFullYear() === year))[0],
+      })),
+    bigRides: [
+      ...BIG_RIDE_KM.map(km => ({
+        label: `${km} km+`,
+        count: rides.filter(({distance}) => km * 1000 <= distance).length,
+      })),
+      {
+        label: `${BIG_CLIMB_M} m+ climbing`,
+        count: rides.filter(({total_elevation_gain}) => BIG_CLIMB_M <= (total_elevation_gain ?? 0)).length,
+      },
+    ],
+    yearOverYear: buildYearOverYear(sorted),
+    photos: [...sorted]
+      .reverse()
+      .map(activity => ({activity, url: activity.photos?.primary?.urls?.[600] ?? activity.photos?.primary?.urls?.[100]}))
+      .filter((entry): entry is {activity: DetailedActivity; url: string} => 'string' === typeof entry.url)
+      .slice(0, PHOTO_COUNT)
+      .map(({activity, url}) => ({
+        id: activity.id,
+        name: activity.name,
+        date: utcDate(activity).toLocaleDateString('fr-FR'),
+        url,
+      })),
+    commute: {
+      count: commutes.length,
+      distance: sum(commutes.map(({distance}) => distance)),
+      co2Kg: (sum(commutes.map(({distance}) => distance)) / 1000) * (CAR_CO2_G_PER_KM / 1000),
+    },
+    distanceBands: [...Array(DISTANCE_BAND_CAP_KM / DISTANCE_BAND_KM + 1).keys()]
+      .map(index => index * DISTANCE_BAND_KM)
+      .map(from => ({
+        name: from >= DISTANCE_BAND_CAP_KM ? `${from}+` : `${from}–${from + DISTANCE_BAND_KM}`,
+        value: rides.filter(({distance}) => {
+          const km = distance / 1000;
+
+          return from >= DISTANCE_BAND_CAP_KM ? km >= from : km >= from && km < from + DISTANCE_BAND_KM;
+        }).length,
+      })),
+    weekendShare: {
+      weekday: sum(rides.filter(ride => localDate(ride).getUTCDay() % 6 !== 0).map(({distance}) => distance)),
+      weekend: sum(rides.filter(ride => localDate(ride).getUTCDay() % 6 === 0).map(({distance}) => distance)),
     },
     gear,
     startHours: Object.entries(countBy(sorted, activity => String(localDate(activity).getUTCHours())))
