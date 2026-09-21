@@ -4,7 +4,7 @@ import {GetLabel} from './label';
 import {BikeExpense} from './bike-expense';
 import {Event} from './event';
 import {FTPTest} from './ftp';
-import {Activity, DetailedActivity} from './strava';
+import {DetailedActivity} from './strava';
 
 type Named = {name: string; value: number};
 type Record_ = {name: string; date: string; value: number};
@@ -20,7 +20,6 @@ type Dashboard = {
     photos: number;
     calories: number;
     koms: number;
-    metaCount: number;
     firstDate: string | null;
     lastDate: string | null;
   };
@@ -43,8 +42,8 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 const sum = (values: number[]): number => values.reduce((total, value) => total + value, 0);
 
 // start_date_local carries local wall time with a Z suffix, so read it in UTC.
-const localDate = (activity: Activity): Date => new Date(activity.start_date_local);
-const utcDate = (activity: Activity): Date => new Date(activity.start_date);
+const localDate = (activity: DetailedActivity): Date => new Date(activity.start_date_local);
+const utcDate = (activity: DetailedActivity): Date => new Date(activity.start_date);
 
 const toSorted = (counts: Record<string, number>, limit?: number): Named[] => {
   const entries = Object.entries(counts)
@@ -55,8 +54,8 @@ const toSorted = (counts: Record<string, number>, limit?: number): Named[] => {
 };
 
 const topRides = (
-  activities: Activity[],
-  getValue: (activity: Activity) => number | undefined,
+  activities: DetailedActivity[],
+  getValue: (activity: DetailedActivity) => number | undefined,
   count = 3,
 ): Record_[] =>
   activities
@@ -70,17 +69,16 @@ const topRides = (
       value,
     }));
 
+// Everything comes from the records cached in Redis, so the page never calls Strava
+// and is not affected by its rate limit. Run scripts/backfill-activities.mjs to fill it.
 const computeDashboard = (
-  activities: Activity[],
-  activityMeta: Record<string, DetailedActivity>,
+  activities: DetailedActivity[],
   events: Event[],
   ftpTests: FTPTest[],
   expenses: BikeExpense[],
   label: GetLabel,
 ): Dashboard => {
   const sorted = [...activities].sort((a, b) => utcDate(a).getTime() - utcDate(b).getTime());
-  const meta = Object.values(activityMeta);
-  const metaFor = (activity: Activity): DetailedActivity | null => activityMeta[activity.id] ?? null;
 
   const years = Object.values(
     sorted.reduce((map: Record<number, Dashboard['years'][number]>, activity) => {
@@ -120,7 +118,7 @@ const computeDashboard = (
     .sort((a, b) => b.distance - a.distance);
 
   const npRides = sorted.filter(({name}) => name.includes('N-Peloton'));
-  const npGroups = countBy(npRides, activity => extractNPGroup(activity.name, metaFor(activity)));
+  const npGroups = countBy(npRides, activity => extractNPGroup(activity.name, activity));
 
   const expenseTotal = sum(expenses.map(({amount}) => amount));
   const mainBike = gear.at(0);
@@ -134,9 +132,8 @@ const computeDashboard = (
       kudos: sum(sorted.map(({kudos_count}) => kudos_count ?? 0)),
       prs: sum(sorted.map(({pr_count}) => pr_count ?? 0)),
       photos: sum(sorted.map(({total_photo_count}) => total_photo_count ?? 0)),
-      calories: sum(meta.map(({calories}) => calories ?? 0)),
-      koms: meta.filter(({segment_efforts}) => segment_efforts?.some(({kom_rank}) => 1 === kom_rank)).length,
-      metaCount: meta.length,
+      calories: sum(sorted.map(({calories}) => calories ?? 0)),
+      koms: sorted.filter(({segment_efforts}) => segment_efforts?.some(({kom_rank}) => 1 === kom_rank)).length,
       firstDate: sorted.at(0) ? utcDate(sorted[0]).toLocaleDateString('fr-FR') : null,
       lastDate: sorted.at(-1) ? utcDate(sorted[sorted.length - 1]).toLocaleDateString('fr-FR') : null,
     },
@@ -166,7 +163,7 @@ const computeDashboard = (
         key: 'calories',
         heading: 'Most calories',
         unit: 'kcal',
-        rides: topRides(sorted, activity => metaFor(activity)?.calories),
+        rides: topRides(sorted, ({calories}) => calories),
       },
     ],
     ftp: [...ftpTests]
@@ -182,7 +179,7 @@ const computeDashboard = (
       rides: npRides.length,
       distance: sum(npRides.map(({distance}) => distance)),
       groups: toSorted(npGroups),
-      finishes: toSorted(computeFinishCount(meta), 10),
+      finishes: toSorted(computeFinishCount(sorted), 10),
     },
     maintenance: {
       total: events.length,
@@ -199,14 +196,14 @@ const computeDashboard = (
     conditions: {
       temperatures: Object.entries(
         countBy(
-          meta.filter(({average_temp}) => undefined !== average_temp && null !== average_temp),
+          sorted.filter(({average_temp}) => undefined !== average_temp && null !== average_temp),
           ({average_temp}) => String(Math.floor((average_temp ?? 0) / 5) * 5),
         ),
       )
         .map(([bucket, value]) => ({name: `${bucket}°`, value, bucket: Number(bucket)}))
         .sort((a, b) => a.bucket - b.bucket)
         .map(({name, value}) => ({name, value})),
-      devices: toSorted(countBy(meta, ({device_name}) => device_name ?? 'unknown'), 8),
+      devices: toSorted(countBy(sorted, ({device_name}) => device_name ?? 'unknown'), 8),
     },
   };
 };

@@ -38,7 +38,10 @@ const ATHLETE_ACTIVITIES_ENDPOINT = 'https://www.strava.com/api/v3/athlete/activ
 const ITEMS_PER_PAGE = 200;
 
 // Leave headroom under Strava's real limits so the app keeps working meanwhile.
-const READS_PER_WINDOW = 95;
+// The limit is shared with the app: opening it costs a handful of reads to page
+// through the activity list, and at 95 there was nothing left, so the app got
+// 429s and sat on a spinner. 60 leaves it room.
+const READS_PER_WINDOW = 60;
 const READS_PER_DAY = 960;
 const WRITE_BATCH = 25;
 const TOKEN_LIFETIME_MS = 5_000_000;

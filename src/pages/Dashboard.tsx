@@ -6,7 +6,7 @@ import {MdArrowBack} from 'react-icons/md';
 import {Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {ChartTooltip} from '../components/charts/ChartTooltip';
 import {EditLabels, PageTitle} from '../components';
-import {useActivities, useActivityMeta, useEvents, useExpenses, useFtp, useLabels} from '../hooks';
+import {useActivityMeta, useEvents, useExpenses, useFtp, useLabels} from '../hooks';
 import {computeDashboard, Dashboard as DashboardData, formatCurrency, formatDistance, formatDuration} from '../models';
 
 const MONTH_INITIALS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
@@ -271,19 +271,34 @@ const Records = ({records}: {records: DashboardData['records']}) => (
 );
 
 const Dashboard = () => {
-  const {activities} = useActivities({withCommute: true, withPrivate: true, sort: 'date', sortDirection: 'asc'});
-  const {activityMeta} = useActivityMeta();
+  const {activityMeta, isPending, isError} = useActivityMeta();
   const {events} = useEvents();
   const {tests: ftpTests} = useFtp();
   const {expenses} = useExpenses();
   const {label} = useLabels();
 
   const data = useMemo(
-    () => computeDashboard(activities ?? [], activityMeta, events, ftpTests, expenses, label),
-    [activities, activityMeta, events, ftpTests, expenses, label],
+    () => computeDashboard(Object.values(activityMeta), events, ftpTests, expenses, label),
+    [activityMeta, events, ftpTests, expenses, label],
   );
 
-  if (null === activities) {
+  if (isError) {
+    return (
+      <Stack padding="40px" gap="10px" alignItems="center" textAlign="center">
+        <IconButton asChild={true} title="Back to activities" variant="ghost" size="sm">
+          <Link to="/">
+            <MdArrowBack />
+          </Link>
+        </IconButton>
+        <Text fontWeight="medium">Could not read the cache</Text>
+        <Text fontSize="sm" color="fg.muted" maxWidth="420px">
+          The stored activities could not be loaded. Reload to try again.
+        </Text>
+      </Stack>
+    );
+  }
+
+  if (isPending) {
     return (
       <Group padding="40px" justifyContent="center" gap="10px">
         <IconButton asChild={true} title="Back to activities" variant="ghost" size="sm">
@@ -292,13 +307,13 @@ const Dashboard = () => {
           </Link>
         </IconButton>
         <Spinner />
-        <Text color="fg.muted">Loading the archive…</Text>
+        <Text color="fg.muted">Loading the cached rides…</Text>
       </Group>
     );
   }
 
   const {totals, spending, npeloton, maintenance, conditions} = data;
-  const metaCoverage = 0 === totals.rides ? 0 : Math.round((totals.metaCount / totals.rides) * 100);
+
 
   return (
     <Stack padding={{base: '16px', md: '24px'}} gap="28px" maxWidth="1200px" margin="0 auto">
@@ -313,8 +328,7 @@ const Dashboard = () => {
           <Stack gap="2px">
             <Heading size="lg">Ride ledger 📊</Heading>
             <Text fontSize="sm" color="fg.muted">
-              {count(totals.rides)} activities from {totals.firstDate} to {totals.lastDate}. Details cached for{' '}
-              {count(totals.metaCount)} of them ({metaCoverage}%).
+              {count(totals.rides)} cached activities from {totals.firstDate} to {totals.lastDate}
             </Text>
           </Stack>
         </HStack>
@@ -450,9 +464,9 @@ const Dashboard = () => {
       </Grid>
 
       <Text fontSize="xs" color="fg.muted">
-        Totals come from every Strava activity. Calories, temperature, devices, segment wins and the finish list come
-        from the ride details cached in Redis, currently {metaCoverage}% of rides. Run{' '}
-        <Span fontFamily="mono">node scripts/backfill-activities.mjs</Span> to fill the rest.
+        Everything here is read from the activities cached in Redis, so the page never calls Strava and its rate limit
+        cannot slow it down. If rides are missing, run <Span fontFamily="mono">node scripts/backfill-activities.mjs</Span>{' '}
+        to fetch the rest.
       </Text>
     </Stack>
   );

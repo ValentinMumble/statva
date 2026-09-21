@@ -1,4 +1,4 @@
-import {buildActivity, buildDetailedActivity} from '../../test/test-util';
+import {buildDetailedActivity} from '../../test/test-util';
 import {computeDashboard} from './dashboard';
 import {Event} from './event';
 import {FTPTest} from './ftp';
@@ -7,7 +7,7 @@ import {ActivityType} from './strava';
 const label = (key: string | null) => (null === key ? '🤷' : `[${key}]`);
 
 const activities = [
-  buildActivity({
+  buildDetailedActivity({
     id: 1,
     name: 'N-Peloton #575 G2',
     distance: 60000,
@@ -18,8 +18,12 @@ const activities = [
     sport_type: ActivityType.Ride,
     start_date: '2024-03-06T08:00:00Z',
     start_date_local: '2024-03-06T19:00:00Z',
+    calories: 1200,
+    average_temp: 17,
+    device_name: 'Karoo',
+    description: 'Finish Zazou',
   }),
-  buildActivity({
+  buildDetailedActivity({
     id: 2,
     name: 'Sortie du dimanche',
     distance: 40000,
@@ -30,12 +34,9 @@ const activities = [
     sport_type: ActivityType.Ride,
     start_date: '2025-07-13T06:00:00Z',
     start_date_local: '2025-07-13T08:00:00Z',
+    calories: 800,
   }),
 ];
-
-const meta = {
-  1: buildDetailedActivity({id: 1, calories: 1200, average_temp: 17, device_name: 'Karoo', description: 'Finish Zazou'}),
-};
 
 const events: Event[] = [
   {id: 'e1', type: 'chain', date: new Date('2024-01-01'), bike: 'b1', chain: '🍓'},
@@ -48,17 +49,16 @@ const ftpTests: FTPTest[] = [
   {id: 'f1', date: new Date('2024-01-01'), ftp: 250, weight: 75},
 ];
 
-const build = () => computeDashboard(activities, meta, events, ftpTests, [], label);
+const build = () => computeDashboard(activities, events, ftpTests, [], label);
 
-test('it totals every activity, not only the ones with cached details', () => {
+test('it totals the cached activities', () => {
   const {totals} = build();
 
   expect(totals.rides).toBe(2);
   expect(totals.distance).toBe(100000);
   expect(totals.elevation).toBe(500);
   expect(totals.kudos).toBe(25);
-  expect(totals.metaCount).toBe(1);
-  expect(totals.calories).toBe(1200);
+  expect(totals.calories).toBe(2000);
 });
 
 test('it groups distance by year and by month', () => {
@@ -129,7 +129,6 @@ test('it orders ftp tests oldest first and derives watts per kilo', () => {
 test('it works out cost per kilometre against the most used bike', () => {
   const withExpenses = computeDashboard(
     activities,
-    meta,
     events,
     ftpTests,
     [{id: 'x', date: new Date('2024-02-01'), amount: 120, description: 'Tyres'}],
@@ -141,7 +140,7 @@ test('it works out cost per kilometre against the most used bike', () => {
 });
 
 test('it survives an empty archive', () => {
-  const empty = computeDashboard([], {}, [], [], [], label);
+  const empty = computeDashboard([], [], [], [], label);
 
   expect(empty.totals.rides).toBe(0);
   expect(empty.totals.firstDate).toBeNull();

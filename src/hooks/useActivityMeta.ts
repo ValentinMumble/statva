@@ -5,12 +5,12 @@ import {getFetcher} from './useFetcher';
 const fetchMeta = getFetcher<Record<string, DetailedActivity>>('activities.meta.get');
 
 const useActivityMeta = () => {
-  const {data: activityMeta = {}, refetch} = useQuery({
+  const {data: activityMeta = {}, isPending, isError, refetch} = useQuery({
     queryKey: ['activityMeta'],
     queryFn: fetchMeta,
   });
 
-  return {activityMeta, refetch};
+  return {activityMeta, isPending, isError, refetch};
 };
 
 export {useActivityMeta};
