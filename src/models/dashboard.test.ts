@@ -22,6 +22,17 @@ const activities = [
     average_temp: 17,
     device_name: 'Karoo',
     description: 'Finish Zazou',
+    kilojoules: 1000,
+    elapsed_time: 9000,
+    max_speed: 20,
+    elev_high: 800,
+    athlete_count: 12,
+    average_heartrate: 148,
+    max_heartrate: 180,
+    device_watts: true,
+    commute: false,
+    trainer: false,
+    timezone: '(GMT+01:00) Europe/Paris',
   }),
   buildDetailedActivity({
     id: 2,
@@ -35,6 +46,17 @@ const activities = [
     start_date: '2025-07-13T06:00:00Z',
     start_date_local: '2025-07-13T08:00:00Z',
     calories: 800,
+    kilojoules: 600,
+    elapsed_time: 4200,
+    max_speed: 15,
+    elev_high: 200,
+    athlete_count: 1,
+    average_heartrate: 132,
+    max_heartrate: 165,
+    device_watts: false,
+    commute: true,
+    trainer: false,
+    timezone: '(GMT+02:00) Europe/Stockholm',
   }),
 ];
 
@@ -146,4 +168,50 @@ test('it survives an empty archive', () => {
   expect(empty.totals.firstDate).toBeNull();
   expect(empty.spending.centsPerKm).toBeNull();
   expect(empty.years).toEqual([]);
+});
+
+test('it adds up the work done and the kit used', () => {
+  const {totals} = build();
+
+  expect(totals.kilojoules).toBe(1600);
+  expect(totals.withPowerMeter).toBe(1);
+  expect(totals.commutes).toBe(1);
+  expect(totals.solo).toBe(1);
+  expect(totals.maxHeartRate).toBe(180);
+});
+
+test('it takes the middle stop, so a ride left paused does not skew it', () => {
+  // gaps are 1800s and 600s, plus a fake 10h one that must not move the figure
+  const withPausedRide = computeDashboard(
+    [...activities, buildDetailedActivity({id: 3, moving_time: 3600, elapsed_time: 3600 + 36000})],
+    events,
+    ftpTests,
+    [],
+    label,
+  );
+
+  expect(withPausedRide.totals.medianStopMinutes).toBe(30);
+});
+
+test('it ranks the fastest, the highest and the most crowded rides', () => {
+  const {records} = build();
+
+  expect(records.find(({key}) => 'speed' === key)?.rides[0].value).toBeCloseTo(72);
+  expect(records.find(({key}) => 'height' === key)?.rides[0].value).toBe(800);
+  expect(records.find(({key}) => 'company' === key)?.rides).toEqual([
+    {name: 'N-Peloton #575 G2', date: '06/03/2024', value: 12},
+  ]);
+});
+
+test('it groups heart rate and reads the place from the timezone', () => {
+  const {conditions} = build();
+
+  expect(conditions.heartRates).toEqual([
+    {name: '130 bpm', value: 1},
+    {name: '140 bpm', value: 1},
+  ]);
+  expect(conditions.places).toEqual([
+    {name: 'Paris', value: 1},
+    {name: 'Stockholm', value: 1},
+  ]);
 });

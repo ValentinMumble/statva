@@ -342,6 +342,7 @@ const Dashboard = () => {
         <Readout value={count(totals.rides)} caption="activities" />
         <Readout value={count(totals.calories / 1000)} unit="k kcal" caption="burned" />
         <Readout value={count(totals.kudos)} caption="kudos received" />
+        <Readout value={count(totals.kilojoules / 1000)} unit="MJ" caption="of work done" />
       </Grid>
 
       <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
@@ -436,6 +437,11 @@ const Dashboard = () => {
               ['Personal records', count(totals.prs)],
               ['Segment wins', count(totals.koms)],
               ['Photos taken', count(totals.photos)],
+              ['Rides with a power meter', `${count(totals.withPowerMeter)} of ${count(totals.rides)}`],
+              ['Ridden alone', `${count(totals.solo)} of ${count(totals.rides)}`],
+              ['Commutes', count(totals.commutes)],
+              ['Indoor', count(totals.indoor)],
+              ['Typical stop per ride', `${count(totals.medianStopMinutes)} min`],
             ].map(([key, value]) => (
               <HStack key={key} justifyContent="space-between" paddingY="6px" borderBottomWidth="1px" borderColor="border.subtle">
                 <Text fontSize="sm" color="fg.muted">
@@ -445,6 +451,21 @@ const Dashboard = () => {
               </HStack>
             ))}
           </Stack>
+        </Panel>
+      </Grid>
+
+      <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
+        <Panel title="Average heart rate" note={`peak ${count(totals.maxHeartRate)} bpm`}>
+          <Bars data={conditions.heartRates} format={value => `${count(value)} rides`} height={190} />
+        </Panel>
+        <Panel title="Where you rode" note="from the ride's timezone">
+          <Bars
+            data={conditions.places}
+            format={value => `${count(value)} rides`}
+            layout="vertical"
+            height={Math.max(160, conditions.places.length * 30)}
+            labelWidth={96}
+          />
         </Panel>
       </Grid>
 

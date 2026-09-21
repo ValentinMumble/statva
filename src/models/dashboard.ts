@@ -20,6 +20,13 @@ type Dashboard = {
     photos: number;
     calories: number;
     koms: number;
+    kilojoules: number;
+    medianStopMinutes: number;
+    withPowerMeter: number;
+    commutes: number;
+    indoor: number;
+    solo: number;
+    maxHeartRate: number;
     firstDate: string | null;
     lastDate: string | null;
   };
@@ -34,12 +41,36 @@ type Dashboard = {
   ftp: {date: string; label: string; power: number; wattsPerKilo: number; weight: number}[];
   maintenance: {total: number; byType: Named[]};
   spending: {count: number; total: number; centsPerKm: number | null};
-  conditions: {temperatures: Named[]; devices: Named[]};
+  conditions: {temperatures: Named[]; devices: Named[]; heartRates: Named[]; places: Named[]};
 };
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const sum = (values: number[]): number => values.reduce((total, value) => total + value, 0);
+
+const median = (values: number[]): number => {
+  if (0 === values.length) return 0;
+
+  const sorted = [...values].sort((a, b) => a - b);
+
+  return sorted[Math.floor(sorted.length / 2)];
+};
+
+// "(GMT+01:00) Europe/Paris" is the shape Strava sends.
+const placeName = (timezone: string): string => (timezone.split(') ').at(-1) ?? timezone).split('/').at(-1) ?? timezone;
+
+const bucketed = (values: number[], size: number, unit: string): Named[] =>
+  Object.entries(
+    values.reduce((map: Record<string, number>, value) => {
+      const bucket = Math.floor(value / size) * size;
+      map[bucket] = (map[bucket] ?? 0) + 1;
+
+      return map;
+    }, {}),
+  )
+    .map(([bucket, value]) => ({name: `${bucket}${unit}`, value, bucket: Number(bucket)}))
+    .sort((a, b) => a.bucket - b.bucket)
+    .map(({name, value}) => ({name, value}));
 
 // start_date_local carries local wall time with a Z suffix, so read it in UTC.
 const localDate = (activity: DetailedActivity): Date => new Date(activity.start_date_local);
@@ -134,6 +165,20 @@ const computeDashboard = (
       photos: sum(sorted.map(({total_photo_count}) => total_photo_count ?? 0)),
       calories: sum(sorted.map(({calories}) => calories ?? 0)),
       koms: sorted.filter(({segment_efforts}) => segment_efforts?.some(({kom_rank}) => 1 === kom_rank)).length,
+      kilojoules: sum(sorted.map(({kilojoules}) => kilojoules ?? 0)),
+      // Paused round trips leave hours of fake standing time, so the middle ride is the honest figure.
+      medianStopMinutes: Math.round(
+        median(
+          sorted
+            .map(({elapsed_time, moving_time}) => (elapsed_time ?? 0) - (moving_time ?? 0))
+            .filter(gap => 0 < gap),
+        ) / 60,
+      ),
+      withPowerMeter: sorted.filter(({device_watts}) => device_watts).length,
+      commutes: sorted.filter(({commute}) => commute).length,
+      indoor: sorted.filter(({trainer}) => trainer).length,
+      solo: sorted.filter(({athlete_count}) => 2 > (athlete_count ?? 1)).length,
+      maxHeartRate: Math.max(0, ...sorted.map(({max_heartrate}) => max_heartrate ?? 0)),
       firstDate: sorted.at(0) ? utcDate(sorted[0]).toLocaleDateString('fr-FR') : null,
       lastDate: sorted.at(-1) ? utcDate(sorted[sorted.length - 1]).toLocaleDateString('fr-FR') : null,
     },
@@ -164,6 +209,14 @@ const computeDashboard = (
         heading: 'Most calories',
         unit: 'kcal',
         rides: topRides(sorted, ({calories}) => calories),
+      },
+      {key: 'speed', heading: 'Fastest', unit: 'km/h', rides: topRides(sorted, ({max_speed}) => (max_speed ?? 0) * 3.6)},
+      {key: 'height', heading: 'Highest point', unit: 'm', rides: topRides(sorted, ({elev_high}) => elev_high)},
+      {
+        key: 'company',
+        heading: 'Biggest group',
+        unit: 'riders',
+        rides: topRides(sorted, ({athlete_count}) => (1 < (athlete_count ?? 1) ? athlete_count : 0)),
       },
     ],
     ftp: [...ftpTests]
@@ -204,6 +257,12 @@ const computeDashboard = (
         .sort((a, b) => a.bucket - b.bucket)
         .map(({name, value}) => ({name, value})),
       devices: toSorted(countBy(sorted, ({device_name}) => device_name ?? 'unknown'), 8),
+      heartRates: bucketed(
+        sorted.map(({average_heartrate}) => average_heartrate ?? 0).filter(rate => 0 < rate),
+        10,
+        ' bpm',
+      ),
+      places: toSorted(countBy(sorted, ({timezone}) => placeName(timezone ?? 'unknown')), 8),
     },
   };
 };
