@@ -15,22 +15,9 @@
  *   node scripts/backfill-activities.mjs --dry    report what it would do
  */
 import {Redis} from '@upstash/redis';
-import {existsSync, readFileSync} from 'fs';
+import {loadEnv, REDIS_KEYS, STRAVA_KEYS} from './env.mjs';
 
-// Small env reader so the script needs no extra dependency. Run it from the repo root.
-const loadEnv = file => {
-  if (!existsSync(file)) return;
-
-  for (const line of readFileSync(file, 'utf8').split('\n')) {
-    const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/);
-    if (match && !process.env[match[1]]) {
-      process.env[match[1]] = match[2].trim().replace(/^['"]|['"]$/g, '');
-    }
-  }
-};
-
-loadEnv('.env.local');
-loadEnv('.env');
+loadEnv([...STRAVA_KEYS, ...REDIS_KEYS]);
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ACTIVITIES_ENDPOINT = 'https://www.strava.com/api/v3/activities';
@@ -47,20 +34,6 @@ const WRITE_BATCH = 25;
 const TOKEN_LIFETIME_MS = 5_000_000;
 
 const isDryRun = process.argv.includes('--dry');
-
-const required = [
-  'VITE_STRAVA_CLIENT_ID',
-  'VITE_STRAVA_CLIENT_SECRET',
-  'VITE_STRAVA_REFRESH_TOKEN',
-  'VITE_KV_REST_API_URL',
-  'VITE_KV_REST_API_TOKEN',
-];
-
-const missingEnv = required.filter(key => !process.env[key]);
-if (missingEnv.length > 0) {
-  console.error(`Missing environment variables: ${missingEnv.join(', ')}`);
-  process.exit(1);
-}
 
 const redis = new Redis({
   url: process.env.VITE_KV_REST_API_URL,

@@ -18,9 +18,6 @@ Next improvements for Statva. Newest ideas at the top; move to **Done** when shi
       so roughly another day of Strava's 1000 daily reads to backfill.
 - [ ] Dashboard: longest gap between rides. The cache is complete now, so the figure
       would be real time off rather than a hole in the archive.
-- [ ] Backfill: the two older `scripts/*.ts` scripts no longer run with `npx ts-node`
-      (the package is an ES module). Either port them to `.mjs` like the backfill
-      script, or add `tsx`.
 - [ ] Merge odometer info into the event timeline (km labels or color intensity on the gantt bars)
 - [ ] Cost per km per part (link expense price to part lifespans)
 - [ ] Part wear gauges: km on the current part vs average life, with a km/weeks-left estimate

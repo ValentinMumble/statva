@@ -2,10 +2,10 @@
 
 Scripts for managing Strava activity metadata in the Redis cache.
 
-Run them from the repo root. `backfill-activities.mjs` is plain JavaScript and
-runs with `node` as is. The two older TypeScript scripts need a TypeScript
-runner; plain `npx ts-node` no longer works on this repo because the package is
-an ES module.
+Run them from the repo root, where `.env.local` lives. They are plain JavaScript
+and run with `node` as is, with no build step and no dependency beyond
+`@upstash/redis`. They share `env.mjs`, which reads `.env.local` then `.env` and
+stops with a clear message if a key is missing.
 
 ## Scripts
 
@@ -30,36 +30,36 @@ node scripts/backfill-activities.mjs          # fetch and store
 Leave it running in a terminal. It prints progress and the read budget as it
 goes, and says whether it needs another run tomorrow.
 
-### 2. check-deleted-activities.ts
+### 2. check-deleted-activities.mjs
 
 Identifies activities in Redis cache that are no longer in Strava (deleted activities).
 
 **Usage:**
 ```bash
-npx ts-node scripts/check-deleted-activities.ts
+node scripts/check-deleted-activities.mjs
 ```
 
 **Output:**
-- Console display of deleted activities (ID, name, date, type)
-- JSON report: `deleted-activities-TIMESTAMP.json`
+- The deleted activities listed in the console
+- A report at `scripts/deleted-activities-TIMESTAMP.json` for the next script
 
-### 3. remove-deleted-activities.ts
+### 3. remove-deleted-activities.mjs
 
 Removes specified deleted activities from Redis cache.
 
 **Usage:**
 ```bash
-npx ts-node scripts/remove-deleted-activities.ts <report-path>
+node scripts/remove-deleted-activities.mjs <report-path>
 ```
 
 **Example:**
 ```bash
-npx ts-node scripts/remove-deleted-activities.ts scripts/deleted-activities-2025-12-18T07-36-45-548.json
+node scripts/remove-deleted-activities.mjs scripts/deleted-activities-2025-12-18T07-36-45-548.json
 ```
 
 ## Prerequisites
 
-Environment variables in `.env`:
+Environment variables in `.env.local` or `.env`:
 ```
 VITE_STRAVA_CLIENT_ID=...
 VITE_STRAVA_CLIENT_SECRET=...
@@ -80,23 +80,23 @@ node scripts/backfill-activities.mjs
 
 1. **Check for deleted activities:**
    ```bash
-   npx ts-node scripts/check-deleted-activities.ts
+   node scripts/check-deleted-activities.mjs
    ```
-   Outputs: `deleted-activities-TIMESTAMP.json`
+   Outputs: `scripts/deleted-activities-TIMESTAMP.json`
 
 2. **Review the report** to confirm which activities to remove
 
 3. **Remove deleted activities:**
    ```bash
-   npx ts-node scripts/remove-deleted-activities.ts scripts/deleted-activities-TIMESTAMP.json
+   node scripts/remove-deleted-activities.mjs scripts/deleted-activities-TIMESTAMP.json
    ```
-   Shows cache before/after statistics
+   Shows the cache count before and after
 
 4. **Verify cleanup:**
    ```bash
-   npx ts-node scripts/check-deleted-activities.ts
+   node scripts/check-deleted-activities.mjs
    ```
-   Should show 0 deleted activities
+   Should find nothing left to clean up
 
 ## Exit Codes
 
