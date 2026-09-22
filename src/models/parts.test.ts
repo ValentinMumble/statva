@@ -123,3 +123,33 @@ test('it offers the last few distinct fittings, newest first', () => {
     'Pirelli P Zero 32',
   ]);
 });
+
+test('it reads the same whatever order the events arrive in', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const events = [
+    on(1, {type: 'chain', chain: '🍓'}),
+    on(11, {type: 'chain', chain: '🍒'}),
+    on(16, {type: 'chain', chain: '🍇'}),
+  ];
+  const shuffled = [events[2], events[0], events[1]];
+
+  const [inOrder] = computeBikeParts(events, rides, BIKE, label);
+  const [outOfOrder] = computeBikeParts(shuffled, rides, BIKE, label);
+
+  // the newest chain is the one on the bike, whichever way round they come in
+  expect(inOrder.detail).toBe('🍇');
+  expect(outOfOrder).toEqual(inOrder);
+});
+
+test('the suggested chain does not depend on the order either', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const events = [
+    on(1, {type: 'chain', chain: '🍓'}),
+    on(11, {type: 'chain', chain: '🍒'}),
+    on(16, {type: 'chain', chain: '🍇'}),
+  ];
+
+  expect(suggestChains([events[2], events[0], events[1]], rides, BIKE)).toEqual(
+    suggestChains(events, rides, BIKE),
+  );
+});

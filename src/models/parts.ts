@@ -12,7 +12,6 @@ const ROTATION_LIMIT = 400 * 1000;
 const PART_LIMITS: Partial<Record<Event['type'], number>> = {
   chain: ROTATION_LIMIT,
   tire: 8000 * 1000,
-  brake_bleed: 9000 * 1000,
 };
 const RETIRED_CHAINS = ['🍍', '🧄', '🍪', '🍌', '🍋'];
 const RETIRED_BIKES = ['b11897955', 'b12655849'];
@@ -50,8 +49,12 @@ const stateOf = (distance: number, expected: number | null): PartState => {
   return distance >= expected * DUE_RATIO ? 'due' : 'ok';
 };
 
+// Oldest first, so the last one is what is fitted now. Sorted here rather than trusted
+// from the caller: out of order, every reading silently comes out of the wrong fitting.
 const onBike = (events: Event[], bikeId: string, type: Event['type']): Event[] =>
-  events.filter(event => bikeId === event.bike && type === event.type);
+  events
+    .filter(event => bikeId === event.bike && type === event.type)
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 
 /**
  * What is fitted right now and how far it has gone, measured against the part's known
