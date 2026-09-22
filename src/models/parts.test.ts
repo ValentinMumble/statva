@@ -153,3 +153,39 @@ test('the suggested chain does not depend on the order either', () => {
     suggestChains(events, rides, BIKE),
   );
 });
+
+test('a swapped part counts every stint it has been on for, not just the last one', () => {
+  const rides = ridesOn([...Array(30).keys()].map(day => day + 1));
+  const wide = {type: 'cassette' as const, brand: 'SRAM', model: 'Force', range: '10-36'};
+  const close = {type: 'cassette' as const, brand: 'SRAM', model: 'Force', range: '10-30'};
+  const events = [on(1, close), on(6, wide), on(11, close), on(21, wide), on(26, close)];
+  const [cassette] = computeBikeParts(events, rides, BIKE, label);
+
+  // the 10-30 was on for days 1 to 5, 11 to 20 and 26 onwards: 5 + 10 + 5 days
+  expect(cassette.detail).toContain('10-30');
+  expect(cassette.distance).toBe(2000000);
+  expect(cassette.expected).toBe(30000000);
+  expect(cassette.state).toBe('ok');
+});
+
+test('the other cassette"s distance stays on the other cassette', () => {
+  const rides = ridesOn([...Array(30).keys()].map(day => day + 1));
+  const wide = {type: 'cassette' as const, brand: 'SRAM', model: 'Force', range: '10-36'};
+  const close = {type: 'cassette' as const, brand: 'SRAM', model: 'Force', range: '10-30'};
+  // same events, but the wide one is fitted last
+  const [cassette] = computeBikeParts([on(1, close), on(6, wide), on(11, close), on(21, wide)], rides, BIKE, label);
+
+  // the 10-36 was on for days 6 to 10 and 21 onwards: 5 + 10 days
+  expect(cassette.detail).toContain('10-36');
+  expect(cassette.distance).toBe(1500000);
+});
+
+test('a part that is replaced rather than swapped only counts its current fitting', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const tire = {type: 'tire' as const, brand: 'Continental', model: 'GP 5000', width: 32};
+  const [fitted] = computeBikeParts([on(1, tire), on(11, tire)], rides, BIKE, label);
+
+  // the same model fitted twice is two tires, so only the second one's distance counts
+  expect(fitted.distance).toBe(1000000);
+  expect(fitted.expected).toBe(8000000);
+});

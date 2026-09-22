@@ -12,7 +12,13 @@ const ROTATION_LIMIT = 400 * 1000;
 const PART_LIMITS: Partial<Record<Event['type'], number>> = {
   chain: ROTATION_LIMIT,
   tire: 8000 * 1000,
+  cassette: 30000 * 1000,
 };
+
+// Parts you own several of and swap between, so what one has done is the sum of every
+// time it has been on the bike, not the stint it is on now. A chain is not one of these:
+// its limit is about the current stint, which is when it comes off to rest.
+const ROTATED_PARTS: Event['type'][] = ['cassette'];
 const RETIRED_CHAINS = ['🍍', '🧄', '🍪', '🍌', '🍋'];
 const RETIRED_BIKES = ['b11897955', 'b12655849'];
 
@@ -73,10 +79,18 @@ const partStatus = (
 
   if (undefined === current) return null;
 
-  const distance = distanceBetween(activities, current.date);
-  const previousLives = fittings
+  const stints = fittings.map((event, index) => ({
+    event,
+    distance: distanceBetween(activities, event.date, fittings[index + 1]?.date),
+  }));
+  const fittedNow = getEventLabel(current, label);
+  const distance = ROTATED_PARTS.includes(type)
+    ? sum(stints.filter(({event}) => getEventLabel(event, label) === fittedNow).map(({distance}) => distance))
+    : (stints.at(-1)?.distance ?? 0);
+
+  const previousLives = stints
     .slice(0, -1)
-    .map((event, index) => distanceBetween(activities, event.date, fittings[index + 1].date))
+    .map(({distance}) => distance)
     .filter(life => 0 < life);
   const expected =
     PART_LIMITS[type] ?? (0 === previousLives.length ? null : sum(previousLives) / previousLives.length);
