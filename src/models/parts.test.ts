@@ -54,6 +54,17 @@ test('it has no expectation for the first of its kind', () => {
   expect(battery.state).toBe('ok');
 });
 
+test('it measures a part with a known limit against that, not its past lives', () => {
+  // three quick tire changes, which say when they were swapped, not when they wore out
+  const rides = ridesOn([...Array(30).keys()].map(day => day + 1), 100);
+  const events = [on(1, {type: 'tire'}), on(6, {type: 'tire'}), on(11, {type: 'tire'})];
+  const [tire] = computeBikeParts(events, rides, BIKE, label);
+
+  expect(tire.expected).toBe(8000000);
+  expect(tire.distance).toBe(2000000);
+  expect(tire.state).toBe('ok');
+});
+
 test('it measures the chain against the rotation limit, not its past lives', () => {
   const rides = ridesOn([...Array(10).keys()].map(day => day + 1), 50);
   const events = [on(1, {type: 'chain', chain: '🍓'}), on(4, {type: 'chain', chain: '🍒'})];

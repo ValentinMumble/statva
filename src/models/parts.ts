@@ -5,6 +5,15 @@ import {Activity} from './strava';
 
 // A chain comes off the bike once it has done this much on its current stint.
 const ROTATION_LIMIT = 400 * 1000;
+
+// How long a part should last, where that is a known figure rather than something to
+// infer. The history says when a part was swapped, which is not the same as when it wore
+// out, so for these it would read far too short. Everything else falls back on history.
+const PART_LIMITS: Partial<Record<Event['type'], number>> = {
+  chain: ROTATION_LIMIT,
+  tire: 8000 * 1000,
+  brake_bleed: 9000 * 1000,
+};
 const RETIRED_CHAINS = ['🍍', '🧄', '🍪', '🍌', '🍋'];
 const RETIRED_BIKES = ['b11897955', 'b12655849'];
 
@@ -45,9 +54,9 @@ const onBike = (events: Event[], bikeId: string, type: Event['type']): Event[] =
   events.filter(event => bikeId === event.bike && type === event.type);
 
 /**
- * What is fitted right now and how far it has gone. A chain is measured against the
- * rotation limit, since it comes off to rest rather than to be thrown away; everything
- * else against how long the previous ones actually lasted on this bike.
+ * What is fitted right now and how far it has gone, measured against the part's known
+ * limit where there is one, and otherwise against how long the previous ones lasted on
+ * this bike.
  */
 const partStatus = (
   type: Event['type'],
@@ -66,11 +75,8 @@ const partStatus = (
     .slice(0, -1)
     .map((event, index) => distanceBetween(activities, event.date, fittings[index + 1].date))
     .filter(life => 0 < life);
-  const expected = isChainEvent(current)
-    ? ROTATION_LIMIT
-    : 0 === previousLives.length
-      ? null
-      : sum(previousLives) / previousLives.length;
+  const expected =
+    PART_LIMITS[type] ?? (0 === previousLives.length ? null : sum(previousLives) / previousLives.length);
   const detail = getEventLabel(current, label, true);
 
   return {
@@ -144,6 +150,7 @@ const recentFittings = (
 
 export {
   computeBikeParts,
+  PART_LIMITS,
   recentFittings,
   suggestChains,
   REFITTED_PARTS,

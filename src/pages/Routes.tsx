@@ -1,5 +1,6 @@
-import {useParams} from 'react-router';
-import {VStack} from '@chakra-ui/react';
+import {Link, useParams} from 'react-router';
+import {IconButton, VStack} from '@chakra-ui/react';
+import {MdArrowBack} from 'react-icons/md';
 import {useCheckIns, useRoutes} from '../hooks';
 import {RouteMap, RouteCard, RouteDrawer, CheckIns} from '../components';
 
@@ -15,6 +16,11 @@ const Routes = () => {
         <CheckIns checkIns={checkIns} />
       </RouteMap>
       <VStack position="absolute" zIndex={1000} top="0" left="0" padding="12px" gap="12px" align="start">
+        <IconButton asChild={true} title="Back to rides" size="sm" backgroundColor="blackAlpha.800" color="white">
+          <Link to="/">
+            <MdArrowBack />
+          </Link>
+        </IconButton>
         <RouteCard route={selectedRoute} checkIns={checkIns} />
         <RouteDrawer selectedRoute={selectedRoute} routes={routes} defaultOpen={undefined === routeId} />
       </VStack>
