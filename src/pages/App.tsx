@@ -1,6 +1,6 @@
 import {ChangeEvent, KeyboardEvent, useMemo, useState} from 'react';
-import {Stack, VStack} from '@chakra-ui/react';
-import {useLocalStorage} from 'usehooks-ts';
+import {Box, SegmentGroupValueChangeDetails, Stack, VStack} from '@chakra-ui/react';
+import {useLocalStorage, useMediaQuery} from 'usehooks-ts';
 import {
   ActivityTable,
   BikeParts,
@@ -11,11 +11,24 @@ import {
   TOP_BAR_HEIGHT,
   WeekView,
 } from '../components';
+import {SegmentedControl} from '../components/ui';
 import {SortType, SortDirection, DEFAULT_SORTS, getTypes, extractEmoji} from '../models';
 import {ActivityType} from '../models/strava';
 import {useActivities, useActivityMeta, useFtp, useLabels, useAllActivities} from '../hooks';
 
+// A phone has room for one column, so it shows one at a time.
+type MobileView = 'rides' | 'overview';
+
+const MOBILE_VIEWS = [
+  {value: 'rides', label: 'Rides'},
+  {value: 'overview', label: 'Overview'},
+];
+const MOBILE_SWITCH_HEIGHT = '44px';
+
 const App = () => {
+  const [mobileView, setMobileView] = useState<MobileView>('rides');
+  // Focusing the search on a touch screen opens the keyboard over the rides.
+  const hasMouse = useMediaQuery('(pointer: fine)');
   const [withPrivate, setWithPrivate] = useLocalStorage<boolean>('withPrivate', false);
   const [withCommute, setWithCommute] = useState<boolean | 'only'>(true);
   const [search, setSearch] = useState<string>('');
@@ -79,21 +92,54 @@ const App = () => {
   const handleBikeOnlyToggle = () =>
     setTypes(types?.every(type => getTypes(ActivityType.Ride).includes(type)) ? null : getTypes(ActivityType.Ride));
 
-  const columnHeight = `calc(100vh - ${TOP_BAR_HEIGHT})`;
+  const handleMobileViewChange = ({value}: SegmentGroupValueChangeDetails) =>
+    value && setMobileView(value as MobileView);
+
+  const columnHeight = {
+    base: `calc(100dvh - ${TOP_BAR_HEIGHT} - ${MOBILE_SWITCH_HEIGHT})`,
+    md: `calc(100dvh - ${TOP_BAR_HEIGHT})`,
+  };
+  const shownOn = (view: MobileView) => ({base: view === mobileView ? 'flex' : 'none', md: 'flex'});
 
   return (
     <>
       <TopBar />
+      <Box hideFrom="md" height={MOBILE_SWITCH_HEIGHT} padding="6px 10px">
+        <SegmentedControl
+          size="sm"
+          width="full"
+          css={{'& [data-part=item]': {flex: 1, justifyContent: 'center'}}}
+          value={mobileView}
+          onValueChange={handleMobileViewChange}
+          items={MOBILE_VIEWS}
+        />
+      </Box>
       <Stack padding={[undefined, '0 20px']} gap="20px" direction={['column-reverse', 'row']}>
-      <VStack align="stretch" flexBasis="40%" gap="20px" width={['100vw', null]} height={columnHeight} overflowY="scroll">
+      <VStack
+        align="stretch"
+        flexBasis="40%"
+        gap="20px"
+        width={['100vw', null]}
+        height={columnHeight}
+        overflowY="scroll"
+        display={shownOn('overview')}
+      >
         <Stats />
         <BikeParts />
         <ChartAccordion />
         <WeekView />
       </VStack>
-      <VStack align="stretch" flexBasis="60%" height={columnHeight} overflow="scroll" data-scroll-root>
+      <VStack
+        align="stretch"
+        flexBasis="60%"
+        height={columnHeight}
+        overflow="scroll"
+        display={shownOn('rides')}
+        data-scroll-root
+      >
         <FilterControls
           search={search}
+          autoFocus={hasMouse}
           isLoading={null === activities}
           activityCount={activities?.length ?? 0}
           withPrivate={withPrivate}

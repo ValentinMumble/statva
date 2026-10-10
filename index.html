@@ -23,6 +23,14 @@
         height: 80vh;
       }
     }
+    /* iOS zooms into any field under 16px when it gets focus, and stays zoomed. */
+    @media (pointer: coarse) {
+      input,
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
     .map-marker {
       background: transparent;
       font-size: 28px;

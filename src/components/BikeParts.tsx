@@ -52,7 +52,7 @@ const BikeParts = () => {
             bike={gearId}
             onLogged={refreshEvents}
             trigger={
-              <Button size="xs" variant="surface">
+              <Button size={{base: 'sm', md: 'xs'}} variant="surface">
                 Log
               </Button>
             }

@@ -66,7 +66,7 @@ const ActivityTable = ({
     virtualItems.length > 0 ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end : 0;
 
   return (
-    <Table.Root unstyled={true} ref={tableRef}>
+    <Table.Root unstyled={true} width={{base: 'full', md: 'auto'}} ref={tableRef}>
       <Table.Header hideBelow="md">
         <Table.Row fontSize=".8em" cursor="pointer">
           <Table.ColumnHeader />

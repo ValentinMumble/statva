@@ -1,15 +1,32 @@
 import {memo, useState} from 'react';
-import {Flex, IconButton, Skeleton, Table, Tag} from '@chakra-ui/react';
+import {Box, Flex, IconButton, Skeleton, Span, Stack, Table, Tag, Text} from '@chakra-ui/react';
 import {RxCross2} from 'react-icons/rx';
 import {Tooltip} from '../components/ui';
 import {ActivityIcon, ActivityMeta} from '../components';
 import {ZoneTooltip} from './ZoneTooltip';
-import {GetFtp, MONTH_BG_COLORS, SortType, TAGS, getActivityUrl, getWorkoutType, getRandomUnusedEmoji, hasKom} from '../models';
+import {
+  GetFtp,
+  MONTH_BG_COLORS,
+  SortType,
+  TAGS,
+  formatDistance,
+  formatDuration,
+  getActivityUrl,
+  getWorkoutType,
+  getRandomUnusedEmoji,
+  hasKom,
+} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
 import {useLabels} from '../hooks';
 
 const getBgColor = (activity: Activity): string =>
   MONTH_BG_COLORS[new Date(activity.start_date).getMonth()];
+
+// On a phone the metric columns are hidden, so the row says how far and how long itself.
+const summary = ({distance, moving_time}: Activity): string =>
+  [0 < distance ? formatDistance(distance, distance < 10 * 1000 ? 1 : 0) : null, formatDuration(moving_time)]
+    .filter(part => null !== part)
+    .join(' · ');
 
 type ActivityListItemProps = {
   activity: Activity | null;
@@ -68,17 +85,21 @@ const ActivityListItem = ({
         />
       </Table.Cell>
       <Table.Cell padding="2px" textAlign="center" fontSize="xs" width="36px">
-        {new Date(activity.start_date).toLocaleDateString('en-US', {weekday: 'short'}).toLowerCase()}
+        <Stack gap="0" lineHeight="1.1">
+          <span>{new Date(activity.start_date).toLocaleDateString('en-US', {weekday: 'short'}).toLowerCase()}</span>
+          <Span color="fg.muted">{new Date(activity.start_date).getDate()}</Span>
+        </Stack>
       </Table.Cell>
-      <Table.Cell padding="2px">
+      <Table.Cell padding="2px" maxWidth={{base: 0, md: 'none'}} width={{base: 'full', md: 'auto'}}>
         <Flex
           bg={getBgColor(activity)}
           borderRadius="8px"
           padding="2px 5px"
           justifyContent="space-between"
           alignItems="center"
+          gap="8px"
         >
-          <Flex gap="1" alignItems="center">
+          <Flex gap="1" alignItems="center" minWidth="0">
             <Tooltip
               positioning={{placement: 'right-end'}}
               content={
@@ -88,9 +109,11 @@ const ActivityListItem = ({
                 </>
               }
             >
-              <a target="_blank" href={getActivityUrl(activity)}>
-                {activity.name}
-              </a>
+              <Span truncate={true}>
+                <a target="_blank" href={getActivityUrl(activity)}>
+                  {activity.name}
+                </a>
+              </Span>
             </Tooltip>
             {showDeleteButton && (
               <span
@@ -109,7 +132,14 @@ const ActivityListItem = ({
               <RxCross2 />
             </IconButton>
           ) : (
-            <ActivityMeta activity={activity} />
+            <>
+              <Text hideFrom="md" fontSize="xs" whiteSpace="nowrap" flexShrink={0}>
+                {summary(activity)}
+              </Text>
+              <Box hideBelow="md">
+                <ActivityMeta activity={activity} />
+              </Box>
+            </>
           )}
         </Flex>
       </Table.Cell>

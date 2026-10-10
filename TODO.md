@@ -28,6 +28,9 @@ Nothing right now.
 
 ## Done
 
+- [x] Phone layout: nav and Log in a bottom bar, the Log dialog as a bottom sheet with
+  thumb-sized buttons, Rides and Overview as two views, each ride row showing its day,
+  distance and time, and no keyboard popping up on open
 - [x] Backfilled every Strava activity's details into the Redis cache: 1246 of 1246,
       2015 to today, in one day (961 of the 1000 daily reads). Re-run
       `node scripts/backfill-activities.mjs` any time to pick up new rides; it only

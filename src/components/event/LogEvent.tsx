@@ -33,6 +33,10 @@ const EVENT_TYPES: Event['type'][] = [
 
 const toInputDate = (date: Date): string => date.toISOString().slice(0, 10);
 
+// Small enough for a mouse, big enough for a thumb.
+const CHIP_SIZE = {base: 'sm', md: 'xs'} as const;
+const ACTION_SIZE = {base: 'md', md: 'sm'} as const;
+
 // The part itself, without when or where it was fitted.
 const IDENTITY_KEYS = ['id', 'date', 'bike'];
 
@@ -48,7 +52,8 @@ type LogEventProps = {
 
 /**
  * Logging in two steps: pick what happened, then confirm. The date, the bike and the
- * part are already filled in, so the common events are two taps and nothing typed.
+ * part are already filled in, so the common events are two taps and nothing typed. On a
+ * phone it opens as a sheet from the bottom, within reach of the thumb.
  */
 const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
   const [open, setOpen] = useState(false);
@@ -105,12 +110,18 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
   const needsFields = 0 === fittings.length || withFields;
 
   return (
-    <Dialog.Root open={open} onOpenChange={({open}) => handleOpenChange(open)} size="sm">
+    <Dialog.Root
+      open={open}
+      onOpenChange={({open}) => handleOpenChange(open)}
+      size="sm"
+      placement={{base: 'bottom', md: 'center'}}
+      motionPreset={{base: 'slide-in-bottom', md: 'scale'}}
+    >
       <Dialog.Trigger asChild={true}>{trigger}</Dialog.Trigger>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content>
+          <Dialog.Content marginBottom={{base: '0', md: 'auto'}} borderBottomRadius={{base: '0', md: 'l3'}}>
             <Dialog.Header>
               <Dialog.Title>
                 {undefined === draft.type ? 'What happened?' : `${label(draft.type)} ${draft.type.replace('_', ' ')}`}
@@ -135,13 +146,15 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
                   <HStack gap="8px">
                     <Input
                       type="date"
-                      size="sm"
-                      width="150px"
+                      size={ACTION_SIZE}
+                      flex={{base: 1, md: 'none'}}
+                      width={{md: '150px'}}
                       value={draft.date ? toInputDate(draft.date) : ''}
                       onChange={({target}) => setDraft(draft => ({...draft, date: new Date(target.value)}))}
                     />
                     <GearSelect
-                      size="sm"
+                      size={ACTION_SIZE}
+                      width={['140px', '180px']}
                       selectedGear={draft.bike ? [draft.bike] : []}
                       excludedGearTypes={['shoes']}
                       onSelectedGearChange={([bike]) => setDraft(draft => ({...draft, bike}))}
@@ -158,7 +171,7 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
                         {chains.map(({chain, distance}) => (
                           <Button
                             key={chain}
-                            size="xs"
+                            size={CHIP_SIZE}
                             variant={chain === chosenChain ? 'surface' : 'outline'}
                             onClick={() => setDraft(draft => ({...draft, chain}))}
                           >
@@ -178,7 +191,7 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
                         {fittings.map(({event, detail}) => (
                           <Button
                             key={event.id}
-                            size="xs"
+                            size={CHIP_SIZE}
                             variant={withFields ? 'outline' : 'surface'}
                             onClick={() => {
                               setDraft(draft => ({...draft, ...partOf(event)}));
@@ -188,7 +201,7 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
                             {detail}
                           </Button>
                         ))}
-                        <Button size="xs" variant="ghost" onClick={() => setWithFields(true)}>
+                        <Button size={CHIP_SIZE} variant="ghost" onClick={() => setWithFields(true)}>
                           Something else…
                         </Button>
                       </Group>
@@ -203,13 +216,18 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
                 </Stack>
               )}
             </Dialog.Body>
-            <Dialog.Footer>
+            <Dialog.Footer paddingBottom="calc(16px + env(safe-area-inset-bottom))">
               {undefined !== draft.type && (
                 <>
-                  <Button variant="ghost" size="sm" onClick={reset}>
+                  <Button variant="ghost" size={ACTION_SIZE} onClick={reset}>
                     Back
                   </Button>
-                  <Button size="sm" disabled={!isEventValid(draft)} onClick={handleLog}>
+                  <Button
+                    size={ACTION_SIZE}
+                    flex={{base: 1, md: 'none'}}
+                    disabled={!isEventValid(draft)}
+                    onClick={handleLog}
+                  >
                     Log it
                   </Button>
                 </>

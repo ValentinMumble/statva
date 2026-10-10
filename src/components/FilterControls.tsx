@@ -21,6 +21,7 @@ import {GetLabel} from '../models/label';
 
 type FilterControlsProps = {
   search: string;
+  autoFocus: boolean;
   isLoading: boolean;
   activityCount: number;
   withPrivate: boolean;
@@ -43,6 +44,7 @@ type FilterControlsProps = {
 
 const FilterControls = ({
   search,
+  autoFocus,
   isLoading,
   activityCount,
   withPrivate,
@@ -77,7 +79,7 @@ const FilterControls = ({
       <Input
         disabled={isLoading}
         placeholder="Search"
-        autoFocus={true}
+        autoFocus={autoFocus}
         value={search}
         onChange={onSearchChange}
         onKeyDown={onSearchKeyDown}
