@@ -1,6 +1,7 @@
 import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {Link} from 'react-router';
+import {FaThumbsUp} from 'react-icons/fa6';
 import {LogEvent} from '../../components/event';
 import {useAllActivities, useEvents, useFtp, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
 import {
@@ -22,6 +23,8 @@ import {WeeksCard} from '../components/WeeksCard';
 import {change, duration, km, metres, number, relativeDay} from '../format';
 
 const LATEST_COUNT = 6;
+// Strava's own orange, for its kudos thumb.
+const STRAVA_ORANGE = '#fc4c02';
 
 
 // Before anything is done this week, last week's total says more than a fall of 100%.
@@ -122,7 +125,15 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
 
           return (
             <Link key={activity.id} to={`/activities/${activity.id}`}>
-              <HStack gap="14px" padding="8px" marginX="-8px" borderRadius="12px" _hover={{background: 'bg.subtle'}}>
+              <HStack
+                gap="14px"
+                padding="8px"
+                marginX="-8px"
+                borderRadius="12px"
+                // Dimmed when private, as in the activities list.
+                opacity={activity.private ? 0.6 : 1}
+                _hover={{background: 'bg.subtle'}}
+              >
                 <RouteThumb activity={activity} />
                 <Stack gap="2px" minWidth="0" flex="1">
                   <HStack gap="8px" minWidth="0">
@@ -137,6 +148,14 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                       {sportName(activity.sport_type)} · {relativeDay(new Date(activity.start_date), locale, now)}
                       {activity.commute ? ' · commute' : ''}
                     </Text>
+                    {/* Kept out of the truncated text, so a long line never hides it. */}
+                    {0 < activity.kudos_count && (
+                      <HStack gap="4px" flexShrink={0} title={`${activity.kudos_count} kudos`}>
+                        <Text>·</Text>
+                        <Icon as={FaThumbsUp} color={STRAVA_ORANGE} boxSize="12px" />
+                        <Text>{activity.kudos_count}</Text>
+                      </HStack>
+                    )}
                   </HStack>
                 </Stack>
                 {undefined !== photo && (
