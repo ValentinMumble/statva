@@ -5,11 +5,9 @@ import {ActivityType, Activity} from './strava';
 const getActivityUrl = ({id}: {id: number}): string => `https://www.strava.com/activities/${id}`;
 
 // Zone 1 below the first threshold, zone 5 from the last, with the rider's thresholds.
-const getHeartZone = ({average_heartrate = 0}: Activity): number => {
-  if (0 === average_heartrate) return 0;
+const getHeartRateZone = (bpm: number): number => (0 === bpm ? 0 : 1 + riderProfile().heartRate.zones.filter(threshold => bpm >= threshold).length);
 
-  return 1 + riderProfile().heartRate.zones.filter(threshold => average_heartrate >= threshold).length;
-};
+const getHeartZone = ({average_heartrate = 0}: Activity): number => getHeartRateZone(average_heartrate);
 
 const getPowerZone = (watts: number, ftp: number): number => {
   switch (true) {
@@ -147,6 +145,7 @@ export {
   formatLaps,
   formatPaceOrSpeed,
   getActivityUrl,
+  getHeartRateZone,
   getHeartZone,
   getPowerZone,
   guessCalories,

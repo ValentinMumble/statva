@@ -5,7 +5,7 @@ import {Link, useParams} from 'react-router';
 import {LuArrowLeft, LuExternalLink, LuRefreshCw} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeTSS, decodePolyline, extractNormalizedPower, getActivityUrl, hasKom} from '../../models';
+import {computeTSS, decodePolyline, extractNormalizedPower, getActivityUrl, getHeartRateZone, getPowerZone, getZoneColor, hasKom} from '../../models';
 import {Activity, ActivityZone, DetailedActivity} from '../../models/strava';
 import {ActivityPhoto} from '../../api';
 import {Card, CardTitle} from '../components/Card';
@@ -64,20 +64,28 @@ const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivit
 
 const ZONE_COLORS = ['gray.400', 'blue.400', 'green.400', 'yellow.400', 'orange.400', 'red.400'];
 
-type FigureItem = {label: string; value: string | null};
+// zone: the power or heart rate zone of the figure, shown as a badge in its colour.
+type FigureItem = {label: string; value: string | null; zone?: number};
 
 const Figures = ({items}: {items: FigureItem[]}) => (
   <Grid templateColumns={{base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)'}} gap="18px">
     {items
       .filter(({value}) => null !== value)
-      .map(({label, value}) => (
+      .map(({label, value, zone}) => (
         <Stack key={label} gap="0">
           <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
             {label}
           </Text>
-          <Text fontFamily="figure" fontSize="xl" fontWeight="semibold">
-            {value}
-          </Text>
+          <HStack gap="8px">
+            <Text fontFamily="figure" fontSize="xl" fontWeight="semibold">
+              {value}
+            </Text>
+            {zone ? (
+              <Badge size="sm" variant="subtle" colorPalette={getZoneColor(zone)}>
+                Zone {zone}
+              </Badge>
+            ) : null}
+          </HStack>
         </Stack>
       ))}
   </Grid>
@@ -158,6 +166,8 @@ const ActivityPage = () => {
   const date = new Date(activity.start_date);
   const ftp = getFtp(date);
   const tss = computeTSS(activity, ftp);
+  // No zone without an FTP to measure it against.
+  const powerZone = (watts: number | undefined | null): number => (0 < ftp && watts ? getPowerZone(watts, ftp) : 0);
   const np = extractNormalizedPower(detail);
   const speed = activity.average_speed * 3.6;
 
@@ -221,13 +231,29 @@ const ActivityPage = () => {
                 {label: 'Climbing', value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null},
                 {label: 'Average speed', value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null},
                 {label: 'Max speed', value: 0 < activity.max_speed ? `${number(activity.max_speed * 3.6, locale, 1)} km/h` : null},
-                {label: 'Average power', value: activity.average_watts ? `${Math.round(activity.average_watts)} W` : null},
-                {label: 'Weighted power', value: activity.weighted_average_watts ? `${activity.weighted_average_watts} W` : null},
-                {label: 'Normalized power', value: np ? `${np} W` : null},
+                {
+                  label: 'Average power',
+                  value: activity.average_watts ? `${Math.round(activity.average_watts)} W` : null,
+                  zone: powerZone(activity.average_watts),
+                },
+                {
+                  label: 'Weighted power',
+                  value: activity.weighted_average_watts ? `${activity.weighted_average_watts} W` : null,
+                  zone: powerZone(activity.weighted_average_watts),
+                },
+                {label: 'Normalized power', value: np ? `${np} W` : null, zone: powerZone(np)},
                 {label: 'Intensity', value: activity.weighted_average_watts && ftp ? `${Math.round((activity.weighted_average_watts / ftp) * 100)}%` : null},
                 {label: 'Training stress', value: tss ? `${Math.round(tss.value)}` : null},
-                {label: 'Average heart rate', value: activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : null},
-                {label: 'Max heart rate', value: activity.max_heartrate ? `${Math.round(activity.max_heartrate)} bpm` : null},
+                {
+                  label: 'Average heart rate',
+                  value: activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : null,
+                  zone: getHeartRateZone(activity.average_heartrate ?? 0),
+                },
+                {
+                  label: 'Max heart rate',
+                  value: activity.max_heartrate ? `${Math.round(activity.max_heartrate)} bpm` : null,
+                  zone: getHeartRateZone(activity.max_heartrate ?? 0),
+                },
                 {label: 'Cadence', value: activity.average_cadence ? `${Math.round(activity.average_cadence)}` : null},
                 {label: 'Calories', value: detail?.calories ? `${number(detail.calories, locale)} kcal` : null},
                 {label: 'Temperature', value: undefined !== activity.average_temp ? `${activity.average_temp}°C` : null},
