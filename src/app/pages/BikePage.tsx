@@ -1,6 +1,7 @@
-import {lazy, Suspense, useMemo, useState} from 'react';
+import {lazy, Suspense, useMemo} from 'react';
 import {Badge, Box, Button, Grid, HStack, IconButton, Spinner, Stack, Switch, Text} from '@chakra-ui/react';
 import {useNavigate, useParams} from 'react-router';
+import {useLocalStorage} from 'usehooks-ts';
 import {LuTrash2} from 'react-icons/lu';
 import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
@@ -47,7 +48,8 @@ const BikePage = () => {
   const {label} = useLabels();
   const {events, refetch} = useEvents();
   const {data: activities} = useAllActivities();
-  const [withRetired, setWithRetired] = useState(false);
+  // Remembered on this device, like the other list toggles.
+  const [withRetired, setWithRetired] = useLocalStorage('bikes-with-retired', false);
 
   const bike = bikeId ?? defaultBike;
   const bikes = gear.filter(
