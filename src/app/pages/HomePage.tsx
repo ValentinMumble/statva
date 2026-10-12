@@ -2,7 +2,7 @@ import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {Link} from 'react-router';
 import {LogEvent} from '../../components/event';
-import {useAllActivities, useAthlete, useEvents, useFtp, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
+import {useAllActivities, useEvents, useFtp, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
 import {
   computeBikeParts,
   Event,
@@ -23,7 +23,6 @@ import {change, duration, km, metres, number, relativeDay} from '../format';
 
 const LATEST_COUNT = 6;
 
-const greeting = (hour: number): string => (hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening');
 
 // Before anything is done this week, last week's total says more than a fall of 100%.
 const Delta = ({current, previous, lastWeek}: {current: number; previous: number; lastWeek: string}) => {
@@ -245,7 +244,6 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
 /** What a rider wants on opening the app: how the week is going, what they just did, what needs doing. */
 const HomePage = () => {
   const {data} = useAllActivities();
-  const athlete = useAthlete();
   const {locale} = useSettings();
   // Read once per visit, so the page renders the same way every time React redraws it.
   const [now] = useState(() => new Date());
@@ -256,14 +254,6 @@ const HomePage = () => {
 
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
-      <Stack gap="2px">
-        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
-          {greeting(now.getHours())}
-          {athlete ? `, ${athlete.firstname}` : ''}
-        </Text>
-        <Text color="fg.muted">{now.toLocaleDateString(locale, {weekday: 'long', day: 'numeric', month: 'long'})}</Text>
-      </Stack>
-
       {undefined === data ? (
         <Stack gap="16px">
           <Skeleton height="180px" borderRadius="card" />

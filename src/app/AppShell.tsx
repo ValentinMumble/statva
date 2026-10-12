@@ -12,9 +12,12 @@ import {Activity} from '../models/strava';
 import {isActive, NAV} from './nav';
 
 const SIDEBAR_WIDTH = '232px';
-const TAB_BAR_HEIGHT = '64px';
-// The floating tab bar sits this far above the bottom edge, as iOS draws its own.
-const TAB_BAR_GAP = '12px';
+// About the 62 pt of iOS 26's tab bar.
+const TAB_BAR_HEIGHT = '62px';
+// The floating tab bar sits this far above the home indicator, as in the hk and chords apps.
+const TAB_BAR_GAP = '8px';
+// Its sides, kept clear of the rounded corners and of the notch in landscape.
+const TAB_BAR_SIDE = '14px';
 
 const LogButton = ({compact = false}: {compact?: boolean}) => {
   const {refetch} = useEvents();
@@ -185,7 +188,9 @@ const PhoneHeader = () => {
       hideFrom="md"
       justifyContent="space-between"
       paddingX="16px"
-      paddingY="10px"
+      // The page runs under the status bar (viewport-fit=cover): the header keeps clear of it.
+      paddingTop="calc(10px + env(safe-area-inset-top))"
+      paddingBottom="10px"
       position="sticky"
       top="0"
       zIndex="sticky"
@@ -225,8 +230,8 @@ const TabBar = () => {
       hideFrom="md"
       position="fixed"
       bottom={`calc(${TAB_BAR_GAP} + env(safe-area-inset-bottom))`}
-      left="12px"
-      right="12px"
+      left={`max(${TAB_BAR_SIDE}, env(safe-area-inset-left))`}
+      right={`max(${TAB_BAR_SIDE}, env(safe-area-inset-right))`}
       zIndex="sticky"
       height={TAB_BAR_HEIGHT}
       padding="5px"
