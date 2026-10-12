@@ -4,8 +4,6 @@ import {
   deleteLabel,
   fetchActivityZones,
   fetchAthlete,
-  fetchAthleteRoutes,
-  fetchSharedRoute,
   getActivities,
   getActivitySummaries,
   getEvents,
@@ -50,8 +48,6 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'settings.set': setSetting,
   'ftp_tests.get': getFTPTests,
   'ftp_tests.set': upsertFTPTest,
-  'routes.get': fetchAthleteRoutes,
-  'routes.shared': fetchSharedRoute,
 };
 
 const DEMO: typeof REAL = {
@@ -74,8 +70,6 @@ const DEMO: typeof REAL = {
   'settings.set': demoBackend.setSetting,
   'ftp_tests.get': demoBackend.getFtpTests,
   'ftp_tests.set': demoBackend.setFtpTest,
-  'routes.get': demoBackend.getRoutes,
-  'routes.shared': demoBackend.getSharedRoute,
 };
 
 const REGISTRY = isDemo() ? DEMO : REAL;

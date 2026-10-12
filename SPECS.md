@@ -23,8 +23,8 @@ Legend for the **v2** notes:
 | Rides | `/` | The activity list, with stats, bike parts and charts beside it |
 | Dashboard | `/dashboard` | A long read of all-time numbers, records and maps |
 | Workshop | `/workshop` | Bike parts, maintenance history, logging events |
-| Routes | `/routes/:id` | A Strava route on a map, with live check-ins |
-| Check-in | `/check-in` | Drop your current position on a route and share the link |
+| Routes | `/routes/:id` | A Strava route on a map, with live check-ins (dropped in v2) |
+| Check-in | `/check-in` | Drop your current position on a route and share the link (dropped in v2) |
 
 Navigation is one bar with the four main pages and a **Log** button. On a phone the bar
 sits at the bottom of the screen; on a computer it sits at the top.
@@ -273,9 +273,9 @@ rider's tracks. Locale for dates and numbers (fr-FR today): **Setting**.
 
 - **Routes**: pick one of your Strava routes; see it on a map with its distance, climbing
   and estimated time, and share a link that shows it to anyone.
+- **Check-in**: drop your live position on a route for the people following the link.
 
-v2: **Keep**. Check-ins (dropping your live position on a route for followers) are
-**dropped**.
+v2: **Drop** both.
 
 ---
 
@@ -314,7 +314,6 @@ words. Off by default.
 | `GET /athlete/activities` | The activity list | 1 per 200 activities |
 | `GET /activities/{id}` | Description, private note, photos, calories, KOMs, device | 1 per activity |
 | `GET /activities/{id}/zones` | Heart rate zones | 1 per hover |
-| `GET /athletes/{id}/routes` | Routes | 1 per visit |
 
 ### 12.2 What Statva stores
 

@@ -9,7 +9,7 @@ const env = (name: string): string => {
   return value;
 };
 
-/** The Strava athletes allowed to log in, from a comma-separated list. The first one owns shared routes. */
+/** The Strava athletes allowed to log in, from a comma-separated list. */
 const allowedAthletes = (): number[] =>
   env('STRAVA_ATHLETE_IDS')
     .split(',')

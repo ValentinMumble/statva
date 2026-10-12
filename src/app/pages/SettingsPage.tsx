@@ -456,7 +456,7 @@ const SettingsPage = () => {
           right={{base: '16px', md: '32px'}}
           zIndex="sticky"
         >
-          <Card padding="12px 16px" boxShadow="lg" maxWidth="1056px" marginX="auto">
+          <Card padding="12px 16px" boxShadow="lg" maxWidth="1536px" marginX="auto">
             <HStack justifyContent="space-between">
               <Text fontSize="sm">
                 {changed.length} unsaved {1 === changed.length ? 'change' : 'changes'}

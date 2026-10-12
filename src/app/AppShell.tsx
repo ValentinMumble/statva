@@ -194,7 +194,7 @@ const AppShell = () => {
       <Sidebar />
       <Box flex="1" minWidth="0" paddingBottom={{base: `calc(${TAB_BAR_HEIGHT} + env(safe-area-inset-bottom) + 16px)`, md: '0'}}>
         <PhoneHeader />
-        <Box as="main" maxWidth="1120px" marginX="auto" paddingX={{base: '16px', md: '32px'}} paddingY={{base: '16px', md: '32px'}}>
+        <Box as="main" maxWidth="1600px" marginX="auto" paddingX={{base: '16px', md: '32px'}} paddingY={{base: '16px', md: '32px'}}>
           <Outlet key={profileKey} />
         </Box>
       </Box>

@@ -3,8 +3,8 @@ import {env} from '../_lib/env.js';
 import {cookie, redirect} from '../_lib/http.js';
 
 const AUTHORIZE_URL = 'https://www.strava.com/oauth/authorize';
-// read_all: private routes. activity:read_all: private activities. profile:read_all: gear and FTP.
-const SCOPE = 'read,read_all,activity:read_all,profile:read_all';
+// activity:read_all: private activities. profile:read_all: gear and FTP.
+const SCOPE = 'read,activity:read_all,profile:read_all';
 
 /** Sends the rider to Strava's consent page. The state cookie proves the answer comes back to the same browser. */
 export const GET = (request: Request): Response => {

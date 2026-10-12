@@ -23,8 +23,6 @@ into a home page, stats, records and an explorer map.
   charts for training load, volume, gear and your club.
 - **Records:** all-time totals, the hall of fame, Eddington by year, and the explorer tiles
   you have ridden, with the biggest square and the yard as Squadrats defines them.
-- **Routes:** your Strava routes, and live check-ins along one that anyone with the link
-  can follow.
 - **Settings:** bikes, part limits, goal, heart rate, weight, club rules, language, labels.
   Export your data or disconnect from Strava (which deletes everything Statva holds).
 

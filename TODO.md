@@ -48,7 +48,7 @@ v1 keeps running from `main` (release `v1.0.0`) until v2 replaces it.
 - [x] **4b. Finish the switch.** v1 screens gone; check-in and shared route pages rebuilt;
       no club, bike or athlete written into the code (tests use their own club rules).
 - [x] **5. Going public.** Public since 2026-10-12 under the MIT licence, with a README,
-      a deploy button, an original icon and keyless maps. The history has no `dev-data/`,
+      a deploy button and keyless maps. The history has no `dev-data/`,
       `local_*.json` or map token (rewritten 2026-10-12; the full old history is in
       `../statva-history-backup-2026-10-12.bundle`). Pull requests #1 and #2 still point
       at old commits; GitHub Support had not purged them, and that was accepted.

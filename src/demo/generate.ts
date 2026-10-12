@@ -1,5 +1,5 @@
 import {BikeExpense, encodePolyline, Event, FTPTest, Labels, Settings} from '../models';
-import {Activity, ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
+import {Activity, ActivityZone, Athlete, DetailedActivity} from '../models/strava';
 import {ActivityZoneType} from '../models/strava/activity-zone-type';
 import {Random, seeded} from './random';
 
@@ -65,7 +65,6 @@ type DemoData = {
   expenses: BikeExpense[];
   labels: Labels;
   settings: Partial<Settings>;
-  routes: Route[];
 };
 
 const KM_PER_DEGREE = 111.32;
@@ -307,22 +306,6 @@ const generateDemo = (today: Date = new Date()): DemoData => {
     shoes: [gear(SHOES, 'Running shoes 👟')],
   } as unknown as Athlete;
 
-  const routes = [
-    {id: 101, name: 'Lake loop', km: 42, climb: 380, heading: 1.2},
-    {id: 102, name: 'Semnoz', km: 52, climb: 1350, heading: 3.6},
-  ].map(({id, name, km, climb, heading}) => ({
-    id,
-    id_str: String(id),
-    name,
-    distance: km * 1000,
-    elevation_gain: climb,
-    estimated_moving_time: Math.round((km / 26) * 3600),
-    created_at: new Date(start).toISOString(),
-    map: {id: `r${id}`, summary_polyline: encodePolyline(loop(seeded(id), km, heading)), polyline: '', resource_state: 2},
-    map_urls: {dark_url: '', light_url: '', url: '', retina_url: ''},
-    athlete: '1',
-  })) as unknown as Route[];
-
   const weekKey = (time: number) => {
     const date = new Date(time);
     const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
@@ -359,7 +342,6 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       unprocessedEmoji: true,
       club: {name: CLUB, markers: {Pirate: ['🏴‍☠️']}, groupWords: [CLUB], groupTags: ['group']},
     },
-    routes,
   };
 };
 

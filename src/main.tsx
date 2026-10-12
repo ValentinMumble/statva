@@ -11,9 +11,7 @@ import {ActivityPage} from './app/pages/ActivityPage';
 import {BikePage} from './app/pages/BikePage';
 import {HomePage} from './app/pages/HomePage';
 import {RecordsPage} from './app/pages/RecordsPage';
-import {RoutesPage} from './app/pages/RoutesPage';
 import {SettingsPage} from './app/pages/SettingsPage';
-import {SharedRoutePage} from './app/pages/SharedRoutePage';
 import {StatsPage} from './app/pages/StatsPage';
 import {system} from './app/theme';
 
@@ -48,20 +46,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="bike/:bikeId?" element={<BikePage />} />
               <Route path="stats" element={<StatsPage />} />
               <Route path="records" element={<RecordsPage />} />
-              <Route path="routes" element={<RoutesPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
 
-            {/* Shared route links stay public. */}
-            <Route
-              path="/routes/:routeId"
-              element={
-                <>
-                  <PageTitle title="Statva route" />
-                  <SharedRoutePage />
-                </>
-              }
-            />
 
           </RouterRoutes>
           <Toaster />

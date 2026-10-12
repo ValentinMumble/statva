@@ -53,13 +53,11 @@ const demoBackend = {
   setSetting: async (field: string, value: unknown) => {
     demo().settings = {...demo().settings, [field]: value};
   },
-  getRoutes: () => answer(demo().routes),
   getZones: (id: number) => {
     const activity = demo().activities.find(activity => activity.id === id);
 
     return answer(undefined === activity ? [] : demoZones(activity as Activity));
   },
-  getSharedRoute: (id: string) => answer({route: demo().routes.find(route => String(route.id) === id)!}),
 };
 
 export {demoBackend};

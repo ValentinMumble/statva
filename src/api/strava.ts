@@ -1,4 +1,4 @@
-import {ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
+import {ActivityZone, Athlete, DetailedActivity} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
 class NotLoggedInError extends Error {}
@@ -42,19 +42,11 @@ const syncActivities = (): Promise<SyncReport> => post<SyncReport>('/api/sync');
 /** Asks the server to fetch one activity from Strava again and store it. */
 const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
 
-const fetchAthleteRoutes = (): Promise<Route[]> => strava<Route[]>('routes');
-
 const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<ActivityZone[]>(`activities/${id}/zones`);
-
-/** A shared route, readable without logging in. */
-const fetchSharedRoute = (id: string): Promise<{route: Route}> =>
-  getJson(`/api/shared-route?id=${encodeURIComponent(id)}`);
 
 export {
   fetchActivityZones,
   fetchAthlete,
-  fetchAthleteRoutes,
-  fetchSharedRoute,
   getJson,
   NotLoggedInError,
   refreshActivity,

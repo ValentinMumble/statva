@@ -6,17 +6,16 @@ import {stravaGet} from './_lib/strava.js';
 const ALLOWED_PATHS = [/^athlete$/, /^athlete\/activities$/, /^activities\/\d+$/, /^activities\/\d+\/zones$/];
 const ALLOWED_PARAMS = ['page', 'per_page'];
 
-/** Calls Strava for the logged-in athlete. `path=routes` lists their routes. */
+/** Calls Strava for the logged-in athlete. */
 export const GET = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
 
   const params = new URL(request.url).searchParams;
-  const requested = params.get('path') ?? '';
-  const path = 'routes' === requested ? `athletes/${athleteId}/routes` : requested;
+  const path = params.get('path') ?? '';
 
-  if ('routes' !== requested && !ALLOWED_PATHS.some(pattern => pattern.test(path))) {
+  if (!ALLOWED_PATHS.some(pattern => pattern.test(path))) {
     return json({error: 'Not allowed'}, 403);
   }
 

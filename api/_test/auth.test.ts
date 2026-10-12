@@ -1,12 +1,11 @@
-import {install, makeActivities} from './fakes.js';
+import {install} from './fakes.js';
 import {GET as login} from '../auth/login.js';
 import {GET as callback} from '../auth/callback.js';
 import {GET as me} from '../auth/me.js';
 import {GET as strava} from '../strava.js';
-import {GET as sharedRoute} from '../shared-route.js';
 
 const ORIGIN = 'https://statva.test';
-const SCOPE = 'read,read_all,activity:read_all,profile:read_all';
+const SCOPE = 'read,activity:read_all,profile:read_all';
 
 const request = (path: string, cookie?: string) =>
   new Request(`${ORIGIN}${path}`, {headers: undefined === cookie ? {} : {cookie}});
@@ -96,13 +95,3 @@ describe('Strava proxy', () => {
   });
 });
 
-describe('shared route', () => {
-  it('needs no login but only shows numeric ids', async () => {
-    const fake = install();
-    fake.login(42);
-    fake.strava.activities = makeActivities(1);
-
-    expect((await sharedRoute(request('/api/shared-route?id=7/../x'))).status).toBe(404);
-    expect(fake.strava.calls).toEqual([]);
-  });
-});
