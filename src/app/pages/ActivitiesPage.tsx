@@ -17,7 +17,7 @@ import {
 import {useNavigate, useSearchParams} from 'react-router';
 import {useWindowVirtualizer} from '@tanstack/react-virtual';
 import {useLocalStorage} from 'usehooks-ts';
-import {LuArrowDown, LuArrowUp, LuColumns3, LuListFilter, LuLock, LuSearch, LuWatch, LuX} from 'react-icons/lu';
+import {LuArrowDown, LuArrowUp, LuColumns3, LuFilterX, LuListFilter, LuLock, LuSearch, LuWatch, LuX} from 'react-icons/lu';
 import {GearSelect} from '../../components/GearSelect';
 import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
 import {countBy, DEFAULT_SORTS, getRandomUnusedEmoji, SortDirection, SortType, TAGS} from '../../models';
@@ -75,6 +75,7 @@ const Toolbar = ({
   devices,
   device,
   onDevice,
+  onClear,
 }: {
   search: string;
   onSearch: (value: string) => void;
@@ -92,6 +93,8 @@ const Toolbar = ({
   devices: {device: string; count: number}[];
   device: string | null;
   onDevice: (device: string | null) => void;
+  // Set when a filter narrows the list, to put them all back.
+  onClear?: () => void;
   label: (key: string) => string;
 }) => {
   const toggleSport = (sport: ActivityType) => {
@@ -226,6 +229,11 @@ const Toolbar = ({
             </Menu.Positioner>
           </Portal>
         </Menu.Root>
+        {onClear && (
+          <Button variant="ghost" size="sm" onClick={onClear}>
+            <LuFilterX /> Clear filters
+          </Button>
+        )}
       </HStack>
     </Stack>
   );
@@ -298,6 +306,15 @@ const ActivitiesPage = () => {
     gearId: gearIds[0],
     withCommute: commute,
     includedActivityTypes: types ?? undefined,
+  };
+  const isFiltered = '' !== search || 0 < gearIds.length || true !== commute || null !== types || null !== device;
+  // Showing private activities is a preference, not a filter, so it stays as it is.
+  const clearFilters = () => {
+    setSearch('');
+    setGearIds([]);
+    setCommute(true);
+    setTypes(null);
+    setDevice(null);
   };
   const showsPrivate = withPrivate || '' !== search;
   // A search looks through private activities too.
@@ -386,6 +403,7 @@ const ActivitiesPage = () => {
         devices={devices}
         device={device}
         onDevice={setDevice}
+        onClear={isFiltered ? clearFilters : undefined}
         label={label}
       />
 
@@ -523,9 +541,14 @@ const ActivitiesPage = () => {
             })}
           </Box>
           {null !== activities && 0 === rows.length && 0 === hiddenPrivate && (
-            <Text padding="32px" textAlign="center" color="fg.muted">
-              Nothing matches. Try another search or filter.
-            </Text>
+            <Stack padding="32px" alignItems="center" gap="12px">
+              <Text color="fg.muted">Nothing matches. Try another search or filter.</Text>
+              {isFiltered && (
+                <Button variant="surface" size="sm" onClick={clearFilters}>
+                  <LuFilterX /> Clear filters
+                </Button>
+              )}
+            </Stack>
           )}
         </Box>
       </Card>
