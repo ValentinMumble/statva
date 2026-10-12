@@ -9,10 +9,12 @@ into a home page, stats, records and an explorer map.
 **Try it without an account:** open your copy (or any running Statva) and choose
 "Try the demo". It runs on two years of made-up rides.
 
+![The home page: this week, the latest activities and the parts closest to wearing out](docs/screenshots/home.png)
+
 ## What it does
 
 - **Home:** this week against last week, your latest activities drawn as route shapes,
-  recent weeks day by day, the parts closest to wearing out, and your form.
+  recent weeks day by day, and the parts closest to wearing out.
 - **Activities:** search by name or by date ("2 nov", "2024-11-02"), filter by sport, gear
   and commute, choose and sort columns. Each activity has its own page with its map, power,
   training stress, heart rate zones and notes.
@@ -27,6 +29,22 @@ into a home page, stats, records and an explorer map.
   Export your data or disconnect from Strava (which deletes everything Statva holds).
 
 The full feature list is in [SPECS.md](SPECS.md).
+
+## Screenshots
+
+All taken on the demo's made-up rides.
+
+| Activities | One activity |
+|---|---|
+| ![The activities list with its filters and columns](docs/screenshots/activities.png) | ![An activity with its map, power and heart rate zones](docs/screenshots/activity.png) |
+
+| Bike | Stats |
+|---|---|
+| ![A bike's parts, their wear and the history of changes](docs/screenshots/bike.png) | ![Totals, the yearly goal, Eddington and training charts](docs/screenshots/stats.png) |
+
+| Records | On a phone |
+|---|---|
+| ![All-time totals and year by year charts](docs/screenshots/records.png) | <img src="docs/screenshots/phone-home.png" alt="Home on a phone, with the floating tab bar" width="48%"> <img src="docs/screenshots/phone-activities.png" alt="The activities list on a phone" width="48%"> |
 
 ## Run your own copy
 
