@@ -451,7 +451,7 @@ const SettingsPage = () => {
       {0 < changed.length && (
         <Box
           position="fixed"
-          bottom={{base: 'calc(80px + env(safe-area-inset-bottom))', md: '24px'}}
+          bottom={{base: 'calc(88px + env(safe-area-inset-bottom))', md: '24px'}}
           left={{base: '16px', md: 'calc(232px + 32px)'}}
           right={{base: '16px', md: '32px'}}
           zIndex="sticky"

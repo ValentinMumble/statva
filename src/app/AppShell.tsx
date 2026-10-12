@@ -8,6 +8,8 @@ import {isActive, NAV} from './nav';
 
 const SIDEBAR_WIDTH = '232px';
 const TAB_BAR_HEIGHT = '64px';
+// The floating tab bar sits this far above the bottom edge, as iOS draws its own.
+const TAB_BAR_GAP = '12px';
 
 const LogButton = ({compact = false}: {compact?: boolean}) => {
   const {refetch} = useEvents();
@@ -145,6 +147,10 @@ const PhoneHeader = () => {
   );
 };
 
+/**
+ * The phone tab bar, in the style of iOS's Liquid Glass: a floating capsule of frosted,
+ * see-through glass with a light rim, and a glass pill behind the current tab.
+ */
 const TabBar = () => {
   const {pathname} = useLocation();
 
@@ -153,26 +159,41 @@ const TabBar = () => {
       as="nav"
       hideFrom="md"
       position="fixed"
-      bottom="0"
-      left="0"
-      right="0"
+      bottom={`calc(${TAB_BAR_GAP} + env(safe-area-inset-bottom))`}
+      left="12px"
+      right="12px"
       zIndex="sticky"
-      height={`calc(${TAB_BAR_HEIGHT} + env(safe-area-inset-bottom))`}
-      paddingBottom="env(safe-area-inset-bottom)"
-      background="bg.panel/95"
-      backdropFilter="blur(12px)"
-      borderTopWidth="1px"
-      justifyContent="space-around"
-      gap="0"
+      height={TAB_BAR_HEIGHT}
+      padding="5px"
+      gap="2px"
+      borderRadius="full"
+      background={{base: 'rgba(255, 255, 255, 0.55)', _dark: 'rgba(30, 30, 33, 0.5)'}}
+      backdropFilter="blur(22px) saturate(180%)"
+      borderWidth="1px"
+      borderColor={{base: 'rgba(255, 255, 255, 0.7)', _dark: 'rgba(255, 255, 255, 0.12)'}}
+      boxShadow={{
+        base: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 30px rgba(0, 0, 0, 0.12)',
+        _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 10px 30px rgba(0, 0, 0, 0.5)',
+      }}
     >
       {NAV.filter(({onPhone}) => onPhone).map(({to, label, icon}) => {
         const active = isActive(to, pathname);
 
         return (
-          <Link key={to} to={to} style={{flex: 1}}>
-            <Stack gap="2px" alignItems="center" color={active ? 'brand.solid' : 'fg.muted'}>
-              <Icon as={icon} boxSize="22px" />
-              <Text fontSize="10px" fontWeight={active ? 'semibold' : 'medium'}>
+          <Link key={to} to={to} style={{flex: 1, height: '100%'}} aria-current={active ? 'page' : undefined}>
+            <Stack
+              gap="1px"
+              height="full"
+              alignItems="center"
+              justifyContent="center"
+              borderRadius="full"
+              color={active ? 'brand.solid' : 'fg'}
+              background={active ? {base: 'rgba(0, 0, 0, 0.06)', _dark: 'rgba(255, 255, 255, 0.12)'} : 'transparent'}
+              boxShadow={active ? {base: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)', _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.16)'} : 'none'}
+              transition="background 200ms ease, color 200ms ease"
+            >
+              <Icon as={icon} boxSize="21px" />
+              <Text fontSize="10px" fontWeight={active ? 'semibold' : 'medium'} lineHeight="1.1">
                 {label}
               </Text>
             </Stack>
@@ -192,7 +213,7 @@ const AppShell = () => {
   return (
     <Flex minHeight="100dvh">
       <Sidebar />
-      <Box flex="1" minWidth="0" paddingBottom={{base: `calc(${TAB_BAR_HEIGHT} + env(safe-area-inset-bottom) + 16px)`, md: '0'}}>
+      <Box flex="1" minWidth="0" paddingBottom={{base: `calc(${TAB_BAR_HEIGHT} + ${TAB_BAR_GAP} + env(safe-area-inset-bottom) + 16px)`, md: '0'}}>
         <PhoneHeader />
         <Box as="main" maxWidth="1600px" marginX="auto" paddingX={{base: '16px', md: '32px'}} paddingY={{base: '16px', md: '32px'}}>
           <Outlet key={profileKey} />
