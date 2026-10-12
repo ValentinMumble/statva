@@ -14,10 +14,10 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import {useNavigate} from 'react-router';
+import {useNavigate, useSearchParams} from 'react-router';
 import {useWindowVirtualizer} from '@tanstack/react-virtual';
 import {useLocalStorage} from 'usehooks-ts';
-import {LuArrowDown, LuArrowUp, LuColumns3, LuListFilter, LuLock, LuSearch, LuX} from 'react-icons/lu';
+import {LuArrowDown, LuArrowUp, LuColumns3, LuListFilter, LuLock, LuSearch, LuWatch, LuX} from 'react-icons/lu';
 import {GearSelect} from '../../components/GearSelect';
 import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
 import {countBy, DEFAULT_SORTS, getRandomUnusedEmoji, SortDirection, SortType, TAGS} from '../../models';
@@ -72,6 +72,9 @@ const Toolbar = ({
   columns,
   onColumns,
   label,
+  devices,
+  device,
+  onDevice,
 }: {
   search: string;
   onSearch: (value: string) => void;
@@ -86,6 +89,9 @@ const Toolbar = ({
   onPrivate: () => void;
   columns: SortType[];
   onColumns: (columns: SortType[]) => void;
+  devices: {device: string; count: number}[];
+  device: string | null;
+  onDevice: (device: string | null) => void;
   label: (key: string) => string;
 }) => {
   const toggleSport = (sport: ActivityType) => {
@@ -192,6 +198,34 @@ const Toolbar = ({
             </Menu.Positioner>
           </Portal>
         </Menu.Root>
+        <Menu.Root>
+          <Menu.Trigger asChild={true}>
+            <Button variant={null === device ? 'ghost' : 'surface'} size="sm">
+              <LuWatch /> {device ?? 'Devices'}
+            </Button>
+          </Menu.Trigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content maxHeight="380px" overflowY="auto" minWidth="240px">
+                <Menu.RadioItemGroup value={device ?? ''} onValueChange={({value}) => onDevice('' === value ? null : value)}>
+                  <Menu.RadioItem value="">
+                    All devices
+                    <Menu.ItemIndicator />
+                  </Menu.RadioItem>
+                  {devices.map(({device: name, count}) => (
+                    <Menu.RadioItem key={name} value={name}>
+                      {name}
+                      <Text as="span" color="fg.muted" marginLeft="auto" fontSize="xs">
+                        {count}
+                      </Text>
+                      <Menu.ItemIndicator />
+                    </Menu.RadioItem>
+                  ))}
+                </Menu.RadioItemGroup>
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
       </HStack>
     </Stack>
   );
@@ -232,6 +266,16 @@ const ActivitiesPage = () => {
   const {locale, unprocessedEmoji} = useSettings();
   const {getFtp} = useFtp();
   const {activityMeta} = useActivityMeta();
+  // The device a list is narrowed to lives in the address (?device=), so Records can link to it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const device = searchParams.get('device');
+  const setDevice = (name: string | null) =>
+    setSearchParams(params => {
+      if (null === name) params.delete('device');
+      else params.set('device', name);
+
+      return params;
+    });
   const {data: allActivities} = useAllActivities();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortType>('date');
@@ -275,7 +319,21 @@ const ActivitiesPage = () => {
     [allActivities],
   );
   const shownColumns = TAGS.filter(({sortType}) => columns.includes(sortType));
-  const rows = activities ?? [];
+  // Devices are in the details; an activity whose details have not arrived yet is left out.
+  const deviceOf = (id: number): string | null => {
+    const detail = activityMeta[id];
+
+    return undefined === detail ? null : detail.device_name || 'unknown';
+  };
+  const rows = null === device ? (activities ?? []) : (activities ?? []).filter(({id}) => device === deviceOf(id));
+  const devices = Object.entries(
+    countBy(
+      (allActivities ?? []).filter(({id}) => null !== deviceOf(id)),
+      ({id}) => deviceOf(id) ?? 'unknown',
+    ),
+  )
+    .map(([name, count]) => ({device: name, count}))
+    .sort((a, b) => b.count - a.count);
 
   useLayoutEffect(() => {
     const node = listRef.current;
@@ -325,6 +383,9 @@ const ActivitiesPage = () => {
         onPrivate={() => setWithPrivate(!withPrivate)}
         columns={columns}
         onColumns={setColumns}
+        devices={devices}
+        device={device}
+        onDevice={setDevice}
         label={label}
       />
 

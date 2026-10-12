@@ -12,7 +12,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
-import {Link} from 'react-router';
+import {Link, useNavigate} from 'react-router';
 import {
   Bar,
   BarChart,
@@ -101,9 +101,11 @@ type BarsProps = {
   layout?: 'vertical' | 'horizontal';
   height?: number;
   labelWidth?: number;
+  // A bar that opens the activities behind it.
+  onSelect?: (name: string) => void;
 };
 
-const Bars = ({data, format, layout = 'horizontal', height = 220, labelWidth = 92}: BarsProps) => {
+const Bars = ({data, format, layout = 'horizontal', height = 220, labelWidth = 92, onSelect}: BarsProps) => {
   const chart = useChart({data, series: [{name: 'value', color: 'orange.solid'}]});
   const isVertical = 'vertical' === layout;
 
@@ -160,6 +162,15 @@ const Bars = ({data, format, layout = 'horizontal', height = 220, labelWidth = 9
             fillOpacity={0.55}
             radius={isVertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
             isAnimationActive={false}
+            cursor={undefined === onSelect ? undefined : 'pointer'}
+            onClick={
+              undefined === onSelect
+                ? undefined
+                : bar => {
+                    const name = (bar as {payload?: {name?: string}}).payload?.name;
+                    if (undefined !== name) onSelect(name);
+                  }
+            }
           />
         </BarChart>
       </ResponsiveContainer>
@@ -484,6 +495,7 @@ const RecordsPage = () => {
   const {expenses} = useExpenses();
   const {label} = useLabels();
   const {club, mapCenter} = useSettings();
+  const navigate = useNavigate();
 
   const data = useMemo(
     () => computeDashboard(Object.values(activityMeta), events, ftpTests, expenses, label, club),
@@ -736,13 +748,14 @@ const RecordsPage = () => {
       </Grid>
 
       <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
-        <Panel title="Recording device">
+        <Panel title="Recording device" note="click a bar to list its rides">
           <Bars
             data={conditions.devices}
             format={value => `${count(value)} rides`}
             layout="vertical"
             height={Math.max(160, conditions.devices.length * 30)}
             labelWidth={128}
+            onSelect={name => navigate(`/activities?device=${encodeURIComponent(name)}`)}
           />
         </Panel>
       </Grid>

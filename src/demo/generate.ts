@@ -239,9 +239,10 @@ const generateDemo = (today: Date = new Date()): DemoData => {
     if (6 === weekday && random.chance(winter ? 0.6 : 0.85)) {
       const km = random.between(summer ? 80 : 65, summer ? 115 : 90);
       const group = random.pick(CLUB_GROUPS);
-      const pirate = random.chance(0.1) ? ' 🏴‍☠️' : '';
+      // Club rides get their emoji like the rest; the odd one is a pirate group.
+      const emoji = random.chance(0.1) ? '🏴‍☠️' : random.pick(['🥐', '☕️', '🍕', '🍦', '🧀', '🍻']);
       const np = Math.round(ftpAt(date.getTime()) * random.between(0.82, 0.92));
-      add('club', date, km, `${CLUB} #${clubRide++} ${group}${pirate}`, 9, {
+      add('club', date, km, `${CLUB} #${clubRide++} ${group} ${emoji}`, 9, {
         description: `Good pace today.\nFinish au ${random.pick(FINISHES)}`,
         privateNote: `NP: ${np}`,
         points: loop(random, km, random.between(0, 6.28)),

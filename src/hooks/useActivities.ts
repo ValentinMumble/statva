@@ -1,6 +1,6 @@
 import {useMemo, useCallback} from 'react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
-import {ActivityFilter, dateSearchHaystack, normalizeString, sortActivities} from '../models';
+import {ActivityFilter, dateSearchHaystack, hasEmoji, normalizeString, sortActivities} from '../models';
 import {SyncReport} from '../api';
 import {Activity} from '../models/strava';
 import {getFetcher} from './useFetcher';
@@ -139,7 +139,7 @@ const useActivities = ({
   ]);
 
   const unprocessedActivities = useMemo(
-    () => activities?.filter(activity => !activity.name.match(/[\p{Emoji}]/gu)) ?? [],
+    () => activities?.filter(({name}) => !hasEmoji(name)) ?? [],
     [activities],
   );
 

@@ -1,4 +1,4 @@
-import {computeBikeParts, computeDashboard, computeExplorerTiles, decodePolyline, encodePolyline, suggestChains} from '../models';
+import {computeBikeParts, computeDashboard, computeExplorerTiles, decodePolyline, encodePolyline, hasEmoji, suggestChains} from '../models';
 import {generateDemo} from './generate';
 
 const TODAY = new Date('2026-10-12T10:00:00Z');
@@ -47,7 +47,7 @@ describe('demo data', () => {
   });
 
   it('keeps one ride without an emoji, to show the unprocessed list', () => {
-    expect(demo.activities.filter(({name}) => 'Afternoon Ride' === name)).toHaveLength(1);
+    expect(demo.activities.filter(({name}) => !hasEmoji(name)).map(({name}) => name)).toEqual(['Afternoon Ride']);
   });
 
   it('wears parts the way the parts panel expects', () => {

@@ -1,4 +1,4 @@
-import {extractEmoji} from './label';
+import {extractEmoji, hasEmoji} from './label';
 
 test.each([
   ['nice 🚲 here', '🚲'],
@@ -15,4 +15,13 @@ test.each([
   ['Cervélo R5 🐈‍⬛', '🐈‍⬛'],
 ])('it can extract the emoji from %s', (input, expected) => {
   expect(extractEmoji(input)).toEqual(expected);
+});
+test.each([
+  ['Lake loop 🌊', true],
+  ['N-Peloton #670 🍍', true],
+  ['Lake Geneva 🇨🇭', true],
+  ['Les Copains #670 C1', false],
+  ['Afternoon Ride', false],
+])('hasEmoji(%s) = %s', (name, expected) => {
+  expect(hasEmoji(name)).toBe(expected);
 });

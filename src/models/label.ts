@@ -93,5 +93,11 @@ const getRandomUnusedEmoji = (usedEmojis: Set<string>): string => {
   return randomFromRange();
 };
 
-export {DEFAULT_LABELS, extractEmoji, getRandomUnusedEmoji, labelCollection};
+/**
+ * Whether a name holds an emoji. Digits and # count as \p{Emoji}, so this looks for
+ * pictographs, and for the letter pairs flags are made of.
+ */
+const hasEmoji = (text: string): boolean => /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(text);
+
+export {DEFAULT_LABELS, extractEmoji, getRandomUnusedEmoji, hasEmoji, labelCollection};
 export type {Labels, GetLabel};

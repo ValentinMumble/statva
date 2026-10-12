@@ -3,7 +3,8 @@ import {Link, Outlet, useLocation} from 'react-router';
 import {LuLogOut, LuPlus, LuX} from 'react-icons/lu';
 import {LogEvent} from '../components/event';
 import {leaveDemo} from '../demo/mode';
-import {useAthlete, useEvents, useSession, useSettings} from '../hooks';
+import {useAllActivities, useAthlete, useEvents, useSession, useSettings} from '../hooks';
+import {hasEmoji} from '../models';
 import {isActive, NAV} from './nav';
 
 const SIDEBAR_WIDTH = '232px';
@@ -61,8 +62,17 @@ const AccountRow = () => {
   );
 };
 
+/** How many activities still have no emoji in their name, for riders who tag them with one. */
+const useUnprocessedCount = (): number => {
+  const {unprocessedEmoji} = useSettings();
+  const {data} = useAllActivities();
+
+  return unprocessedEmoji ? (data ?? []).filter(({name}) => !hasEmoji(name)).length : 0;
+};
+
 const Sidebar = () => {
   const {pathname} = useLocation();
+  const unprocessed = useUnprocessedCount();
 
   return (
     <Stack
@@ -100,6 +110,22 @@ const Sidebar = () => {
               >
                 <Icon as={icon} boxSize="18px" color={active ? 'brand.solid' : undefined} />
                 {label}
+                {'/activities' === to && 0 < unprocessed && (
+                  <Text
+                    as="span"
+                    marginLeft="auto"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    color="brand.contrast"
+                    background="brand.solid"
+                    borderRadius="full"
+                    paddingX="7px"
+                    lineHeight="18px"
+                    title={`${unprocessed} without an emoji`}
+                  >
+                    {unprocessed}
+                  </Text>
+                )}
               </HStack>
             </Link>
           );
@@ -153,6 +179,7 @@ const PhoneHeader = () => {
  */
 const TabBar = () => {
   const {pathname} = useLocation();
+  const unprocessed = useUnprocessedCount();
 
   return (
     <HStack
@@ -192,7 +219,22 @@ const TabBar = () => {
               boxShadow={active ? {base: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)', _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.16)'} : 'none'}
               transition="background 200ms ease, color 200ms ease"
             >
-              <Icon as={icon} boxSize="21px" />
+              <Box position="relative">
+                <Icon as={icon} boxSize="21px" />
+                {'/activities' === to && 0 < unprocessed && (
+                  <Box
+                    position="absolute"
+                    top="-2px"
+                    right="-5px"
+                    width="9px"
+                    height="9px"
+                    borderRadius="full"
+                    background="brand.solid"
+                    boxShadow="0 0 0 2px var(--chakra-colors-bg-panel)"
+                    aria-label={`${unprocessed} without an emoji`}
+                  />
+                )}
+              </Box>
               <Text fontSize="10px" fontWeight={active ? 'semibold' : 'medium'} lineHeight="1.1">
                 {label}
               </Text>

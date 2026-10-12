@@ -1,6 +1,9 @@
 import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {Link} from 'react-router';
+import {useQueryClient} from '@tanstack/react-query';
+import {LuRefreshCw} from 'react-icons/lu';
+import {toaster} from '../../components/ui';
 import {LogEvent} from '../../components/event';
 import {useAllActivities, useAthlete, useEvents, useFtp, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
 import {
@@ -243,7 +246,9 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
 
 /** What a rider wants on opening the app: how the week is going, what they just did, what needs doing. */
 const HomePage = () => {
-  const {data} = useAllActivities();
+  const {data, refreshLatest} = useAllActivities();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
   const athlete = useAthlete();
   const {locale} = useSettings();
   // Read once per visit, so the page renders the same way every time React redraws it.
@@ -253,15 +258,34 @@ const HomePage = () => {
     [data],
   );
 
+  // Asks Strava for anything new now, rather than waiting for the next visit or the webhook.
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    const before = new Set((data ?? []).map(({id}) => id));
+
+    try {
+      await refreshLatest();
+      const added = (queryClient.getQueryData<Activity[]>(['activities']) ?? []).filter(({id}) => !before.has(id)).length;
+      toaster.create({title: 0 === added ? 'Up to date' : `${added} new ${1 === added ? 'activity' : 'activities'}`});
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
-      <Stack gap="2px">
-        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
-          {greeting(now.getHours())}
-          {athlete ? `, ${athlete.firstname}` : ''}
-        </Text>
-        <Text color="fg.muted">{now.toLocaleDateString(locale, {weekday: 'long', day: 'numeric', month: 'long'})}</Text>
-      </Stack>
+      <HStack justifyContent="space-between" alignItems="flex-start" gap="12px">
+        <Stack gap="2px">
+          <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
+            {greeting(now.getHours())}
+            {athlete ? `, ${athlete.firstname}` : ''}
+          </Text>
+          <Text color="fg.muted">{now.toLocaleDateString(locale, {weekday: 'long', day: 'numeric', month: 'long'})}</Text>
+        </Stack>
+        <Button variant="outline" size="sm" onClick={handleRefresh} loading={refreshing} loadingText="Checking Strava">
+          <LuRefreshCw /> Refresh
+        </Button>
+      </HStack>
 
       {undefined === data ? (
         <Stack gap="16px">
