@@ -209,12 +209,8 @@ const FormCard = ({activities}: {activities: Activity[]}) => {
   const {getFtp} = useFtp();
   const load = useMemo(() => buildTrainingLoad(activities, getFtp), [activities, getFtp]);
   const today = load.at(-1);
-  const recent = load.slice(-90);
 
   if (undefined === today) return null;
-
-  const max = Math.max(...recent.map(({ctl}) => ctl), 1);
-  const path = recent.map(({ctl}, index) => `${0 === index ? 'M' : 'L'}${(index / (recent.length - 1)) * 100} ${40 - (ctl / max) * 36}`).join(' ');
 
   return (
     <Card>
@@ -242,14 +238,6 @@ const FormCard = ({activities}: {activities: Activity[]}) => {
           </Text>
         </Stack>
       </HStack>
-      <Box marginTop="14px">
-        <svg width="100%" height="44" viewBox="0 0 100 44" preserveAspectRatio="none" aria-label="Fitness over the last 90 days">
-          <path d={path} fill="none" stroke="var(--chakra-colors-brand-solid)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-        </svg>
-        <Text fontSize="xs" color="fg.muted">
-          Fitness over the last 90 days
-        </Text>
-      </Box>
     </Card>
   );
 };
