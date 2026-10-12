@@ -16,7 +16,8 @@ caches an activity's details when you open it, so most rides have no description
 calories, temperature or photos stored until this has run.
 
 Safe to stop and re-run: it reads what is already cached and fetches only the
-rest. Strava allows 100 reads per 15 minutes and 1000 per day, so a full backfill
+rest. A new Strava app allows 100 reads per 15 minutes and 1000 per day (twice that once
+raised to 10 athletes), so a full backfill
 takes a couple of hours and a big one may need a second run the next day. The
 script paces itself and stops before it uses the whole daily budget, so the app
 keeps working while it runs.

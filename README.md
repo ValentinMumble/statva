@@ -64,8 +64,9 @@ database. Both have free plans that are enough for a few riders.
 
 A new Strava API app can only be used by its owner. From its settings page you can raise
 that to 10 athletes without a review; beyond that Strava reviews the app. Strava's read
-limit (200 calls per 15 minutes and 2,000 a day after that upgrade) is shared by everyone
-on the app, which is why Statva stores activities and fetches details a little at a time.
+limit is shared by everyone on the app: 100 calls per 15 minutes and 1,000 a day for a new
+app, 200 and 2,000 after that upgrade. That is why Statva stores activities and fetches
+details a little at a time.
 
 Strava's API terms only allow showing a rider's data to that rider, so every rider sees
 only their own activities.
