@@ -20,6 +20,5 @@ export * from './tag';
 export * from './route-shape';
 export * from './timeframe';
 export * from './tss';
-export * from './training-load';
 export * from './util';
 export * from './week';

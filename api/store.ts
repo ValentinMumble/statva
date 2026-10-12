@@ -5,7 +5,9 @@ import {readSession} from './_lib/session.js';
 import {RIDER_NAMES, SERVER_NAMES} from './_lib/sync.js';
 
 // A function response is capped at 4.5 MB, and the activity data is bigger, so large
-// hashes are read a page at a time.
+// hashes are read a page at a time. Page sizes follow the largest entries: summaries stay
+// under 3.5 KB (900 is under 3.2 MB), details are mostly under 10 KB (300 is about 3 MB).
+const SCAN_PAGES: Record<string, number> = {activities: 900, details: 300};
 const SCAN_PAGE = 150;
 
 type Command =
@@ -41,7 +43,7 @@ export const POST = async (request: Request): Promise<Response> => {
     case 'hgetall':
       return json(await redis().hgetall(key));
     case 'hscan': {
-      const [cursor, flat] = await redis().hscan(key, String(body.cursor), {count: SCAN_PAGE});
+      const [cursor, flat] = await redis().hscan(key, String(body.cursor), {count: SCAN_PAGES[body.name] ?? SCAN_PAGE});
       const entries: Record<string, unknown> = {};
       for (let index = 0; index < flat.length; index += 2) entries[String(flat[index])] = flat[index + 1];
 

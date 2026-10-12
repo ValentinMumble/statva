@@ -1,8 +1,8 @@
 import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {LogEvent} from '../../components/event';
-import {useAllActivities, useAthlete, useEvents, useFtp, useLabels, useSettings} from '../../hooks';
-import {buildTrainingLoad, computeBikeParts, Event, getActivityUrl, PartState, weekSummary} from '../../models';
+import {useAllActivities, useAthlete, useEvents, useLabels, useSettings} from '../../hooks';
+import {computeBikeParts, Event, getActivityUrl, PartState, weekSummary} from '../../models';
 import {Activity} from '../../models/strava';
 import {Card, CardTitle} from '../components/Card';
 import {RouteThumb} from '../components/RouteThumb';
@@ -201,47 +201,6 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
   );
 };
 
-// Form bands as coaches usually read them.
-const formState = (tsb: number): string =>
-  tsb > 5 ? 'Fresh' : tsb > -10 ? 'Neutral' : tsb > -30 ? 'Building' : 'Overreaching';
-
-const FormCard = ({activities}: {activities: Activity[]}) => {
-  const {getFtp} = useFtp();
-  const load = useMemo(() => buildTrainingLoad(activities, getFtp), [activities, getFtp]);
-  const today = load.at(-1);
-
-  if (undefined === today) return null;
-
-  return (
-    <Card>
-      <CardTitle to="/stats" linkLabel="Stats">
-        Form
-      </CardTitle>
-      <HStack justifyContent="space-between" alignItems="flex-start">
-        <Stack gap="0">
-          <Text fontFamily="figure" fontSize="3xl" fontWeight="semibold" lineHeight="1.1">
-            {today.tsb > 0 ? '+' : ''}
-            {Math.round(today.tsb)}
-          </Text>
-          <Text fontSize="sm" color="brand.fg" fontWeight="medium">
-            {formState(today.tsb)}
-          </Text>
-        </Stack>
-        <Stack gap="2px" alignItems="flex-end" fontSize="sm">
-          <Text>
-            <Text as="span" color="fg.muted">Fitness </Text>
-            {Math.round(today.ctl)}
-          </Text>
-          <Text>
-            <Text as="span" color="fg.muted">Fatigue </Text>
-            {Math.round(today.atl)}
-          </Text>
-        </Stack>
-      </HStack>
-    </Card>
-  );
-};
-
 /** What a rider wants on opening the app: how the week is going, what they just did, what needs doing. */
 const HomePage = () => {
   const {data} = useAllActivities();
@@ -277,10 +236,7 @@ const HomePage = () => {
               <LatestActivities activities={activities} locale={locale} now={now} />
               <WeeksCard activities={activities} now={now} locale={locale} />
             </Stack>
-            <Stack gap={{base: '16px', md: '24px'}}>
-              <BikeCard activities={activities} locale={locale} />
-              <FormCard activities={activities} />
-            </Stack>
+            <BikeCard activities={activities} locale={locale} />
           </Grid>
         </>
       )}

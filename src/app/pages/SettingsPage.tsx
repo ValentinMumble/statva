@@ -20,8 +20,9 @@ import {toaster} from '../../components/ui';
 import {leaveDemo} from '../../demo/mode';
 import {useAllActivities, useEvents, useExpenses, useFtp, useGear, useLabels, useSession, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {DEFAULT_SETTINGS, Settings} from '../../models';
+import {countBy, DEFAULT_SETTINGS, Settings} from '../../models';
 import {Card} from '../components/Card';
+import {sportName} from '../components/sport';
 
 const saveSetting = getFetcher<void>('settings.set');
 const upsertLabel = getFetcher<void>('labels.set');
@@ -81,6 +82,14 @@ const Section = ({title, description, children}: {title: string; description: st
       <Stack gap="16px">{children}</Stack>
     </Grid>
   </Card>
+);
+
+// A heading for a group of checkboxes. Not a field label: a field gives its one id to every
+// checkbox inside, and a click on any label would then toggle the first box.
+const GroupLabel = ({children}: {children: React.ReactNode}) => (
+  <Text fontSize="sm" fontWeight="medium">
+    {children}
+  </Text>
 );
 
 const Toggle = ({label, checked, onChange}: {label: string; checked: boolean; onChange: (checked: boolean) => void}) => (
@@ -234,7 +243,15 @@ const SettingsPage = () => {
   const settings: Settings = {...current, ...draft};
   const changed = Object.keys(draft) as (keyof Settings)[];
   const bikes = gear.filter(({type}) => 'bike' === type);
-  const sports = useMemo(() => [...new Set((activities ?? []).map(({sport_type}) => sport_type))].sort(), [activities]);
+  // Most practised first, in an order that does not move when a box is ticked. Gravel,
+  // virtual and trail run already count under Ride and Run.
+  const sports = useMemo(() => {
+    const counts = countBy(activities ?? [], ({sport_type}) => sport_type);
+
+    return Object.keys(counts)
+      .filter(sport => !['GravelRide', 'VirtualRide', 'TrailRun'].includes(sport))
+      .sort((a, b) => counts[b] - counts[a]);
+  }, [activities]);
 
   const set = <K extends keyof Settings>(field: K, value: Settings[K]) => setDraft(draft => ({...draft, [field]: value}));
 
@@ -284,8 +301,8 @@ const SettingsPage = () => {
             </NativeSelect.Root>
           </Field.Root>
         </Grid>
-        <Field.Root>
-          <Field.Label>Retired</Field.Label>
+        <Stack gap="6px">
+          <GroupLabel>Retired</GroupLabel>
           <HStack gap="16px" flexWrap="wrap">
             {bikes.map(({id, retired}) => (
               <Checkbox.Root
@@ -303,7 +320,7 @@ const SettingsPage = () => {
               </Checkbox.Root>
             ))}
           </HStack>
-        </Field.Root>
+        </Stack>
       </Section>
 
       <Section title="Parts" description="How long parts last. Left empty, a part is judged against how long the previous ones lasted.">
@@ -323,7 +340,7 @@ const SettingsPage = () => {
           <Field.Label>Retired chains</Field.Label>
           <Input
             defaultValue={settings.retiredChains.join(', ')}
-            placeholder="🍍, 🧄"
+            placeholder="🍒, 🫐"
             onBlur={({target}) => set('retiredChains', list(target.value))}
           />
           <Field.HelperText>Never suggested as the next chain to fit.</Field.HelperText>
@@ -332,10 +349,10 @@ const SettingsPage = () => {
 
       <Section title="Goal and sports" description="The yearly target, and the sports the stats show.">
         <NumberField label="Yearly riding goal" unit="km" value={settings.yearGoalKm} onChange={value => set('yearGoalKm', value ?? DEFAULT_SETTINGS.yearGoalKm)} />
-        <Field.Root>
-          <Field.Label>Sports</Field.Label>
+        <Stack gap="6px">
+          <GroupLabel>Sports</GroupLabel>
           <HStack gap="16px" flexWrap="wrap">
-            {[...new Set([...settings.sports, ...sports.filter(sport => !sport.includes('Ride') || 'Ride' === sport)])].map(sport => (
+            {[...sports, ...settings.sports.filter(sport => !sports.includes(sport))].map(sport => (
               <Checkbox.Root
                 key={sport}
                 checked={settings.sports.includes(sport)}
@@ -343,11 +360,11 @@ const SettingsPage = () => {
               >
                 <Checkbox.HiddenInput />
                 <Checkbox.Control />
-                <Checkbox.Label>{sport}</Checkbox.Label>
+                <Checkbox.Label>{sportName(sport)}</Checkbox.Label>
               </Checkbox.Root>
             ))}
           </HStack>
-        </Field.Root>
+        </Stack>
       </Section>
 
       <Section title="Body" description="Used for training stress from heart rate, zones and calorie estimates.">

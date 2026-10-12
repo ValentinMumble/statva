@@ -51,7 +51,8 @@ const useActivities = ({
 }: ActivityFilter) => {
   const {data: activities, refreshLatest} = useAllActivities();
   const {getFtp} = useFtp();
-  const {activityMeta} = useActivityMeta();
+  // Only sorting by normalized power reads the details, so only then are they fetched.
+  const {activityMeta} = useActivityMeta({enabled: 'normalized_power' === sort});
   const queryClient = useQueryClient();
 
   const deleteActivity = useCallback(
