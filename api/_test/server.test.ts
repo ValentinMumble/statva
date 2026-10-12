@@ -220,6 +220,17 @@ describe('webhook', () => {
     expect(fake.strava.calls).toEqual([]);
   });
 
+  it('ignores riders taken off the list, even with tokens stored', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(1);
+    process.env.STRAVA_ATHLETE_IDS = '7';
+
+    await hook({object_type: 'activity', object_id: 1001, aspect_type: 'create', owner_id: 42});
+
+    expect(fake.strava.calls).toEqual([]);
+  });
+
   it('forgets a rider only once Strava confirms the access is gone', async () => {
     const fake = install();
     fake.login(42);

@@ -1,4 +1,4 @@
-import {webhookVerifyToken} from './_lib/env.js';
+import {allowedAthletes, webhookVerifyToken} from './_lib/env.js';
 import {json} from './_lib/http.js';
 import {TOKENS_KEY} from './_lib/keys.js';
 import {redis} from './_lib/redis.js';
@@ -33,8 +33,10 @@ export const GET = (request: Request): Response => {
 export const POST = async (request: Request): Promise<Response> => {
   const event = (await request.json().catch(() => null)) as StravaEvent | null;
 
-  // Only riders who logged in have tokens; anything else is not ours.
-  if (null === event || null === (await redis().hget(TOKENS_KEY, String(event.owner_id)))) return json({ok: true});
+  // Only riders on the list who logged in have tokens; anything else is not ours.
+  if (null === event || !allowedAthletes().includes(event.owner_id) || null === (await redis().hget(TOKENS_KEY, String(event.owner_id)))) {
+    return json({ok: true});
+  }
 
   if ('activity' === event.object_type) {
     await refreshActivity(event.owner_id, event.object_id);

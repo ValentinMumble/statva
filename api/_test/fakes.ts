@@ -82,7 +82,10 @@ const install = () => {
       const body = JSON.parse(String(init.body));
       return respond({access_token: `access-${body.grant_type}`, refresh_token: 'refresh', expires_at: Date.now() / 1000 + 3600, athlete: {id: 42}});
     }
-    if ('/oauth/deauthorize' === url.pathname) return respond({});
+    if ('/oauth/deauthorize' === url.pathname) {
+      strava.calls.push(url.pathname);
+      return respond({});
+    }
 
     strava.calls.push(url.pathname + url.search);
     if (strava.rateLimited) return respond({message: 'Rate Limit Exceeded'}, 429);

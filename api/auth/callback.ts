@@ -1,4 +1,3 @@
-import {allowedAthletes} from '../_lib/env.js';
 import {cookie, readCookie, redirect} from '../_lib/http.js';
 import {sessionCookie} from '../_lib/session.js';
 import {exchangeCode} from '../_lib/strava.js';
@@ -20,7 +19,7 @@ export const GET = async (request: Request): Promise<Response> => {
 
   const athleteId = await exchangeCode(code);
 
-  if (!allowedAthletes().includes(athleteId)) return fail('not-allowed');
+  if (null === athleteId) return fail('not-allowed');
 
   const headers = new Headers();
   headers.append('Set-Cookie', sessionCookie(athleteId));

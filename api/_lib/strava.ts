@@ -1,5 +1,5 @@
 import {recordUsage} from './budget.js';
-import {env} from './env.js';
+import {allowedAthletes, env} from './env.js';
 import {TOKENS_KEY} from './keys.js';
 import {redis} from './redis.js';
 
@@ -27,11 +27,22 @@ const saveTokens = async (athleteId: number, {access_token, refresh_token, expir
   await redis().hset(TOKENS_KEY, {[athleteId]: {access_token, refresh_token, expires_at}});
 };
 
-/** Swaps the code from Strava's consent page for tokens, and stores them for that athlete. */
-const exchangeCode = async (code: string): Promise<number> => {
+/**
+ * Swaps the code from Strava's consent page for tokens, and stores them for that athlete.
+ * An athlete who is not on the list gets null: their access is handed straight back to
+ * Strava and nothing is stored, so the webhook never brings in their activities and they
+ * do not take one of the app's athlete places on Strava.
+ */
+const exchangeCode = async (code: string): Promise<number | null> => {
   const tokens = await requestTokens({code, grant_type: 'authorization_code'});
 
   if (undefined === tokens.athlete) throw new Error('Strava did not say which athlete this is');
+
+  if (!allowedAthletes().includes(tokens.athlete.id)) {
+    await fetch(DEAUTHORIZE_ENDPOINT, {method: 'POST', headers: {Authorization: `Bearer ${tokens.access_token}`}});
+
+    return null;
+  }
 
   await saveTokens(tokens.athlete.id, tokens);
 

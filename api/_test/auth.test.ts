@@ -44,8 +44,8 @@ describe('login', () => {
     expect(narrow.headers.get('Location')).toBe('/?login=scope');
   });
 
-  it('refuses athletes who are not on the list', async () => {
-    install();
+  it('refuses athletes who are not on the list, keeps nothing of theirs and hands their access back', async () => {
+    const fake = install();
     process.env.STRAVA_ATHLETE_IDS = '7';
 
     const start = login(request('/api/auth/login'));
@@ -53,6 +53,8 @@ describe('login', () => {
     const response = await callback(request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]));
 
     expect(response.headers.get('Location')).toBe('/?login=not-allowed');
+    expect(fake.read('strava_tokens')['42']).toBeUndefined();
+    expect(fake.strava.calls).toContain('/oauth/deauthorize');
   });
 
   it('logs in an athlete on the list and stores their tokens', async () => {
