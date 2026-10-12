@@ -20,6 +20,8 @@ test.each([
   ['Lake loop 🌊', true],
   ['N-Peloton #670 🍍', true],
   ['Lake Geneva 🇨🇭', true],
+  ["MyWhoosh - Endurance 12's #2 2️⃣", true],
+  ['Intervals 3⃣', true],
   ['Les Copains #670 C1', false],
   ['Afternoon Ride', false],
 ])('hasEmoji(%s) = %s', (name, expected) => {

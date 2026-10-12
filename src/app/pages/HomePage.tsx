@@ -110,6 +110,7 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
 
 const LatestActivities = ({activities, locale, now}: {activities: Activity[]; locale: string; now: Date}) => {
   const {getFtp} = useFtp();
+  const {unprocessedEmoji} = useSettings();
   const latest = activities.slice(0, LATEST_COUNT);
   // Photos and normalized power live in the details: only these few are fetched.
   const details = useSomeActivityDetails(latest.map(({id}) => id));
@@ -132,7 +133,7 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                     <Text fontWeight="medium" truncate={true}>
                       {activity.name}
                     </Text>
-                    <HighlightTags activity={activity} />
+                    <HighlightTags activity={activity} showPrivate={true} showUnprocessed={unprocessedEmoji} />
                   </HStack>
                   <HStack gap="6px" fontSize="sm" color="fg.muted" minWidth="0">
                     <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />

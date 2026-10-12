@@ -94,10 +94,12 @@ const getRandomUnusedEmoji = (usedEmojis: Set<string>): string => {
 };
 
 /**
- * Whether a name holds an emoji. Digits and # count as \p{Emoji}, so this looks for
- * pictographs, and for the letter pairs flags are made of.
+ * Whether a name holds an emoji. Plain digits and # count as \p{Emoji}, so this looks for
+ * pictographs, the letter pairs flags are made of, and keycaps (a digit, # or * followed
+ * by the keycap mark, like 2️⃣).
  */
-const hasEmoji = (text: string): boolean => /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(text);
+const hasEmoji = (text: string): boolean =>
+  /\p{Extended_Pictographic}|\p{Regional_Indicator}|[0-9#*]\uFE0F?\u20E3/u.test(text);
 
 export {DEFAULT_LABELS, extractEmoji, getRandomUnusedEmoji, hasEmoji, labelCollection};
 export type {Labels, GetLabel};
