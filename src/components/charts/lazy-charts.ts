@@ -30,6 +30,3 @@ export const GroupChart = lazy(() => import('./GroupChart').then(m => ({default:
 export const HeartChart = lazy(() => import('./HeartChart').then(m => ({default: m.HeartChart})));
 export const DataLineChart = lazy(() => import('./DataLineChart').then(m => ({default: m.DataLineChart})));
 export const CostPerKmChart = lazy(() => import('./CostPerKmChart').then(m => ({default: m.CostPerKmChart})));
-export const TrainingLoadChart = lazy(() =>
-  import('./TrainingLoadChart').then(m => ({default: m.TrainingLoadChart})),
-);

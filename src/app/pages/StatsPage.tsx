@@ -20,7 +20,6 @@ import {
   PoolPieChart,
   ProgressChart,
   TimeframeChart,
-  TrainingLoadChart,
 } from '../../components/charts/lazy-charts';
 import {Card, CardTitle} from '../components/Card';
 import {duration, km, metres, number} from '../format';
@@ -159,7 +158,6 @@ const StatsPage = () => {
       value: 'training',
       label: 'Training',
       charts: [
-        ['Fitness, fatigue and form', <TrainingLoadChart />],
         ['Threshold power', <FTPChart />],
         ['Heart rate and power, ride by ride', <HeartChart />],
         ['Suffer score per period', <TimeframeChart data="suffer_score" formatter={value => value.toFixed(0)} displayTypes={false} />],

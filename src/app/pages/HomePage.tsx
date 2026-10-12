@@ -214,7 +214,7 @@ const FormCard = ({activities}: {activities: Activity[]}) => {
 
   return (
     <Card>
-      <CardTitle to="/stats" linkLabel="Training load">
+      <CardTitle to="/stats" linkLabel="Stats">
         Form
       </CardTitle>
       <HStack justifyContent="space-between" alignItems="flex-start">
