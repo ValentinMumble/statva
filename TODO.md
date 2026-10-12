@@ -48,9 +48,11 @@ v1 keeps running from `main` (release `v1.0.0`) until v2 replaces it.
 - [x] **4b. Finish the switch.** v1 screens gone; check-in and shared route pages rebuilt;
       no club, bike or athlete written into the code (tests use their own club rules).
 - [ ] **5. Going public.** Done: README with self-hosting steps and a deploy button, an
-      original icon, keyless maps, no personal values in the code. Left (needs a go):
-      remove `dev-data/` and `public/local_*.json` from every past commit, choose a
-      licence, make the repo public.
+      original icon, keyless maps, no personal values in the code, MIT licence, and a
+      history with no `dev-data/`, `local_*.json` or map token (rewritten 2026-10-12;
+      the full old history is in `../statva-history-backup-2026-10-12.bundle`). Left:
+      GitHub Support must purge the two old pull request copies (`refs/pull/1`, `/2`)
+      and cached commits; then make the repo public.
 
 ## Done
 
