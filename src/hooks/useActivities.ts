@@ -8,6 +8,13 @@ import {useFtp} from './useFtp';
 import {useActivityMeta} from './useActivityMeta';
 
 const fetchActivities = getFetcher<Activity[]>('activities.get');
+const fetchLatest = getFetcher<Activity[]>('activities.latest');
+
+// Enough for the home page and the top of the list, in one small call.
+const FIRST_COUNT = 20;
+
+const byId = (activities: Activity[]): Record<number, Activity> =>
+  Object.fromEntries(activities.map(activity => [activity.id, activity]));
 const syncActivities = getFetcher<SyncReport>('activities.sync');
 
 /**
@@ -16,20 +23,51 @@ const syncActivities = getFetcher<SyncReport>('activities.sync');
  */
 const useAllActivities = () => {
   const queryClient = useQueryClient();
-  const query = useQuery({queryKey: ['activities'], queryFn: fetchActivities});
+  // Adds activities to what is on screen, newer copies winning.
+  const addToList = useCallback(
+    (...lists: Activity[][]) =>
+      queryClient.setQueryData<Activity[]>(['activities'], current =>
+        Object.values(Object.assign({}, byId(current ?? []), ...lists.map(byId))),
+      ),
+    [queryClient],
+  );
+
+  // On opening, the newest activities show at once, then the whole list arrives page by
+  // page. Every step of a first load adds to the list rather than replacing it, so what a
+  // sync brings in meanwhile stays. Once there is a list, a refresh swaps it in whole.
+  const query = useQuery({
+    queryKey: ['activities'],
+    queryFn: async () => {
+      if (undefined !== queryClient.getQueryData(['activities'])) return await fetchActivities();
+
+      addToList(await fetchLatest(FIRST_COUNT));
+      const all = await fetchActivities((sofar: Activity[]) => addToList(sofar));
+
+      return addToList(all) ?? all;
+    },
+  });
 
   const sync = useCallback(async (): Promise<SyncReport> => {
     let report: SyncReport;
+    let pagedHistory = false;
 
     do {
       report = await syncActivities();
-      await queryClient.invalidateQueries({queryKey: ['activities']});
+      pagedHistory ||= !report.historyDone;
+      // A first sync pages the whole history in: the list reloads after each page of it.
+      if (pagedHistory) await queryClient.invalidateQueries({queryKey: ['activities']});
     } while (!report.historyDone && !report.limited);
 
-    if (0 < report.detailsFetched) await queryClient.invalidateQueries({queryKey: ['activityMeta']});
+    // Usually only a few new activities: the newest ones are fetched and added, not the whole list.
+    if (!pagedHistory && 0 < report.added) addToList(await fetchLatest(FIRST_COUNT));
+
+    if (0 < report.detailsFetched) {
+      await queryClient.invalidateQueries({queryKey: ['activityMeta']});
+      await queryClient.invalidateQueries({queryKey: ['someDetails']});
+    }
 
     return report;
-  }, [queryClient]);
+  }, [queryClient, addToList]);
 
   useQuery({queryKey: ['sync'], queryFn: sync, retry: false});
 

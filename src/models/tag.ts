@@ -242,7 +242,8 @@ const TAGS: Tag[] = [
         .map(activity => activityMeta[activity.id])
         .map(extractNormalizedPower)
         .filter(value => typeof value === 'number');
-      return formatPower(values.reduce((a, b) => a + b, 0) / values.length);
+      // No activity in the list has normalized power in its notes: nothing to average.
+      return 0 === values.length ? '' : formatPower(values.reduce((a, b) => a + b, 0) / values.length);
     },
   },
   optionalFormattedTag('Max power', 'max_watts', 'max_watts', formatPower, 'max'),

@@ -141,6 +141,27 @@ describe('store', () => {
     expect(await (await storeCall(42, {command: 'hgetall', name: 'events'})).json()).toEqual({e: {type: 'chain'}});
   });
 
+  it('reads a few entries in one call', async () => {
+    install();
+    await storeCall(42, {command: 'hset', name: 'events', field: 'a', value: {type: 'chain'}});
+    await storeCall(42, {command: 'hset', name: 'events', field: 'b', value: {type: 'tire'}});
+
+    const response = await storeCall(42, {command: 'hmget', name: 'events', fields: ['a', 'b', 'missing']});
+
+    expect(await response.json()).toEqual({a: {type: 'chain'}, b: {type: 'tire'}, missing: null});
+  });
+
+  it('reads the newest activities first, by their growing ids', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(30);
+    await syncActivities(42);
+
+    const response = await storeCall(42, {command: 'hlatest', name: 'activities', count: 3});
+
+    expect(Object.keys((await response.json()) as object).map(Number).sort()).toEqual([1028, 1029, 1030]);
+  });
+
   it('lets riders read but not write what the server owns', async () => {
     install();
 

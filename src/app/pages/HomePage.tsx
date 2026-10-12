@@ -1,10 +1,11 @@
 import {useMemo, useState} from 'react';
-import {Badge, Box, Button, Grid, HStack, Icon, Skeleton, Stack, Text} from '@chakra-ui/react';
+import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {LogEvent} from '../../components/event';
-import {useAllActivities, useAthlete, useEvents, useLabels, useSettings} from '../../hooks';
-import {computeBikeParts, Event, getActivityUrl, PartState, weekSummary} from '../../models';
+import {useAllActivities, useAthlete, useEvents, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
+import {computeBikeParts, Event, extractNormalizedPower, getActivityUrl, PartState, weekSummary} from '../../models';
 import {Activity} from '../../models/strava';
 import {Card, CardTitle} from '../components/Card';
+import {HighlightTags} from '../components/HighlightTags';
 import {RouteThumb} from '../components/RouteThumb';
 import {sportIcon, sportName} from '../components/sport';
 import {WeeksCard} from '../components/WeeksCard';
@@ -94,40 +95,68 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
   );
 };
 
-const LatestActivities = ({activities, locale, now}: {activities: Activity[]; locale: string; now: Date}) => (
-  <Card>
-    <CardTitle to="/activities">Latest</CardTitle>
-    <Stack gap="4px">
-      {activities.slice(0, LATEST_COUNT).map(activity => (
-        <a key={activity.id} href={getActivityUrl(activity)} target="_blank" rel="noreferrer">
-          <HStack gap="14px" padding="8px" marginX="-8px" borderRadius="12px" _hover={{background: 'bg.subtle'}}>
-            <RouteThumb activity={activity} />
-            <Stack gap="2px" minWidth="0" flex="1">
-              <Text fontWeight="medium" truncate={true}>
-                {activity.name}
-              </Text>
-              <HStack gap="6px" fontSize="sm" color="fg.muted" minWidth="0">
-                <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />
-                <Text truncate={true}>
-                  {sportName(activity.sport_type)} · {relativeDay(new Date(activity.start_date), locale, now)}
-                  {activity.commute ? ' · commute' : ''}
-                </Text>
+const LatestActivities = ({activities, locale, now}: {activities: Activity[]; locale: string; now: Date}) => {
+  const latest = activities.slice(0, LATEST_COUNT);
+  // Photos and normalized power live in the details: only these few are fetched.
+  const details = useSomeActivityDetails(latest.map(({id}) => id));
+
+  return (
+    <Card>
+      <CardTitle to="/activities">Latest</CardTitle>
+      <Stack gap="4px">
+        {latest.map(activity => {
+          const detail = details[activity.id] ?? null;
+          const np = extractNormalizedPower(detail);
+          const photo = detail?.photos?.primary?.urls?.[100];
+
+          return (
+            <a key={activity.id} href={getActivityUrl(activity)} target="_blank" rel="noreferrer">
+              <HStack gap="14px" padding="8px" marginX="-8px" borderRadius="12px" _hover={{background: 'bg.subtle'}}>
+                <RouteThumb activity={activity} />
+                <Stack gap="2px" minWidth="0" flex="1">
+                  <HStack gap="8px" minWidth="0">
+                    <Text fontWeight="medium" truncate={true}>
+                      {activity.name}
+                    </Text>
+                    <HighlightTags activity={activity} />
+                  </HStack>
+                  <HStack gap="6px" fontSize="sm" color="fg.muted" minWidth="0">
+                    <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />
+                    <Text truncate={true}>
+                      {sportName(activity.sport_type)} · {relativeDay(new Date(activity.start_date), locale, now)}
+                      {activity.commute ? ' · commute' : ''}
+                    </Text>
+                  </HStack>
+                </Stack>
+                {undefined !== photo && (
+                  <Image src={photo} alt="" boxSize="44px" borderRadius="8px" objectFit="cover" flexShrink={0} hideBelow="sm" />
+                )}
+                {null !== np && (
+                  <Stack gap="0" alignItems="flex-end" flexShrink={0}>
+                    <Text fontFamily="figure" fontWeight="semibold">
+                      {np} W
+                    </Text>
+                    <Text fontSize="sm" color="fg.muted">
+                      NP
+                    </Text>
+                  </Stack>
+                )}
+                <Stack gap="0" alignItems="flex-end" flexShrink={0} minWidth="56px">
+                  <Text fontFamily="figure" fontWeight="semibold">
+                    {0 < activity.distance ? km(activity.distance, locale) : duration(activity.moving_time)}
+                  </Text>
+                  <Text fontSize="sm" color="fg.muted">
+                    {0 < activity.distance ? duration(activity.moving_time) : ' '}
+                  </Text>
+                </Stack>
               </HStack>
-            </Stack>
-            <Stack gap="0" alignItems="flex-end" flexShrink={0}>
-              <Text fontFamily="figure" fontWeight="semibold">
-                {0 < activity.distance ? km(activity.distance, locale) : duration(activity.moving_time)}
-              </Text>
-              <Text fontSize="sm" color="fg.muted">
-                {0 < activity.distance ? duration(activity.moving_time) : ' '}
-              </Text>
-            </Stack>
-          </HStack>
-        </a>
-      ))}
-    </Stack>
-  </Card>
-);
+            </a>
+          );
+        })}
+      </Stack>
+    </Card>
+  );
+};
 
 const PART_NAMES: Partial<Record<Event['type'], string>> = {
   chain: 'Chain',

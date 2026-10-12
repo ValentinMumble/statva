@@ -14,10 +14,14 @@ type Command =
   | {command: 'hgetall'; name: string}
   | {command: 'hscan'; name: string; cursor: string}
   | {command: 'hget'; name: string; field: string}
+  | {command: 'hmget'; name: string; fields: string[]}
+  | {command: 'hlatest'; name: string; count: number}
   | {command: 'hset'; name: string; field: string; value: unknown}
   | {command: 'hdel'; name: string; field: string};
 
-const READS = ['hgetall', 'hscan', 'hget'];
+const READS = ['hgetall', 'hscan', 'hget', 'hmget', 'hlatest'];
+// A few entries at a time, like the details of the activities on the home page.
+const MAX_FIELDS = 50;
 
 /**
  * Reads and writes the logged-in rider's own data. The rider's prefix is added here, so
@@ -51,6 +55,22 @@ export const POST = async (request: Request): Promise<Response> => {
     }
     case 'hget':
       return json(await redis().hget(key, String(body.field)));
+    case 'hlatest': {
+      // Strava ids grow over time, so the highest ones are the newest activities: a screen
+      // can show those at once, before the whole hash has arrived.
+      const count = Math.min(Math.max(1, Math.floor(Number(body.count)) || 20), MAX_FIELDS);
+      const fields = (await redis().hkeys(key))
+        .map(String)
+        .sort((a, b) => Number(b) - Number(a))
+        .slice(0, count);
+
+      return json(0 === fields.length ? {} : ((await redis().hmget(key, ...fields)) ?? {}));
+    }
+    case 'hmget': {
+      const fields = (Array.isArray(body.fields) ? body.fields : []).slice(0, MAX_FIELDS).map(String);
+
+      return json(0 === fields.length ? {} : ((await redis().hmget(key, ...fields)) ?? {}));
+    }
     case 'hset':
       return json(await redis().hset(key, {[String(body.field)]: body.value}));
     case 'hdel':

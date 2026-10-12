@@ -32,7 +32,8 @@ const send = async <T>(body: Record<string, unknown>): Promise<T> => {
 const client = () => ({
   hgetall: <T>(key: Key) => send<T | null>({command: 'hgetall', name: key}),
   // The whole hash, a page at a time, for hashes too big for one response.
-  hscanAll: async <T>(key: Key): Promise<Record<string, T>> => {
+  // onPage gets what has arrived so far after each page, so a screen can show it at once.
+  hscanAll: async <T>(key: Key, onPage?: (sofar: Record<string, T>) => void): Promise<Record<string, T>> => {
     const all: Record<string, T> = {};
     let cursor = '0';
 
@@ -40,11 +41,14 @@ const client = () => ({
       const page = await send<{cursor: string; entries: Record<string, T>}>({command: 'hscan', name: key, cursor});
       Object.assign(all, page.entries);
       cursor = page.cursor;
+      if ('0' !== cursor) onPage?.({...all});
     } while ('0' !== cursor);
 
     return all;
   },
   hget: <T>(key: Key, field: string) => send<T | null>({command: 'hget', name: key, field}),
+  hmget: <T>(key: Key, fields: string[]) => send<Record<string, T | null>>({command: 'hmget', name: key, fields}),
+  hlatest: <T>(key: Key, count: number) => send<Record<string, T>>({command: 'hlatest', name: key, count}),
   hset: async (key: Key, entries: Record<string, unknown>) => {
     await Promise.all(Object.entries(entries).map(([field, value]) => send({command: 'hset', name: key, field, value})));
   },
@@ -96,11 +100,24 @@ const upsertFTPTest = async (test: FTPTest) => {
   await client().hset(Key.FTP_TESTS, {[test.id]: test});
 };
 
-const getActivities = async (): Promise<Record<string, DetailedActivity>> =>
-  await client().hscanAll<DetailedActivity>(Key.DETAILS);
+const getActivities = async (
+  onPage?: (sofar: Record<string, DetailedActivity>) => void,
+): Promise<Record<string, DetailedActivity>> => await client().hscanAll<DetailedActivity>(Key.DETAILS, onPage);
 
-const getActivitySummaries = async (): Promise<Activity[]> =>
-  Object.values(await client().hscanAll<Activity>(Key.ACTIVITIES));
+/** The newest activities, in one small call, to show before the whole list arrives. */
+const getLatestSummaries = async (count: number): Promise<Activity[]> =>
+  Object.values(await client().hlatest<Activity>(Key.ACTIVITIES, count));
+
+/** The details of the newest activities, ahead of the rest. */
+const getLatestDetails = async (count: number): Promise<Record<string, DetailedActivity>> =>
+  await client().hlatest<DetailedActivity>(Key.DETAILS, count);
+
+/** The details of a few activities, without loading them all. */
+const getSomeDetails = async (ids: number[]): Promise<Record<string, DetailedActivity | null>> =>
+  0 === ids.length ? {} : await client().hmget<DetailedActivity>(Key.DETAILS, ids.map(String));
+
+const getActivitySummaries = async (onPage?: (sofar: Activity[]) => void): Promise<Activity[]> =>
+  Object.values(await client().hscanAll<Activity>(Key.ACTIVITIES, sofar => onPage?.(Object.values(sofar))));
 
 
 const getSettings = async (): Promise<Partial<Settings> | null> => await client().hgetall<Partial<Settings>>(Key.SETTINGS);
@@ -133,6 +150,9 @@ export {
   deleteLabel,
   getActivities,
   getActivitySummaries,
+  getLatestDetails,
+  getLatestSummaries,
+  getSomeDetails,
   getEvents,
   getExpenses,
   getFTPTests,

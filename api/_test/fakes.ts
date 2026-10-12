@@ -47,6 +47,8 @@ const install = () => {
         return args.length / 2;
       case 'hget':
         return hash[args[0]] ?? null;
+      case 'hmget':
+        return args.map(field => hash[field] ?? null);
       case 'hgetall':
         return Object.entries(hash).flat();
       case 'hkeys':

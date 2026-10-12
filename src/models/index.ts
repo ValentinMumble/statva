@@ -1,5 +1,6 @@
 export * from './activity';
 export * from './activity-format';
+export * from './activity-highlight';
 export * from './activity-meta';
 export * from './activity-npeloton';
 export * from './activity-sort';

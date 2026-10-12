@@ -23,6 +23,7 @@ import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, use
 import {countBy, DEFAULT_SORTS, getRandomUnusedEmoji, SortDirection, SortType, TAGS} from '../../models';
 import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
+import {HighlightTags} from '../components/HighlightTags';
 import {RouteThumb} from '../components/RouteThumb';
 import {sportIcon, sportName} from '../components/sport';
 import {duration, km, relativeDay} from '../format';
@@ -421,9 +422,12 @@ const ActivitiesPage = () => {
                 >
                   <RouteThumb activity={activity} size={isWide ? 36 : 44} />
                   <Stack gap="0" minWidth="0" paddingLeft={isWide ? '12px' : '0'}>
-                    <Text fontWeight="medium" truncate={true}>
-                      {activity.name}
-                    </Text>
+                    <HStack gap="8px" minWidth="0">
+                      <Text fontWeight="medium" truncate={true}>
+                        {activity.name}
+                      </Text>
+                      <HighlightTags activity={activity} detail={meta} />
+                    </HStack>
                     <HStack gap="5px" fontSize="xs" color="fg.muted" minWidth="0">
                       <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />
                       <Text truncate={true}>

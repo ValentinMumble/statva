@@ -24,6 +24,10 @@ const demoBackend = {
   sync: () => answer({added: 0, historyDone: true, detailsFetched: 0, detailsMissing: 0, limited: false}),
   refreshActivity: (id: number) => answer(demo().details[id]),
   getDetails: (): Promise<Record<string, DetailedActivity>> => answer(demo().details),
+  getLatestSummaries: (count: number) => answer([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count)),
+  getLatestDetails: (count: number) =>
+    answer(Object.fromEntries([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count).map(({id}) => [id, demo().details[id]]))),
+  getSomeDetails: (ids: number[]) => answer(Object.fromEntries(ids.map(id => [id, demo().details[id] ?? null]))),
   getEvents: () => answer(demo().events),
   setEvent: async (event: Event) => {
     demo().events = upsert(demo().events, event);
