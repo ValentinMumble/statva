@@ -1,8 +1,20 @@
+import {ClubRules} from '../src/models';
 import {Activity, ActivityType, DetailedActivity} from '../src/models/strava';
+
+// The club rules the tests read ride names with.
+const TEST_CLUB: ClubRules = {
+  name: 'N-Peloton',
+  markers: {Pirate: ['🏴‍☠️', 'pirate'], PCC: ['🍊']},
+  renames: [
+    ['préchauffé', ''],
+    ['précramé', ''],
+    ['Chill 1', 'C1'],
+  ],
+};
 
 const dummyActivity: Activity = {
   resource_state: 2,
-  athlete: {id: 11670816, resource_state: 1},
+  athlete: {id: 1, resource_state: 1},
   name: 'N-Peloton #575 G2',
   distance: 111256,
   moving_time: 12271,
@@ -68,7 +80,7 @@ const dummyActivity: Activity = {
 const dummyDetailedActivity: DetailedActivity = {
   resource_state: 3,
   athlete: {
-    id: 11670816,
+    id: 1,
     resource_state: 1,
   },
   name: 'N-Peloton #561 G2 préchauffé 🎸',
@@ -193,4 +205,4 @@ const buildDetailedActivity = (data?: Partial<DetailedActivity>): DetailedActivi
   ...data,
 });
 
-export {buildActivity, buildDetailedActivity};
+export {buildActivity, buildDetailedActivity, TEST_CLUB};

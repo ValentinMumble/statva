@@ -3,7 +3,6 @@ import {BrowserRouter, Routes as RouterRoutes, Route} from 'react-router';
 import {ChakraProvider} from '@chakra-ui/react';
 import {ThemeProvider} from 'next-themes';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {AddCheckIn, Routes} from './pages';
 import {Toaster} from './components/ui';
 import {AuthGate, PageTitle} from './components';
 import {AppShell} from './app/AppShell';
@@ -14,6 +13,7 @@ import {HomePage} from './app/pages/HomePage';
 import {RecordsPage} from './app/pages/RecordsPage';
 import {RoutesPage} from './app/pages/RoutesPage';
 import {SettingsPage} from './app/pages/SettingsPage';
+import {SharedRoutePage} from './app/pages/SharedRoutePage';
 import {StatsPage} from './app/pages/StatsPage';
 import {system} from './app/theme';
 
@@ -58,17 +58,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               element={
                 <>
                   <PageTitle title="Statva route" />
-                  <Routes />
+                  <SharedRoutePage />
                 </>
-              }
-            />
-            <Route
-              path="/check-in"
-              element={
-                <AuthGate>
-                  <PageTitle title="Statva check-in" />
-                  <AddCheckIn />
-                </AuthGate>
               }
             />
 

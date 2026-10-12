@@ -94,7 +94,9 @@ const Totals = ({activities, now}: {activities: Activity[]; now: Date}) => {
   const climbing = shown.reduce((sum, {total_elevation_gain}) => sum + total_elevation_gain, 0);
   const longest = shown.reduce((max, {distance}) => Math.max(max, distance), 0);
   const isRide = 'Ride' === sport;
-  const [eddington, needed] = isRide ? eddingtonNumber(shown) : [0, 0];
+  // Eddington is an all-time figure; the period's own number goes underneath.
+  const [eddington, needed] = isRide ? eddingtonNumber(ofSport) : [0, 0];
+  const [periodEddington] = isRide && 'all' !== period ? eddingtonNumber(shown) : [eddington];
   const clubRides = null === club ? [] : shown.filter(({name}) => isClubRide(name, club));
 
   return (
@@ -120,7 +122,17 @@ const Totals = ({activities, now}: {activities: Activity[]; now: Date}) => {
           <Figure label="Climbing" value={metres(climbing, locale)} hint={`${number(climbing / 8849, locale, 1)} × Everest`} />
           <Figure label="Longest" value={km(longest, locale)} />
           {0 < time && 0 < distance && <Figure label="Average speed" value={`${number((distance / time) * 3.6, locale, 1)} km/h`} />}
-          {isRide && <Figure label="Eddington" value={String(eddington)} hint={`${needed} more rides of ${eddington + 1} km for the next`} />}
+          {isRide && (
+            <Figure
+              label="Eddington, all time"
+              value={`${eddington} km`}
+              hint={
+                'all' === period
+                  ? `${needed} more days of ${eddington + 1} km for the next`
+                  : `${periodEddington} km ${'year' === period ? 'this year' : 'over 12 months'} · ${needed} more days of ${eddington + 1} km for the next`
+              }
+            />
+          )}
           {isRide && null !== club && <Figure label={club.name} value={number(clubRides.length, locale)} hint={km(clubRides.reduce((sum, {distance}) => sum + distance, 0), locale)} />}
         </Grid>
         {isRide && <YearGoal rides={ofSport} goalKm={yearGoalKm} now={now} locale={locale} />}

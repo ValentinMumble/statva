@@ -287,10 +287,12 @@ const SettingsPage = () => {
         <Field.Root>
           <Field.Label>Retired</Field.Label>
           <HStack gap="16px" flexWrap="wrap">
-            {bikes.map(({id}) => (
+            {bikes.map(({id, retired}) => (
               <Checkbox.Root
                 key={id}
-                checked={settings.retiredBikes.includes(id)}
+                // Gear Strava no longer lists is retired there; that cannot be undone here.
+                disabled={retired}
+                checked={retired || settings.retiredBikes.includes(id)}
                 onCheckedChange={({checked}) =>
                   set('retiredBikes', checked ? [...settings.retiredBikes, id] : settings.retiredBikes.filter(bike => bike !== id))
                 }

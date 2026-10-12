@@ -1,6 +1,9 @@
+import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {DEFAULT_SETTINGS, gearOf, PartRules, primaryBike, setRiderProfile, Settings} from '../models';
+import {useAllActivities} from './useActivities';
 import {useAthlete} from './useAthlete';
+import {useEvents} from './useEvents';
 import {getFetcher} from './useFetcher';
 
 const fetchSettings = getFetcher<Partial<Settings> | null>('settings.get');
@@ -29,8 +32,17 @@ const useSettings = (): ResolvedSettings => {
   };
 };
 
-/** The rider's bikes and shoes. */
-const useGear = () => gearOf(useAthlete());
+/** The rider's bikes and shoes, retired ones included. */
+const useGear = () => {
+  const athlete = useAthlete();
+  const {data: activities} = useAllActivities();
+  const {events} = useEvents();
+
+  return useMemo(
+    () => gearOf(athlete, [...(activities ?? []).map(({gear_id}) => gear_id), ...events.map(({bike}) => bike)]),
+    [athlete, activities, events],
+  );
+};
 
 export {useGear, useSettings};
 export type {ResolvedSettings};

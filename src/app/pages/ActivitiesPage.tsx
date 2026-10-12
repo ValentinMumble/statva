@@ -17,20 +17,43 @@ import {
 import {useNavigate} from 'react-router';
 import {useWindowVirtualizer} from '@tanstack/react-virtual';
 import {useLocalStorage} from 'usehooks-ts';
-import {LuArrowDown, LuArrowUp, LuColumns3, LuLock, LuSearch, LuX} from 'react-icons/lu';
+import {LuArrowDown, LuArrowUp, LuColumns3, LuListFilter, LuLock, LuSearch, LuX} from 'react-icons/lu';
 import {GearSelect} from '../../components/GearSelect';
 import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
-import {DEFAULT_SORTS, getRandomUnusedEmoji, SortDirection, SortType, TAGS} from '../../models';
+import {countBy, DEFAULT_SORTS, getRandomUnusedEmoji, SortDirection, SortType, TAGS} from '../../models';
 import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
 import {RouteThumb} from '../components/RouteThumb';
-import {sportIcon} from '../components/sport';
+import {sportIcon, sportName} from '../components/sport';
 import {duration, km, relativeDay} from '../format';
 
 type Commute = boolean | 'only';
 
+type SportCount = {sport: string; count: number};
+
+const isRide = (sport: string): boolean => sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
+const isRun = (sport: string): boolean => sport.includes('Run');
+
+// The usual choices in one tap; the menu next to them picks any mix of sports.
+const SPORT_GROUPS: {value: string; label: string; pick: (sports: SportCount[]) => ActivityType[] | null}[] = [
+  {value: 'all', label: 'All', pick: () => null},
+  {value: 'rides', label: 'Rides', pick: sports => sports.filter(({sport}) => isRide(sport)).map(({sport}) => sport as ActivityType)},
+  {value: 'runs', label: 'Runs', pick: sports => sports.filter(({sport}) => isRun(sport)).map(({sport}) => sport as ActivityType)},
+  {value: 'other', label: 'Other', pick: sports => sports.filter(({sport}) => !isRide(sport) && !isRun(sport)).map(({sport}) => sport as ActivityType)},
+];
+
+/** Which group the current choice of sports matches, if any. */
+const groupOf = (types: ActivityType[] | null, sports: SportCount[]): string => {
+  if (null === types) return 'all';
+
+  const chosen = [...types].sort().join();
+  const group = SPORT_GROUPS.find(({pick}) => (pick(sports) ?? []).sort().join() === chosen);
+
+  return group?.value ?? '';
+};
+
 const ROW_HEIGHT = {base: 68, md: 56};
-const COLUMN_WIDTH = 84;
+const COLUMN_WIDTH = 112;
 
 const PALETTE_COLOR: Record<string, string> = {
   blue: 'blue.fg',
@@ -59,7 +82,7 @@ const Toolbar = ({
 }: {
   search: string;
   onSearch: (value: string) => void;
-  sports: string[];
+  sports: {sport: string; count: number}[];
   types: ActivityType[] | null;
   onTypes: (types: ActivityType[] | null) => void;
   gearIds: string[];
@@ -73,10 +96,11 @@ const Toolbar = ({
   label: (key: string) => string;
 }) => {
   const toggleSport = (sport: ActivityType) => {
-    const current = types ?? [];
+    // From "all", unticking one sport keeps every other one.
+    const current = types ?? (sports.map(({sport: name}) => name) as ActivityType[]);
     const next = current.includes(sport) ? current.filter(type => type !== sport) : [...current, sport];
 
-    onTypes(0 === next.length ? null : next);
+    onTypes(0 === next.length || next.length === sports.length ? null : next);
   };
 
   return (
@@ -136,22 +160,45 @@ const Toolbar = ({
           </Portal>
         </Menu.Root>
       </HStack>
-      <HStack gap="6px" flexWrap="wrap">
-        <Button size="xs" borderRadius="full" variant={null === types ? 'solid' : 'outline'} onClick={() => onTypes(null)}>
-          All sports
-        </Button>
-        {sports.map(sport => (
-          <Button
-            key={sport}
-            size="xs"
-            borderRadius="full"
-            variant={types?.includes(sport as ActivityType) ? 'solid' : 'outline'}
-            onClick={() => toggleSport(sport as ActivityType)}
-            onDoubleClick={() => onTypes([sport as ActivityType])}
-          >
-            <Icon as={sportIcon(sport)} /> {sport.replace(/([a-z])([A-Z])/g, '$1 $2')}
-          </Button>
-        ))}
+      <HStack gap="8px" flexWrap="wrap">
+        <SegmentGroup.Root
+          size="sm"
+          value={groupOf(types, sports)}
+          onValueChange={({value}) => {
+            const group = SPORT_GROUPS.find(({value: name}) => name === value);
+            if (undefined !== group) onTypes(group.pick(sports));
+          }}
+        >
+          <SegmentGroup.Indicator />
+          <SegmentGroup.Items items={SPORT_GROUPS.map(({value, label}) => ({value, label}))} />
+        </SegmentGroup.Root>
+        <Menu.Root closeOnSelect={false}>
+          <Menu.Trigger asChild={true}>
+            <Button variant="ghost" size="sm">
+              <LuListFilter /> {null === types ? 'Sports' : `${types.length} ${1 === types.length ? 'sport' : 'sports'}`}
+            </Button>
+          </Menu.Trigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content maxHeight="380px" overflowY="auto" minWidth="240px">
+                {sports.map(({sport, count}) => (
+                  <Menu.CheckboxItem
+                    key={sport}
+                    value={sport}
+                    checked={null === types || types.includes(sport as ActivityType)}
+                    onCheckedChange={() => toggleSport(sport as ActivityType)}
+                  >
+                    <Icon as={sportIcon(sport)} /> {sportName(sport)}
+                    <Text as="span" color="fg.muted" marginLeft="auto" fontSize="xs">
+                      {count}
+                    </Text>
+                    <Menu.ItemIndicator />
+                  </Menu.CheckboxItem>
+                ))}
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
       </HStack>
     </Stack>
   );
@@ -207,19 +254,27 @@ const ActivitiesPage = () => {
   // Where the list starts on the page, which the window scroll is measured from.
   const [scrollMargin, setScrollMargin] = useState(0);
 
-  const {activities, unprocessedActivities} = useActivities({
+  const filter = {
     search,
     sort,
     sortDirection: direction,
     gearId: gearIds[0],
     withCommute: commute,
-    // A search looks through private activities too.
-    withPrivate: withPrivate || '' !== search,
     includedActivityTypes: types ?? undefined,
-  });
+  };
+  const showsPrivate = withPrivate || '' !== search;
+  // A search looks through private activities too.
+  const {activities, unprocessedActivities} = useActivities({...filter, withPrivate: showsPrivate});
+  // The same filters with private activities, to say how many are hidden.
+  const {activities: withHidden} = useActivities({...filter, withPrivate: true});
+  const hiddenPrivate = showsPrivate || null === activities ? 0 : (withHidden?.length ?? 0) - activities.length;
 
+  // Every sport ridden, most frequent first, with how many activities it has.
   const sports = useMemo(
-    () => [...new Set((allActivities ?? []).map(({sport_type}) => sport_type))].sort(),
+    () =>
+      Object.entries(countBy(allActivities ?? [], ({sport_type}) => sport_type))
+        .map(([sport, count]) => ({sport, count}))
+        .sort((a, b) => b.count - a.count),
     [allActivities],
   );
   const usedEmojis = useMemo(
@@ -282,13 +337,31 @@ const ActivitiesPage = () => {
 
       {unprocessedEmoji && <Unprocessed activities={unprocessedActivities} usedEmojis={usedEmojis} />}
 
+      {/* Only when filtering, or when nothing shows: unfiltered, hidden private activities are expected. */}
+      {0 < hiddenPrivate && (0 === rows.length || null !== types || 0 < gearIds.length || true !== commute) && (
+        <Card padding="14px">
+          <HStack justifyContent="space-between" gap="12px" flexWrap="wrap">
+            <HStack gap="8px" fontSize="sm">
+              <LuLock />
+              <Text>
+                {hiddenPrivate.toLocaleString(locale)} private {1 === hiddenPrivate ? 'activity matches' : 'activities match'} but{' '}
+                {1 === hiddenPrivate ? 'is' : 'are'} hidden.
+              </Text>
+            </HStack>
+            <Button size="sm" variant="surface" onClick={() => setWithPrivate(true)}>
+              Show private activities
+            </Button>
+          </HStack>
+        </Card>
+      )}
+
       <Card padding="0" overflowX="auto">
         <Box minWidth={minWidth ? `${minWidth}px` : undefined}>
           {isWide && (
             <Box
               display="grid"
               gridTemplateColumns={gridColumns}
-              alignItems="end"
+              alignItems="center"
               paddingX="16px"
               paddingY="10px"
               borderBottomWidth="1px"
@@ -300,23 +373,21 @@ const ActivitiesPage = () => {
                 Date {'date' === sort && ('asc' === direction ? <LuArrowUp /> : <LuArrowDown />)}
               </HStack>
               {shownColumns.map(tag => (
-                <Stack
+                <HStack
                   key={tag.sortType}
                   as="button"
-                  gap="0"
-                  alignItems="flex-end"
+                  gap="4px"
+                  justifyContent="flex-end"
+                  whiteSpace="nowrap"
                   title={tag.help}
                   onClick={() => sortBy(tag.sortType)}
-                  color={tag.sortType === sort ? 'fg' : undefined}
                 >
-                  <Text fontFamily="figure" fontSize="sm" color={tag.sortType === sort ? 'brand.fg' : 'fg'}>
-                    {null === activities ? ' ' : tag.total(rows, activityMeta, getFtp)}
+                  {tag.sortType === sort && ('asc' === direction ? <LuArrowUp /> : <LuArrowDown />)}
+                  <span>{label(tag.sortType)}</span>
+                  <Text as="span" fontFamily="figure" fontSize="sm" color={tag.sortType === sort ? 'brand.fg' : 'fg'}>
+                    {0 === rows.length ? ' ' : tag.total(rows, activityMeta, getFtp)}
                   </Text>
-                  <HStack gap="2px">
-                    {tag.sortType === sort && ('asc' === direction ? <LuArrowUp /> : <LuArrowDown />)}
-                    <span>{label(tag.sortType)}</span>
-                  </HStack>
-                </Stack>
+                </HStack>
               ))}
             </Box>
           )}
@@ -353,11 +424,14 @@ const ActivitiesPage = () => {
                     <Text fontWeight="medium" truncate={true}>
                       {activity.name}
                     </Text>
-                    <Text fontSize="xs" color="fg.muted" truncate={true}>
-                      {relativeDay(new Date(activity.start_date), locale)}
-                      {activity.gear_id ? ` · ${label(activity.gear_id)}` : ''}
-                      {activity.commute ? ' · commute' : ''}
-                    </Text>
+                    <HStack gap="5px" fontSize="xs" color="fg.muted" minWidth="0">
+                      <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />
+                      <Text truncate={true}>
+                        {sportName(activity.sport_type)} · {relativeDay(new Date(activity.start_date), locale)}
+                        {activity.gear_id ? ` · ${label(activity.gear_id)}` : ''}
+                        {activity.commute ? ' · commute' : ''}
+                      </Text>
+                    </HStack>
                   </Stack>
                   {isWide ? (
                     shownColumns.map(tag => {
@@ -391,7 +465,7 @@ const ActivitiesPage = () => {
               );
             })}
           </Box>
-          {null !== activities && 0 === rows.length && (
+          {null !== activities && 0 === rows.length && 0 === hiddenPrivate && (
             <Text padding="32px" textAlign="center" color="fg.muted">
               Nothing matches. Try another search or filter.
             </Text>

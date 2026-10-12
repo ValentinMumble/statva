@@ -1,8 +1,8 @@
 import {useActivities, useActivityMeta, useLabels} from '../../hooks';
-import {ClubRules, countBy, DEFAULT_CLUB, extractNPGroup} from '../../models';
+import {ClubRules, countBy, extractNPGroup} from '../../models';
 import {CountPieChart} from './CountPieChart';
 
-const NPGroupPieChart = ({club = DEFAULT_CLUB}: {club?: ClubRules}) => {
+const NPGroupPieChart = ({club}: {club: ClubRules}) => {
   const {activities} = useActivities({
     withCommute: false,
     withPrivate: true,

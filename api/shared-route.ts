@@ -1,13 +1,8 @@
 import {allowedAthletes} from './_lib/env.js';
 import {json} from './_lib/http.js';
-import {athleteKey} from './_lib/keys.js';
-import {redis} from './_lib/redis.js';
 import {stravaGet} from './_lib/strava.js';
 
-/**
- * One route and its check-ins, readable without logging in: this is what a shared
- * `/routes/:id` link shows to the people following a ride. Only the owner's routes.
- */
+/** One route, readable without logging in: what a shared `/routes/:id` link shows. Only the owner's routes. */
 export const GET = async (request: Request): Promise<Response> => {
   const routeId = new URL(request.url).searchParams.get('id') ?? '';
 
@@ -22,7 +17,5 @@ export const GET = async (request: Request): Promise<Response> => {
 
   if (route.athlete?.id !== owner) return json({error: 'Not found'}, 404);
 
-  const checkIns = (await redis().hget(athleteKey(owner, 'check_ins'), routeId)) ?? [];
-
-  return json({route, checkIns});
+  return json({route});
 };

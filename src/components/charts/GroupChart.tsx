@@ -1,22 +1,24 @@
 import {Group, Span, Text} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Cell, Pie, PieChart, ResponsiveContainer, Tooltip} from 'recharts';
-import {useActivities, useActivityMeta} from '../../hooks';
+import {useActivities, useActivityMeta, useSettings} from '../../hooks';
 import {getSeriesColor, getTypes, getWorkoutType} from '../../models';
 import {Activity, ActivityType, DetailedActivity, WorkoutType} from '../../models/strava';
 import {ChartTooltip} from './ChartTooltip';
 
-const GROUP_RIDES = ['Raymond Ride', 'N-Peloton', 'NP', 'duo'];
-const GROUP_TAGS = ['groupe', 'duo'];
-
-const isGroupRide = (ride: Activity, meta: DetailedActivity | null): boolean =>
+// A ride counts as a group ride with more than one athlete, as a race, or when its name or
+// notes hold one of the rider's group words (club settings).
+const isGroupRide = (ride: Activity, meta: DetailedActivity | null, words: string[], tags: string[]): boolean =>
   ride.athlete_count > 1 ||
   getWorkoutType(ride) === WorkoutType.Race ||
-  GROUP_RIDES.some(groupRide => ride.name.toLowerCase().includes(groupRide.toLowerCase())) ||
-  GROUP_TAGS.some(tag => (meta?.description ?? '').toLowerCase().includes(tag.toLowerCase()));
+  words.some(word => ride.name.toLowerCase().includes(word.toLowerCase())) ||
+  tags.some(tag => (meta?.description ?? '').toLowerCase().includes(tag.toLowerCase()));
 
 const GroupChart = () => {
   const {activityMeta} = useActivityMeta();
+  const {club} = useSettings();
+  const words = club?.groupWords ?? [];
+  const tags = club?.groupTags ?? [];
   const {activities} = useActivities({
     withCommute: false,
     withPrivate: false,
@@ -25,7 +27,7 @@ const GroupChart = () => {
 
   const counts = (activities ?? []).reduce(
     (counts, ride) => {
-      if (isGroupRide(ride, activityMeta[ride.id] ?? null)) {
+      if (isGroupRide(ride, activityMeta[ride.id] ?? null, words, tags)) {
         counts.Group++;
       } else {
         counts.Solo++;

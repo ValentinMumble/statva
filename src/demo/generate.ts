@@ -1,4 +1,4 @@
-import {BikeExpense, CheckIn, encodePolyline, Event, FTPTest, Labels, Settings} from '../models';
+import {BikeExpense, encodePolyline, Event, FTPTest, Labels, Settings} from '../models';
 import {Activity, ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
 import {ActivityZoneType} from '../models/strava/activity-zone-type';
 import {Random, seeded} from './random';
@@ -66,7 +66,6 @@ type DemoData = {
   labels: Labels;
   settings: Partial<Settings>;
   routes: Route[];
-  checkIns: CheckIn[];
 };
 
 const KM_PER_DEGREE = 111.32;
@@ -324,13 +323,6 @@ const generateDemo = (today: Date = new Date()): DemoData => {
     athlete: '1',
   })) as unknown as Route[];
 
-  const lakeLoop = loop(seeded(101), 42, 1.2);
-  const checkIns: CheckIn[] = [0.2, 0.45, 0.7].map((share, index) => {
-    const [lat, lng] = lakeLoop[Math.floor(share * (lakeLoop.length - 1))];
-
-    return {id: `demo-check-in-${index}`, routeId: '101', lat, lng, date: new Date(end - DAY_MS + (9 + index) * 3600000)};
-  });
-
   const weekKey = (time: number) => {
     const date = new Date(time);
     const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
@@ -368,7 +360,6 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       club: {name: CLUB, markers: {Pirate: ['🏴‍☠️']}, groupWords: [CLUB], groupTags: ['group']},
     },
     routes,
-    checkIns,
   };
 };
 

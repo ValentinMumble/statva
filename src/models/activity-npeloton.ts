@@ -9,20 +9,11 @@ type ClubRules = {
   renames?: [string, string][];
 };
 
-// What Statva v1 had written into its code, kept as the fallback.
-const DEFAULT_CLUB: ClubRules = {
-  name: 'N-Peloton',
-  markers: {Pirate: ['🏴‍☠️', 'pirate'], PCC: ['🍊']},
-  renames: [
-    ['préchauffé', ''],
-    ['précramé', ''],
-    ['Chill 1', 'C1'],
-  ],
-};
 
 const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const isClubRide = (name: string, club: Pick<ClubRules, 'name'> = DEFAULT_CLUB): boolean => name.includes(club.name);
+// A club without a name would match every ride.
+const isClubRide = (name: string, club: Pick<ClubRules, 'name'>): boolean => '' !== club.name && name.includes(club.name);
 
 const REPLACEMENTS: [string, string][] = [
   ['\u2019', "'"],
@@ -30,7 +21,7 @@ const REPLACEMENTS: [string, string][] = [
   ['cependant', ''],
 ];
 
-const computeFinishCount = (rideMeta: DetailedActivity[], club: Pick<ClubRules, 'name'> = DEFAULT_CLUB): Record<string, number> => {
+const computeFinishCount = (rideMeta: DetailedActivity[], club: Pick<ClubRules, 'name'>): Record<string, number> => {
   const locationCount: Record<string, number> = {};
 
   rideMeta.forEach(activity => {
@@ -73,7 +64,7 @@ const getNotes = (meta?: DetailedActivity | null): string =>
  * The group a club ride was in: from a marker in the name, description or private note
  * when there is one (first match wins), otherwise from the usual "<club> #123 G2" naming.
  */
-const extractNPGroup = (activityName: string, meta?: DetailedActivity | null, club: ClubRules = DEFAULT_CLUB): string => {
+const extractNPGroup = (activityName: string, meta: DetailedActivity | null | undefined, club: ClubRules): string => {
   const fullText = `${activityName}\n${getNotes(meta)}`;
   const marked = Object.entries(club.markers).find(([, markers]) => markers.some(marker => hasMarker(fullText, marker)));
 
@@ -84,5 +75,5 @@ const extractNPGroup = (activityName: string, meta?: DetailedActivity | null, cl
   return renamed.match(new RegExp(`${escapeRegExp(club.name)}\\s+#\\d+\\s+([A-Za-z0-9.-\\s]+)`))?.[1].trim() || 'Unknown';
 };
 
-export {computeFinishCount, DEFAULT_CLUB, extractNPGroup, isClubRide};
+export {computeFinishCount, extractNPGroup, isClubRide};
 export type {ClubRules};

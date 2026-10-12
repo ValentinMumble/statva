@@ -7,7 +7,6 @@ export * from './activity-stats';
 export * from './chart';
 export * from './chart-colors';
 export * from './bike-expense';
-export * from './check-in';
 export * from './dashboard';
 export * from './explorer';
 export * from './event';

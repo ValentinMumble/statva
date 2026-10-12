@@ -50,7 +50,9 @@ const BikePage = () => {
   const [withRetired, setWithRetired] = useState(false);
 
   const bike = bikeId ?? defaultBike;
-  const bikes = gear.filter(({type, id}) => 'bike' === type && (withRetired || !retiredBikes.includes(id) || id === bike));
+  const bikes = gear.filter(
+    ({type, id, retired}) => 'bike' === type && (withRetired || id === bike || (!retired && !retiredBikes.includes(id))),
+  );
   const rides = useMemo(() => (activities ?? []).filter(({gear_id}) => bike === gear_id), [activities, bike]);
   const parts = useMemo(() => computeBikeParts(events, rides, bike, label, partRules), [events, rides, bike, label, partRules]);
   const history = useMemo(() => events.filter(event => bike === event.bike).reverse(), [events, bike]);

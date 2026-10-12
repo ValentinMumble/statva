@@ -5,7 +5,7 @@ Next improvements for Statva. Newest ideas at the top; move to **Done** when shi
 ## Ideas / Backlog
 
 - [ ] Search activities by the people they were with. **Blocked: no API for it.**
-      Checked against a real group ride (activity 20061645410, 3 athletes): the
+      Checked against a real group ride (3 athletes): the
       detailed activity only carries `athlete_count` and the owner's own
       `athlete.id`, with no participants anywhere in its 78 fields. The old
       `/activities/{id}/related` endpoint now answers 401 (internal only), so the
@@ -45,12 +45,12 @@ v1 keeps running from `main` (release `v1.0.0`) until v2 replaces it.
 - [x] **4. New app** (`src/app/`): its own theme, a side menu or phone tab bar, and
       Home, Activities (with a detail page per activity), Bike, Stats, Records, Routes
       and Settings. Maps use keyless Esri tiles. The charts rebuilt last week are reused.
-- [ ] **4b. Finish the switch.** The v1 screens are gone. Left: restyle the check-in
-      page and the public route page; make `DEFAULT_CLUB` neutral (it still says
-      N-Peloton, for the tests).
-- [ ] **5. Going public.** README with self-hosting steps, one-click deploy, an
-      openly licensed icon (Noto), map token from the environment, personal files
-      removed from the git history, then the repo made public.
+- [x] **4b. Finish the switch.** v1 screens gone; check-in and shared route pages rebuilt;
+      no club, bike or athlete written into the code (tests use their own club rules).
+- [ ] **5. Going public.** Done: README with self-hosting steps and a deploy button, an
+      original icon, keyless maps, no personal values in the code. Left (needs a go):
+      remove `dev-data/` and `public/local_*.json` from every past commit, choose a
+      licence, make the repo public.
 
 ## Done
 

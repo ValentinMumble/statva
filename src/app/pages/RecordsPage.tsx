@@ -486,7 +486,7 @@ const RecordsPage = () => {
   const {club, mapCenter} = useSettings();
 
   const data = useMemo(
-    () => computeDashboard(Object.values(activityMeta), events, ftpTests, expenses, label, club ?? undefined),
+    () => computeDashboard(Object.values(activityMeta), events, ftpTests, expenses, label, club),
     [activityMeta, events, ftpTests, expenses, label, club],
   );
 

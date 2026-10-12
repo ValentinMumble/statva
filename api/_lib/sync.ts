@@ -13,7 +13,9 @@ const OVERLAP_SECONDS = 86400;
 
 // Everything Statva keeps for a rider. Activities, details and sync are only written by the server.
 const SERVER_NAMES = ['activities', 'details', 'sync'];
-const RIDER_NAMES = ['events', 'labels', 'ftp_tests', 'check_ins', 'expenses', 'settings'];
+const RIDER_NAMES = ['events', 'labels', 'ftp_tests', 'expenses', 'settings'];
+// Data from features that are gone, still removed when a rider disconnects.
+const RETIRED_NAMES = ['check_ins'];
 
 type SyncState = {nextPage: number; historyDone: boolean; newestStart: number};
 type SyncReport = {added: number; historyDone: boolean; detailsFetched: number; detailsMissing: number; limited: boolean};
@@ -129,7 +131,7 @@ const syncActivities = async (athleteId: number): Promise<SyncReport> => {
 
 /** Removes everything Statva holds for a rider, as Strava requires once they disconnect. */
 const forgetAthlete = async (athleteId: number): Promise<void> => {
-  await redis().del(...[...SERVER_NAMES, ...RIDER_NAMES].map(name => athleteKey(athleteId, name)));
+  await redis().del(...[...SERVER_NAMES, ...RIDER_NAMES, ...RETIRED_NAMES].map(name => athleteKey(athleteId, name)));
 };
 
 export {forgetAthlete, refreshActivity, RIDER_NAMES, SERVER_NAMES, syncActivities};

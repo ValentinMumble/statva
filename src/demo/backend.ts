@@ -1,4 +1,4 @@
-import {BikeExpense, CheckIn, Event, FTPTest, Labels} from '../models';
+import {BikeExpense, Event, FTPTest, Labels} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
 import {DemoData, demoZones, generateDemo} from './generate';
 
@@ -59,14 +59,7 @@ const demoBackend = {
 
     return answer(undefined === activity ? [] : demoZones(activity as Activity));
   },
-  getSharedRoute: (id: string) =>
-    answer({
-      route: demo().routes.find(route => String(route.id) === id)!,
-      checkIns: demo().checkIns.filter(({routeId}) => routeId === id),
-    }),
-  addCheckIn: async (checkIn: CheckIn) => {
-    demo().checkIns = [...demo().checkIns, checkIn];
-  },
+  getSharedRoute: (id: string) => answer({route: demo().routes.find(route => String(route.id) === id)!}),
 };
 
 export {demoBackend};

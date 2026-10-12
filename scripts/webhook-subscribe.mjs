@@ -4,7 +4,7 @@
  * disconnects. Strava allows one subscription per app.
  *
  * Usage:
- *   node scripts/webhook-subscribe.mjs https://statva.vumble.dev    # subscribe
+ *   node scripts/webhook-subscribe.mjs https://statva.example.com   # subscribe
  *   node scripts/webhook-subscribe.mjs                              # show the current one
  */
 import {createHmac} from 'crypto';

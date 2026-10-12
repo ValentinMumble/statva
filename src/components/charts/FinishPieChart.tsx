@@ -1,8 +1,8 @@
 import {useActivityMeta, useLabels} from '../../hooks';
-import {ClubRules, computeFinishCount, DEFAULT_CLUB} from '../../models';
+import {ClubRules, computeFinishCount} from '../../models';
 import {CountPieChart} from './CountPieChart';
 
-const FinishPieChart = ({club = DEFAULT_CLUB}: {club?: ClubRules}) => {
+const FinishPieChart = ({club}: {club: ClubRules}) => {
   const {activityMeta} = useActivityMeta();
   const {label} = useLabels();
 

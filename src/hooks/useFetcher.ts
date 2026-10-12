@@ -1,5 +1,4 @@
 import {
-  addCheckIn,
   deleteEvent,
   deleteExpense,
   deleteLabel,
@@ -53,7 +52,6 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'ftp_tests.set': upsertFTPTest,
   'routes.get': fetchAthleteRoutes,
   'routes.shared': fetchSharedRoute,
-  'check_ins.add': addCheckIn,
 };
 
 const DEMO: typeof REAL = {
@@ -78,7 +76,6 @@ const DEMO: typeof REAL = {
   'ftp_tests.set': demoBackend.setFtpTest,
   'routes.get': demoBackend.getRoutes,
   'routes.shared': demoBackend.getSharedRoute,
-  'check_ins.add': demoBackend.addCheckIn,
 };
 
 const REGISTRY = isDemo() ? DEMO : REAL;

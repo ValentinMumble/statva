@@ -1,4 +1,3 @@
-import {CheckIn} from '../models';
 import {ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
@@ -47,8 +46,8 @@ const fetchAthleteRoutes = (): Promise<Route[]> => strava<Route[]>('routes');
 
 const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<ActivityZone[]>(`activities/${id}/zones`);
 
-/** A shared route and its check-ins, readable without logging in. */
-const fetchSharedRoute = (id: string): Promise<{route: Route; checkIns: CheckIn[]}> =>
+/** A shared route, readable without logging in. */
+const fetchSharedRoute = (id: string): Promise<{route: Route}> =>
   getJson(`/api/shared-route?id=${encodeURIComponent(id)}`);
 
 export {

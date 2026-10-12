@@ -1,4 +1,4 @@
-import {buildDetailedActivity} from '../../test/test-util';
+import {buildDetailedActivity, TEST_CLUB} from '../../test/test-util';
 import {computeDashboard} from './dashboard';
 import {Event} from './event';
 import {FTPTest} from './ftp';
@@ -77,7 +77,7 @@ const ftpTests: FTPTest[] = [
   {id: 'f1', date: new Date('2024-01-01'), ftp: 250, weight: 75},
 ];
 
-const build = () => computeDashboard(activities, events, ftpTests, [], label);
+const build = () => computeDashboard(activities, events, ftpTests, [], label, TEST_CLUB);
 
 test('it totals the cached activities', () => {
   const {totals} = build();

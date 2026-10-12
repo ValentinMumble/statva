@@ -118,7 +118,7 @@ A sport switch (ride, run, swim, tennis) shows a grid of stat cards:
 - **Tennis**: sessions, total time, average duration, average heart rate, suffer score.
 
 v2: **Keep**. Sports shown: **Setting** (the sports the rider actually does). Yearly goal
-(10 000 km today): **Setting**. Club name (N-Peloton today): **Setting**.
+(10 000 km today): **Setting**. Club name: **Setting**.
 
 ### 3.3 Week grid
 The last 5 weeks (+ adds one), one row per week, one column per weekday. Each day shows
@@ -264,20 +264,18 @@ often as you like.
     week and month, Everests climbed, times around the Earth.
 16. **Conditions**: average heart rate, temperature, recording devices.
 
-v2: **Keep**. Map centre (Nantes today): **Setting**, defaulting to the centre of the
+v2: **Keep**. Map centre: **Setting**, defaulting to the centre of the
 rider's tracks. Locale for dates and numbers (fr-FR today): **Setting**.
 
 ---
 
-## 9. Routes and check-ins
+## 9. Routes
 
-- **Routes**: pick one of your Strava routes; see it on a dark map with start and finish
-  markers, its distance, climbing and estimated time.
-- **Check-in**: on a ride, drop your current GPS position on a route; share a link so
-  people can follow the last check-ins.
+- **Routes**: pick one of your Strava routes; see it on a map with its distance, climbing
+  and estimated time, and share a link that shows it to anyone.
 
-v2: **Keep** routes. Check-ins share your live position with anyone who has the link,
-which needs care on a public app: **Keep** as opt-in, with links that expire, or **Drop**.
+v2: **Keep**. Check-ins (dropping your live position on a route for followers) are
+**dropped**.
 
 ---
 
@@ -292,11 +290,11 @@ emojis without setting anything.
 
 ---
 
-## 11. Club detection (N-Peloton today)
+## 11. Club detection
 
 - A club ride is one whose name contains the club name.
-- Its group is read from the name (`N-Peloton #670 C1`), unless a marker sits in the name,
-  description or private note (🏴‍☠️ or "pirate" means Pirate, 🍊 means PCC).
+- Its group is read from the name (`Club #670 C1`), unless a marker sits in the name,
+  description or private note (for example 🏴‍☠️ or the word "pirate" for a Pirate group).
 - The finish place is read from a note line `Finish au <place>`.
 - Group rides (for the solo vs group chart) are rides with more than one athlete, races,
   names with given words, or descriptions with given tags.
