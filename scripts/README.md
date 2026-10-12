@@ -62,14 +62,15 @@ node scripts/remove-deleted-activities.mjs scripts/deleted-activities-2025-12-18
 Uploads activities again under another recording device, since Strava cannot change the
 device of an activity. It rebuilds each ride from its data into the file format Strava
 recognises the new device from, so it knows only the devices listed in its `DEVICES`
-table (MyWhoosh and Apple Watch Series 10 for now). The rides keep their name,
+table (MyWhoosh and Apple Watch Series 10 for now), plus `none` to leave the activity
+without a device. `--from` takes the device name exactly as Strava shows it. The rides keep their name,
 description, sport, gear and indoor flag, and are muted. Photos have to be added back by
 hand from each ride's folder.
 
 **Usage:**
 ```bash
-node scripts/reupload-device.mjs --prepare --from "Edge 1030" --to MyWhoosh   # read only
-node scripts/reupload-device.mjs --upload                                     # after you delete the originals
+node scripts/reupload-device.mjs --prepare --from "Garmin Edge 1030 Plus" --to MyWhoosh   # read only
+node scripts/reupload-device.mjs --upload                                                # after you delete the originals
 ```
 
 `--prepare` saves each ride in `~/Downloads/statva-reupload`. Strava refuses a copy while

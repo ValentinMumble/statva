@@ -15,7 +15,8 @@
  * Uploads take the account's default visibility: set it to "Only you" first if needed.
  *
  * Usage:
- *   node scripts/reupload-device.mjs --prepare --from "Edge 1030" --to MyWhoosh [--limit 1]
+ *   node scripts/reupload-device.mjs --prepare --from "Garmin Edge 1030 Plus" --to MyWhoosh [--limit 1]
+ *   node scripts/reupload-device.mjs --prepare --from "Strava GPX" --to none
  *   node scripts/reupload-device.mjs --upload [--limit 1]
  *
  * --upload asks for a Strava login with write access: it prints a link to approve, and
@@ -114,8 +115,10 @@ const writeAccessToken = async () => {
 // How a file makes Strava show each device. Strava matches a TCX file's creator name, or a
 // FIT file's maker and product ids, against its own list of devices, and shows nothing when
 // it finds no match. It knows MyWhoosh by name only (in a FIT file it does not know MyWhoosh's
-// ids), and the Apple Watch Series 10 by the ids the Strava app writes for it.
+// ids), and the Apple Watch Series 10 by the ids the Strava app writes for it. "none" is a
+// TCX file with no creator at all, which leaves the activity without a device.
 const DEVICES = {
+  none: {format: 'tcx'},
   MyWhoosh: {format: 'tcx'},
   'Apple Watch Series 10': {
     format: 'fit',
@@ -180,8 +183,7 @@ const buildTcx = (activity, points, device) => {
 <Activities><Activity Sport="${tcxSport(activity.sport_type)}"><Id>${start}</Id>
 <Lap StartTime="${start}"><TotalTimeSeconds>${elapsed}</TotalTimeSeconds><DistanceMeters>${distance}</DistanceMeters><Intensity>Active</Intensity><TriggerMethod>Manual</TriggerMethod>
 <Track>${trackpoints.join('\n')}</Track></Lap>
-<Creator xsi:type="Device_t"><Name>${escape(device)}</Name><UnitId>0</UnitId><ProductID>0</ProductID><Version><VersionMajor>1</VersionMajor><VersionMinor>0</VersionMinor></Version></Creator>
-</Activity></Activities></TrainingCenterDatabase>
+${'none' === device ? '' : `<Creator xsi:type="Device_t"><Name>${escape(device)}</Name><UnitId>0</UnitId><ProductID>0</ProductID><Version><VersionMajor>1</VersionMajor><VersionMinor>0</VersionMinor></Version></Creator>\n`}</Activity></Activities></TrainingCenterDatabase>
 `;
 };
 
@@ -315,29 +317,46 @@ const upload = async (token, activity, file) => {
   }
   if (status.error || !status.activity_id) throw new Error(`Upload failed: ${status.error ?? status.status}`);
 
-  // The file cannot carry the exact sport, the gear or the mute flag: set them through the API.
-  await stravaJson(token, `activities/${status.activity_id}`, {
+  return status.activity_id;
+};
+
+/** Sets what the file cannot carry (the gear and the mute flag), and returns the activity as it now is. */
+const finish = async (token, activity, id) =>
+  await stravaJson(token, `activities/${id}`, {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      sport_type: activity.sport_type,
-      gear_id: activity.gear_id ?? 'none',
-      trainer: activity.trainer,
-      hide_from_home: true,
-    }),
+    body: JSON.stringify({sport_type: activity.sport_type, gear_id: activity.gear_id ?? 'none', trainer: activity.trainer, hide_from_home: true}),
   });
 
-  return status.activity_id;
+// As api/_lib/activities.ts stores an activity. Strava's webhook fetches a new activity
+// before its gear is set, and sends no event for a gear change, so Statva would keep the
+// default bike: the finished activity is stored here instead.
+const DROPPED_FROM_DETAILS = ['splits_metric', 'splits_standard', 'laps', 'similar_activities', 'stats_visibility'];
+const DROPPED_FROM_SUMMARY = [...DROPPED_FROM_DETAILS, 'segment_efforts', 'best_efforts', 'description', 'private_note', 'photos'];
+const without = (activity, fields) => Object.fromEntries(Object.entries(activity).filter(([field]) => !fields.includes(field)));
+
+const storeInStatva = async detail => {
+  const owner = env.STRAVA_ATHLETE_IDS.split(',')[0].trim();
+  const summary = without(detail, DROPPED_FROM_SUMMARY);
+  if (detail.map) summary.map = {id: detail.map.id, summary_polyline: detail.map.summary_polyline};
+  const stored = {
+    ...without(detail, DROPPED_FROM_DETAILS),
+    segment_efforts: (detail.segment_efforts ?? []).map(({kom_rank}) => ({kom_rank: kom_rank ?? null})),
+  };
+
+  await redis.hset(`athlete:${owner}:activities`, {[detail.id]: summary});
+  await redis.hset(`athlete:${owner}:details`, {[detail.id]: stored});
 };
 
 /** Step 1: rebuild every matching activity into a folder, with its details and photos. Reads only. */
 const prepare = async () => {
-  if (!from || !to) throw new Error('Say which device to replace and with what: --from "Edge 1030" --to MyWhoosh');
+  if (!from || !to) throw new Error('Say which device to replace and with what: --from "Garmin Edge 1030 Plus" --to MyWhoosh');
 
   const owner = env.STRAVA_ATHLETE_IDS.split(',')[0].trim();
   const details = Object.values((await redis.hgetall(`athlete:${owner}:details`)) ?? {});
   const targets = details
-    .filter(({device_name}) => (device_name ?? '').includes(from))
+    // The exact name: "Strava" must not also pick "Strava GPX" or "Strava App".
+    .filter(({device_name}) => from === device_name)
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
     .slice(0, limit);
 
@@ -418,7 +437,9 @@ const uploadPrepared = async () => {
     const result = {new: `https://www.strava.com/activities/${newId}`, device: null};
     // Recorded at once, so a run stopped by Strava's rate limit never uploads a ride twice.
     await writeFile(join(folder, 'uploaded.json'), JSON.stringify(result, null, 2));
-    result.device = (await stravaJson(writeToken, `activities/${newId}`)).device_name ?? null;
+    const finished = await finish(writeToken, saved, newId);
+    await storeInStatva(finished);
+    result.device = finished.device_name ?? null;
     await writeFile(join(folder, 'uploaded.json'), JSON.stringify(result, null, 2));
     console.log(`  ${saved.name}: ${result.new}, device "${result.device ?? 'none'}"`);
     await sleep(1500);
