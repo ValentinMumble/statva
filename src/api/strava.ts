@@ -16,7 +16,7 @@ const getJson = async <T>(url: string): Promise<T> => {
 };
 
 // Strava is only ever called through the server, which holds the tokens.
-const strava = <T>(path: string, params: Record<string, number> = {}): Promise<T> => {
+const strava = <T>(path: string, params: Record<string, number | string> = {}): Promise<T> => {
   const query = new URLSearchParams({path});
   Object.entries(params).forEach(([key, value]) => query.set(key, String(value)));
 
@@ -44,7 +44,14 @@ const refreshActivity = (id: number): Promise<DetailedActivity> => post<Detailed
 
 const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<ActivityZone[]>(`activities/${id}/zones`);
 
+type ActivityPhoto = {unique_id: string; urls: Record<string, string>; caption?: string};
+
+/** Every photo of an activity (the details only hold the main one), at about 1000 px. */
+const fetchActivityPhotos = (id: number): Promise<ActivityPhoto[]> =>
+  strava<ActivityPhoto[]>(`activities/${id}/photos`, {size: 1000, photo_sources: 'true'});
+
 export {
+  fetchActivityPhotos,
   fetchActivityZones,
   fetchAthlete,
   getJson,
@@ -52,4 +59,4 @@ export {
   refreshActivity,
   syncActivities,
 };
-export type {SyncReport};
+export type {ActivityPhoto, SyncReport};

@@ -1,5 +1,5 @@
 import {useMemo, useState} from 'react';
-import {Badge, Box, Button, Grid, HStack, Icon, Skeleton, Stack, Text} from '@chakra-ui/react';
+import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {useQuery} from '@tanstack/react-query';
 import {Link, useParams} from 'react-router';
 import {LuArrowLeft, LuExternalLink, LuRefreshCw} from 'react-icons/lu';
@@ -7,6 +7,7 @@ import {useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from 
 import {getFetcher} from '../../hooks/useFetcher';
 import {computeTSS, decodePolyline, extractNormalizedPower, getActivityUrl, hasKom} from '../../models';
 import {Activity, ActivityZone, DetailedActivity} from '../../models/strava';
+import {ActivityPhoto} from '../../api';
 import {Card, CardTitle} from '../components/Card';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
@@ -14,6 +15,52 @@ import {duration, km, metres, number} from '../format';
 
 const fetchZones = getFetcher<ActivityZone[]>('activity.zones');
 const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
+const fetchPhotos = getFetcher<ActivityPhoto[]>('activity.photos');
+
+// The biggest size Strava sent, for a photo opened on its own.
+const largest = (urls: Record<string, string>): string | undefined =>
+  Object.entries(urls).sort(([a], [b]) => Number(b) - Number(a))[0]?.[1];
+
+/**
+ * Every photo of the activity, fetched from Strava when the page opens (the stored
+ * details only hold the main one, shown meanwhile). A photo opens full size on its own.
+ */
+const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivity | null}) => {
+  const {data: photos} = useQuery({
+    queryKey: ['photos', activity.id],
+    queryFn: () => fetchPhotos(activity.id),
+    enabled: 0 < activity.total_photo_count,
+    retry: false,
+  });
+  const primary = detail?.photos?.primary?.urls;
+  const shown: {key: string; url: string; full: string}[] =
+    undefined !== photos && 0 < photos.length
+      ? photos.flatMap(({unique_id, urls}) => {
+          const url = largest(urls);
+
+          return undefined === url ? [] : [{key: unique_id, url, full: url}];
+        })
+      : undefined !== primary
+        ? [{key: 'primary', url: primary[600] ?? primary[100], full: primary[600] ?? primary[100]}]
+        : [];
+
+  if (0 === activity.total_photo_count || 0 === shown.length) return null;
+
+  return (
+    <Card>
+      <CardTitle>
+        {activity.total_photo_count} {1 === activity.total_photo_count ? 'photo' : 'photos'}
+      </CardTitle>
+      <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))'}} gap="8px">
+        {shown.map(({key, url, full}) => (
+          <a key={key} href={full} target="_blank" rel="noreferrer">
+            <Image src={url} alt="" loading="lazy" width="100%" aspectRatio="4 / 3" objectFit="cover" borderRadius="10px" />
+          </a>
+        ))}
+      </Grid>
+    </Card>
+  );
+};
 
 const ZONE_COLORS = ['gray.400', 'blue.400', 'green.400', 'yellow.400', 'orange.400', 'red.400'];
 
@@ -191,6 +238,7 @@ const ActivityPage = () => {
               ]}
             />
           </Card>
+          <Photos activity={activity} detail={detail} />
           {(detail?.description || detail?.private_note) && (
             <Card>
               <CardTitle>Notes</CardTitle>

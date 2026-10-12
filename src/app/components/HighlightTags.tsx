@@ -17,7 +17,7 @@ const HighlightTags = ({activity, detail = null}: {activity: Activity; detail?: 
         </Badge>
       )}
       {'long' === highlight && (
-        <Badge size="sm" variant="subtle" colorPalette="brand">
+        <Badge size="sm" variant="outline" colorPalette="gray">
           100 km+
         </Badge>
       )}

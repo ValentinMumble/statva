@@ -1,13 +1,23 @@
 import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
+import {Link} from 'react-router';
 import {LogEvent} from '../../components/event';
-import {useAllActivities, useAthlete, useEvents, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
-import {computeBikeParts, Event, extractNormalizedPower, getActivityUrl, PartState, weekSummary} from '../../models';
+import {useAllActivities, useAthlete, useEvents, useFtp, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
+import {
+  computeBikeParts,
+  Event,
+  extractNormalizedPower,
+  getPowerZone,
+  getZoneColor,
+  PartState,
+  weekSummary,
+} from '../../models';
 import {Activity} from '../../models/strava';
 import {Card, CardTitle} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
 import {RouteThumb} from '../components/RouteThumb';
 import {sportIcon, sportName} from '../components/sport';
+import {zoneTextColor} from '../components/zone';
 import {WeeksCard} from '../components/WeeksCard';
 import {change, duration, km, metres, number, relativeDay} from '../format';
 
@@ -96,6 +106,7 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
 };
 
 const LatestActivities = ({activities, locale, now}: {activities: Activity[]; locale: string; now: Date}) => {
+  const {getFtp} = useFtp();
   const latest = activities.slice(0, LATEST_COUNT);
   // Photos and normalized power live in the details: only these few are fetched.
   const details = useSomeActivityDetails(latest.map(({id}) => id));
@@ -110,7 +121,7 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
           const photo = detail?.photos?.primary?.urls?.[100];
 
           return (
-            <a key={activity.id} href={getActivityUrl(activity)} target="_blank" rel="noreferrer">
+            <Link key={activity.id} to={`/activities/${activity.id}`}>
               <HStack gap="14px" padding="8px" marginX="-8px" borderRadius="12px" _hover={{background: 'bg.subtle'}}>
                 <RouteThumb activity={activity} />
                 <Stack gap="2px" minWidth="0" flex="1">
@@ -133,7 +144,7 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                 )}
                 {null !== np && (
                   <Stack gap="0" alignItems="flex-end" flexShrink={0}>
-                    <Text fontFamily="figure" fontWeight="semibold">
+                    <Text fontFamily="figure" fontWeight="semibold" color={zoneTextColor(getZoneColor(getPowerZone(np, getFtp(new Date(activity.start_date)))))}>
                       {np} W
                     </Text>
                     <Text fontSize="sm" color="fg.muted">
@@ -150,7 +161,7 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                   </Text>
                 </Stack>
               </HStack>
-            </a>
+            </Link>
           );
         })}
       </Stack>

@@ -26,6 +26,7 @@ import {Card} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
 import {RouteThumb} from '../components/RouteThumb';
 import {sportIcon, sportName} from '../components/sport';
+import {zoneTextColor} from '../components/zone';
 import {duration, km, relativeDay} from '../format';
 
 type Commute = boolean | 'only';
@@ -55,15 +56,6 @@ const groupOf = (types: ActivityType[] | null, sports: SportCount[]): string => 
 
 const ROW_HEIGHT = {base: 68, md: 56};
 const COLUMN_WIDTH = 112;
-
-const PALETTE_COLOR: Record<string, string> = {
-  blue: 'blue.fg',
-  green: 'green.fg',
-  yellow: 'yellow.fg',
-  orange: 'orange.fg',
-  red: 'red.fg',
-  purple: 'purple.fg',
-};
 
 const Toolbar = ({
   search,
@@ -448,7 +440,7 @@ const ActivitiesPage = () => {
                           fontFamily="figure"
                           fontSize="sm"
                           title={null === value?.tooltip || undefined === value?.tooltip ? undefined : String(value.tooltip)}
-                          color={value?.colorPalette ? PALETTE_COLOR[value.colorPalette] ?? 'fg' : 'fg'}
+                          color={zoneTextColor(value?.colorPalette)}
                           opacity={value?.isRelevant ? 1 : 0.45}
                         >
                           {value?.label ?? ''}

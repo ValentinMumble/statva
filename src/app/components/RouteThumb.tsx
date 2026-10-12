@@ -4,11 +4,11 @@ import {activityHighlight, decodePolyline, routeShape} from '../../models';
 import {Activity} from '../../models/strava';
 import {sportIcon} from './sport';
 
-// A race is a solid orange tile, a 100 km day a light one with an orange ring: the two
-// stand out at a glance in any list.
+// A race is a solid orange tile, a 100 km day a plain one with a soft orange ring: both
+// show at a glance, the race louder.
 const TILE = {
   race: {background: 'brand.solid', ring: 'none', stroke: 'white', dot: 'white', icon: 'white'},
-  long: {background: 'brand.muted', ring: 'inset 0 0 0 1.5px var(--chakra-colors-brand-solid)', stroke: 'var(--chakra-colors-brand-solid)', dot: 'var(--chakra-colors-fg)', icon: 'brand.fg'},
+  long: {background: 'bg.subtle', ring: 'inset 0 0 0 1px color-mix(in srgb, var(--chakra-colors-brand-solid) 55%, transparent)', stroke: 'var(--chakra-colors-brand-solid)', dot: 'var(--chakra-colors-fg)', icon: 'fg.muted'},
   plain: {background: 'bg.subtle', ring: 'none', stroke: 'var(--chakra-colors-brand-solid)', dot: 'var(--chakra-colors-fg)', icon: 'fg.muted'},
 };
 

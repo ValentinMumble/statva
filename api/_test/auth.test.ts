@@ -85,6 +85,15 @@ describe('Strava proxy', () => {
     expect(fake.strava.calls.at(-1)).toBe('/api/v3/athlete/activities?page=2&per_page=30');
   });
 
+  it('lets an activity’s photos through, at a given size', async () => {
+    const fake = install();
+    const session = await logIn();
+
+    await strava(request('/api/strava?path=activities/12/photos&size=1000&photo_sources=true', session));
+
+    expect(fake.strava.calls.at(-1)).toBe('/api/v3/activities/12/photos?size=1000&photo_sources=true');
+  });
+
   it('refuses every other path', async () => {
     install();
     const session = await logIn();

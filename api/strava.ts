@@ -3,8 +3,14 @@ import {readSession} from './_lib/session.js';
 import {stravaGet} from './_lib/strava.js';
 
 // The only Strava calls the app makes. Anything else is refused.
-const ALLOWED_PATHS = [/^athlete$/, /^athlete\/activities$/, /^activities\/\d+$/, /^activities\/\d+\/zones$/];
-const ALLOWED_PARAMS = ['page', 'per_page'];
+const ALLOWED_PATHS = [
+  /^athlete$/,
+  /^athlete\/activities$/,
+  /^activities\/\d+$/,
+  /^activities\/\d+\/zones$/,
+  /^activities\/\d+\/photos$/,
+];
+const ALLOWED_PARAMS = ['page', 'per_page', 'size', 'photo_sources'];
 
 /** Calls Strava for the logged-in athlete. */
 export const GET = async (request: Request): Promise<Response> => {

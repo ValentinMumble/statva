@@ -12,6 +12,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
+import {Link} from 'react-router';
 import {
   Bar,
   BarChart,
@@ -36,7 +37,6 @@ import {
   formatCurrency,
   formatDistance,
   formatDuration,
-  getActivityUrl,
   getSeriesColor,
 } from '../../models';
 
@@ -458,8 +458,8 @@ const Records = ({records}: {records: DashboardData['records']}) => (
           {rides.map(ride => (
             <HStack key={`${key}-${ride.id}`} justifyContent="space-between" gap="10px" alignItems="baseline">
               <Stack gap="0" minWidth="0">
-                <ChakraLink href={getActivityUrl(ride)} target="_blank" fontSize="sm" lineClamp={1} color="fg">
-                  {ride.name}
+                <ChakraLink asChild={true} fontSize="sm" lineClamp={1} color="fg">
+                  <Link to={`/activities/${ride.id}`}>{ride.name}</Link>
                 </ChakraLink>
                 <Text fontSize="xs" color="fg.muted">
                   {ride.date}
@@ -587,7 +587,7 @@ const RecordsPage = () => {
         <Panel title="Latest photos" note="from the most recent rides with one">
           <Grid templateColumns="repeat(auto-fill, minmax(150px, 1fr))" gap="8px">
             {data.photos.map(photo => (
-              <ChakraLink key={photo.id} href={getActivityUrl(photo)} target="_blank" title={`${photo.name} · ${photo.date}`}>
+              <Link key={photo.id} to={`/activities/${photo.id}`} title={`${photo.name} · ${photo.date}`}>
                 <Image
                   src={photo.url}
                   alt={photo.name}
@@ -597,7 +597,7 @@ const RecordsPage = () => {
                   objectFit="cover"
                   borderRadius="6px"
                 />
-              </ChakraLink>
+              </Link>
             ))}
           </Grid>
         </Panel>
