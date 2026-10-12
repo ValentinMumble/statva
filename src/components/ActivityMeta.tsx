@@ -1,12 +1,10 @@
 import {IconButton, Image, HoverCard} from '@chakra-ui/react';
 import {MdOutlineNotes} from 'react-icons/md';
 import {Activity, DetailedActivity} from '../models/strava';
-import {cleanActivity, isDetailedActivity} from '../models';
 import {useActivityMeta} from '../hooks';
 import {getFetcher} from '../hooks/useFetcher';
 
-const fetchActivity = getFetcher<DetailedActivity>('activity.get');
-const upsertActivity = getFetcher<Activity>('activities.meta.set');
+const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
 
 type ActivityMetaProps = {
   activity: Activity;
@@ -15,17 +13,9 @@ type ActivityMetaProps = {
 const ActivityMeta = ({activity}: ActivityMetaProps) => {
   const {activityMeta, refetch} = useActivityMeta();
 
+  // The server fetches the activity from Strava again and stores it.
   const handleFetchActivity = async () => {
-    const fullActivity = await fetchActivity(activity.id);
-
-    if (!isDetailedActivity(fullActivity)) {
-      console.error('Invalid activity received');
-
-      return;
-    }
-
-    console.log(fullActivity);
-    await upsertActivity(cleanActivity(fullActivity));
+    await refreshActivity(activity.id);
     refetch();
   };
 

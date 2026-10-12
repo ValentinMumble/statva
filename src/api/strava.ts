@@ -1,7 +1,5 @@
 import {CheckIn} from '../models';
-import {Activity, ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
-
-const ITEMS_PER_PAGE = 200;
+import {ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
 class NotLoggedInError extends Error {}
@@ -28,13 +26,22 @@ const strava = <T>(path: string, params: Record<string, number> = {}): Promise<T
 
 const fetchAthlete = (): Promise<Athlete> => strava<Athlete>('athlete');
 
-const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[Activity[], boolean]> => {
-  const activities = await strava<Activity[]>('athlete/activities', {page, per_page: items});
+type SyncReport = {added: number; historyDone: boolean; detailsFetched: number; detailsMissing: number; limited: boolean};
 
-  return [activities, activities.length === items];
+const post = async <T>(url: string): Promise<T> => {
+  const response = await fetch(url, {method: 'POST'});
+
+  if (401 === response.status) throw new NotLoggedInError('Not logged in');
+  if (!response.ok) throw new Error(`${url} ${response.status}`);
+
+  return await response.json();
 };
 
-const fetchActivity = (id: number): Promise<DetailedActivity> => strava<DetailedActivity>(`activities/${id}`);
+/** Asks the server to bring the stored activities up to date with Strava. */
+const syncActivities = (): Promise<SyncReport> => post<SyncReport>('/api/sync');
+
+/** Asks the server to fetch one activity from Strava again and store it. */
+const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
 
 const fetchAthleteRoutes = (): Promise<Route[]> => strava<Route[]>('routes');
 
@@ -45,12 +52,13 @@ const fetchSharedRoute = (id: string): Promise<{route: Route; checkIns: CheckIn[
   getJson(`/api/shared-route?id=${encodeURIComponent(id)}`);
 
 export {
-  fetchActivity,
-  fetchActivities,
   fetchActivityZones,
   fetchAthlete,
   fetchAthleteRoutes,
   fetchSharedRoute,
   getJson,
   NotLoggedInError,
+  refreshActivity,
+  syncActivities,
 };
+export type {SyncReport};

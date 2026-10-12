@@ -1,5 +1,6 @@
 import {allowedAthletes} from './_lib/env.js';
 import {json} from './_lib/http.js';
+import {athleteKey} from './_lib/keys.js';
 import {redis} from './_lib/redis.js';
 import {stravaGet} from './_lib/strava.js';
 
@@ -21,7 +22,7 @@ export const GET = async (request: Request): Promise<Response> => {
 
   if (route.athlete?.id !== owner) return json({error: 'Not found'}, 404);
 
-  const checkIns = (await redis().hget('check_ins', routeId)) ?? [];
+  const checkIns = (await redis().hget(athleteKey(owner, 'check_ins'), routeId)) ?? [];
 
   return json({route, checkIns});
 };

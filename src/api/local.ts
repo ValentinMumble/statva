@@ -1,10 +1,7 @@
 import {Labels, Event, FTPTest} from '../models';
 import {Activity, Athlete, DetailedActivity} from '../models/strava';
 
-const fetchLocalActivities = async (): Promise<[Activity[], boolean]> => [
-  await (await fetch('/local_activities.json')).json(),
-  false,
-];
+const fetchLocalActivities = async (): Promise<Activity[]> => await (await fetch('/local_activities.json')).json();
 
 const fetchLocalAthlete = async (): Promise<Athlete> => await (await fetch('/local_athlete.json')).json();
 const fetchLocalMeta = async (): Promise<Record<string, DetailedActivity>> =>

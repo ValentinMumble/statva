@@ -24,7 +24,26 @@ Next improvements for Statva. Newest ideas at the top; move to **Done** when shi
 
 ## In progress
 
-Nothing right now.
+### Version 2 (branch `v2`, built from `SPECS.md`)
+
+v1 keeps running from `main` (release `v1.0.0`) until v2 replaces it.
+
+- [ ] **1. Data layer.** Every rider's data under their own Redis keys
+      (`athlete:<id>:<name>`). Activity summaries stored on the server and kept up to
+      date by a sync call (1 Strava call per visit instead of paging the whole list)
+      and a Strava webhook. Activity details backfilled a few at a time within the
+      shared rate limit. Settings stored per rider. A script copies the v1 data into
+      the owner's keys.
+- [ ] **2. Demo mode.** Made-up rides, events and settings, so the app runs and can be
+      developed without a Strava account, and `dev-data/` (real rides) can go.
+- [ ] **3. Settings page.** Every value written into the code today (bike ids, chain
+      names, part limits, club, heart rate, goal, map centre, locale…), with defaults.
+- [ ] **4. Features, page by page,** on the new data layer: rides list, stats panel,
+      parts and log flow, workshop, charts, dashboard, routes and check-ins. Models
+      and their tests carry over; components are rewritten against settings.
+- [ ] **5. Going public.** README with self-hosting steps, one-click deploy, an
+      openly licensed icon (Noto), map token from the environment, personal files
+      removed from the git history, then the repo made public.
 
 ## Done
 

@@ -2,15 +2,15 @@ import {
   deleteEvent,
   deleteExpense,
   deleteLabel,
-  fetchActivities,
-  fetchActivity,
   fetchAthlete,
   getActivities,
+  getActivitySummaries,
   getEvents,
   getExpenses,
   getFTPTests,
   getLabels,
-  upsertActivity,
+  refreshActivity,
+  syncActivities,
   upsertEvent,
   upsertExpense,
   upsertFTPTest,
@@ -34,10 +34,10 @@ const isDev = import.meta.env.MODE === 'development';
 const noop: Fetcher<unknown> = () => Promise.resolve(console.log('Local, not implemented'));
 
 const REGISTRY: Record<string, Fetcher<unknown>> = {
-  'activities.get': isDev ? fetchLocalActivities : fetchActivities,
-  'activity.get': fetchActivity, //TODO: Implement local version
+  'activities.get': isDev ? fetchLocalActivities : getActivitySummaries,
+  'activities.sync': isDev ? () => Promise.resolve({historyDone: true, limited: false, detailsFetched: 0}) : syncActivities,
+  'activity.refresh': isDev ? noop : refreshActivity,
   'activities.meta.get': isDev ? fetchLocalMeta : getActivities,
-  'activities.meta.set': isDev ? noop : upsertActivity,
   'athlete.get': isDev ? fetchLocalAthlete : fetchAthlete,
   'events.get': isDev ? fetchLocalEvents : getEvents,
   'events.set': isDev ? noop : upsertEvent,

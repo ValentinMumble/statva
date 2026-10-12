@@ -1,9 +1,11 @@
+import {recordUsage} from './budget.js';
 import {env} from './env.js';
+import {TOKENS_KEY} from './keys.js';
 import {redis} from './redis.js';
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const API = 'https://www.strava.com/api/v3';
-const TOKENS_KEY = 'strava_tokens';
+const DEAUTHORIZE_ENDPOINT = 'https://www.strava.com/oauth/deauthorize';
 // Refresh a little early, so a token does not expire on its way to Strava.
 const EXPIRY_MARGIN_SECONDS = 120;
 
@@ -51,8 +53,32 @@ const accessToken = async (athleteId: number): Promise<string> => {
 
 const stravaGet = async (athleteId: number, path: string, query = new URLSearchParams()): Promise<Response> => {
   const url = `${API}/${path}${0 < [...query].length ? `?${query}` : ''}`;
+  const response = await fetch(url, {headers: {Authorization: `Bearer ${await accessToken(athleteId)}`}});
+  await recordUsage(response.headers);
 
-  return await fetch(url, {headers: {Authorization: `Bearer ${await accessToken(athleteId)}`}});
+  return response;
 };
 
-export {exchangeCode, stravaGet};
+/** Revokes Statva's access to the athlete on Strava, which invalidates every token it holds. */
+const deauthorize = async (athleteId: number): Promise<void> => {
+  await fetch(DEAUTHORIZE_ENDPOINT, {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${await accessToken(athleteId)}`},
+  });
+};
+
+/** Forgets an athlete's tokens, after they disconnected Statva on Strava's side. */
+const forgetTokens = async (athleteId: number): Promise<void> => {
+  await redis().hdel(TOKENS_KEY, String(athleteId));
+};
+
+/** Whether Statva still has access to the athlete, checked with Strava itself. */
+const hasAccess = async (athleteId: number): Promise<boolean> => {
+  try {
+    return (await stravaGet(athleteId, 'athlete')).ok;
+  } catch {
+    return false;
+  }
+};
+
+export {deauthorize, exchangeCode, forgetTokens, hasAccess, stravaGet};

@@ -1,12 +1,15 @@
 import {BikeExpense, CheckIn, Event, FTPTest, Labels} from '../models';
 import {NotLoggedInError} from './strava';
-import {DetailedActivity} from '../models/strava';
+import {Activity, DetailedActivity} from '../models/strava';
 
 enum Key {
   EVENTS = 'events',
   LABELS = 'labels',
   FTP_TESTS = 'ftp_tests',
+  // Light summaries, for the list, and full details, for everything else. Both are
+  // written by the server only, from Strava.
   ACTIVITIES = 'activities',
+  DETAILS = 'details',
   CHECK_INS = 'check_ins',
   EXPENSES = 'expenses',
 }
@@ -24,27 +27,28 @@ const send = async <T>(body: Record<string, unknown>): Promise<T> => {
   return await response.json();
 };
 
-// The same few hash commands as the Upstash client, run by the server, which holds the token.
+// The same few hash commands as the Upstash client, run by the server on the logged-in
+// rider's own data.
 const client = () => ({
-  hgetall: <T>(key: Key) => send<T | null>({command: 'hgetall', key}),
+  hgetall: <T>(key: Key) => send<T | null>({command: 'hgetall', name: key}),
   // The whole hash, a page at a time, for hashes too big for one response.
   hscanAll: async <T>(key: Key): Promise<Record<string, T>> => {
     const all: Record<string, T> = {};
     let cursor = '0';
 
     do {
-      const page = await send<{cursor: string; entries: Record<string, T>}>({command: 'hscan', key, cursor});
+      const page = await send<{cursor: string; entries: Record<string, T>}>({command: 'hscan', name: key, cursor});
       Object.assign(all, page.entries);
       cursor = page.cursor;
     } while ('0' !== cursor);
 
     return all;
   },
-  hget: <T>(key: Key, field: string) => send<T | null>({command: 'hget', key, field}),
+  hget: <T>(key: Key, field: string) => send<T | null>({command: 'hget', name: key, field}),
   hset: async (key: Key, entries: Record<string, unknown>) => {
-    await Promise.all(Object.entries(entries).map(([field, value]) => send({command: 'hset', key, field, value})));
+    await Promise.all(Object.entries(entries).map(([field, value]) => send({command: 'hset', name: key, field, value})));
   },
-  hdel: (key: Key, field: string) => send({command: 'hdel', key, field}),
+  hdel: (key: Key, field: string) => send({command: 'hdel', name: key, field}),
 });
 
 const getEvents = async (): Promise<Event[] | null> => {
@@ -92,13 +96,11 @@ const upsertFTPTest = async (test: FTPTest) => {
   await client().hset(Key.FTP_TESTS, {[test.id]: test});
 };
 
-const getActivities = async (): Promise<Record<string, DetailedActivity>> => {
-  return await client().hscanAll<DetailedActivity>(Key.ACTIVITIES);
-};
+const getActivities = async (): Promise<Record<string, DetailedActivity>> =>
+  await client().hscanAll<DetailedActivity>(Key.DETAILS);
 
-const upsertActivity = async (activity: DetailedActivity) => {
-  await client().hset(Key.ACTIVITIES, {[activity.id]: activity});
-};
+const getActivitySummaries = async (): Promise<Activity[]> =>
+  Object.values(await client().hscanAll<Activity>(Key.ACTIVITIES));
 
 const addCheckIn = async (checkIn: CheckIn) => {
   const checkIns = (await client().hget<CheckIn[]>(Key.CHECK_INS, checkIn.routeId)) ?? [];
@@ -131,11 +133,11 @@ export {
   deleteExpense,
   deleteLabel,
   getActivities,
+  getActivitySummaries,
   getEvents,
   getExpenses,
   getFTPTests,
   getLabels,
-  upsertActivity,
   upsertEvent,
   upsertExpense,
   upsertFTPTest,

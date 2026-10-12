@@ -1,56 +1,39 @@
 import {useMemo, useCallback} from 'react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {ActivityFilter, dateSearchHaystack, normalizeString, sortActivities} from '../models';
+import {SyncReport} from '../api';
 import {Activity} from '../models/strava';
 import {getFetcher} from './useFetcher';
 import {useFtp} from './useFtp';
 import {useActivityMeta} from './useActivityMeta';
 
-const fetchActivities = getFetcher<[Activity[], boolean]>('activities.get');
-const FIRST_PAGE_SIZE = 30;
+const fetchActivities = getFetcher<Activity[]>('activities.get');
+const syncActivities = getFetcher<SyncReport>('activities.sync');
 
+/**
+ * The stored activities, shown at once, and a sync with Strava on every visit. A first
+ * visit pages the history in over a few sync calls; the list fills up after each one.
+ */
 const useAllActivities = () => {
   const queryClient = useQueryClient();
+  const query = useQuery({queryKey: ['activities'], queryFn: fetchActivities});
 
-  const query = useQuery({
-    queryKey: ['activities'],
-    queryFn: async (): Promise<Activity[]> => {
-      const activities: Record<string, Activity> = {};
+  const sync = useCallback(async (): Promise<SyncReport> => {
+    let report: SyncReport;
 
-      const [firstPage, hasMoreAfterFirst] = await fetchActivities(1, FIRST_PAGE_SIZE);
-      firstPage.forEach(activity => (activities[activity.id] = activity));
+    do {
+      report = await syncActivities();
+      await queryClient.invalidateQueries({queryKey: ['activities']});
+    } while (!report.historyDone && !report.limited);
 
-      if (hasMoreAfterFirst) {
-        queryClient.setQueryData<Activity[]>(['activities'], Object.values(activities));
+    if (0 < report.detailsFetched) await queryClient.invalidateQueries({queryKey: ['activityMeta']});
 
-        let page = 1;
-        let hasMore = true;
-
-        while (hasMore) {
-          const [pageActivities, more] = await fetchActivities(page);
-          pageActivities.forEach(activity => (activities[activity.id] = activity));
-          hasMore = more;
-          page++;
-
-          if (hasMore) {
-            queryClient.setQueryData<Activity[]>(['activities'], Object.values(activities));
-          }
-        }
-      }
-
-      return Object.values(activities);
-    },
-  });
-
-  const refreshLatest = useCallback(async () => {
-    const [latest] = await fetchActivities(1, FIRST_PAGE_SIZE);
-    queryClient.setQueryData<Activity[]>(['activities'], old => {
-      if (!old) return latest;
-      const existing = new Map(old.map(a => [a.id, a]));
-      latest.forEach(a => existing.set(a.id, a));
-      return [...existing.values()];
-    });
+    return report;
   }, [queryClient]);
+
+  useQuery({queryKey: ['sync'], queryFn: sync, retry: false});
+
+  const refreshLatest = useCallback(() => queryClient.refetchQueries({queryKey: ['sync']}), [queryClient]);
 
   return {...query, refreshLatest};
 };
