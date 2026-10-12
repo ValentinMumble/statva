@@ -6,6 +6,7 @@ const useRoutes = () => {
   const {data: routes = []} = useQuery<Route[]>({
     queryKey: ['routes'],
     queryFn: fetchAthleteRoutes,
+    retry: false,
   });
 
   return routes;

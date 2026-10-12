@@ -1,5 +1,5 @@
-import {Redis} from '@upstash/redis';
 import {BikeExpense, CheckIn, Event, FTPTest, Labels} from '../models';
+import {NotLoggedInError} from './strava';
 import {DetailedActivity} from '../models/strava';
 
 enum Key {
@@ -11,13 +11,41 @@ enum Key {
   EXPENSES = 'expenses',
 }
 
-let _client: Redis | null = null;
+const send = async <T>(body: Record<string, unknown>): Promise<T> => {
+  const response = await fetch('/api/store', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
 
-const client = () =>
-  (_client ??= new Redis({
-    url: import.meta.env.VITE_KV_REST_API_URL,
-    token: import.meta.env.VITE_KV_REST_API_TOKEN,
-  }));
+  if (401 === response.status) throw new NotLoggedInError('Not logged in');
+  if (!response.ok) throw new Error(`Store ${response.status}`);
+
+  return await response.json();
+};
+
+// The same few hash commands as the Upstash client, run by the server, which holds the token.
+const client = () => ({
+  hgetall: <T>(key: Key) => send<T | null>({command: 'hgetall', key}),
+  // The whole hash, a page at a time, for hashes too big for one response.
+  hscanAll: async <T>(key: Key): Promise<Record<string, T>> => {
+    const all: Record<string, T> = {};
+    let cursor = '0';
+
+    do {
+      const page = await send<{cursor: string; entries: Record<string, T>}>({command: 'hscan', key, cursor});
+      Object.assign(all, page.entries);
+      cursor = page.cursor;
+    } while ('0' !== cursor);
+
+    return all;
+  },
+  hget: <T>(key: Key, field: string) => send<T | null>({command: 'hget', key, field}),
+  hset: async (key: Key, entries: Record<string, unknown>) => {
+    await Promise.all(Object.entries(entries).map(([field, value]) => send({command: 'hset', key, field, value})));
+  },
+  hdel: (key: Key, field: string) => send({command: 'hdel', key, field}),
+});
 
 const getEvents = async (): Promise<Event[] | null> => {
   const rawEvents = await client().hgetall<Record<string, Event>>(Key.EVENTS);
@@ -65,23 +93,11 @@ const upsertFTPTest = async (test: FTPTest) => {
 };
 
 const getActivities = async (): Promise<Record<string, DetailedActivity>> => {
-  const activities = await client().hgetall<Record<string, DetailedActivity>>(Key.ACTIVITIES);
-
-  return activities ?? {};
+  return await client().hscanAll<DetailedActivity>(Key.ACTIVITIES);
 };
 
 const upsertActivity = async (activity: DetailedActivity) => {
   await client().hset(Key.ACTIVITIES, {[activity.id]: activity});
-};
-
-const getCheckIns = async (): Promise<CheckIn[]> => {
-  const rawCheckins = await client().hgetall<Record<string, CheckIn[]>>(Key.CHECK_INS);
-
-  if (null === rawCheckins) return [];
-
-  return Object.values(rawCheckins)
-    .flat()
-    .map(checkIn => ({...checkIn, date: new Date(checkIn.date)}));
 };
 
 const addCheckIn = async (checkIn: CheckIn) => {
@@ -115,7 +131,6 @@ export {
   deleteExpense,
   deleteLabel,
   getActivities,
-  getCheckIns,
   getEvents,
   getExpenses,
   getFTPTests,

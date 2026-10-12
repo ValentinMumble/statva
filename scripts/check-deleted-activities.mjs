@@ -9,35 +9,19 @@
  */
 import {Redis} from '@upstash/redis';
 import {writeFile} from 'fs/promises';
-import {loadEnv, REDIS_KEYS, STRAVA_KEYS} from './env.mjs';
+import {loadEnv, ownerAccessToken, REDIS_KEYS, STRAVA_KEYS} from './env.mjs';
 
 const env = loadEnv([...STRAVA_KEYS, ...REDIS_KEYS]);
 
-const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ATHLETE_ACTIVITIES_ENDPOINT = 'https://www.strava.com/api/v3/athlete/activities';
 const ITEMS_PER_PAGE = 200;
 const PAGE_PAUSE_MS = 1000;
 
-const redis = new Redis({url: env.VITE_KV_REST_API_URL, token: env.VITE_KV_REST_API_TOKEN});
+const redis = new Redis({url: env.KV_REST_API_URL, token: env.KV_REST_API_TOKEN});
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-const fetchAccessToken = async () => {
-  const response = await fetch(TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      client_id: env.VITE_STRAVA_CLIENT_ID,
-      client_secret: env.VITE_STRAVA_CLIENT_SECRET,
-      refresh_token: env.VITE_STRAVA_REFRESH_TOKEN,
-      grant_type: 'refresh_token',
-    }),
-  });
-
-  if (!response.ok) throw new Error(`Could not refresh the Strava token: ${response.status}`);
-
-  return (await response.json()).access_token;
-};
+const fetchAccessToken = () => ownerAccessToken(redis);
 
 const fetchAllActivityIds = async token => {
   const ids = new Set();

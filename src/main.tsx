@@ -5,7 +5,7 @@ import {ThemeProvider} from 'next-themes';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {AddCheckIn, App, Dashboard, Routes, Workshop} from './pages';
 import {Toaster} from './components/ui';
-import {PageTitle} from './components';
+import {AuthGate, PageTitle} from './components';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,10 +27,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route
                 path="/"
                 element={
-                  <>
+                  <AuthGate>
                     <PageTitle title="Statva 📈" />
                     <App />
-                  </>
+                  </AuthGate>
                 }
               />
               <Route
@@ -42,15 +42,29 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                   </>
                 }
               />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/workshop" element={<Workshop />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <AuthGate>
+                    <Dashboard />
+                  </AuthGate>
+                }
+              />
+              <Route
+                path="/workshop"
+                element={
+                  <AuthGate>
+                    <Workshop />
+                  </AuthGate>
+                }
+              />
               <Route
                 path="/check-in"
                 element={
-                  <>
+                  <AuthGate>
                     <PageTitle title="Statva check-in" />
                     <AddCheckIn />
-                  </>
+                  </AuthGate>
                 }
               />
             </RouterRoutes>

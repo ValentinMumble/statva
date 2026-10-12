@@ -1,7 +1,6 @@
 export * from './useActivityMeta';
 export * from './useActivities';
 export * from './useAthlete';
-export * from './useCheckIns';
 export * from './useEvents';
 export * from './useExpenses';
 export * from './useFetcher';
@@ -9,3 +8,5 @@ export * from './useFtp';
 export * from './useGeolocation';
 export * from './useLabels';
 export * from './useRoutes';
+export * from './useSession';
+export * from './useSharedRoute';

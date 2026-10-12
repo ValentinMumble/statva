@@ -1,4 +1,5 @@
 export * from './ActivityIcon';
+export * from './AuthGate';
 export * from './ActivityListItem';
 export * from './ActivityMeta';
 export * from './ActivityTable';

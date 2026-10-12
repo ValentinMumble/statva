@@ -11,7 +11,7 @@ import {loadEnv, REDIS_KEYS} from './env.mjs';
 
 const env = loadEnv(REDIS_KEYS);
 
-const redis = new Redis({url: env.VITE_KV_REST_API_URL, token: env.VITE_KV_REST_API_TOKEN});
+const redis = new Redis({url: env.KV_REST_API_URL, token: env.KV_REST_API_TOKEN});
 
 const [, , reportPath] = process.argv;
 

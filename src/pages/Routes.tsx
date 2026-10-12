@@ -1,14 +1,15 @@
 import {Link, useParams} from 'react-router';
 import {IconButton, VStack} from '@chakra-ui/react';
 import {MdArrowBack} from 'react-icons/md';
-import {useCheckIns, useRoutes} from '../hooks';
+import {useRoutes, useSharedRoute} from '../hooks';
 import {RouteMap, RouteCard, RouteDrawer, CheckIns} from '../components';
 
 const Routes = () => {
   const {routeId} = useParams();
+  // The route list needs a login; the shared route itself does not, so a link works for anyone.
   const routes = useRoutes();
-  const checkIns = useCheckIns(routeId);
-  const selectedRoute = routes?.find(route => route.id === Number(routeId));
+  const {route: sharedRoute, checkIns} = useSharedRoute(routeId);
+  const selectedRoute = sharedRoute ?? routes.find(route => route.id === Number(routeId));
 
   return (
     <>
@@ -22,7 +23,9 @@ const Routes = () => {
           </Link>
         </IconButton>
         <RouteCard route={selectedRoute} checkIns={checkIns} />
-        <RouteDrawer selectedRoute={selectedRoute} routes={routes} defaultOpen={undefined === routeId} />
+        {0 < routes.length && (
+          <RouteDrawer selectedRoute={selectedRoute} routes={routes} defaultOpen={undefined === routeId} />
+        )}
       </VStack>
     </>
   );

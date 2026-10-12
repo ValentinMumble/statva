@@ -57,6 +57,9 @@ const TopBar = () => {
       <Group gap="4px">
         <Group hideBelow="md">
           <EditLabels />
+          <Button asChild={true} size="sm" variant="ghost" title="Log out">
+            <a href="/api/auth/logout">↩︎</a>
+          </Button>
         </Group>
         <LogEvent
           onLogged={refreshEvents}

@@ -1,105 +1,56 @@
+import {CheckIn} from '../models';
 import {Activity, ActivityZone, Athlete, DetailedActivity, Route} from '../models/strava';
 
-const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
-const ATHLETE_ENDPOINT = `https://www.strava.com/api/v3/athlete`;
-const ACTIVITY_ENDPOINT = 'https://www.strava.com/api/v3/activities';
-const getAthleteRoutesEndpoint = (id: string) => `${ATHLETE_ENDPOINT}s/${id}/routes`;
 const ITEMS_PER_PAGE = 200;
 
-const assertOk = async (response: Response): Promise<Response> => {
+/** Thrown when the server says nobody is logged in, so the app can show the login screen. */
+class NotLoggedInError extends Error {}
+
+const getJson = async <T>(url: string): Promise<T> => {
+  const response = await fetch(url);
+
+  if (401 === response.status) throw new NotLoggedInError('Not logged in');
   if (!response.ok) {
-    const body = await response.clone().json().catch(() => ({}));
-    throw new Error(`Strava API ${response.status}: ${body.message ?? response.statusText}`);
+    const body = await response.json().catch(() => ({}));
+    throw new Error(`Strava API ${response.status}: ${body.message ?? body.error ?? response.statusText}`);
   }
-  return response;
-};
-
-let token: string | null = null;
-let tokenTimestamp: number = 0;
-let refreshPromise: Promise<string> | null = null;
-
-const TOKEN_TTL_MS = 6 * 3_600_000;
-const isTokenExpired = () => tokenTimestamp + TOKEN_TTL_MS < Date.now();
-
-const fetchAccessToken = async () => {
-  if (token !== null && !isTokenExpired()) return token;
-
-  if (refreshPromise) return refreshPromise;
-
-  refreshPromise = (async () => {
-    const body = JSON.stringify({
-      client_id: import.meta.env.VITE_STRAVA_CLIENT_ID,
-      client_secret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
-      refresh_token: import.meta.env.VITE_STRAVA_REFRESH_TOKEN,
-      grant_type: 'refresh_token',
-    });
-
-    const response = await fetch(TOKEN_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json, text/plain, */*',
-        'Content-Type': 'application/json',
-      },
-      body,
-    });
-
-    await assertOk(response);
-    token = (await response.json()).access_token;
-    tokenTimestamp = Date.now();
-
-    return token!;
-  })().finally(() => { refreshPromise = null; });
-
-  return refreshPromise;
-};
-
-const fetchAthlete = async (): Promise<Athlete> => {
-  const accessToken = await fetchAccessToken();
-  const response = await fetch(`${ATHLETE_ENDPOINT}?access_token=${accessToken}`);
-  await assertOk(response);
 
   return await response.json();
 };
 
-const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[Activity[], boolean]> => {
-  const accessToken = await fetchAccessToken();
+// Strava is only ever called through the server, which holds the tokens.
+const strava = <T>(path: string, params: Record<string, number> = {}): Promise<T> => {
+  const query = new URLSearchParams({path});
+  Object.entries(params).forEach(([key, value]) => query.set(key, String(value)));
 
-  const response = await fetch(
-    `${ATHLETE_ENDPOINT}/activities?access_token=${accessToken}&page=${page}&per_page=${items}`
-  );
-  await assertOk(response);
-  const activities = await response.json();
+  return getJson<T>(`/api/strava?${query}`);
+};
+
+const fetchAthlete = (): Promise<Athlete> => strava<Athlete>('athlete');
+
+const fetchActivities = async (page: number, items = ITEMS_PER_PAGE): Promise<[Activity[], boolean]> => {
+  const activities = await strava<Activity[]>('athlete/activities', {page, per_page: items});
 
   return [activities, activities.length === items];
 };
 
-const fetchActivity = async (id: number): Promise<DetailedActivity> => {
-  const accessToken = await fetchAccessToken();
+const fetchActivity = (id: number): Promise<DetailedActivity> => strava<DetailedActivity>(`activities/${id}`);
 
-  const response = await fetch(`${ACTIVITY_ENDPOINT}/${id}?access_token=${accessToken}`);
-  await assertOk(response);
+const fetchAthleteRoutes = (): Promise<Route[]> => strava<Route[]>('routes');
 
-  return await response.json();
+const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<ActivityZone[]>(`activities/${id}/zones`);
+
+/** A shared route and its check-ins, readable without logging in. */
+const fetchSharedRoute = (id: string): Promise<{route: Route; checkIns: CheckIn[]}> =>
+  getJson(`/api/shared-route?id=${encodeURIComponent(id)}`);
+
+export {
+  fetchActivity,
+  fetchActivities,
+  fetchActivityZones,
+  fetchAthlete,
+  fetchAthleteRoutes,
+  fetchSharedRoute,
+  getJson,
+  NotLoggedInError,
 };
-
-const fetchAthleteRoutes = async (): Promise<Route[]> => {
-  const accessToken = await fetchAccessToken();
-
-  const response = await fetch(
-    `${getAthleteRoutesEndpoint(import.meta.env.VITE_STRAVA_USER_ID)}?access_token=${accessToken}`
-  );
-  await assertOk(response);
-
-  return await response.json();
-};
-
-const fetchActivityZones = async (id: number): Promise<ActivityZone[]> => {
-  const accessToken = await fetchAccessToken();
-
-  const response = await fetch(`${ACTIVITY_ENDPOINT}/${id}/zones?access_token=${accessToken}`);
-  await assertOk(response);
-
-  return await response.json();
-};
-
-export {fetchActivity, fetchActivities, fetchActivityZones, fetchAthlete, fetchAthleteRoutes};

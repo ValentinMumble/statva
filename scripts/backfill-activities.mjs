@@ -15,11 +15,10 @@
  *   node scripts/backfill-activities.mjs --dry    report what it would do
  */
 import {Redis} from '@upstash/redis';
-import {loadEnv, REDIS_KEYS, STRAVA_KEYS} from './env.mjs';
+import {loadEnv, ownerAccessToken, REDIS_KEYS, STRAVA_KEYS} from './env.mjs';
 
 loadEnv([...STRAVA_KEYS, ...REDIS_KEYS]);
 
-const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const ACTIVITIES_ENDPOINT = 'https://www.strava.com/api/v3/activities';
 const ATHLETE_ACTIVITIES_ENDPOINT = 'https://www.strava.com/api/v3/athlete/activities';
 const ITEMS_PER_PAGE = 200;
@@ -36,28 +35,13 @@ const TOKEN_LIFETIME_MS = 5_000_000;
 const isDryRun = process.argv.includes('--dry');
 
 const redis = new Redis({
-  url: process.env.VITE_KV_REST_API_URL,
-  token: process.env.VITE_KV_REST_API_TOKEN,
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
 });
 
 const log = message => console.log(`[${new Date().toLocaleTimeString()}] ${message}`);
 
-const fetchAccessToken = async () => {
-  const response = await fetch(TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      client_id: process.env.VITE_STRAVA_CLIENT_ID,
-      client_secret: process.env.VITE_STRAVA_CLIENT_SECRET,
-      refresh_token: process.env.VITE_STRAVA_REFRESH_TOKEN,
-      grant_type: 'refresh_token',
-    }),
-  });
-
-  if (!response.ok) throw new Error(`Could not refresh the Strava token: ${response.status}`);
-
-  return (await response.json()).access_token;
-};
+const fetchAccessToken = () => ownerAccessToken(redis);
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
