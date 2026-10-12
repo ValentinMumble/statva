@@ -111,3 +111,7 @@ Statva stores your activities (as Strava sends them), your parts history, labels
 tests, expenses and settings, in your copy's database, under your athlete id. The Strava
 tokens stay on the server. Disconnecting from Settings, or removing Statva from
 <https://www.strava.com/settings/apps>, deletes all of it.
+
+## Licence
+
+MIT, see [LICENSE](LICENSE).
