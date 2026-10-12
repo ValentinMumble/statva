@@ -1,5 +1,5 @@
 import {extractNormalizedPower} from './activity-meta';
-import {computeFinishCount, extractNPGroup} from './activity-npeloton';
+import {ClubRules, computeFinishCount, DEFAULT_CLUB, extractNPGroup, isClubRide} from './activity-npeloton';
 import {daysExceedingDistance, eddingtonNumber} from './activity-stats';
 import {countBy} from './util';
 import {GetLabel} from './label';
@@ -265,6 +265,7 @@ const computeDashboard = (
   ftpTests: FTPTest[],
   expenses: BikeExpense[],
   label: GetLabel,
+  club: ClubRules = DEFAULT_CLUB,
 ): Dashboard => {
   const sorted = [...activities].sort((a, b) => utcDate(a).getTime() - utcDate(b).getTime());
 
@@ -305,8 +306,8 @@ const computeDashboard = (
     .map(([gearId, entry]) => ({name: 'none' === gearId ? '🤷' : label(gearId), ...entry}))
     .sort((a, b) => b.distance - a.distance);
 
-  const npRides = sorted.filter(({name}) => name.includes('N-Peloton'));
-  const npGroups = countBy(npRides, activity => extractNPGroup(activity.name, activity));
+  const npRides = sorted.filter(({name}) => isClubRide(name, club));
+  const npGroups = countBy(npRides, activity => extractNPGroup(activity.name, activity, club));
 
   const onFoot = sorted.filter(({sport_type}) => !SKI_TYPES.includes(sport_type));
   const rides = sorted.filter(({sport_type}) => sport_type.includes('Ride'));
@@ -527,7 +528,7 @@ const computeDashboard = (
       rides: npRides.length,
       distance: sum(npRides.map(({distance}) => distance)),
       groups: toSorted(npGroups),
-      finishes: toSorted(computeFinishCount(sorted), 10),
+      finishes: toSorted(computeFinishCount(sorted, club), 10),
     },
     maintenance: {
       total: events.length,

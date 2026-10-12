@@ -9,4 +9,5 @@ export * from './useGeolocation';
 export * from './useLabels';
 export * from './useRoutes';
 export * from './useSession';
+export * from './useSettings';
 export * from './useSharedRoute';

@@ -3,7 +3,7 @@ import {Group, SegmentGroupValueChangeDetails, Span, Text} from '@chakra-ui/reac
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, Cell, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl} from '../ui';
-import {useActivities, useEvents, useLabels} from '../../hooks';
+import {useActivities, useEvents, useLabels, useSettings} from '../../hooks';
 import {
   formatDistance,
   getEventLabel,
@@ -11,7 +11,6 @@ import {
   getRidesBetween,
   labelCollection,
   Event,
-  SUPER6,
 } from '../../models';
 import {Activity} from '../../models/strava';
 import {ChartTooltip} from './ChartTooltip';
@@ -21,8 +20,11 @@ const DATA_TYPES: (keyof Activity)[] = ['distance', 'total_elevation_gain'];
 
 const getTotal = (values: number[]): number => values.reduce((total, current) => total + current, 0);
 
-const EventOdometerChart = () => {
-  const [gearId, setGearId] = useState<string>(SUPER6);
+// Given a bike, the chart follows it and leaves the choice to the page.
+const EventOdometerChart = ({bike}: {bike?: string} = {}) => {
+  const {defaultBike} = useSettings();
+  const [chosenBike, setGearId] = useState<string | null>(null);
+  const gearId = bike ?? chosenBike ?? defaultBike;
   const [data, setData] = useState<keyof Activity>('distance');
   const [eventType, setEventType] = useState<string>('tire');
   const {label} = useLabels();
@@ -110,7 +112,9 @@ const EventOdometerChart = () => {
         <Text>
           <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
         </Text>
-        <SegmentedControl size="xs" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
+        {undefined === bike && (
+          <SegmentedControl size="xs" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
+        )}
         <SegmentedControl
           size="xs"
           value={data}

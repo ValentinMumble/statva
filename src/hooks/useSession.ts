@@ -1,17 +1,17 @@
 import {useQuery} from '@tanstack/react-query';
+import {isDemo} from '../demo/mode';
 
-const isDev = import.meta.env.MODE === 'development';
-
-/** Whether a rider is logged in. Local development runs on the local data files, without a login. */
+/** Whether a rider is logged in. The demo needs no login. */
 const useSession = () => {
+  const demo = isDemo();
   const {data, isLoading} = useQuery({
     queryKey: ['session'],
     queryFn: async () => (await fetch('/api/auth/me')).ok,
-    enabled: !isDev,
+    enabled: !demo,
     retry: false,
   });
 
-  return {isLoggedIn: isDev || true === data, isLoading: !isDev && isLoading};
+  return {isLoggedIn: demo || true === data, isLoading: !demo && isLoading, isDemo: demo};
 };
 
 export {useSession};

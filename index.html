@@ -7,22 +7,18 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+    />
   </head>
   <style>
     body {
       margin: 0;
       padding: 0;
-      background-color: black;
-    }
-    #root {
-      width: 100vw;
-      height: 100vh;
-    }
-    @media only screen and (min-device-width: 320px) and (max-device-width: 600px) {
-      #root {
-        width: 100vw;
-        height: 80vh;
-      }
+      -webkit-font-smoothing: antialiased;
     }
     /* iOS zooms into any field under 16px when it gets focus, and stays zoomed. */
     @media (pointer: coarse) {

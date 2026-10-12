@@ -1,8 +1,5 @@
+import {riderProfile} from './rider';
 import {Activity} from './strava';
-
-const MAX_HR = 188;
-const RESTING_HR = 52;
-const LTHR = 172;
 
 /**
  * Power-based TSS (TrainingPeaks standard):
@@ -19,6 +16,7 @@ const powerTSS = (durationSeconds: number, normalizedPower: number, ftp: number)
  * Calibrated so 1h at LTHR ≈ 100 hrTSS.
  */
 const hrTSS = (durationSeconds: number, avgHeartrate: number): number => {
+  const {max: MAX_HR, resting: RESTING_HR, threshold: LTHR} = riderProfile().heartRate;
   const hrReserve = MAX_HR - RESTING_HR;
   if (hrReserve === 0) return 0;
 
@@ -49,7 +47,7 @@ const computeTSS = (activity: Activity, ftp: number): TSSResult => {
     };
   }
 
-  if (activity.average_heartrate && activity.average_heartrate > RESTING_HR) {
+  if (activity.average_heartrate && activity.average_heartrate > riderProfile().heartRate.resting) {
     return {
       value: Math.round(hrTSS(activity.moving_time, activity.average_heartrate)),
       source: 'hr',

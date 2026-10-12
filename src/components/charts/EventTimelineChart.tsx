@@ -3,9 +3,8 @@ import {Group, SegmentGroupValueChangeDetails} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl} from '../../components/ui';
-import {EditEvents} from '../../components';
-import {useActivities, useEvents, useLabels} from '../../hooks';
-import {extractEmoji, getEventLabel, getSeriesColor, labelCollection, Event, SUPER6} from '../../models';
+import {useActivities, useEvents, useLabels, useSettings} from '../../hooks';
+import {extractEmoji, getEventLabel, getSeriesColor, labelCollection, Event} from '../../models';
 import {ChartTooltip} from './ChartTooltip';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -33,10 +32,13 @@ type Segment = {
   isOneShot: boolean;
 };
 
-const EventTimelineChart = () => {
-  const [gearId, setGearId] = useState<string>(SUPER6);
+// Given a bike, the chart follows it and leaves the choice to the page.
+const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
+  const {defaultBike} = useSettings();
+  const [chosenBike, setGearId] = useState<string | null>(null);
+  const gearId = bike ?? chosenBike ?? defaultBike;
   const {label} = useLabels();
-  const {events: allEvents, refetch: refreshEvents} = useEvents();
+  const {events: allEvents} = useEvents();
   const {activities} = useActivities({
     withCommute: true,
     withPrivate: true,
@@ -122,8 +124,9 @@ const EventTimelineChart = () => {
   return (
     <>
       <Group width="full" justifyContent="end" gap="20px">
-        <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
-        <EditEvents onEditEvents={refreshEvents} />
+        {undefined === bike && (
+          <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
+        )}
       </Group>
       <Chart.Root width="100%" height="450px" chart={chart}>
         <ResponsiveContainer width="100%" height="100%">

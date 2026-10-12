@@ -1,4 +1,4 @@
-import {BikeExpense, CheckIn, Event, FTPTest, Labels} from '../models';
+import {BikeExpense, CheckIn, Event, FTPTest, Labels, Settings} from '../models';
 import {NotLoggedInError} from './strava';
 import {Activity, DetailedActivity} from '../models/strava';
 
@@ -12,6 +12,7 @@ enum Key {
   DETAILS = 'details',
   CHECK_INS = 'check_ins',
   EXPENSES = 'expenses',
+  SETTINGS = 'settings',
 }
 
 const send = async <T>(body: Record<string, unknown>): Promise<T> => {
@@ -109,6 +110,12 @@ const addCheckIn = async (checkIn: CheckIn) => {
   await client().hset(Key.CHECK_INS, {[checkIn.routeId]: checkIns});
 };
 
+const getSettings = async (): Promise<Partial<Settings> | null> => await client().hgetall<Partial<Settings>>(Key.SETTINGS);
+
+const setSetting = async (field: keyof Settings, value: unknown) => {
+  await client().hset(Key.SETTINGS, {[field]: value});
+};
+
 const getExpenses = async (): Promise<BikeExpense[]> => {
   const rawExpenses = await client().hgetall<Record<string, BikeExpense>>(Key.EXPENSES);
 
@@ -138,6 +145,8 @@ export {
   getExpenses,
   getFTPTests,
   getLabels,
+  getSettings,
+  setSetting,
   upsertEvent,
   upsertExpense,
   upsertFTPTest,

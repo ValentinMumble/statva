@@ -1,12 +1,12 @@
 import {useActivities, useActivityMeta, useLabels} from '../../hooks';
-import {countBy, extractNPGroup} from '../../models';
+import {ClubRules, countBy, DEFAULT_CLUB, extractNPGroup} from '../../models';
 import {CountPieChart} from './CountPieChart';
 
-const NPGroupPieChart = () => {
+const NPGroupPieChart = ({club = DEFAULT_CLUB}: {club?: ClubRules}) => {
   const {activities} = useActivities({
     withCommute: false,
     withPrivate: true,
-    search: 'N-Peloton',
+    search: club.name,
     sort: 'date',
     sortDirection: 'asc',
   });
@@ -14,7 +14,7 @@ const NPGroupPieChart = () => {
   const {activityMeta} = useActivityMeta();
 
   const groupMap = countBy(activities ?? [], activity =>
-    extractNPGroup(activity.name, activityMeta[activity.id] ?? null)
+    extractNPGroup(activity.name, activityMeta[activity.id] ?? null, club)
   );
   const data = Object.fromEntries(Object.entries(groupMap).sort(([a], [b]) => a.localeCompare(b)));
   const labels = Object.keys(data).map(key => label(key));

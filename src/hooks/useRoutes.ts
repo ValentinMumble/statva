@@ -1,6 +1,8 @@
 import {useQuery} from '@tanstack/react-query';
-import {fetchAthleteRoutes} from '../api';
 import {Route} from '../models/strava';
+import {getFetcher} from './useFetcher';
+
+const fetchAthleteRoutes = getFetcher<Route[]>('routes.get');
 
 const useRoutes = () => {
   const {data: routes = []} = useQuery<Route[]>({

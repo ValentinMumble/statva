@@ -30,22 +30,6 @@ const formatDurationInDays = (durationInSeconds: number): string => {
   return `${Math.floor(hourCount)}${suffix} days`;
 };
 
-const HEART_ZONE_BG_COLORS = ['transparent', '#abcf643a', '#e6d44c57', '#fab8334e', '#ff8e155b', '#ff4d114a'];
-const POWER_ZONE_BG_COLORS = [...HEART_ZONE_BG_COLORS, '#ff0d0d50', '#ff0d0d50'];
-const MONTH_BG_COLORS = [
-  '#FF000015', // Red
-  '#0000FF15', // Blue
-  '#00800015', // Green
-  '#FFFF0015', // Yellow
-  '#80008015', // Purple
-  '#FFA50015', // Orange
-  '#FFC0CB15', // Pink
-  '#A52A2A15', // Brown
-  '#80808015', // Gray
-  '#00FFFF15', // Cyan
-  '#FF634715', // Tomato (Red-Orange)
-  '#00FF7F15', // Spring Green
-];
 
 const getZoneColor = (zone: number): string => {
   switch (zone) {
@@ -86,13 +70,6 @@ const getMonday = (date: Date = new Date()): Date => {
   return new Date(d.setDate(diff));
 };
 
-const arrayRotate = <T>(originalArray: T[], count: number): T[] => {
-  const array = [...originalArray];
-  const length = array.length;
-  array.push(...array.splice(0, ((-count % length) + length) % length));
-
-  return array;
-};
 
 const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
   Array(Math.ceil((stop - start) / step) + 1)
@@ -115,6 +92,34 @@ const getDaysInMonth = (month: number, year: number) =>
 
 const getMonthDiff = (dateFrom: Date, dateTo: Date): number =>
   dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());
+
+/** Google's encoded polyline format (precision 1e5), the one Strava uses for tracks. */
+const encodePolyline = (points: number[][]): string => {
+  let previousLat = 0;
+  let previousLng = 0;
+  let encoded = '';
+
+  const encodeValue = (value: number) => {
+    let shifted = value < 0 ? ~(value << 1) : value << 1;
+
+    while (shifted >= 0x20) {
+      encoded += String.fromCharCode((0x20 | (shifted & 0x1f)) + 63);
+      shifted >>= 5;
+    }
+    encoded += String.fromCharCode(shifted + 63);
+  };
+
+  for (const [lat, lng] of points) {
+    const roundedLat = Math.round(lat * 1e5);
+    const roundedLng = Math.round(lng * 1e5);
+    encodeValue(roundedLat - previousLat);
+    encodeValue(roundedLng - previousLng);
+    previousLat = roundedLat;
+    previousLng = roundedLng;
+  }
+
+  return encoded;
+};
 
 const decodePolyline = (encoded: string): number[][] => {
   let index = 0;
@@ -198,12 +203,12 @@ const countBy = <T>(items: T[], keyFn: (item: T) => string, valueFn: (item: T) =
   }, {});
 
 export {
-  arrayRotate,
   backup,
   countBy,
   dateSearchHaystack,
   normalizeString,
   decodePolyline,
+  encodePolyline,
   formatCalories,
   formatCurrency,
   formatDistance,
@@ -218,9 +223,6 @@ export {
   getMonthDiff,
   getWeekNumber,
   getZoneColor,
-  HEART_ZONE_BG_COLORS,
-  MONTH_BG_COLORS,
-  POWER_ZONE_BG_COLORS,
   range,
   removeNull,
 };

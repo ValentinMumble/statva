@@ -9,12 +9,9 @@ import {
   getPeriodColor,
   getRidesBetween,
   labelCollection,
-  RETIRED_BIKES,
-  RETIRED_CHAINS,
-  ROTATION_LIMIT,
-  SUPER6,
+  rotationLimit,
 } from '../../models';
-import {useActivities, useEvents, useLabels} from '../../hooks';
+import {useActivities, useEvents, useLabels, useSettings} from '../../hooks';
 import {ChartTooltip} from './ChartTooltip';
 
 const getTotal = (distances: number[]): number => distances.reduce((total, current) => total + current, 0);
@@ -22,9 +19,15 @@ const getTotal = (distances: number[]): number => distances.reduce((total, curre
 const getRowColor = (isCurrent: boolean, isSuggested: boolean): string =>
   isCurrent ? 'orange.solid' : isSuggested ? 'green.solid' : 'fg.muted';
 
-const ChainChart = () => {
+// Given a bike, the chart follows it and leaves the choice to the page.
+const ChainChart = ({bike}: {bike?: string} = {}) => {
   const [withRetired, setWithRetired] = useState<boolean>(false);
-  const [gearId, setGearId] = useState<string>(SUPER6);
+  const {defaultBike} = useSettings();
+  const [chosenBike, setGearId] = useState<string | null>(null);
+  const gearId = bike ?? chosenBike ?? defaultBike;
+  const {partRules, retiredBikes} = useSettings();
+  const retiredChains = partRules.retiredChains;
+  const limit = rotationLimit(partRules);
   const {label} = useLabels();
   const {events: chainEvents} = useEvents<ChainEvent>('chain');
 
@@ -53,19 +56,19 @@ const ChainChart = () => {
   }, {});
 
   const displayedChains = Object.keys(chainOdometer)
-    .filter(chain => withRetired || !RETIRED_CHAINS.includes(chain))
+    .filter(chain => withRetired || !retiredChains.includes(chain))
     .sort((chainA, chainB) => getTotal(chainOdometer[chainB]) - getTotal(chainOdometer[chainA]));
 
   const currentChain = currentBikeEvents.at(-1)?.chain ?? '';
   const currentRotation = chainOdometer[currentChain]?.at(-1) ?? 0;
-  const isDue = ROTATION_LIMIT <= currentRotation;
+  const isDue = limit <= currentRotation;
 
   // Swap in the least used chain, so the whole set wears down together.
   const [suggestedChain] = Object.keys(chainOdometer)
-    .filter(chain => chain !== currentChain && !RETIRED_CHAINS.includes(chain))
+    .filter(chain => chain !== currentChain && !retiredChains.includes(chain))
     .sort((chainA, chainB) => getTotal(chainOdometer[chainA]) - getTotal(chainOdometer[chainB]));
 
-  const retiredTotals = RETIRED_CHAINS.filter(chain => chain in chainOdometer).map(chain =>
+  const retiredTotals = retiredChains.filter(chain => chain in chainOdometer).map(chain =>
     getTotal(chainOdometer[chain])
   );
   const wearLimit =
@@ -99,7 +102,7 @@ const ChainChart = () => {
   });
 
   const relevantBikes = [...new Set(chainEvents.map(({bike}) => bike))].filter(
-    bike => withRetired || !RETIRED_BIKES.includes(bike)
+    bike => withRetired || !retiredBikes.includes(bike)
   );
   const bikeCollection = labelCollection(relevantBikes, key => label(key, true));
 
@@ -121,7 +124,7 @@ const ChainChart = () => {
           {isDue ? (
             ' · due'
           ) : (
-            <Span color="fg.muted"> · {formatDistance(ROTATION_LIMIT - currentRotation)} left</Span>
+            <Span color="fg.muted"> · {formatDistance(limit - currentRotation)} left</Span>
           )}
           {undefined !== suggestedChain && (
             <>
@@ -133,7 +136,9 @@ const ChainChart = () => {
         <Text fontSize="sm" whiteSpace="nowrap">
           <Span fontStyle="italic">μ</Span> {formatDistance(avg)}
         </Text>
-        <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
+        {undefined === bike && (
+          <SegmentedControl size="sm" value={gearId} onValueChange={handleGearChange} items={bikeCollection.items} />
+        )}
       </Group>
       <Chart.Root width="100%" height="400px" chart={chart}>
         <ResponsiveContainer width="100%" height="100%">

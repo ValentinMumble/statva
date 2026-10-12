@@ -1,6 +1,6 @@
 import {SelectValueChangeDetails, SelectRootProps, Select, Portal} from '@chakra-ui/react';
-import {GEAR, labelCollection, Gear} from '../models';
-import {useLabels} from '../hooks';
+import {labelCollection, Gear} from '../models';
+import {useGear, useLabels} from '../hooks';
 
 type GearSelectProps = Omit<SelectRootProps, 'collection'> & {
   selectedGear: string[];
@@ -19,10 +19,11 @@ const GearSelect = ({
   ...rest
 }: GearSelectProps) => {
   const {label} = useLabels();
+  const gear = useGear();
 
   const handleGearChange = ({value}: SelectValueChangeDetails) => onSelectedGearChange(value);
 
-  const relevantGearIds = Object.values(GEAR)
+  const relevantGearIds = gear
     .filter(({type}) => !excludedGearTypes.includes(type))
     .map(({id}) => id);
 

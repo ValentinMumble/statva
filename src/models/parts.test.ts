@@ -105,7 +105,7 @@ test('it suggests the least used chain, leaving out the fitted and the retired o
   ];
 
   // 🍒 did 2 days, 🍇 did 3, 🍓 is on the bike, 🍍 is retired
-  expect(suggestChains(events, activities, BIKE)).toEqual([
+  expect(suggestChains(events, activities, BIKE, ['🍍'])).toEqual([
     {chain: '🍒', distance: 200000},
     {chain: '🍇', distance: 300000},
   ]);

@@ -8,6 +8,56 @@ type Labels = {
 
 type GetLabel = (key: string | null, emojiOnly?: boolean) => string;
 
+/** What every rider sees before renaming anything: column headers, parts, sports and periods. */
+const DEFAULT_LABELS: Labels = {
+  achievement_count: '🎖️',
+  athlete_count: '🧑‍🤝‍🧑',
+  average_cadence: '🎡',
+  average_heartrate: '🫀',
+  average_speed: '🏁',
+  average_temp: '🌡️',
+  average_watts: '⚡️',
+  date: '📅',
+  distance: '📍',
+  elapsed_time: '⏳',
+  elevation_percent: '⚖️',
+  intensity: '🔋',
+  kilojoules: '🍕',
+  kudos_count: '👍',
+  max_heartrate: '💗',
+  max_speed: '🚀',
+  max_watts: '💥',
+  moving_time: '⏱️',
+  normalized_power: '⚡️®',
+  photo_count: '🖼️',
+  pr_count: '🏆',
+  suffer_score: '🌶️',
+  total_elevation_gain: '⛰️',
+  weighted_average_watts: '🏋️',
+  battery: '🔋',
+  brake_bleed: '🚰',
+  brake_pad: '🧇',
+  cassette: '⚙️',
+  chain: '🔗',
+  fall: '💥',
+  puncture: '🩹',
+  saddle: '💺',
+  tire: '🛞',
+  Ride: '🚲',
+  GravelRide: '🪨',
+  VirtualRide: '🤖',
+  Run: '👟',
+  TrailRun: '🏃',
+  Hike: '🥾',
+  Swim: '🩲',
+  Tennis: '🎾',
+  day: '🅳',
+  week: '🆆',
+  month: '🅼',
+  year: '🆈',
+  Unknown: '🤷',
+};
+
 const labelCollection = (items: string[], label: GetLabel) =>
   createListCollection({
     items: items.map(item => ({value: item, label: label(item)})),
@@ -43,5 +93,5 @@ const getRandomUnusedEmoji = (usedEmojis: Set<string>): string => {
   return randomFromRange();
 };
 
-export {extractEmoji, getRandomUnusedEmoji, labelCollection};
+export {DEFAULT_LABELS, extractEmoji, getRandomUnusedEmoji, labelCollection};
 export type {Labels, GetLabel};

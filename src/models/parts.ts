@@ -3,24 +3,23 @@ import {Event, getEventLabel, isChainEvent} from './event';
 import {GetLabel} from './label';
 import {Activity} from './strava';
 
-// A chain comes off the bike once it has done this much on its current stint.
-const ROTATION_LIMIT = 400 * 1000;
+/**
+ * A rider's rules for their parts (settings). Limits are how long a part should last,
+ * where that is a known figure rather than something to infer: the history says when a
+ * part was swapped, which is not when it wore out, so for these it would read far too
+ * short. Parts without a limit fall back on history. A chain's limit is per stint.
+ */
+type PartRules = {limitsKm: Partial<Record<Event['type'], number>>; retiredChains: string[]};
 
-// How long a part should last, where that is a known figure rather than something to
-// infer. The history says when a part was swapped, which is not the same as when it wore
-// out, so for these it would read far too short. Everything else falls back on history.
-const PART_LIMITS: Partial<Record<Event['type'], number>> = {
-  chain: ROTATION_LIMIT,
-  tire: 8000 * 1000,
-  cassette: 30000 * 1000,
-};
+const DEFAULT_PART_RULES: PartRules = {limitsKm: {chain: 400, tire: 8000, cassette: 30000}, retiredChains: []};
+
+// A chain comes off the bike once it has done this much on its current stint.
+const rotationLimit = (rules: PartRules = DEFAULT_PART_RULES): number => (rules.limitsKm.chain ?? 400) * 1000;
 
 // Parts you own several of and swap between, so what one has done is the sum of every
 // time it has been on the bike, not the stint it is on now. A chain is not one of these:
 // its limit is about the current stint, which is when it comes off to rest.
 const ROTATED_PARTS: Event['type'][] = ['cassette'];
-const RETIRED_CHAINS = ['🍍', '🧄', '🍪', '🍌', '🍋'];
-const RETIRED_BIKES = ['b11897955', 'b12655849'];
 
 // Parts that wear out with distance. Saddles, falls and punctures are not on a schedule.
 const WEARING_PARTS: Event['type'][] = ['chain', 'tire', 'cassette', 'brake_pad', 'brake_bleed', 'battery'];
@@ -73,6 +72,7 @@ const partStatus = (
   activities: Activity[],
   bikeId: string,
   label: GetLabel,
+  rules: PartRules,
 ): PartStatus | null => {
   const fittings = onBike(events, bikeId, type);
   const current = fittings.at(-1);
@@ -92,8 +92,13 @@ const partStatus = (
     .slice(0, -1)
     .map(({distance}) => distance)
     .filter(life => 0 < life);
+  const limitKm = rules.limitsKm[type];
   const expected =
-    PART_LIMITS[type] ?? (0 === previousLives.length ? null : sum(previousLives) / previousLives.length);
+    undefined !== limitKm && 0 < limitKm
+      ? limitKm * 1000
+      : 0 === previousLives.length
+        ? null
+        : sum(previousLives) / previousLives.length;
   const detail = getEventLabel(current, label, true);
 
   return {
@@ -113,8 +118,9 @@ const computeBikeParts = (
   activities: Activity[],
   bikeId: string,
   label: GetLabel,
+  rules: PartRules = DEFAULT_PART_RULES,
 ): PartStatus[] =>
-  WEARING_PARTS.map(type => partStatus(type, events, activities, bikeId, label))
+  WEARING_PARTS.map(type => partStatus(type, events, activities, bikeId, label, rules))
     .filter((part): part is PartStatus => null !== part)
     .sort((a, b) => b.ratio - a.ratio);
 
@@ -126,6 +132,7 @@ const suggestChains = (
   events: Event[],
   activities: Activity[],
   bikeId: string,
+  retiredChains: string[] = [],
 ): {chain: string; distance: number}[] => {
   const fittings = onBike(events, bikeId, 'chain').filter(isChainEvent);
   const current = fittings.at(-1)?.chain;
@@ -137,7 +144,7 @@ const suggestChains = (
   }, {});
 
   return Object.entries(totals)
-    .filter(([chain]) => chain !== current && !RETIRED_CHAINS.includes(chain))
+    .filter(([chain]) => chain !== current && !retiredChains.includes(chain))
     .map(([chain, distance]) => ({chain, distance}))
     .sort((a, b) => a.distance - b.distance);
 };
@@ -165,15 +172,5 @@ const recentFittings = (
     .slice(0, limit);
 };
 
-export {
-  computeBikeParts,
-  PART_LIMITS,
-  recentFittings,
-  suggestChains,
-  REFITTED_PARTS,
-  RETIRED_BIKES,
-  RETIRED_CHAINS,
-  ROTATION_LIMIT,
-  WEARING_PARTS,
-};
-export type {Fitting, PartState, PartStatus};
+export {computeBikeParts, DEFAULT_PART_RULES, recentFittings, REFITTED_PARTS, rotationLimit, suggestChains, WEARING_PARTS};
+export type {Fitting, PartRules, PartState, PartStatus};

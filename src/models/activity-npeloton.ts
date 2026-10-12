@@ -1,16 +1,40 @@
 import {DetailedActivity} from './strava';
 
+/** How a rider's club names its rides and marks its groups (a rider setting). */
+type ClubRules = {
+  name: string;
+  // Group name -> emojis or words that put a ride in that group, wherever they appear.
+  markers: Record<string, string[]>;
+  // Fixes applied to a name before reading its group, like "Chill 1" -> "C1".
+  renames?: [string, string][];
+};
+
+// What Statva v1 had written into its code, kept as the fallback.
+const DEFAULT_CLUB: ClubRules = {
+  name: 'N-Peloton',
+  markers: {Pirate: ['🏴‍☠️', 'pirate'], PCC: ['🍊']},
+  renames: [
+    ['préchauffé', ''],
+    ['précramé', ''],
+    ['Chill 1', 'C1'],
+  ],
+};
+
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const isClubRide = (name: string, club: Pick<ClubRules, 'name'> = DEFAULT_CLUB): boolean => name.includes(club.name);
+
 const REPLACEMENTS: [string, string][] = [
   ['\u2019', "'"],
   ['\u2018', "'"],
   ['cependant', ''],
 ];
 
-const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number> => {
+const computeFinishCount = (rideMeta: DetailedActivity[], club: Pick<ClubRules, 'name'> = DEFAULT_CLUB): Record<string, number> => {
   const locationCount: Record<string, number> = {};
 
   rideMeta.forEach(activity => {
-    if (!activity.name.includes('N-Peloton')) {
+    if (!isClubRide(activity.name, club)) {
       return;
     }
 
@@ -37,31 +61,28 @@ const computeFinishCount = (rideMeta: DetailedActivity[]): Record<string, number
   return Object.fromEntries(Object.entries(locationCount).sort());
 };
 
-// Groups called out by a marker in the ride name, description or private note,
-// rather than by the usual "N-Peloton #123 G2" naming. First match wins.
-const GROUP_MARKERS: {group: string; emoji: string; pattern?: RegExp}[] = [
-  {group: 'Pirate', emoji: '🏴‍☠️', pattern: /\bpirates?\b/i},
-  {group: 'PCC', emoji: '🍊'},
-];
+// A marker word matches as a whole word, singular or plural; anything else (emojis) anywhere.
+const hasMarker = (text: string, marker: string): boolean =>
+  /^[\p{L}\d]+$/u.test(marker) ? new RegExp(`\\b${escapeRegExp(marker)}s?\\b`, 'iu').test(text) : text.includes(marker);
 
 // Notes live in either field depending on how the ride was written up.
 const getNotes = (meta?: DetailedActivity | null): string =>
   [meta?.private_note ?? '', meta?.description ?? ''].join('\n');
 
-const extractNPGroup = (activityName: string, meta?: DetailedActivity | null): string => {
+/**
+ * The group a club ride was in: from a marker in the name, description or private note
+ * when there is one (first match wins), otherwise from the usual "<club> #123 G2" naming.
+ */
+const extractNPGroup = (activityName: string, meta?: DetailedActivity | null, club: ClubRules = DEFAULT_CLUB): string => {
   const fullText = `${activityName}\n${getNotes(meta)}`;
-  const marker = GROUP_MARKERS.find(({emoji, pattern}) => fullText.includes(emoji) || pattern?.test(fullText));
+  const marked = Object.entries(club.markers).find(([, markers]) => markers.some(marker => hasMarker(fullText, marker)));
 
-  if (marker) return marker.group;
+  if (marked) return marked[0];
 
-  return (
-    activityName
-      .replace('préchauffé', '')
-      .replace('précramé', '')
-      .replace('Chill 1', 'C1')
-      .match(/N-Peloton\s+#\d+\s+([A-Za-z0-9.-\s]+)/)?.[1]
-      .trim() || 'Unknown'
-  );
+  const renamed = (club.renames ?? []).reduce((name, [from, to]) => name.replace(from, to), activityName);
+
+  return renamed.match(new RegExp(`${escapeRegExp(club.name)}\\s+#\\d+\\s+([A-Za-z0-9.-\\s]+)`))?.[1].trim() || 'Unknown';
 };
 
-export {computeFinishCount, extractNPGroup};
+export {computeFinishCount, DEFAULT_CLUB, extractNPGroup, isClubRide};
+export type {ClubRules};

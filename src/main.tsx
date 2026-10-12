@@ -1,11 +1,21 @@
 import ReactDOM from 'react-dom/client';
 import {BrowserRouter, Routes as RouterRoutes, Route} from 'react-router';
-import {ChakraProvider, defaultSystem} from '@chakra-ui/react';
+import {ChakraProvider} from '@chakra-ui/react';
 import {ThemeProvider} from 'next-themes';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {AddCheckIn, App, Dashboard, Routes, Workshop} from './pages';
+import {AddCheckIn, Routes} from './pages';
 import {Toaster} from './components/ui';
 import {AuthGate, PageTitle} from './components';
+import {AppShell} from './app/AppShell';
+import {ActivitiesPage} from './app/pages/ActivitiesPage';
+import {ActivityPage} from './app/pages/ActivityPage';
+import {BikePage} from './app/pages/BikePage';
+import {HomePage} from './app/pages/HomePage';
+import {RecordsPage} from './app/pages/RecordsPage';
+import {RoutesPage} from './app/pages/RoutesPage';
+import {SettingsPage} from './app/pages/SettingsPage';
+import {StatsPage} from './app/pages/StatsPage';
+import {system} from './app/theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,58 +29,53 @@ const queryClient = new QueryClient({
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <ChakraProvider value={defaultSystem}>
+  <ChakraProvider value={system}>
     <ThemeProvider enableSystem={true} attribute="class" defaultTheme="system">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-            <RouterRoutes>
-              <Route
-                path="/"
-                element={
-                  <AuthGate>
-                    <PageTitle title="Statva 📈" />
-                    <App />
-                  </AuthGate>
-                }
-              />
-              <Route
-                path="/routes/:routeId?"
-                element={
-                  <>
-                    <PageTitle title="Statva route" />
-                    <Routes />
-                  </>
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <AuthGate>
-                    <Dashboard />
-                  </AuthGate>
-                }
-              />
-              <Route
-                path="/workshop"
-                element={
-                  <AuthGate>
-                    <Workshop />
-                  </AuthGate>
-                }
-              />
-              <Route
-                path="/check-in"
-                element={
-                  <AuthGate>
-                    <PageTitle title="Statva check-in" />
-                    <AddCheckIn />
-                  </AuthGate>
-                }
-              />
-            </RouterRoutes>
-            <Toaster />
-          </BrowserRouter>
+          <RouterRoutes>
+            <Route
+              element={
+                <AuthGate>
+                  <PageTitle title="Statva 🛹" />
+                  <AppShell />
+                </AuthGate>
+              }
+            >
+              <Route index={true} element={<HomePage />} />
+              <Route path="activities" element={<ActivitiesPage />} />
+              <Route path="activities/:activityId" element={<ActivityPage />} />
+              <Route path="bike/:bikeId?" element={<BikePage />} />
+              <Route path="stats" element={<StatsPage />} />
+              <Route path="records" element={<RecordsPage />} />
+              <Route path="routes" element={<RoutesPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
+
+            {/* Shared route links stay public. */}
+            <Route
+              path="/routes/:routeId"
+              element={
+                <>
+                  <PageTitle title="Statva route" />
+                  <Routes />
+                </>
+              }
+            />
+            <Route
+              path="/check-in"
+              element={
+                <AuthGate>
+                  <PageTitle title="Statva check-in" />
+                  <AddCheckIn />
+                </AuthGate>
+              }
+            />
+
+          </RouterRoutes>
+          <Toaster />
+        </BrowserRouter>
       </QueryClientProvider>
     </ThemeProvider>
-  </ChakraProvider>
+  </ChakraProvider>,
 );

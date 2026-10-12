@@ -28,19 +28,26 @@ Next improvements for Statva. Newest ideas at the top; move to **Done** when shi
 
 v1 keeps running from `main` (release `v1.0.0`) until v2 replaces it.
 
-- [ ] **1. Data layer.** Every rider's data under their own Redis keys
+- [x] **1. Data layer.** Live since 408a6dd; webhook subscription 376427. Every rider's data under their own Redis keys
       (`athlete:<id>:<name>`). Activity summaries stored on the server and kept up to
       date by a sync call (1 Strava call per visit instead of paging the whole list)
       and a Strava webhook. Activity details backfilled a few at a time within the
       shared rate limit. Settings stored per rider. A script copies the v1 data into
       the owner's keys.
-- [ ] **2. Demo mode.** Made-up rides, events and settings, so the app runs and can be
-      developed without a Strava account, and `dev-data/` (real rides) can go.
-- [ ] **3. Settings page.** Every value written into the code today (bike ids, chain
-      names, part limits, club, heart rate, goal, map centre, locale…), with defaults.
-- [ ] **4. Features, page by page,** on the new data layer: rides list, stats panel,
-      parts and log flow, workshop, charts, dashboard, routes and check-ins. Models
-      and their tests carry over; components are rewritten against settings.
+- [x] **2. Demo mode.** Two years of made-up riding around Annecy (`src/demo/`), served
+      from memory behind the same fetchers. "Try the demo" on the login screen; `npm run
+      dev` uses it unless `VITE_REAL_DATA=1`. `dev-data/` is gone. Brought forward from
+      phase 3: the default bike is a setting, gear comes from the Strava profile, and
+      generic labels ship as defaults.
+- [x] **3. Settings page.** Bikes, part limits, retired chains, goal, sports, body and
+      heart rate, club rules, locale, map centre, notes, labels, export and disconnect.
+      Heart rate, weight and NP-from-notes feed every calculation through `models/rider.ts`.
+- [x] **4. New app** (`src/app/`): its own theme, a side menu or phone tab bar, and
+      Home, Activities (with a detail page per activity), Bike, Stats, Records, Routes
+      and Settings. Maps use keyless Esri tiles. The charts rebuilt last week are reused.
+- [ ] **4b. Finish the switch.** The v1 screens are gone. Left: restyle the check-in
+      page and the public route page; make `DEFAULT_CLUB` neutral (it still says
+      N-Peloton, for the tests).
 - [ ] **5. Going public.** README with self-hosting steps, one-click deploy, an
       openly licensed icon (Noto), map token from the environment, personal files
       removed from the git history, then the repo made public.

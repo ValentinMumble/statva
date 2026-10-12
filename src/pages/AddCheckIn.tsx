@@ -6,7 +6,9 @@ import {toaster} from '../components/ui';
 import {useGeolocation, useRoutes} from '../hooks';
 import {CheckIn} from '../models';
 import {Route} from '../models/strava';
-import {addCheckIn} from '../api';
+import {getFetcher} from '../hooks/useFetcher';
+
+const addCheckIn = getFetcher<void>('check_ins.add');
 
 const ROUTES_PATH = '/routes';
 

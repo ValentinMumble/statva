@@ -3,9 +3,9 @@ import {Button, Group, IconButton, Input, NumberInput, Stack, Text} from '@chakr
 import {LuMinus} from 'react-icons/lu';
 import {Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../ui';
-import {useActivities, useExpenses} from '../../hooks';
+import {useActivities, useExpenses, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {BikeExpense, formatCurrency, formatDistance, formatDuration, SUPER6} from '../../models';
+import {BikeExpense, formatCurrency, formatDistance, formatDuration} from '../../models';
 
 const upsertExpense = getFetcher<void>('expenses.set');
 const deleteExpense = getFetcher<void>('expenses.delete');
@@ -24,6 +24,7 @@ type DataPoint = {
 };
 
 const CostPerKmChart = () => {
+  const {costBike} = useSettings();
   const [skipPercent, setSkipPercent] = useState<number>(DEFAULT_SKIP_PERCENT);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState<number>();
@@ -33,7 +34,7 @@ const CostPerKmChart = () => {
     withPrivate: true,
     sort: 'date',
     sortDirection: 'asc',
-    gearId: SUPER6,
+    gearId: costBike,
   });
   const {expenses, refetch} = useExpenses();
 

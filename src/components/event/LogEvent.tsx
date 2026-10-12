@@ -2,7 +2,7 @@ import {ReactNode, useState} from 'react';
 import {Button, Dialog, Grid, Group, HStack, Input, Portal, Stack, Text} from '@chakra-ui/react';
 import {toaster} from '../../components/ui';
 import {EventForm, GearSelect} from '../../components';
-import {useActivities, useEvents, useLabels} from '../../hooks';
+import {useActivities, useEvents, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
   Event,
@@ -12,7 +12,6 @@ import {
   recentFittings,
   REFITTED_PARTS,
   suggestChains,
-  SUPER6,
 } from '../../models';
 
 const upsertEvent = getFetcher<void>('events.set');
@@ -46,6 +45,8 @@ const partOf = (event: Event): Partial<Event> =>
 type LogEventProps = {
   bike?: string;
   date?: Date;
+  // Skips the first step: the trigger already says what happened.
+  type?: Event['type'];
   onLogged: () => void;
   trigger: ReactNode;
 };
@@ -55,7 +56,9 @@ type LogEventProps = {
  * part are already filled in, so the common events are two taps and nothing typed. On a
  * phone it opens as a sheet from the bottom, within reach of the thumb.
  */
-const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
+const LogEvent = ({bike: chosenBike, date, type: presetType, onLogged, trigger}: LogEventProps) => {
+  const {defaultBike, retiredChains} = useSettings();
+  const bike = chosenBike ?? defaultBike;
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Partial<Event>>({});
   const [withFields, setWithFields] = useState(false);
@@ -71,10 +74,11 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) reset();
+    else if (undefined !== presetType) handleTypeChoice(presetType)();
   };
 
   const handleTypeChoice = (type: Event['type']) => () => {
-    const [suggested] = 'chain' === type ? suggestChains(events, activities ?? [], bike) : [];
+    const [suggested] = 'chain' === type ? suggestChains(events, activities ?? [], bike, retiredChains) : [];
 
     setDraft({type, date: date ?? new Date(), bike, ...(undefined === suggested ? {} : {chain: suggested.chain})});
     setWithFields(false);
@@ -101,7 +105,7 @@ const LogEvent = ({bike = SUPER6, date, onLogged, trigger}: LogEventProps) => {
     });
   };
 
-  const chains = 'chain' === draft.type ? suggestChains(events, activities ?? [], draft.bike ?? bike) : [];
+  const chains = 'chain' === draft.type ? suggestChains(events, activities ?? [], draft.bike ?? bike, retiredChains) : [];
   const chosenChain = isChainEvent(draft) ? draft.chain : undefined;
   const fittings =
     undefined !== draft.type && REFITTED_PARTS.includes(draft.type)

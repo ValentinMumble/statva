@@ -1,7 +1,7 @@
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
-import {useActivities, useLabels} from '../../hooks';
-import {formatSpeed, getTypes, SUPER6} from '../../models';
+import {useActivities, useLabels, useSettings} from '../../hooks';
+import {formatSpeed, getTypes} from '../../models';
 import {ActivityType} from '../../models/strava';
 import {ChartTooltip} from './ChartTooltip';
 
@@ -13,7 +13,9 @@ const AverageGearChart = () => {
   });
   const {label} = useLabels();
 
-  const filteredRides = (activities ?? []).filter(ride => !ride.commute || (ride.commute && SUPER6 !== ride.gear_id));
+  const {defaultBike} = useSettings();
+  // Commutes on the main bike would drag its average down; on a commuting bike they are the point.
+  const filteredRides = (activities ?? []).filter(ride => !ride.commute || defaultBike !== ride.gear_id);
 
   const dataPerGear = filteredRides.reduce((gearMap: Record<string, number[]>, activity) => {
     if (null === activity.gear_id) return gearMap;

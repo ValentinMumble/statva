@@ -6,9 +6,9 @@ import {GeoJSON, MapContainer, Polyline, TileLayer} from 'react-leaflet';
 import type {Feature, FeatureCollection, MultiPolygon, Polygon} from 'geojson';
 import {ExplorerTiles, Tile, tileBounds} from '../../models';
 
-const TILE_URL =
-  'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=MAP_TOKEN_REMOVED';
-const NANTES: LatLngExpression = [47.23, -1.55];
+// Esri's gray canvas needs no key; it asks for this credit line.
+const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ';
 const STRAVA_ORANGE = '#fc4c02';
 // Faint enough that a road ridden once barely shows and a daily one glows.
 const TRACK_OPACITY = 0.16;
@@ -64,10 +64,11 @@ const collection = (features: Feature[]): FeatureCollection => ({type: 'FeatureC
 type RideHeatmapProps = {
   tracks: number[][][];
   explorer: ExplorerTiles;
+  center: LatLngExpression;
   zoom?: number;
 } & BoxProps;
 
-const RideHeatmap = ({tracks, explorer, zoom = 9, ...boxProps}: RideHeatmapProps) => {
+const RideHeatmap = ({tracks, explorer, center, zoom = 9, ...boxProps}: RideHeatmapProps) => {
   // One GeoJSON layer per kind, instead of thousands of rectangle components.
   const layers = useMemo(
     () => ({
@@ -82,13 +83,13 @@ const RideHeatmap = ({tracks, explorer, zoom = 9, ...boxProps}: RideHeatmapProps
     <Box {...boxProps}>
       {/* Canvas instead of one SVG node per ride: there are hundreds of them. */}
       <MapContainer
-        center={NANTES}
+        center={center}
         zoom={zoom}
         scrollWheelZoom={false}
         preferCanvas={true}
         style={{height: '100%', width: '100%', borderRadius: '8px'}}
       >
-        <TileLayer url={TILE_URL} />
+        <TileLayer url={TILE_URL} attribution={ATTRIBUTION} />
         {/* GeoJSON only reads its data once, so the keys force a redraw when the tiles change. */}
         <GeoJSON key={`tiles-${explorer.explored}`} data={layers.tiles} style={TILE_STYLE} />
         <GeoJSON key={`yard-${explorer.yard.length}`} data={layers.yard} style={YARD_STYLE} />

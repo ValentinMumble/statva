@@ -1,57 +1,94 @@
 import {
+  addCheckIn,
   deleteEvent,
   deleteExpense,
   deleteLabel,
+  fetchActivityZones,
   fetchAthlete,
+  fetchAthleteRoutes,
+  fetchSharedRoute,
   getActivities,
   getActivitySummaries,
   getEvents,
   getExpenses,
   getFTPTests,
   getLabels,
+  getSettings,
   refreshActivity,
+  setSetting,
   syncActivities,
   upsertEvent,
   upsertExpense,
   upsertFTPTest,
   upsertLabel,
 } from '../api';
-import {
-  fetchLocalActivities,
-  fetchLocalEvents,
-  fetchLocalFTPTests,
-  fetchLocalLabels,
-  fetchLocalAthlete,
-  fetchLocalMeta,
-} from '../api/local';
+import {demoBackend} from '../demo/backend';
+import {isDemo} from '../demo/mode';
 
 // Heterogeneous registry: each fetcher has its own concrete arg signature and is
 // called with concrete args downstream, so the args are intentionally untyped here.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Fetcher<T> = (...args: any[]) => Promise<T>;
 
-const isDev = import.meta.env.MODE === 'development';
-const noop: Fetcher<unknown> = () => Promise.resolve(console.log('Local, not implemented'));
-
-const REGISTRY: Record<string, Fetcher<unknown>> = {
-  'activities.get': isDev ? fetchLocalActivities : getActivitySummaries,
-  'activities.sync': isDev ? () => Promise.resolve({historyDone: true, limited: false, detailsFetched: 0}) : syncActivities,
-  'activity.refresh': isDev ? noop : refreshActivity,
-  'activities.meta.get': isDev ? fetchLocalMeta : getActivities,
-  'athlete.get': isDev ? fetchLocalAthlete : fetchAthlete,
-  'events.get': isDev ? fetchLocalEvents : getEvents,
-  'events.set': isDev ? noop : upsertEvent,
-  'events.delete': isDev ? noop : deleteEvent,
+// Every call the app makes for data, by name: the real server, or the demo in memory.
+const REAL: Record<string, Fetcher<unknown>> = {
+  'activities.get': getActivitySummaries,
+  'activities.sync': syncActivities,
+  'activity.refresh': refreshActivity,
+  'activity.zones': fetchActivityZones,
+  'activities.meta.get': getActivities,
+  'athlete.get': fetchAthlete,
+  'events.get': getEvents,
+  'events.set': upsertEvent,
+  'events.delete': deleteEvent,
   'expenses.get': getExpenses,
   'expenses.set': upsertExpense,
   'expenses.delete': deleteExpense,
-  'labels.get': isDev ? fetchLocalLabels : getLabels,
-  'labels.set': isDev ? noop : upsertLabel,
-  'labels.delete': isDev ? noop : deleteLabel,
-  'ftp_tests.get': isDev ? fetchLocalFTPTests : getFTPTests,
-  'ftp_tests.set': isDev ? noop : upsertFTPTest,
+  'labels.get': getLabels,
+  'labels.set': upsertLabel,
+  'labels.delete': deleteLabel,
+  'settings.get': getSettings,
+  'settings.set': setSetting,
+  'ftp_tests.get': getFTPTests,
+  'ftp_tests.set': upsertFTPTest,
+  'routes.get': fetchAthleteRoutes,
+  'routes.shared': fetchSharedRoute,
+  'check_ins.add': addCheckIn,
 };
 
-const getFetcher = <T>(key: string): Fetcher<T> => REGISTRY[key] as Fetcher<T>;
+const DEMO: typeof REAL = {
+  'activities.get': demoBackend.getActivities,
+  'activities.sync': demoBackend.sync,
+  'activity.refresh': demoBackend.refreshActivity,
+  'activity.zones': demoBackend.getZones,
+  'activities.meta.get': demoBackend.getDetails,
+  'athlete.get': demoBackend.getAthlete,
+  'events.get': demoBackend.getEvents,
+  'events.set': demoBackend.setEvent,
+  'events.delete': demoBackend.deleteEvent,
+  'expenses.get': demoBackend.getExpenses,
+  'expenses.set': demoBackend.setExpense,
+  'expenses.delete': demoBackend.deleteExpense,
+  'labels.get': demoBackend.getLabels,
+  'labels.set': demoBackend.setLabel,
+  'labels.delete': demoBackend.deleteLabel,
+  'settings.get': demoBackend.getSettings,
+  'settings.set': demoBackend.setSetting,
+  'ftp_tests.get': demoBackend.getFtpTests,
+  'ftp_tests.set': demoBackend.setFtpTest,
+  'routes.get': demoBackend.getRoutes,
+  'routes.shared': demoBackend.getSharedRoute,
+  'check_ins.add': demoBackend.addCheckIn,
+};
+
+const REGISTRY = isDemo() ? DEMO : REAL;
+
+const getFetcher = <T>(key: string): Fetcher<T> => {
+  const fetcher = REGISTRY[key];
+
+  if (undefined === fetcher) throw new Error(`No fetcher named ${key}`);
+
+  return fetcher as Fetcher<T>;
+};
 
 export {getFetcher};

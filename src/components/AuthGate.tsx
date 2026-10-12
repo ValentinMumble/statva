@@ -1,5 +1,6 @@
 import {ReactNode} from 'react';
 import {Button, Center, Heading, Spinner, Stack, Text} from '@chakra-ui/react';
+import {enterDemo} from '../demo/mode';
 import {useSession} from '../hooks';
 
 const STRAVA_ORANGE = '#FC4C02';
@@ -35,6 +36,9 @@ const AuthGate = ({children}: {children: ReactNode}) => {
         {undefined !== reason && <Text color="orange.fg">{reason}</Text>}
         <Button asChild={true} size="lg" background={STRAVA_ORANGE} color="white" _hover={{opacity: 0.9}}>
           <a href="/api/auth/login">Connect with Strava</a>
+        </Button>
+        <Button variant="ghost" size="sm" onClick={enterDemo}>
+          Try the demo, no account needed
         </Button>
       </Stack>
     </Center>
