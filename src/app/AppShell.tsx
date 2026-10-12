@@ -1,10 +1,14 @@
+import {useState} from 'react';
 import {Box, Button, Flex, HStack, Icon, IconButton, Stack, Text} from '@chakra-ui/react';
 import {Link, Outlet, useLocation} from 'react-router';
-import {LuLogOut, LuPlus, LuX} from 'react-icons/lu';
+import {useQueryClient} from '@tanstack/react-query';
+import {LuLogOut, LuPlus, LuRefreshCw, LuX} from 'react-icons/lu';
+import {toaster} from '../components/ui';
 import {LogEvent} from '../components/event';
 import {leaveDemo} from '../demo/mode';
 import {useAllActivities, useAthlete, useEvents, useSession, useSettings} from '../hooks';
 import {hasEmoji} from '../models';
+import {Activity} from '../models/strava';
 import {isActive, NAV} from './nav';
 
 const SIDEBAR_WIDTH = '232px';
@@ -30,6 +34,36 @@ const LogButton = ({compact = false}: {compact?: boolean}) => {
         )
       }
     />
+  );
+};
+
+/** Asks Strava for anything new now, rather than waiting for the next visit or the webhook. */
+const RefreshButton = ({compact = false}: {compact?: boolean}) => {
+  const {data, refreshLatest} = useAllActivities();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    const before = new Set((data ?? []).map(({id}) => id));
+
+    try {
+      await refreshLatest();
+      const added = (queryClient.getQueryData<Activity[]>(['activities']) ?? []).filter(({id}) => !before.has(id)).length;
+      toaster.create({title: 0 === added ? 'Up to date' : `${added} new ${1 === added ? 'activity' : 'activities'}`});
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  return compact ? (
+    <IconButton aria-label="Check Strava for new activities" size="sm" variant="ghost" onClick={handleRefresh} loading={refreshing}>
+      <LuRefreshCw />
+    </IconButton>
+  ) : (
+    <Button variant="outline" width="full" borderRadius="10px" onClick={handleRefresh} loading={refreshing} loadingText="Checking Strava">
+      <LuRefreshCw /> Refresh
+    </Button>
   );
 };
 
@@ -132,7 +166,10 @@ const Sidebar = () => {
         })}
       </Stack>
       <Stack gap="16px">
-        <LogButton />
+        <Stack gap="8px">
+          <RefreshButton />
+          <LogButton />
+        </Stack>
         <AccountRow />
       </Stack>
     </Stack>
@@ -167,6 +204,7 @@ const PhoneHeader = () => {
             </Link>
           </IconButton>
         ))}
+        <RefreshButton compact={true} />
         <LogButton compact={true} />
       </HStack>
     </HStack>
