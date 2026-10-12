@@ -31,6 +31,27 @@ import {duration, km, relativeDay} from '../format';
 
 type Commute = boolean | 'only';
 
+// Where the list was scrolled to when an activity was opened, with the filters it had then.
+const SCROLL_KEY = 'activities-scroll';
+
+const rememberScroll = (filters: string) => {
+  try {
+    sessionStorage.setItem(SCROLL_KEY, JSON.stringify({filters, y: window.scrollY}));
+  } catch {
+    // Without storage the list just opens at the top.
+  }
+};
+
+const rememberedScroll = (filters: string): number | null => {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) ?? 'null') as {filters: string; y: number} | null;
+
+    return null !== saved && saved.filters === filters ? saved.y : null;
+  } catch {
+    return null;
+  }
+};
+
 type SportCount = {sport: string; count: number};
 
 const isRide = (sport: string): boolean => sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
@@ -108,7 +129,7 @@ const Toolbar = ({
   return (
     <Stack gap="12px">
       <HStack gap="8px" flexWrap="wrap">
-        <InputGroup flex="1" minWidth="220px" startElement={<LuSearch />} endElement={'' === search ? undefined : (
+        <InputGroup flex="1" minWidth={{base: '0', md: '220px'}} startElement={<LuSearch />} endElement={'' === search ? undefined : (
           <IconButton aria-label="Clear the search" size="xs" variant="ghost" onClick={() => onSearch('')}>
             <LuX />
           </IconButton>
@@ -162,7 +183,15 @@ const Toolbar = ({
           </Portal>
         </Menu.Root>
       </HStack>
-      <HStack gap="8px" flexWrap="wrap">
+      {/* On a phone the filters stay on one line that scrolls sideways, from edge to edge. */}
+      <HStack
+        gap="8px"
+        flexWrap={{base: 'nowrap', md: 'wrap'}}
+        overflowX={{base: 'auto', md: 'visible'}}
+        marginX={{base: '-16px', md: '0'}}
+        paddingX={{base: '16px', md: '0'}}
+        css={{scrollbarWidth: 'none', '&::-webkit-scrollbar': {display: 'none'}, '& > *': {flexShrink: 0}}}
+      >
         <SegmentGroup.Root
           size="sm"
           value={groupOf(types, sports)}
@@ -274,22 +303,31 @@ const ActivitiesPage = () => {
   const {locale, unprocessedEmoji} = useSettings();
   const {getFtp} = useFtp();
   const {activityMeta} = useActivityMeta();
-  // The device a list is narrowed to lives in the address (?device=), so Records can link to it.
+  // Filters and sort live in the address, so coming back from an activity finds them again
+  // (and Records can link to a device). Defaults are left out to keep the address short.
   const [searchParams, setSearchParams] = useSearchParams();
-  const device = searchParams.get('device');
-  const setDevice = (name: string | null) =>
-    setSearchParams(params => {
-      if (null === name) params.delete('device');
-      else params.set('device', name);
+  const setParams = (changes: Record<string, string | null>) =>
+    setSearchParams(
+      params => {
+        Object.entries(changes).forEach(([name, value]) => (null === value ? params.delete(name) : params.set(name, value)));
 
-      return params;
-    });
+        return params;
+      },
+      {replace: true},
+    );
+  const device = searchParams.get('device');
+  const search = searchParams.get('q') ?? '';
+  const sort = (searchParams.get('sort') ?? 'date') as SortType;
+  const direction: SortDirection = 'asc' === searchParams.get('dir') ? 'asc' : 'desc';
+  const gear = searchParams.get('gear');
+  const gearIds = null === gear ? [] : [gear];
+  const commuteParam = searchParams.get('commute');
+  const commute: Commute = 'only' === commuteParam ? 'only' : 'none' !== commuteParam;
+  const setDevice = (name: string | null) => setParams({device: name});
+  const setSearch = (value: string) => setParams({q: '' === value ? null : value});
+  const setGearIds = (ids: string[]) => setParams({gear: ids[0] ?? null});
+  const setCommute = (value: Commute) => setParams({commute: 'only' === value ? 'only' : value ? null : 'none'});
   const {data: allActivities} = useAllActivities();
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortType>('date');
-  const [direction, setDirection] = useState<SortDirection>('desc');
-  const [gearIds, setGearIds] = useState<string[]>([]);
-  const [commute, setCommute] = useState<Commute>(true);
   const [withPrivate, setWithPrivate] = useLocalStorage('withPrivate', false);
   const [columns, setColumns] = useLocalStorage<SortType[]>('sort-types', DEFAULT_SORTS);
   const [types, setTypes] = useLocalStorage<ActivityType[] | null>('activity-types', null);
@@ -310,11 +348,8 @@ const ActivitiesPage = () => {
   const isFiltered = '' !== search || 0 < gearIds.length || true !== commute || null !== types || null !== device;
   // Showing private activities is a preference, not a filter, so it stays as it is.
   const clearFilters = () => {
-    setSearch('');
-    setGearIds([]);
-    setCommute(true);
     setTypes(null);
-    setDevice(null);
+    setParams({q: null, gear: null, commute: null, device: null});
   };
   const showsPrivate = withPrivate || '' !== search;
   // A search looks through private activities too.
@@ -364,13 +399,20 @@ const ActivitiesPage = () => {
     scrollMargin,
   });
 
-  const sortBy = (sortType: SortType) => {
-    if (sortType === sort) setDirection('asc' === direction ? 'desc' : 'asc');
-    else {
-      setSort(sortType);
-      setDirection('desc');
-    }
-  };
+  const sortBy = (sortType: SortType) =>
+    sortType === sort
+      ? setParams({dir: 'asc' === direction ? null : 'asc'})
+      : setParams({sort: 'date' === sortType ? null : sortType, dir: null});
+
+  // Back from an activity: scroll to where the list was, once it is tall enough to get there.
+  const scrollTarget = useRef(rememberedScroll(searchParams.toString()));
+  useLayoutEffect(() => {
+    const target = scrollTarget.current;
+    if (null === target || 0 === rows.length) return;
+
+    window.scrollTo(0, target);
+    if (Math.abs(window.scrollY - target) < 2) scrollTarget.current = null;
+  }, [rows.length, scrollMargin]);
 
   const gridColumns = isWide ? `48px minmax(220px, 1fr) repeat(${shownColumns.length}, ${COLUMN_WIDTH}px)` : '52px 1fr auto';
   const minWidth = isWide ? 48 + 260 + shownColumns.length * COLUMN_WIDTH : undefined;
@@ -489,7 +531,10 @@ const ActivitiesPage = () => {
                   cursor="pointer"
                   opacity={activity.private ? 0.6 : 1}
                   _hover={{background: 'bg.subtle'}}
-                  onClick={() => navigate(`/activities/${activity.id}`)}
+                  onClick={() => {
+                    rememberScroll(searchParams.toString());
+                    navigate(`/activities/${activity.id}`, {state: {list: `/activities?${searchParams}`}});
+                  }}
                 >
                   <RouteThumb activity={activity} size={isWide ? 36 : 44} />
                   <Stack gap="0" minWidth="0" paddingLeft={isWide ? '12px' : '0'}>

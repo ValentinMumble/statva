@@ -1,7 +1,7 @@
 import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {useQuery} from '@tanstack/react-query';
-import {Link, useParams} from 'react-router';
+import {Link, useLocation, useParams} from 'react-router';
 import {LuArrowLeft, LuExternalLink, LuRefreshCw} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
@@ -137,6 +137,8 @@ const HeartRateZones = ({activity}: {activity: Activity}) => {
 
 const ActivityPage = () => {
   const {activityId} = useParams();
+  // Back to the list as it was left, filters included, when the activity was opened from it.
+  const list = (useLocation().state as {list?: string} | null)?.list ?? '/activities';
   const {data: activities} = useAllActivities();
   const {activityMeta, refetch} = useActivityMeta();
   const {label} = useLabels();
@@ -180,7 +182,7 @@ const ActivityPage = () => {
 
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
-      <Link to="/activities">
+      <Link to={list}>
         <HStack gap="6px" color="fg.muted" fontSize="sm" _hover={{color: 'fg'}}>
           <LuArrowLeft /> Activities
         </HStack>
