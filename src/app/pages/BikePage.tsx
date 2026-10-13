@@ -5,7 +5,7 @@ import {useLocalStorage} from 'usehooks-ts';
 import {LuTrash2} from 'react-icons/lu';
 import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
-import {useAllActivities, useEvents, useGear, useLabels, useSettings} from '../../hooks';
+import {useAllActivities, useEvents, useExpenses, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {computeBikeParts, Event, getEventLabel, partsCostPerKm, PartState} from '../../models';
 import {Card, CardTitle} from '../components/Card';
@@ -72,9 +72,20 @@ const BikePage = () => {
   const wearCost = partsCostPerKm(parts);
   const history = useMemo(() => events.filter(event => bike === event.bike).reverse(), [events, bike]);
   const total = rides.reduce((sum, {distance}) => sum + distance, 0);
+  const {expenses} = useExpenses();
+  // Expenses are logged for one bike, the one running costs follow; sales count against them.
+  const spent = expenses.reduce((sum, {amount}) => sum + amount, 0);
   const thisYear = rides
     .filter(({start_date}) => new Date(start_date).getFullYear() === new Date().getFullYear())
     .reduce((sum, {distance}) => sum + distance, 0);
+
+  const figures: [string, string][] = [
+    ['Ridden', km(total, locale)],
+    ['This year', km(thisYear, locale)],
+    ['Rides', rides.length.toLocaleString(locale)],
+    ['Events logged', history.length.toLocaleString(locale)],
+    ...(bike === costBike && 0 < expenses.length ? [['Spent', `${number(spent, locale)} €`] as [string, string]] : []),
+  ];
 
   const handleRemove = (event: Event) => async () => {
     await deleteEvent(event.id);
@@ -128,13 +139,8 @@ const BikePage = () => {
         ))}
       </HStack>
 
-      <Grid templateColumns={{base: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)'}} gap="16px">
-        {[
-          ['Ridden', km(total, locale)],
-          ['This year', km(thisYear, locale)],
-          ['Rides', rides.length.toLocaleString(locale)],
-          ['Events logged', history.length.toLocaleString(locale)],
-        ].map(([title, value]) => (
+      <Grid templateColumns={{base: 'repeat(2, 1fr)', md: `repeat(${figures.length}, 1fr)`}} gap="16px">
+        {figures.map(([title, value]) => (
           <Card key={title} padding="16px">
             <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
               {title}
