@@ -1,7 +1,6 @@
 import {extractNormalizedPower} from './activity-meta';
 import {ClubRules, computeFinishCount, extractNPGroup, isClubRide} from './activity-npeloton';
 import {daysExceedingDistance, eddingtonNumber} from './activity-stats';
-import {longestStreak} from './streaks';
 import {countBy} from './util';
 import {GetLabel} from './label';
 import {BikeExpense} from './bike-expense';
@@ -31,7 +30,6 @@ type Dashboard = {
     solo: number;
     maxHeartRate: number;
     activeDays: number;
-    longestStreak: number;
     biggestWeek: number;
     biggestMonth: number;
     eddington: number;
@@ -337,7 +335,6 @@ const computeDashboard = (
       solo: sorted.filter(({athlete_count}) => 2 > (athlete_count ?? 1)).length,
       maxHeartRate: Math.max(0, ...sorted.map(({max_heartrate}) => max_heartrate ?? 0)),
       activeDays: activeDays.length,
-      longestStreak: longestStreak(activeDays),
       biggestWeek: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${weekOfYear(date)}`))),
       biggestMonth: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${date.getUTCMonth()}`))),
       eddington,

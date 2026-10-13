@@ -227,7 +227,7 @@ you like. An activity whose details are not stored yet does not count.
 12. **Club** (with a club set): rides per group, finish places.
 13. **Maintenance and running costs**: events per type, spend, cost per km, PRs, KOMs,
     photos, rides with power, solo rides, commutes and CO2 not driven, indoor rides,
-    weekday vs weekend, typical stop, days out, longest streak, biggest week and month,
+    weekday vs weekend, typical stop, days out, biggest week and month,
     Everests climbed, times around the Earth.
 14. **Conditions**: average heart rate, temperature, recording devices (a device opens
     the Activities list filtered on it).

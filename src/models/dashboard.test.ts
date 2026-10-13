@@ -230,19 +230,18 @@ test('it groups heart rate into bands', () => {
   ]);
 });
 
-test('it measures days out and the longest run of consecutive days', () => {
+test('it counts days out, a day with two activities once', () => {
   const backToBack = [
     buildDetailedActivity({id: 10, start_date: '2024-05-01T08:00:00Z', start_date_local: '2024-05-01T10:00:00Z'}),
     buildDetailedActivity({id: 11, start_date: '2024-05-02T08:00:00Z', start_date_local: '2024-05-02T10:00:00Z'}),
     buildDetailedActivity({id: 12, start_date: '2024-05-03T08:00:00Z', start_date_local: '2024-05-03T10:00:00Z'}),
-    // same day as the one before, so it must not extend the streak
+    // same day as the one before, so it is not a new day out
     buildDetailedActivity({id: 13, start_date: '2024-05-03T16:00:00Z', start_date_local: '2024-05-03T18:00:00Z'}),
     buildDetailedActivity({id: 14, start_date: '2024-06-20T08:00:00Z', start_date_local: '2024-06-20T10:00:00Z'}),
   ];
   const {totals} = computeDashboard(backToBack, [], [], [], label);
 
   expect(totals.activeDays).toBe(4);
-  expect(totals.longestStreak).toBe(3);
 });
 
 test('it builds a running weekly total per year', () => {

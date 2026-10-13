@@ -715,7 +715,6 @@ const RecordsPage = () => {
               ],
               ['Typical stop per ride', `${count(totals.medianStopMinutes)} min`],
               ['Days out', `${count(totals.activeDays)} days`],
-              ['Longest streak', `${count(totals.longestStreak)} days in a row`],
               ['Biggest week', `${count(totals.biggestWeek)} km`],
               ['Biggest month', `${count(totals.biggestMonth)} km`],
               ['Everests climbed', (totals.elevation / 8849).toFixed(1)],
