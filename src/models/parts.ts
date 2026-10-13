@@ -9,9 +9,14 @@ import {Activity} from './strava';
  * part was swapped, which is not when it wore out, so for these it would read far too
  * short. Parts without a limit fall back on history. A chain's limit is per stint.
  */
-type PartRules = {limitsKm: Partial<Record<Event['type'], number>>; retiredChains: string[]};
+type PartRules = {
+  limitsKm: Partial<Record<Event['type'], number>>;
+  retiredChains: string[];
+  // What one replacement costs, in euros, to turn a part's life into a cost per km.
+  pricesEur: Partial<Record<Event['type'], number>>;
+};
 
-const DEFAULT_PART_RULES: PartRules = {limitsKm: {chain: 400, tire: 8000, cassette: 30000}, retiredChains: []};
+const DEFAULT_PART_RULES: PartRules = {limitsKm: {chain: 400, tire: 8000, cassette: 30000}, retiredChains: [], pricesEur: {}};
 
 // A chain comes off the bike once it has done this much on its current stint.
 const rotationLimit = (rules: PartRules = DEFAULT_PART_RULES): number => (rules.limitsKm.chain ?? 400) * 1000;
@@ -26,6 +31,10 @@ const WEARING_PARTS: Event['type'][] = ['chain', 'tire', 'cassette', 'brake_pad'
 // Parts you refit the same model of, so the last few are worth offering again.
 const REFITTED_PARTS: Event['type'][] = ['tire', 'cassette', 'saddle'];
 const DUE_RATIO = 0.8;
+const DAY = 24 * 60 * 60 * 1000;
+// The recent riding pace is read over this many weeks: long enough to smooth out a rainy
+// week, short enough to follow a change of season.
+const PACE_WEEKS = 8;
 
 type PartState = 'ok' | 'due' | 'overdue';
 
@@ -38,6 +47,10 @@ type PartStatus = {
   expected: number | null;
   ratio: number;
   state: PartState;
+  // At the recent pace on this bike; 0 when it is due now, null without a life or recent riding.
+  weeksLeft: number | null;
+  // In euros per km, from its price and expected life; null without either.
+  costPerKm: number | null;
 };
 
 type Fitting = {event: Event; detail: string};
@@ -46,6 +59,23 @@ const sum = (values: number[]): number => values.reduce((total, value) => total 
 
 const distanceBetween = (activities: Activity[], from: Date, to?: Date): number =>
   sum(getRidesBetween(activities, from, to).map(({distance}) => distance));
+
+// Km per week over the last few weeks, today included.
+const recentPace = (activities: Activity[], now: Date): number => {
+  const tomorrow = new Date(now.getTime() + DAY);
+
+  return distanceBetween(activities, new Date(tomorrow.getTime() - PACE_WEEKS * 7 * DAY), tomorrow) / PACE_WEEKS;
+};
+
+const weeksLeftOf = (distance: number, expected: number | null, pace: number): number | null => {
+  if (null === expected || 0 >= expected) return null;
+  if (distance >= expected) return 0;
+
+  return 0 < pace ? (expected - distance) / pace : null;
+};
+
+const costPerKmOf = (price: number | undefined, expected: number | null): number | null =>
+  undefined === price || 0 >= price || null === expected || 0 >= expected ? null : price / (expected / 1000);
 
 const stateOf = (distance: number, expected: number | null): PartState => {
   if (null === expected || 0 >= expected) return 'ok';
@@ -64,7 +94,7 @@ const onBike = (events: Event[], bikeId: string, type: Event['type']): Event[] =
 /**
  * What is fitted right now and how far it has gone, measured against the part's known
  * limit where there is one, and otherwise against how long the previous ones lasted on
- * this bike.
+ * this bike. The activities are this bike's rides, so the pace is this bike's too.
  */
 const partStatus = (
   type: Event['type'],
@@ -73,6 +103,7 @@ const partStatus = (
   bikeId: string,
   label: GetLabel,
   rules: PartRules,
+  pace: number,
 ): PartStatus | null => {
   const fittings = onBike(events, bikeId, type);
   const current = fittings.at(-1);
@@ -110,6 +141,8 @@ const partStatus = (
     expected,
     ratio: null === expected || 0 >= expected ? 0 : distance / expected,
     state: stateOf(distance, expected),
+    weeksLeft: weeksLeftOf(distance, expected, pace),
+    costPerKm: costPerKmOf(rules.pricesEur[type], expected),
   };
 };
 
@@ -119,10 +152,21 @@ const computeBikeParts = (
   bikeId: string,
   label: GetLabel,
   rules: PartRules = DEFAULT_PART_RULES,
-): PartStatus[] =>
-  WEARING_PARTS.map(type => partStatus(type, events, activities, bikeId, label, rules))
+  now: Date = new Date(),
+): PartStatus[] => {
+  const pace = recentPace(activities, now);
+
+  return WEARING_PARTS.map(type => partStatus(type, events, activities, bikeId, label, rules, pace))
     .filter((part): part is PartStatus => null !== part)
     .sort((a, b) => b.ratio - a.ratio);
+};
+
+/** What the parts cost to wear out, in euros per km, over those with a price and a life. */
+const partsCostPerKm = (parts: PartStatus[]): number | null => {
+  const costs = parts.map(({costPerKm}) => costPerKm).filter((cost): cost is number => null !== cost);
+
+  return 0 === costs.length ? null : sum(costs);
+};
 
 /**
  * Which chain to fit next: the least used of the set, so they wear down together. The one
@@ -172,5 +216,5 @@ const recentFittings = (
     .slice(0, limit);
 };
 
-export {computeBikeParts, DEFAULT_PART_RULES, recentFittings, REFITTED_PARTS, rotationLimit, suggestChains, WEARING_PARTS};
+export {computeBikeParts, DEFAULT_PART_RULES, partsCostPerKm, recentFittings, REFITTED_PARTS, rotationLimit, suggestChains, WEARING_PARTS};
 export type {Fitting, PartRules, PartState, PartStatus};

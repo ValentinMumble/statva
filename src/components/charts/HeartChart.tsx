@@ -3,7 +3,7 @@ import {Group} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../../components/ui';
-import {useActivities} from '../../hooks';
+import {useActivities, useSettings} from '../../hooks';
 import {ActivityType} from '../../models/strava';
 import {formatPower, getTypes} from '../../models';
 import {ChartTooltip} from './ChartTooltip';
@@ -12,6 +12,7 @@ const MIN_DISTANCE_METERS = 30 * 1000;
 const DEFAULT_ITEM_COUNT = 50;
 
 const HeartChart = () => {
+  const {locale} = useSettings();
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const {activities} = useActivities({
     withCommute: true,
@@ -57,7 +58,7 @@ const HeartChart = () => {
               stroke={chart.color('fg.muted')}
               tickLine={false}
               tickFormatter={timestamp =>
-                new Date(timestamp).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})
+                new Date(timestamp).toLocaleDateString(locale, {month: 'short', year: '2-digit'})
               }
             />
             <YAxis
@@ -92,7 +93,7 @@ const HeartChart = () => {
 
                 return (
                   <ChartTooltip>
-                    <div>{new Date(timestamp).toLocaleDateString('fr-FR')}</div>
+                    <div>{new Date(timestamp).toLocaleDateString(locale)}</div>
                     {null !== heartRate && <div>🫀 {heartRate}</div>}
                     {null !== power && <div>⚡️ {formatPower(power)}</div>}
                   </ChartTooltip>

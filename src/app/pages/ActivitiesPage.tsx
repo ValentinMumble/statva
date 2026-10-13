@@ -191,6 +191,8 @@ const Toolbar = ({
         marginX={{base: '-16px', md: '0'}}
         paddingX={{base: '16px', md: '0'}}
         css={{scrollbarWidth: 'none', '&::-webkit-scrollbar': {display: 'none'}, '& > *': {flexShrink: 0}}}
+        // The right edge fades out, a hint that more filters are a swipe away.
+        maskImage={{base: 'linear-gradient(to right, black calc(100% - 40px), transparent)', md: 'none'}}
       >
         <SegmentGroup.Root
           size="sm"

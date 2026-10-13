@@ -19,6 +19,7 @@ import {
   formatDistanceMeters,
   getZoneColor,
   computeTSS,
+  intensityOf,
 } from '../models';
 import {ActivityType, Activity, DetailedActivity} from './strava';
 
@@ -250,21 +251,16 @@ const TAGS: Tag[] = [
   {
     help: 'Intensity',
     sortType: 'intensity',
-    value: ({weighted_average_watts}, _, ftp) => ({
-      label: undefined === weighted_average_watts ? null : formatPercent(weighted_average_watts / ftp),
-      isRelevant: 0 < (weighted_average_watts ?? 0),
-    }),
-    total: (activities, _, getFtp) =>
-      formatPercent(
-        activities
-          .filter(activity => undefined !== activity.weighted_average_watts)
-          .reduce(
-            (total, activity, _index, activities) =>
-              total +
-              (activity.weighted_average_watts ?? 0) / getFtp(new Date(activity.start_date)) / activities.length,
-            0,
-          ),
-      ),
+    value: (activity, fullActivity, ftp) => {
+      const intensity = intensityOf(activity, fullActivity, ftp);
+      return {label: null === intensity ? null : formatPercent(intensity), isRelevant: 0 < (intensity ?? 0)};
+    },
+    total: (activities, activityMeta, getFtp) => {
+      const intensities = activities
+        .map(activity => intensityOf(activity, activityMeta[activity.id] ?? null, getFtp(new Date(activity.start_date))))
+        .filter((intensity): intensity is number => null !== intensity);
+      return 0 === intensities.length ? '' : formatPercent(intensities.reduce((total, intensity) => total + intensity, 0) / intensities.length);
+    },
   },
   optionalRoundedTag('Average heartrate', 'average_heartrate', 'average_heartrate', 'avg', {
     tooltip: activity => `🫀 Zone ${getHeartZone(activity)}`,
@@ -275,20 +271,20 @@ const TAGS: Tag[] = [
   {
     help: 'Training Stress Score',
     sortType: 'tss',
-    value: (activity, _, ftp) => {
-      const tss = computeTSS(activity, ftp);
+    value: (activity, fullActivity, ftp) => {
+      const tss = computeTSS(activity, ftp, fullActivity);
       return {
         label: tss ? tss.value : null,
         isRelevant: tss !== null && tss.value > 0,
         tooltip: tss ? (tss.source === 'power' ? '⚡️ power TSS' : '🫀 HR-based TSS') : null,
       };
     },
-    total: (activities, _, getFtp) => {
+    total: (activities, activityMeta, getFtp) => {
       const values = activities
-        .map(a => computeTSS(a, getFtp(new Date(a.start_date))))
-        .filter((v): v is NonNullable<typeof v> => v !== null);
+        .map(activity => computeTSS(activity, getFtp(new Date(activity.start_date)), activityMeta[activity.id] ?? null))
+        .filter((tss): tss is NonNullable<typeof tss> => tss !== null);
       if (values.length === 0) return 0;
-      return Math.round(values.reduce((sum, v) => sum + v.value, 0) / values.length);
+      return Math.round(values.reduce((sum, tss) => sum + tss.value, 0) / values.length);
     },
   },
   {

@@ -3,7 +3,7 @@ import {Group} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../../components/ui';
-import {useActivities} from '../../hooks';
+import {useActivities, useSettings} from '../../hooks';
 import {formatPower, formatSpeed} from '../../models';
 import {ChartTooltip} from './ChartTooltip';
 
@@ -14,6 +14,7 @@ type ProgressChartProps = {
 };
 
 const ProgressChart = ({search}: ProgressChartProps) => {
+  const {locale} = useSettings();
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const {activities} = useActivities({
     search,
@@ -54,7 +55,7 @@ const ProgressChart = ({search}: ProgressChartProps) => {
               stroke={chart.color('fg.muted')}
               tickLine={false}
               tickFormatter={timestamp =>
-                new Date(timestamp).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})
+                new Date(timestamp).toLocaleDateString(locale, {month: 'short', year: '2-digit'})
               }
             />
             <YAxis
@@ -90,7 +91,7 @@ const ProgressChart = ({search}: ProgressChartProps) => {
 
                 return (
                   <ChartTooltip>
-                    <div>{new Date(timestamp).toLocaleDateString('fr-FR')}</div>
+                    <div>{new Date(timestamp).toLocaleDateString(locale)}</div>
                     <div>🏁 {formatSpeed(speed)}</div>
                     {null !== power && <div>⚡️ {formatPower(power)}</div>}
                   </ChartTooltip>

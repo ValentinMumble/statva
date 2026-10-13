@@ -1,4 +1,4 @@
-import {Fragment, ReactNode, useMemo} from 'react';
+import {Fragment, useMemo, useState} from 'react';
 import {
   Box,
   Grid,
@@ -6,7 +6,6 @@ import {
   HStack,
   Image,
   Link as ChakraLink,
-  Span,
   Spinner,
   Stack,
   Text,
@@ -29,6 +28,15 @@ import {ChartTooltip} from '../../components/charts/ChartTooltip';
 import {RideHeatmap} from '../../components/leaflet';
 import {useActivityMeta, useEvents, useExpenses, useFtp, useLabels, useSettings} from '../../hooks';
 import {DetailedActivity} from '../../models/strava';
+import {buildRideClock} from '../../models/calendar';
+import {deviceDay, localDay} from '../../models/local-day';
+import {computeStreaks} from '../../models/streaks';
+import {DatedRoute} from '../../models/year-review';
+import {CalendarHeatmap} from '../components/CalendarHeatmap';
+import {Panel, Readout} from '../components/Panel';
+import {RideClock} from '../components/RideClock';
+import {StreaksPanel} from '../components/StreaksPanel';
+import {YearReview} from '../components/YearReview';
 import {
   computeDashboard,
   computeExplorerTiles,
@@ -55,45 +63,15 @@ const decodeRoutes = (
     .filter((polyline): polyline is string => Boolean(polyline))
     .map(polyline => decodePolyline(polyline));
 
+// Full routes with the local day they were ridden on, so the tiles can be split by year.
+const decodeDatedRoutes = (activityMeta: Record<string, DetailedActivity>): DatedRoute[] =>
+  Object.values(activityMeta)
+    .map(activity => ({day: localDay(activity), polyline: activity.map?.polyline}))
+    .filter((route): route is {day: string; polyline: string} => Boolean(route.polyline))
+    .map(({day, polyline}) => ({day, track: decodePolyline(polyline)}));
+
 // Grouped digits in the reader's own locale.
 const count = (value: number): string => Math.round(value).toLocaleString();
-
-type PanelProps = {title: string; note?: string; children: ReactNode};
-
-const Panel = ({title, note, children}: PanelProps) => (
-  <Stack gap="12px" background="bg.panel" borderWidth="1px" borderRadius="card" padding={{base: '16px', md: '20px'}} minWidth="0">
-    <HStack justifyContent="space-between" alignItems="baseline" gap="10px" flexWrap="wrap">
-      <Text fontFamily="heading" fontWeight="semibold">
-        {title}
-      </Text>
-      {undefined !== note && (
-        <Text fontSize="xs" color="fg.muted">
-          {note}
-        </Text>
-      )}
-    </HStack>
-    {children}
-  </Stack>
-);
-
-type ReadoutProps = {value: string; unit?: string; caption: string};
-
-const Readout = ({value, unit, caption}: ReadoutProps) => (
-  <Stack gap="0" background="bg.panel" borderWidth="1px" borderRadius="card" padding="14px 16px" minWidth="0">
-    <Text fontFamily="figure" fontSize="2xl" fontWeight="semibold" lineHeight="1.15" truncate={true}>
-      {value}
-      {undefined !== unit && (
-        <Span fontSize="sm" color="fg.muted" fontWeight="normal">
-          {' '}
-          {unit}
-        </Span>
-      )}
-    </Text>
-    <Text fontSize="xs" color="fg.muted">
-      {caption}
-    </Text>
-  </Stack>
-);
 
 type BarsProps = {
   data: {name: string; value: number}[];
@@ -494,19 +472,24 @@ const RecordsPage = () => {
   const {tests: ftpTests} = useFtp();
   const {expenses} = useExpenses();
   const {label} = useLabels();
-  const {club, mapCenter} = useSettings();
+  const {club, mapCenter, locale} = useSettings();
   const navigate = useNavigate();
+  const [now] = useState(() => new Date());
 
+  const activities = useMemo(() => Object.values(activityMeta), [activityMeta]);
   const data = useMemo(
-    () => computeDashboard(Object.values(activityMeta), events, ftpTests, expenses, label, club),
-    [activityMeta, events, ftpTests, expenses, label, club],
+    () => computeDashboard(activities, events, ftpTests, expenses, label, club, locale),
+    [activities, events, ftpTests, expenses, label, club, locale],
   );
+  const streaks = useMemo(() => computeStreaks(activities, deviceDay(now)), [activities, now]);
+  const rideClock = useMemo(() => buildRideClock(activities), [activities]);
 
   // Decoding every route is the heavy part of this page, so it happens once. The map is
   // drawn from the light summary routes; the tiles are counted from the full ones, since
   // a downsampled route skips tiles on fast roads and leaves holes in the yard.
   const tracks = useMemo(() => decodeRoutes(activityMeta, 'summary_polyline'), [activityMeta]);
-  const explorer = useMemo(() => computeExplorerTiles(decodeRoutes(activityMeta, 'polyline')), [activityMeta]);
+  const routes = useMemo(() => decodeDatedRoutes(activityMeta), [activityMeta]);
+  const explorer = useMemo(() => computeExplorerTiles(routes.map(({track}) => track)), [routes]);
 
   if (isError) {
     return (
@@ -557,6 +540,8 @@ const RecordsPage = () => {
           <Readout key={milestone} value={count(rides)} caption={`rides of ${milestone}`} />
         ))}
       </Grid>
+
+      <YearReview activities={activities} routes={routes} label={label} locale={locale} now={now} />
 
       <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
         <Panel title="Distance per year">
@@ -634,6 +619,15 @@ const RecordsPage = () => {
       <Panel title="Month by month" note="darkest is the biggest month">
         <MonthHeatmap months={data.months} />
       </Panel>
+
+      <CalendarHeatmap activities={activities} locale={locale} />
+
+      <Grid templateColumns={{base: '1fr', lg: '2fr 1fr'}} gap="16px">
+        <Panel title="When you ride" note="activities started, local time">
+          <RideClock clock={rideClock} />
+        </Panel>
+        <StreaksPanel streaks={streaks} locale={locale} />
+      </Grid>
 
       <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
         <Panel title="The fleet" note={data.sports.map(({type, rides}) => `${type} ${rides}`).join(' · ')}>
@@ -761,9 +755,8 @@ const RecordsPage = () => {
       </Grid>
 
       <Text fontSize="xs" color="fg.muted">
-        Everything here is read from the activities cached in Redis, so the page never calls Strava and its rate limit
-        cannot slow it down. If rides are missing, run <Span fontFamily="mono">node scripts/backfill-activities.mjs</Span>{' '}
-        to fetch the rest.
+        Everything here is read from the activities Statva stores, so the page never calls Strava and its rate limit
+        cannot slow it down. Older activities are filled in a few at a time on each visit.
       </Text>
     </Stack>
   );

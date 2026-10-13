@@ -57,7 +57,7 @@ type LogEventProps = {
  * phone it opens as a sheet from the bottom, within reach of the thumb.
  */
 const LogEvent = ({bike: chosenBike, date, type: presetType, onLogged, trigger}: LogEventProps) => {
-  const {defaultBike, retiredChains} = useSettings();
+  const {defaultBike, retiredChains, locale} = useSettings();
   const bike = chosenBike ?? defaultBike;
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Partial<Event>>({});
@@ -93,7 +93,7 @@ const LogEvent = ({bike: chosenBike, date, type: presetType, onLogged, trigger}:
     handleOpenChange(false);
 
     toaster.create({
-      title: `${label(event.type)} logged on ${event.date.toLocaleDateString('fr-FR')}`,
+      title: `${label(event.type)} logged on ${event.date.toLocaleDateString(locale)}`,
       action: {
         label: 'Undo',
         onClick: async () => {

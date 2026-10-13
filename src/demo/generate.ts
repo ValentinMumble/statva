@@ -111,6 +111,68 @@ const commuteLine = (random: Random, toWork: boolean): [number, number][] => {
 
 const isoDate = (date: Date): string => date.toISOString().replace(/\.\d{3}Z$/, 'Z');
 
+// A steady spread from the id, so the power figures vary without drawing on the seeded
+// random numbers (drawing more would change every activity generated after this one).
+const spreadOf = (id: number): number => ((id * 37) % 100) / 100;
+
+// Best power over each duration as a share of FTP, at the low and high end of a rider's days.
+const CURVE_SHARES: [number, number, number][] = [
+  [5, 2.6, 3.4],
+  [15, 2.0, 2.6],
+  [30, 1.6, 1.95],
+  [60, 1.3, 1.55],
+  [120, 1.15, 1.3],
+  [300, 1.0, 1.1],
+  [600, 0.94, 1.0],
+  [1200, 0.88, 0.96],
+  [1800, 0.84, 0.92],
+  [3600, 0.76, 0.86],
+];
+
+/** What the server works out from a ride's power data, made up around its power and the FTP of the day. */
+const powerDetails = (id: number, ftp: number, weighted: number | undefined, average: number | undefined, movingTime: number) => {
+  if (undefined === weighted || undefined === average) return {};
+
+  const spread = spreadOf(id);
+  const power_curve = Object.fromEntries(
+    CURVE_SHARES.filter(([seconds]) => seconds <= movingTime).map(([seconds, low, high]) => [
+      seconds,
+      Math.max(average, Math.round(ftp * (low + (high - low) * spread) * Math.min(1, weighted / (ftp * 0.8)))),
+    ]),
+  );
+  // Moving seconds per 25 W band: some coasting, the rest spread around the average power.
+  const bands = Math.ceil((average * 2) / 25);
+  const weights = Array.from({length: bands}, (_, band) => Math.max(0, 1 - Math.abs(band * 25 + 12.5 - average) / average));
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const power_histogram = weights.map((weight, band) => Math.round((0 === band ? 0.15 : 0) * movingTime + (weight / total) * movingTime * 0.85));
+
+  return {
+    normalized_power: Math.round(weighted * 1.04),
+    power_curve,
+    power_histogram,
+    heart_rate_drift: movingTime >= 3600 ? Math.round((spread * 9 - 1) * 10) / 10 : null,
+  };
+};
+
+/** Strava's best efforts on a run, at a little faster than the run's own pace. */
+const runEfforts = (kind: Kind, distance: number, movingTime: number) => {
+  if ('run' !== kind || 0 === distance) return {};
+
+  const pace = movingTime / distance;
+  const efforts: [string, number][] = [
+    ['1K', 1000],
+    ['5K', 5000],
+    ['10K', 10000],
+    ['Half-Marathon', 21097],
+  ];
+
+  return {
+    best_efforts: efforts
+      .filter(([, metres]) => metres <= distance)
+      .map(([name, metres]) => ({name, distance: metres, elapsed_time: Math.round(metres * pace * (1000 === metres ? 0.93 : 0.97))})),
+  };
+};
+
 /** Generates the whole demo for a given day. */
 const generateDemo = (today: Date = new Date()): DemoData => {
   const random = seeded(SEED);
@@ -206,6 +268,8 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       segment_efforts: Array.from({length: Math.floor(km / 6)}, () => ({kom_rank: random.chance(0.004) ? 1 : null})),
       photos: {count: 0, use_primary_photo: false},
       map: {...summary.map, polyline: encodePolyline(points)},
+      ...powerDetails(id, ftpAt(date.getTime()), weighted, averageWatts, movingTime),
+      ...runEfforts(kind, distance, movingTime),
     } as unknown as DetailedActivity;
   };
 

@@ -1,5 +1,5 @@
 import {useMemo, useState} from 'react';
-import {Button, Group, IconButton, Input, NumberInput, Stack, Text} from '@chakra-ui/react';
+import {Button, Group, HStack, IconButton, Input, NumberInput, Stack, Text} from '@chakra-ui/react';
 import {LuMinus} from 'react-icons/lu';
 import {Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../ui';
@@ -24,7 +24,7 @@ type DataPoint = {
 };
 
 const CostPerKmChart = () => {
-  const {costBike} = useSettings();
+  const {costBike, locale} = useSettings();
   const [skipPercent, setSkipPercent] = useState<number>(DEFAULT_SKIP_PERCENT);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState<number>();
@@ -182,7 +182,7 @@ const CostPerKmChart = () => {
             dataKey="timestamp"
             type="number"
             domain={['dataMin', 'dataMax']}
-            tickFormatter={ts => new Date(ts).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})}
+            tickFormatter={ts => new Date(ts).toLocaleDateString(locale, {month: 'short', year: '2-digit'})}
           />
           <YAxis yAxisId="costPerKm" domain={yDomain} hide />
           <YAxis yAxisId="costPerHour" hide />
@@ -207,10 +207,12 @@ const CostPerKmChart = () => {
           <Line type="monotone" dataKey="costPerHour" yAxisId="costPerHour" stroke="#ED9564" strokeWidth={2} dot={false} strokeDasharray="4 2" />
         </ComposedChart>
       </ResponsiveContainer>
-      <Group marginBottom="20px" onKeyDown={({key}) => key === 'Enter' && handleAdd()}>
-        <Input type="date" size="sm" width="220px" value={date} onChange={({target}) => setDate(target.value)} />
+      {/* Wraps on a phone, where the four fields do not fit on one line. */}
+      <HStack gap="8px" flexWrap="wrap" marginBottom="20px" onKeyDown={({key}) => key === 'Enter' && handleAdd()}>
+        <Input type="date" size="sm" width={{base: '150px', md: '220px'}} value={date} onChange={({target}) => setDate(target.value)} />
         <NumberInput.Root
           size="sm"
+          width="110px"
           value={amount?.toString() ?? ''}
           onValueChange={({value}) => setAmount('' === value ? undefined : Number(value))}
         >
@@ -218,6 +220,8 @@ const CostPerKmChart = () => {
         </NumberInput.Root>
         <Input
           size="sm"
+          flex="1"
+          minWidth="140px"
           placeholder="Description"
           value={description}
           onChange={({target}) => setDescription(target.value)}
@@ -225,7 +229,7 @@ const CostPerKmChart = () => {
         <Button size="sm" variant="outline" disabled={!canSubmit} onClick={handleAdd}>
           Add
         </Button>
-      </Group>
+      </HStack>
       {expenses.length > 0 && (
         <Stack gap="0" maxHeight="240px" overflowY="auto" marginBottom="20px">
           {[...expenses]
@@ -240,7 +244,7 @@ const CostPerKmChart = () => {
                 borderColor="gray.700"
               >
                 <Text fontSize="xs" color="gray.400" width="90px" flexShrink={0}>
-                  {new Date(expense.date).toLocaleDateString('en-US', {day: 'numeric', month: 'short', year: '2-digit'})}
+                  {new Date(expense.date).toLocaleDateString(locale, {day: 'numeric', month: 'short', year: '2-digit'})}
                 </Text>
                 <Text fontSize="sm" flex="1" truncate>
                   {expense.description}

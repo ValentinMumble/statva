@@ -1,5 +1,20 @@
+import {extractNormalizedPower} from './activity-meta';
 import {riderProfile} from './rider';
-import {Activity} from './strava';
+import {Activity, DetailedActivity} from './strava';
+
+/**
+ * The power an effort is measured by: Statva's normalized power, worked out as Sauce does,
+ * and Strava's weighted power until that is in (or for estimated power, which gets none).
+ */
+const effortPower = (activity: Activity, detail: DetailedActivity | null): number | null =>
+  extractNormalizedPower(detail) ?? activity.weighted_average_watts ?? null;
+
+/** Intensity factor: the effort's power as a share of the FTP of the day. */
+const intensityOf = (activity: Activity, detail: DetailedActivity | null, ftp: number): number | null => {
+  const power = effortPower(activity, detail);
+
+  return null === power || 0 >= ftp ? null : power / ftp;
+};
 
 /**
  * Power-based TSS (TrainingPeaks standard):
@@ -35,14 +50,15 @@ const hrTSS = (durationSeconds: number, avgHeartrate: number): number => {
 type TSSResult = {value: number; source: 'power' | 'hr'} | null;
 
 /**
- * Compute TSS for an activity.
- * Uses power-based TSS when weighted_average_watts + FTP are available.
- * Falls back to HR-based hrTSS.
+ * Compute TSS for an activity: from its effort power (see effortPower) and the FTP when
+ * both are there, otherwise from heart rate (hrTSS).
  */
-const computeTSS = (activity: Activity, ftp: number): TSSResult => {
-  if (activity.weighted_average_watts && ftp > 0) {
+const computeTSS = (activity: Activity, ftp: number, detail: DetailedActivity | null = null): TSSResult => {
+  const power = effortPower(activity, detail);
+
+  if (power && ftp > 0) {
     return {
-      value: Math.round(powerTSS(activity.moving_time, activity.weighted_average_watts, ftp)),
+      value: Math.round(powerTSS(activity.moving_time, power, ftp)),
       source: 'power',
     };
   }
@@ -57,5 +73,5 @@ const computeTSS = (activity: Activity, ftp: number): TSSResult => {
   return null;
 };
 
-export {computeTSS};
+export {computeTSS, effortPower, intensityOf};
 export type {TSSResult};

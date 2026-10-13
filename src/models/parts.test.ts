@@ -1,5 +1,5 @@
 import {buildActivity} from '../../test/test-util';
-import {computeBikeParts, recentFittings, suggestChains} from './parts';
+import {computeBikeParts, DEFAULT_PART_RULES, partsCostPerKm, recentFittings, suggestChains} from './parts';
 import {Event} from './event';
 
 const BIKE = 'b1';
@@ -188,4 +188,53 @@ test('a part that is replaced rather than swapped only counts its current fittin
   // the same model fitted twice is two tires, so only the second one's distance counts
   expect(fitted.distance).toBe(1000000);
   expect(fitted.expected).toBe(8000000);
+});
+
+test('it tells how many weeks a part has left at the recent pace on the bike', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const [tire] = computeBikeParts([on(11, {type: 'tire'})], rides, BIKE, label, DEFAULT_PART_RULES, new Date('2025-01-21T12:00:00Z'));
+
+  // 2000 km over the last 8 weeks is 250 km a week, and the tire has 7000 of its 8000 km to go
+  expect(tire.weeksLeft).toBe(28);
+});
+
+test('a part past its life is due now, whatever the pace', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const events = [on(1, {type: 'battery'}), on(11, {type: 'battery'})];
+  const [battery] = computeBikeParts(events, rides, BIKE, label, DEFAULT_PART_RULES, new Date('2025-01-21T12:00:00Z'));
+
+  expect(battery.weeksLeft).toBe(0);
+});
+
+test('it gives no weeks left without recent riding or without a life to measure against', () => {
+  const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
+  const events = [on(11, {type: 'tire'}), on(11, {type: 'battery'})];
+  // months after the last ride, so there is no pace to go on
+  const later = computeBikeParts(events, rides, BIKE, label, DEFAULT_PART_RULES, new Date('2025-06-01T12:00:00Z'));
+  const soon = computeBikeParts(events, rides, BIKE, label, DEFAULT_PART_RULES, new Date('2025-01-21T12:00:00Z'));
+
+  expect(later.find(({type}) => 'tire' === type)?.weeksLeft).toBeNull();
+  // the first battery has no previous one to say how long it lasts
+  expect(soon.find(({type}) => 'battery' === type)?.weeksLeft).toBeNull();
+});
+
+test('it turns a part"s price and life into a cost per km, and adds them up', () => {
+  const events = [on(1, {type: 'tire'}), on(1, {type: 'chain', chain: '🍒'}), on(1, {type: 'battery'})];
+  const rules = {...DEFAULT_PART_RULES, pricesEur: {tire: 40, chain: 30, battery: 50}};
+  const parts = computeBikeParts(events, activities, BIKE, label, rules);
+  const costOf = (type: Event['type']) => parts.find(part => type === part.type)?.costPerKm;
+
+  // 40 € over 8000 km, and 30 € over the 400 km chain stint
+  expect(costOf('tire')).toBeCloseTo(0.005);
+  expect(costOf('chain')).toBeCloseTo(0.075);
+  // a price is no use without a life to spread it over
+  expect(costOf('battery')).toBeNull();
+  expect(partsCostPerKm(parts)).toBeCloseTo(0.08);
+});
+
+test('there is no parts wear cost without any priced part', () => {
+  const parts = computeBikeParts([on(1, {type: 'tire'})], activities, BIKE, label);
+
+  expect(parts[0].costPerKm).toBeNull();
+  expect(partsCostPerKm(parts)).toBeNull();
 });

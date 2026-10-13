@@ -47,6 +47,15 @@ const LIMITED_PARTS: [keyof Settings['partLimitsKm'], string][] = [
   ['battery', 'Battery charge'],
 ];
 
+// Parts that cost something to replace, for their cost per km. Not chains: their limit is
+// one stint of a rotation, not a chain's whole life, so the cost per km would read far too high.
+const PRICED_PARTS: [keyof Settings['partPricesEur'], string][] = [
+  ['tire', 'Tires'],
+  ['cassette', 'Cassette'],
+  ['brake_pad', 'Brake pads'],
+  ['brake_bleed', 'Brake fluid'],
+];
+
 const list = (text: string): string[] =>
   text
     .split(/[,\n]/)
@@ -100,12 +109,13 @@ const Toggle = ({label, checked, onChange}: {label: string; checked: boolean; on
   </Switch.Root>
 );
 
-const NumberField = ({label, value, unit, onChange, placeholder}: {label: string; value: number | undefined; unit?: string; onChange: (value: number | undefined) => void; placeholder?: string}) => (
+const NumberField = ({label, value, unit, onChange, placeholder, step}: {label: string; value: number | undefined; unit?: string; onChange: (value: number | undefined) => void; placeholder?: string; step?: number}) => (
   <Field.Root>
     <Field.Label>{label}</Field.Label>
     <HStack gap="8px">
       <Input
         type="number"
+        step={step}
         value={undefined === value ? '' : value}
         placeholder={placeholder}
         onChange={({target}) => onChange('' === target.value ? undefined : Number(target.value))}
@@ -323,7 +333,7 @@ const SettingsPage = () => {
         </Stack>
       </Section>
 
-      <Section title="Parts" description="How long parts last. Left empty, a part is judged against how long the previous ones lasted.">
+      <Section title="Parts" description="How long parts last and what they cost. Left empty, a life is judged against how long the previous ones lasted.">
         <Grid templateColumns={{base: '1fr', md: '1fr 1fr'}} gap="16px">
           {LIMITED_PARTS.map(([part, name]) => (
             <NumberField
@@ -336,6 +346,22 @@ const SettingsPage = () => {
             />
           ))}
         </Grid>
+        <Stack gap="6px">
+          <GroupLabel>Prices, for the cost per km</GroupLabel>
+          <Grid templateColumns={{base: '1fr', md: '1fr 1fr'}} gap="16px">
+            {PRICED_PARTS.map(([part, name]) => (
+              <NumberField
+                key={part}
+                label={name}
+                unit="€"
+                step={0.01}
+                placeholder="Not set"
+                value={settings.partPricesEur[part]}
+                onChange={value => set('partPricesEur', {...settings.partPricesEur, [part]: value})}
+              />
+            ))}
+          </Grid>
+        </Stack>
         <Field.Root>
           <Field.Label>Retired chains</Field.Label>
           <Input
@@ -349,6 +375,13 @@ const SettingsPage = () => {
 
       <Section title="Goal and sports" description="The yearly target, and the sports the stats show.">
         <NumberField label="Yearly riding goal" unit="km" value={settings.yearGoalKm} onChange={value => set('yearGoalKm', value ?? DEFAULT_SETTINGS.yearGoalKm)} />
+        <NumberField
+          label="Car cost per km (€), to count what commuting saves"
+          unit="€"
+          step={0.01}
+          value={settings.carCostPerKm}
+          onChange={value => set('carCostPerKm', value ?? DEFAULT_SETTINGS.carCostPerKm)}
+        />
         <Stack gap="6px">
           <GroupLabel>Sports</GroupLabel>
           <HStack gap="16px" flexWrap="wrap">
@@ -451,7 +484,7 @@ const SettingsPage = () => {
           </Field.Root>
         </Grid>
         <Toggle
-          label='Read normalized power from private notes ("NP: 245")'
+          label='Read normalized power from private notes ("NP: 245") where Statva has not worked it out'
           checked={settings.normalizedPowerFromNote}
           onChange={checked => set('normalizedPowerFromNote', checked)}
         />

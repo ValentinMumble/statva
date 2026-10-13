@@ -3,7 +3,7 @@ import {Group, Text, Span} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {StepperInput} from '../ui';
-import {useActivities, useLabels} from '../../hooks';
+import {useActivities, useLabels, useSettings} from '../../hooks';
 import {formatSpeed} from '../../models';
 import {ChartTooltip} from './ChartTooltip';
 
@@ -11,6 +11,7 @@ const DEFAULT_ITEM_COUNT = 150;
 const SPEED_DOMAIN = [10 / 3.6, 30 / 3.6];
 
 const CommuteSpeedChart = () => {
+  const {locale} = useSettings();
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const {label} = useLabels();
   const {activities} = useActivities({
@@ -24,7 +25,7 @@ const CommuteSpeedChart = () => {
 
   const chart = useChart({
     data: relevantActivities.map(activity => ({
-      date: new Date(activity.start_date).toLocaleDateString('fr-FR'),
+      date: new Date(activity.start_date).toLocaleDateString(locale),
       speed: activity.average_speed,
     })),
     series: [{name: 'speed', color: 'green.solid'}],

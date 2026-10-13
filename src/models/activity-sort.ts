@@ -1,4 +1,4 @@
-import {extractNormalizedPower, GetFtp, computeTSS} from '../models';
+import {extractNormalizedPower, GetFtp, computeTSS, intensityOf} from '../models';
 import {Activity, DetailedActivity} from './strava';
 
 type SortType =
@@ -56,7 +56,7 @@ const sortValueGetters: Record<SortType, (ctx: SortContext) => number | null> = 
   distance: ({activity}) => activity.distance,
   elapsed_time: ({activity}) => activity.elapsed_time,
   elevation_percent: ({activity}) => activity.distance === 0 ? null : activity.total_elevation_gain / activity.distance,
-  intensity: ({activity, getFtp}) => (activity.weighted_average_watts ?? 0) / getFtp(new Date(activity.start_date)),
+  intensity: ({activity, detailed, getFtp}) => intensityOf(activity, detailed, getFtp(new Date(activity.start_date))) ?? 0,
   kilojoules: ({activity}) => activity.kilojoules ?? 0,
   kudos_count: ({activity}) => activity.kudos_count,
   max_heartrate: ({activity}) => activity.max_heartrate ?? 0,
@@ -68,7 +68,7 @@ const sortValueGetters: Record<SortType, (ctx: SortContext) => number | null> = 
   pr_count: ({activity}) => activity.pr_count,
   suffer_score: ({activity}) => activity.suffer_score ?? 0,
   total_elevation_gain: ({activity}) => activity.total_elevation_gain,
-  tss: ({activity, getFtp}) => computeTSS(activity, getFtp(new Date(activity.start_date)))?.value ?? 0,
+  tss: ({activity, detailed, getFtp}) => computeTSS(activity, getFtp(new Date(activity.start_date)), detailed)?.value ?? 0,
   weighted_average_watts: ({activity}) => activity.weighted_average_watts ?? 0,
 };
 

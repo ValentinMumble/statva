@@ -7,9 +7,9 @@ import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
 import {useAllActivities, useEvents, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeBikeParts, Event, getEventLabel, PartState} from '../../models';
+import {computeBikeParts, Event, getEventLabel, partsCostPerKm, PartState} from '../../models';
 import {Card, CardTitle} from '../components/Card';
-import {km, relativeDay} from '../format';
+import {km, number, relativeDay} from '../format';
 
 const ChainChart = lazy(async () => ({default: (await import('../../components/charts/ChainChart')).ChainChart}));
 const EventOdometerChart = lazy(async () => ({default: (await import('../../components/charts/EventOdometerChart')).EventOdometerChart}));
@@ -32,6 +32,18 @@ const PART_NAMES: Record<Event['type'], string> = {
 };
 
 const STATE_COLOR: Record<PartState, string> = {ok: 'green.solid', due: 'orange.solid', overdue: 'red.solid'};
+
+// Rounded to whole weeks: the pace it rests on is only a rough guide.
+const weeksLeftText = (weeksLeft: number): string => {
+  if (0 === weeksLeft) return 'due now';
+
+  const weeks = Math.max(1, Math.round(weeksLeft));
+
+  return `≈ ${weeks} ${1 === weeks ? 'week' : 'weeks'} left`;
+};
+
+// Euros per km read as cents, since a part costs a few cents per km at most.
+const centsPerKm = (eurosPerKm: number, locale: string): string => `${number(eurosPerKm * 100, locale, 1)} c/km`;
 
 const ChartCard = ({title, children}: {title: string; children: React.ReactNode}) => (
   <Card>
@@ -57,6 +69,7 @@ const BikePage = () => {
   );
   const rides = useMemo(() => (activities ?? []).filter(({gear_id}) => bike === gear_id), [activities, bike]);
   const parts = useMemo(() => computeBikeParts(events, rides, bike, label, partRules), [events, rides, bike, label, partRules]);
+  const wearCost = partsCostPerKm(parts);
   const history = useMemo(() => events.filter(event => bike === event.bike).reverse(), [events, bike]);
   const total = rides.reduce((sum, {distance}) => sum + distance, 0);
   const thisYear = rides
@@ -151,6 +164,8 @@ const BikePage = () => {
                     <Text fontSize="xs" color="fg.muted">
                       Fitted {relativeDay(part.fittedOn, locale).toLowerCase()} · {km(part.distance, locale)}
                       {null !== part.expected && ` of ${km(part.expected, locale)}`}
+                      {null !== part.weeksLeft && ` · ${weeksLeftText(part.weeksLeft)}`}
+                      {null !== part.costPerKm && ` · ${centsPerKm(part.costPerKm, locale)}`}
                     </Text>
                   </Stack>
                   <LogEvent
@@ -175,6 +190,11 @@ const BikePage = () => {
               </Stack>
             ))}
           </Stack>
+          {null !== wearCost && (
+            <Text fontSize="sm" color="fg.muted" marginTop="16px">
+              Parts wear: {centsPerKm(wearCost, locale)}
+            </Text>
+          )}
           <LogEvent
             bike={bike}
             onLogged={refetch}

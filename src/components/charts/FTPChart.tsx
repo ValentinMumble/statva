@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {Button, Group, Input, Clipboard, IconButton, NumberInput} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
-import {useFtp} from '../../hooks';
+import {useFtp, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {backup, formatPower, FTPTest} from '../../models';
 import {ChartTooltip} from './ChartTooltip';
@@ -12,6 +12,7 @@ const upsertFTPTest = getFetcher<void>('ftp_tests.set');
 const formatRatio = (value: number): string => `${value.toFixed(1)} W/kg`;
 
 const FTPChart = () => {
+  const {locale} = useSettings();
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [weight, setWeight] = useState<number>();
   const [ftp, setFtp] = useState<number>();
@@ -61,7 +62,7 @@ const FTPChart = () => {
               stroke={chart.color('fg.muted')}
               tickLine={false}
               tickFormatter={timestamp =>
-                new Date(timestamp).toLocaleDateString('en-US', {month: 'short', year: '2-digit'})
+                new Date(timestamp).toLocaleDateString(locale, {month: 'short', year: '2-digit'})
               }
             />
             <YAxis
@@ -97,7 +98,7 @@ const FTPChart = () => {
 
                 return (
                   <ChartTooltip>
-                    <div>{new Date(timestamp).toLocaleDateString('fr-FR')}</div>
+                    <div>{new Date(timestamp).toLocaleDateString(locale)}</div>
                     <div>{formatPower(power)}</div>
                     <div>{formatRatio(ratio)}</div>
                   </ChartTooltip>

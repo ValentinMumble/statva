@@ -4,7 +4,15 @@ import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl} from '../../components/ui';
 import {useActivities, useEvents, useLabels, useSettings} from '../../hooks';
-import {extractEmoji, getEventLabel, getSeriesColor, labelCollection, Event} from '../../models';
+import {
+  extractEmoji,
+  formatDistance,
+  getEventLabel,
+  getRidesBetween,
+  getSeriesColor,
+  labelCollection,
+  Event,
+} from '../../models';
 import {ChartTooltip} from './ChartTooltip';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -30,11 +38,13 @@ type Segment = {
   label: string;
   isOngoing: boolean;
   isOneShot: boolean;
+  // Ridden on the bike during the stint; null for a one-shot event.
+  distance: number | null;
 };
 
 // Given a bike, the chart follows it and leaves the choice to the page.
 const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
-  const {defaultBike} = useSettings();
+  const {defaultBike, locale} = useSettings();
   const [chosenBike, setGearId] = useState<string | null>(null);
   const gearId = bike ?? chosenBike ?? defaultBike;
   const {label} = useLabels();
@@ -66,12 +76,13 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
       const isOneShot = ONE_SHOT_TYPES.includes(type);
       const segments = typeEvents.map((event, index) => {
         const start = event.date.getTime();
-        const nextStart = typeEvents[index + 1]?.date.getTime();
+        const nextDate = typeEvents[index + 1]?.date;
+        const nextStart = nextDate?.getTime();
         const ride = !isOneShot
           ? undefined
           : activities?.find(
               ({start_date}) =>
-                event.date.toLocaleDateString('fr-FR') === new Date(start_date).toLocaleDateString('fr-FR')
+                event.date.toDateString() === new Date(start_date).toDateString()
             );
 
         return {
@@ -80,6 +91,9 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
           label: isOneShot && ride ? extractEmoji(ride.name) : getEventLabel(event, label, true),
           isOngoing: !isOneShot && undefined === nextStart,
           isOneShot,
+          distance: isOneShot
+            ? null
+            : getRidesBetween(activities ?? [], event.date, nextDate).reduce((sum, {distance}) => sum + distance, 0),
         };
       });
 
@@ -119,7 +133,7 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
   const bikeCollection = labelCollection(relevantBikes, key => label(key, true));
 
   const formatDate = (timestamp: number): string =>
-    new Date(timestamp).toLocaleDateString('en-US', {month: 'short', year: '2-digit'});
+    new Date(timestamp).toLocaleDateString(locale, {month: 'short', year: '2-digit'});
 
   return (
     <>
@@ -174,11 +188,12 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
                       {rowLabel} · {segment.label}
                     </div>
                     <div>
-                      {new Date(segment.start).toLocaleDateString('fr-FR')}
+                      {new Date(segment.start).toLocaleDateString(locale)}
                       {segment.isOneShot
                         ? ''
-                        : ` 〰 ${segment.isOngoing ? 'now' : new Date(segment.end).toLocaleDateString('fr-FR')} · ${days} days`}
+                        : ` 〰 ${segment.isOngoing ? 'now' : new Date(segment.end).toLocaleDateString(locale)} · ${days} days`}
                     </div>
+                    {null !== segment.distance && <div>{formatDistance(segment.distance)}</div>}
                   </ChartTooltip>
                 );
               }}
@@ -210,13 +225,18 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
                 ))}
                 <LabelList
                   dataKey={`label${index}`}
-                  content={({x, y, width, height, value}) => {
+                  content={({x, y, width, height, value, index: rowIndex}) => {
                     const text = String(value ?? '');
                     // Skip the label when the bar is too narrow for it: overlapping
                     // text made the timeline unreadable. The tooltip still has it.
                     const maxCharacters = Math.floor((Number(width) - LABEL_PADDING * 2) / CHARACTER_WIDTH);
 
                     if ('' === text || maxCharacters < MIN_LABEL_CHARACTERS) return null;
+
+                    // The km ridden join the label only when both fit, never at the cost of the part's name.
+                    const distance = segmentsPerRow[Number(rowIndex)]?.segments[index]?.distance ?? null;
+                    const withDistance = null === distance ? text : `${text} · ${formatDistance(distance)}`;
+                    const shown = withDistance.length <= maxCharacters ? withDistance : text;
 
                     return (
                       <text
@@ -227,7 +247,7 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
                         fill={chart.color('fg')}
                         pointerEvents="none"
                       >
-                        {text.length > maxCharacters ? `${text.slice(0, maxCharacters - 1)}…` : text}
+                        {shown.length > maxCharacters ? `${shown.slice(0, maxCharacters - 1)}…` : shown}
                       </text>
                     );
                   }}

@@ -5,7 +5,17 @@ import {Link, useLocation, useParams} from 'react-router';
 import {LuArrowLeft, LuExternalLink, LuRefreshCw} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeTSS, decodePolyline, extractNormalizedPower, getActivityUrl, getHeartRateZone, getPowerZone, getZoneColor, hasKom} from '../../models';
+import {
+  computeTSS,
+  decodePolyline,
+  extractNormalizedPower,
+  getActivityUrl,
+  getHeartRateZone,
+  getPowerZone,
+  getZoneColor,
+  hasKom,
+  intensityOf,
+} from '../../models';
 import {Activity, ActivityZone, DetailedActivity} from '../../models/strava';
 import {ActivityPhoto} from '../../api';
 import {Card, CardTitle} from '../components/Card';
@@ -167,7 +177,8 @@ const ActivityPage = () => {
 
   const date = new Date(activity.start_date);
   const ftp = getFtp(date);
-  const tss = computeTSS(activity, ftp);
+  const tss = computeTSS(activity, ftp, detail);
+  const intensity = intensityOf(activity, detail, ftp);
   // No zone without an FTP to measure it against.
   const powerZone = (watts: number | undefined | null): number => (0 < ftp && watts ? getPowerZone(watts, ftp) : 0);
   const np = extractNormalizedPower(detail);
@@ -244,7 +255,7 @@ const ActivityPage = () => {
                   zone: powerZone(activity.weighted_average_watts),
                 },
                 {label: 'Normalized power', value: np ? `${np} W` : null, zone: powerZone(np)},
-                {label: 'Intensity', value: activity.weighted_average_watts && ftp ? `${Math.round((activity.weighted_average_watts / ftp) * 100)}%` : null},
+                {label: 'Intensity', value: null === intensity ? null : `${Math.round(intensity * 100)}%`},
                 {label: 'Training stress', value: tss ? `${Math.round(tss.value)}` : null},
                 {
                   label: 'Average heart rate',

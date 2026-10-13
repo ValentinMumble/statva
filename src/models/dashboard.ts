@@ -1,6 +1,7 @@
 import {extractNormalizedPower} from './activity-meta';
 import {ClubRules, computeFinishCount, extractNPGroup, isClubRide} from './activity-npeloton';
 import {daysExceedingDistance, eddingtonNumber} from './activity-stats';
+import {longestStreak} from './streaks';
 import {countBy} from './util';
 import {GetLabel} from './label';
 import {BikeExpense} from './bike-expense';
@@ -201,22 +202,6 @@ const distanceBy = (
     return map;
   }, {});
 
-// Longest run of days in a row with something recorded.
-const longestStreak = (days: string[]): number => {
-  let longest = 0;
-  let current = 0;
-  let previous: number | null = null;
-
-  days.forEach(day => {
-    const time = new Date(`${day}T00:00:00Z`).getTime();
-    current = null !== previous && 86_400_000 === time - previous ? current + 1 : 1;
-    previous = time;
-    longest = Math.max(longest, current);
-  });
-
-  return longest;
-};
-
 const toSorted = (counts: Record<string, number>, limit?: number): Named[] => {
   const entries = Object.entries(counts)
     .map(([name, value]) => ({name, value}))
@@ -229,7 +214,7 @@ const topRides = (
   activities: DetailedActivity[],
   getValue: (activity: DetailedActivity) => number | undefined | null,
   format: (value: number) => string,
-  {count = 3, lowest = false} = {},
+  {count = 3, lowest = false, locale = 'en-GB'} = {},
 ): Record_[] =>
   activities
     .map(activity => ({activity, value: getValue(activity)}))
@@ -239,13 +224,13 @@ const topRides = (
     .map(({activity, value}) => ({
       id: activity.id,
       name: activity.name,
-      date: utcDate(activity).toLocaleDateString('fr-FR'),
+      date: utcDate(activity).toLocaleDateString(locale),
       value,
       label: format(value),
     }));
 
-const round = (value: number, digits = 0): string =>
-  value.toLocaleString('fr-FR', {minimumFractionDigits: digits, maximumFractionDigits: digits});
+const round = (value: number, digits = 0, locale = 'en-GB'): string =>
+  value.toLocaleString(locale, {minimumFractionDigits: digits, maximumFractionDigits: digits});
 
 // Local start time as minutes past midnight; start_date_local is wall time with a Z suffix.
 const startMinutes = (activity: DetailedActivity): number => {
@@ -257,8 +242,8 @@ const startMinutes = (activity: DetailedActivity): number => {
 const clock = (minutes: number): string =>
   `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 
-// Everything comes from the records cached in Redis, so the page never calls Strava
-// and is not affected by its rate limit. Run scripts/backfill-activities.mjs to fill it.
+// Everything comes from the activities Statva stores, so the page never calls Strava
+// and is not affected by its rate limit.
 const computeDashboard = (
   activities: DetailedActivity[],
   events: Event[],
@@ -267,7 +252,12 @@ const computeDashboard = (
   label: GetLabel,
   // Without a club, the club sections stay empty.
   club: ClubRules | null = null,
+  // Dates and numbers are written the rider's way.
+  locale = 'en-GB',
 ): Dashboard => {
+  const ranked = (...[activities, getValue, format, options = {}]: Parameters<typeof topRides>) =>
+    topRides(activities, getValue, format, {...options, locale});
+  const figure = (value: number, digits = 0) => round(value, digits, locale);
   const sorted = [...activities].sort((a, b) => utcDate(a).getTime() - utcDate(b).getTime());
 
   const years = Object.values(
@@ -351,8 +341,8 @@ const computeDashboard = (
       biggestWeek: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${weekOfYear(date)}`))),
       biggestMonth: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${date.getUTCMonth()}`))),
       eddington,
-      firstDate: sorted.at(0) ? utcDate(sorted[0]).toLocaleDateString('fr-FR') : null,
-      lastDate: sorted.at(-1) ? utcDate(sorted[sorted.length - 1]).toLocaleDateString('fr-FR') : null,
+      firstDate: sorted.at(0) ? utcDate(sorted[0]).toLocaleDateString(locale) : null,
+      lastDate: sorted.at(-1) ? utcDate(sorted[sorted.length - 1]).toLocaleDateString(locale) : null,
     },
     years,
     months,
@@ -392,7 +382,7 @@ const computeDashboard = (
       .map(({activity, url}) => ({
         id: activity.id,
         name: activity.name,
-        date: utcDate(activity).toLocaleDateString('fr-FR'),
+        date: utcDate(activity).toLocaleDateString(locale),
         url,
       })),
     commute: {
@@ -433,32 +423,32 @@ const computeDashboard = (
         key: 'distance',
         heading: 'Longest',
         note: 'distance',
-        rides: topRides(onFoot, a => a.distance / 1000, v => `${round(v)} km`),
+        rides: ranked(onFoot, a => a.distance / 1000, v => `${figure(v)} km`),
       },
       {
         key: 'elevation',
         heading: 'Most climbing',
         note: 'metres gained',
-        rides: topRides(onFoot, a => a.total_elevation_gain, v => `${round(v)} m`),
+        rides: ranked(onFoot, a => a.total_elevation_gain, v => `${figure(v)} m`),
       },
       {
         key: 'hilliest',
         heading: 'Hilliest',
         note: 'climbing per km, rides over 30 km',
-        rides: topRides(
+        rides: ranked(
           outdoor.filter(({distance}) => 30_000 <= distance),
           a => (a.total_elevation_gain ?? 0) / (a.distance / 1000),
-          v => `${round(v, 1)} m/km`,
+          v => `${figure(v, 1)} m/km`,
         ),
       },
       {
         key: 'speed',
         heading: 'Fastest',
         note: 'average speed, rides over 50 km',
-        rides: topRides(
+        rides: ranked(
           outdoor.filter(({distance}) => 50_000 <= distance),
           a => a.average_speed * 3.6,
-          v => `${round(v, 1)} km/h`,
+          v => `${figure(v, 1)} km/h`,
         ),
       },
       {
@@ -467,60 +457,60 @@ const computeDashboard = (
         note: 'normalized power from the ride notes, rides over an hour',
         // Strava estimates a power figure for runs too, which would put trail runs on top.
         // The NP logged in the private note only exists for rides with a real power meter.
-        rides: topRides(
+        rides: ranked(
           rides.filter(({moving_time}) => 3600 <= moving_time),
           extractNormalizedPower,
-          v => `${round(v)} W`,
+          v => `${figure(v)} W`,
         ),
       },
       {
         key: 'suffer',
         heading: 'Hardest',
         note: 'suffer score',
-        rides: topRides(onFoot, a => a.suffer_score || null, v => round(v)),
+        rides: ranked(onFoot, a => a.suffer_score || null, v => figure(v)),
       },
       {
         key: 'prs',
         heading: 'Most records',
         note: 'personal records in one ride',
-        rides: topRides(onFoot, a => a.pr_count || null, v => `${round(v)} PRs`),
+        rides: ranked(onFoot, a => a.pr_count || null, v => `${figure(v)} PRs`),
       },
       {
         key: 'coldest',
         heading: 'Coldest',
         note: 'average temperature',
-        rides: topRides(outdoor, a => a.average_temp, v => `${round(v)} °C`, {lowest: true}),
+        rides: ranked(outdoor, a => a.average_temp, v => `${figure(v)} °C`, {lowest: true}),
       },
       {
         key: 'hottest',
         heading: 'Hottest',
         note: 'average temperature',
-        rides: topRides(outdoor, a => a.average_temp, v => `${round(v)} °C`),
+        rides: ranked(outdoor, a => a.average_temp, v => `${figure(v)} °C`),
       },
       {
         key: 'earliest',
         heading: 'Earliest start',
         note: 'local time',
-        rides: topRides(outdoor, startMinutes, clock, {lowest: true}),
+        rides: ranked(outdoor, startMinutes, clock, {lowest: true}),
       },
       {
         key: 'kudos',
         heading: 'Most kudos',
         note: 'from other riders',
-        rides: topRides(onFoot, a => a.kudos_count || null, v => round(v)),
+        rides: ranked(onFoot, a => a.kudos_count || null, v => figure(v)),
       },
       {
         key: 'company',
         heading: 'Biggest group',
         note: 'riders on the activity',
-        rides: topRides(onFoot, a => (1 < (a.athlete_count ?? 1) ? a.athlete_count : null), v => `${round(v)} riders`),
+        rides: ranked(onFoot, a => (1 < (a.athlete_count ?? 1) ? a.athlete_count : null), v => `${figure(v)} riders`),
       },
     ],
     ftp: [...ftpTests]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map(test => ({
-        date: new Date(test.date).toLocaleDateString('fr-FR'),
-        label: new Date(test.date).toLocaleDateString('en-US', {month: 'short', year: '2-digit'}),
+        date: new Date(test.date).toLocaleDateString(locale),
+        label: new Date(test.date).toLocaleDateString(locale, {month: 'short', year: '2-digit'}),
         power: test.ftp,
         wattsPerKilo: Math.round((test.ftp / test.weight) * 100) / 100,
         weight: test.weight,

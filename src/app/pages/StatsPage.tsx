@@ -1,11 +1,14 @@
 import {Suspense, useMemo, useState} from 'react';
 import {Box, Button, Grid, HStack, SegmentGroup, Spinner, Stack, Tabs, Text} from '@chakra-ui/react';
+import {useLocalStorage} from 'usehooks-ts';
 import {useAllActivities, useLabels, useSettings} from '../../hooks';
 import {eddingtonNumber, formatCalories, formatDistance, formatDistanceMeters, formatDuration, getTypes, isClubRide} from '../../models';
 import {Activity, ActivityType} from '../../models/strava';
 import {
   ActivityTimeChart,
+  AerobicFitnessChart,
   AverageGearChart,
+  CommuteRoutes,
   CommuteSpeedChart,
   CourtPieChart,
   DataLineChart,
@@ -16,9 +19,13 @@ import {
   GearChart,
   GroupChart,
   HeartChart,
+  HeartRateDriftChart,
   NPGroupPieChart,
   PoolPieChart,
+  PowerCurveChart,
+  PowerZonesChart,
   ProgressChart,
+  RunBestTimes,
   TimeframeChart,
 } from '../../components/charts/lazy-charts';
 import {Card, CardTitle} from '../components/Card';
@@ -33,6 +40,8 @@ const PERIODS = [
 ];
 
 const DAY_MS = 86400000;
+// The chip for every sport at once, next to the rider's own sports.
+const ALL = 'All';
 
 const startOf = (period: Period, now: Date): number =>
   'year' === period ? new Date(now.getFullYear(), 0, 1).getTime() : 'twelve' === period ? now.getTime() - 365 * DAY_MS : 0;
@@ -83,10 +92,15 @@ const YearGoal = ({rides, goalKm, now, locale}: {rides: Activity[]; goalKm: numb
 const Totals = ({activities, now}: {activities: Activity[]; now: Date}) => {
   const {sports, yearGoalKm, locale, club} = useSettings();
   const {label} = useLabels();
-  const [sport, setSport] = useState<string>(sports[0] ?? 'Ride');
-  const [period, setPeriod] = useState<Period>('year');
+  // Remembered on this device; a sport since taken out of the settings falls back to the first one.
+  const [savedSport, setSport] = useLocalStorage<string>('stats-sport', sports[0] ?? 'Ride');
+  const sport = ALL === savedSport || sports.includes(savedSport) ? savedSport : (sports[0] ?? 'Ride');
+  const [period, setPeriod] = useLocalStorage<Period>('stats-period', 'year');
 
-  const ofSport = useMemo(() => activities.filter(({sport_type}) => getTypes(sport).includes(sport_type)), [activities, sport]);
+  const ofSport = useMemo(
+    () => (ALL === sport ? activities : activities.filter(({sport_type}) => getTypes(sport).includes(sport_type))),
+    [activities, sport],
+  );
   const shown = ofSport.filter(({start_date}) => new Date(start_date).getTime() >= startOf(period, now));
   const distance = shown.reduce((sum, {distance}) => sum + distance, 0);
   const time = shown.reduce((sum, {moving_time}) => sum + moving_time, 0);
@@ -103,9 +117,9 @@ const Totals = ({activities, now}: {activities: Activity[]; now: Date}) => {
       <Stack gap="20px">
         <HStack justifyContent="space-between" flexWrap="wrap" gap="12px">
           <HStack gap="6px" flexWrap="wrap">
-            {sports.map(name => (
+            {[ALL, ...sports].map(name => (
               <Button key={name} size="sm" borderRadius="full" variant={name === sport ? 'solid' : 'outline'} onClick={() => setSport(name)}>
-                {label(name)} {name}
+                {ALL === name ? name : `${label(name)} ${name}`}
               </Button>
             ))}
           </HStack>
@@ -158,7 +172,11 @@ const StatsPage = () => {
       value: 'training',
       label: 'Training',
       charts: [
+        ['Power curve', <PowerCurveChart />],
+        ['Time in power zones, week by week', <PowerZonesChart />],
         ['Threshold power', <FTPChart />],
+        ['Aerobic fitness', <AerobicFitnessChart />],
+        ['Heart rate drift on long rides', <HeartRateDriftChart />],
         ['Heart rate and power, ride by ride', <HeartChart />],
         ['Suffer score per period', <TimeframeChart data="suffer_score" formatter={value => value.toFixed(0)} displayTypes={false} />],
         ['Suffer score, ride by ride', <DataLineChart data="suffer_score" />],
@@ -174,9 +192,21 @@ const StatsPage = () => {
         ['Moving time', <TimeframeChart data="moving_time" formatter={formatDuration} />],
         ['Climbing', <TimeframeChart data="total_elevation_gain" formatter={value => formatDistance(value, 1)} type="area" excludedTypes={[ActivityType.Tennis, ActivityType.Swim]} />],
         ['Calories', <TimeframeChart data="kilojoules" formatter={formatCalories} excludedTypes={[ActivityType.Tennis, ActivityType.Swim]} />],
+      ],
+    },
+    {
+      value: 'commutes',
+      label: 'Commutes',
+      charts: [
+        ['Routes', <CommuteRoutes />],
         ['Commuting', <TimeframeChart data="distance" formatter={value => formatDistance(value, 1)} filter={{withCommute: 'only'}} displayTypes={false} />],
         ['Commute speed', <CommuteSpeedChart />],
       ],
+    },
+    {
+      value: 'running',
+      label: 'Running',
+      charts: [['Best times', <RunBestTimes />]],
     },
     {
       value: 'gear',

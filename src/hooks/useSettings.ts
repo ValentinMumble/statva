@@ -28,7 +28,7 @@ const useSettings = (): ResolvedSettings => {
     ...settings,
     defaultBike,
     costBike: settings.costBike ?? defaultBike,
-    partRules: {limitsKm: settings.partLimitsKm, retiredChains: settings.retiredChains},
+    partRules: {limitsKm: settings.partLimitsKm, retiredChains: settings.retiredChains, pricesEur: settings.partPricesEur},
   };
 };
 

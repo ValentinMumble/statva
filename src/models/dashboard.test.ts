@@ -125,7 +125,7 @@ test('it ranks rides by each measure and formats the winner', () => {
   const longest = records.find(({key}) => 'distance' === key);
 
   expect(longest?.rides[0]).toEqual({id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 60, label: '60 km'});
-  expect(records.find(({key}) => 'hilliest' === key)?.rides[0].label).toBe('6,7 m/km');
+  expect(records.find(({key}) => 'hilliest' === key)?.rides[0].label).toBe('6.7 m/km');
 });
 
 test('it summarises the club rides and where they finished', () => {
@@ -207,7 +207,7 @@ test('it ranks the fastest average, the earliest start and the most crowded ride
   expect(otherFast).toEqual([]);
   expect(fastest.name).toBe('N-Peloton #575 G2');
   expect(fastest.value).toBeCloseTo(30, 2);
-  expect(fastest.label).toBe('30,0 km/h');
+  expect(fastest.label).toBe('30.0 km/h');
   expect(records.find(({key}) => 'earliest' === key)?.rides[0].label).toBe('08:00');
   expect(records.find(({key}) => 'company' === key)?.rides).toEqual([
     {id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 12, label: '12 riders'},
