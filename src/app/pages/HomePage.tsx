@@ -83,6 +83,17 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
           <Delta current={current.load} previous={previous.load} lastWeek={number(lastWeek.load, locale)} />
         </Figure>
       </Grid>
+      {0 < current.count && (
+        <HStack gap="16px" flexWrap="wrap" marginTop="16px" fontSize="sm">
+          {current.bySport.map(({sport, count}) => (
+            <HStack key={sport} gap="6px">
+              <Icon as={sportIcon(sport)} color="fg.muted" />
+              <Text fontWeight="semibold">{count}</Text>
+              <Text color="fg.muted">{sportName(sport)}</Text>
+            </HStack>
+          ))}
+        </HStack>
+      )}
       <HStack gap="6px" alignItems="flex-end" marginTop="20px" height="64px">
         {days.map(({date, distance}) => {
           const isToday = date.toDateString() === today;

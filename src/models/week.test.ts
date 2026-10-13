@@ -24,6 +24,17 @@ describe('weekSummary', () => {
     expect(weekSummary(activities, now).previous).toMatchObject({count: 1, distance: 20000});
   });
 
+  it('counts each sport, most first', () => {
+    const withRun = [...activities, {...ride(new Date(2026, 9, 13, 7).toISOString(), 10), sport_type: 'Run'} as Activity].map(activity =>
+      activity.sport_type ? activity : ({...activity, sport_type: 'Ride'} as Activity),
+    );
+
+    expect(weekSummary(withRun, now).current.bySport).toEqual([
+      {sport: 'Ride', count: 2},
+      {sport: 'Run', count: 1},
+    ]);
+  });
+
   it('keeps last week whole too', () => {
     expect(weekSummary(activities, now).lastWeek).toMatchObject({count: 3, distance: 160000});
   });

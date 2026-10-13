@@ -2,7 +2,15 @@ import {Activity} from './strava';
 
 const DAY_MS = 86400000;
 
-type Totals = {count: number; distance: number; movingTime: number; elevation: number; load: number};
+type Totals = {
+  count: number;
+  // How many of each sport, most first.
+  bySport: {sport: string; count: number}[];
+  distance: number;
+  movingTime: number;
+  elevation: number;
+  load: number;
+};
 
 type WeekSummary = {
   // From Monday to now.
@@ -15,8 +23,16 @@ type WeekSummary = {
   days: {date: Date; distance: number; count: number}[];
 };
 
+const bySport = (activities: Activity[]): Totals['bySport'] =>
+  Object.entries(
+    activities.reduce((counts: Record<string, number>, {sport_type}) => ({...counts, [sport_type]: (counts[sport_type] ?? 0) + 1}), {}),
+  )
+    .map(([sport, count]) => ({sport, count}))
+    .sort((first, second) => second.count - first.count);
+
 const totalsOf = (activities: Activity[]): Totals => ({
   count: activities.length,
+  bySport: bySport(activities),
   distance: activities.reduce((total, {distance}) => total + distance, 0),
   movingTime: activities.reduce((total, {moving_time}) => total + moving_time, 0),
   elevation: activities.reduce((total, {total_elevation_gain}) => total + total_elevation_gain, 0),
