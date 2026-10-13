@@ -2,57 +2,69 @@
 
 Statva is a personal training log built on top of Strava. It reads your activities, adds
 the things Strava does not track (bike parts, chain rotation, maintenance, FTP tests,
-costs) and turns the lot into stats, charts and a dashboard.
+costs) and turns the lot into a home page, stats and records.
 
-This sheet describes what the app does today, feature by feature, and how each feature
-should carry over to version 2. Version 2 is open source, lets each rider connect with
-Strava, and has no personal values written into the code.
-
-Legend for the **v2** notes:
-- **Keep**: same behaviour.
-- **Setting**: same behaviour, but the value written into the code today becomes a user setting.
-- **Merge**: folded into another feature.
-- **Drop**: not carried over.
+It is open source. Each rider logs in with Strava and sees only their own data. Anything
+personal (bikes, goals, heart rate, club) is a setting, not part of the code.
 
 ---
 
-## 1. Pages
+## 1. Pages and navigation
 
 | Page | Path | What it is for |
 |---|---|---|
-| Rides | `/` | The activity list, with stats, bike parts and charts beside it |
-| Dashboard | `/dashboard` | A long read of all-time numbers, records and maps |
-| Workshop | `/workshop` | Bike parts, maintenance history, logging events |
-| Routes | `/routes/:id` | A Strava route on a map, with live check-ins (dropped in v2) |
-| Check-in | `/check-in` | Drop your current position on a route and share the link (dropped in v2) |
+| Home | `/` | This week, the latest activities, recent weeks, the most worn parts |
+| Activities | `/activities` | Every activity in a searchable, sortable list |
+| Activity | `/activities/:id` | One activity: map, figures, zones, photos, notes |
+| Bike | `/bike/:bikeId?` | One bike's parts, history, charts and running costs |
+| Stats | `/stats` | Totals per sport and period, and charts in tabs |
+| Records | `/records` | All-time numbers, year in review, streaks, explorer map, hall of fame |
+| Settings | `/settings` | Settings, labels, export and disconnect |
 
-Navigation is one bar with the four main pages and a **Log** button. On a phone the bar
-sits at the bottom of the screen; on a computer it sits at the top.
+Anyone not logged in sees a **Connect with Strava** screen with a way into the demo. When
+a login fails, it says why (not on the allowed list, a scope unticked, access denied,
+took too long).
 
-v2: **Keep** the four pages. Add a **Settings** page and a **Connect with Strava** page.
+On a computer, a sidebar holds the pages, **Refresh**, **Log an event** and the account
+row (log out, or leave the demo). On a phone, a header shows the page title with Settings,
+Refresh and Log icons, and a floating tab bar in the style of iOS Liquid Glass (a frosted,
+see-through capsule) holds Home, Activities, Bike, Stats and Records.
+
+**Refresh** syncs with Strava now (11.3) and says "Up to date" or how many activities
+came in. **Log** opens the event dialog (5.2). With the "no emoji" setting on (3.4),
+Activities carries a count in the sidebar and a dot on the tab.
 
 ---
 
-## 2. Activities
+## 2. Home
 
-### 2.1 Activity list
-- Every activity, newest first, in a virtual list (only the visible rows are drawn, so a
-  list of thousands stays fast).
-- Each row shows: a sport icon, the weekday and day of month, the name (links to Strava,
-  coloured by month), and one column per chosen metric.
-- The icon changes for a KOM (crown), a commute (bus stop), a race and rides over 100 km.
-- On a phone the metric columns are hidden and the row shows distance and moving time.
-- Private activities are drawn faded.
-- Hovering the average heart rate shows the time spent in each heart rate zone (fetched
-  from Strava on demand).
-- A notes button shows the activity description and first photo, and fetches the full
-  activity details from Strava when they are not cached yet.
+1. **This week**: distance, time, climbing and training load (sum of Strava's suffer
+   score) since Monday, each against the same days of last week (last week's total before
+   anything is done), and one bar per day.
+2. **Latest**: the 6 newest activities with route shape, marks (private, race, 100 km+,
+   no emoji), sport, day, kudos, first photo, normalized power coloured by zone, distance
+   and time.
+3. **Weeks**: the last 5 weeks (+4 on demand). Each day shows its longest activity, each
+   week its distance and training load. A week can be renamed in place (stored as a label).
+4. **Bike**: the main bike's distance and its 4 most worn parts, with a button to log a
+   change.
 
-v2: **Keep**. Fetch the zones and full details on the server.
+---
 
-### 2.2 Metric columns
-Any of these can be shown as a column and sorted on. The column header shows a total or
-average over the filtered list.
+## 3. Activities
+
+### 3.1 List
+- Every stored activity in a virtual list (only the visible rows are drawn, so thousands
+  stay fast), newest first by default.
+- Each row: route shape (or sport icon), name, marks (race, 100 km+, KOM once the details
+  are in), sport, day, gear, commute. Private activities are drawn faded.
+- On a computer each chosen metric gets a column; on a phone a row shows distance and
+  moving time.
+- A row opens the Activity page. Coming back finds the same filters and scroll position.
+
+### 3.2 Metric columns
+Any of these can be a column and sorted on. The header shows a total or an average over
+the filtered list. Columns that make no sense for a sport stay blank.
 
 | Metric | Cell | Header |
 |---|---|---|
@@ -62,319 +74,338 @@ average over the filtered list.
 | Moving time, elapsed time | h:mm | sum in days |
 | Average speed | km/h, min/km for runs and hikes, min/100 m for swims | average |
 | Max speed | km/h | max |
-| Average, weighted and max power | W, coloured by power zone | average / max |
-| Normalized power | W, read from the private note | average |
-| Intensity | weighted power / FTP at that date | average |
-| Average and max heart rate | bpm, coloured by heart rate zone | average / max |
-| Suffer score | Strava relative effort | average |
+| Average, weighted and max power | W | average / max |
+| Normalized power | W, coloured by power zone | average |
+| Intensity | normalized power / FTP at that date | average |
+| Average and max heart rate | bpm, average coloured by heart rate zone | average / max |
+| Suffer score | Strava's relative effort | average |
 | Training stress score (TSS) | from power, or from heart rate | average |
 | Calories | kcal (estimated when Strava has none) | sum |
 | Cadence, temperature | raw | average |
 | PRs, achievements, kudos, photos | count | sum |
 | Athletes | group size | average |
 
-Default columns: cadence, heart rate, average speed, distance, D+, max speed, moving
-time, normalized power, suffer score. The choice is remembered in the browser.
+Default columns: cadence, average heart rate, average speed, distance, D+, max speed,
+moving time, normalized power, suffer score. Headers are labels (emojis by default).
 
-v2: **Keep**. Normalized power: **Setting** (where to read it from: computed from the
-power stream, or parsed from the note with a pattern such as `NP: 245`).
+### 3.3 Search and filters
+- Search by name, ignoring accents and case, or by date (`2024-11-02`, `02/11/2024`,
+  `2 nov`, `nov 2024`, `2 november 2024`...). A search also looks through private
+  activities. Escape clears it.
+- **Sport groups** (All, Rides, Runs, Other) in one tap, and a **Sports** menu for any mix.
+- **Gear**, **commutes** (all, none, only; computer only) and **device** (from the
+  details; Records links here).
+- A **private** toggle. When private activities match but are hidden, a card says how
+  many and offers to show them.
+- **Clear filters** appears as soon as a filter narrows the list.
+- Search, gear, commutes, device and sort live in the address. The sports, the private
+  toggle and the columns are remembered in the browser.
 
-### 2.3 Search and filters
-- Search by name, without accents or case.
-- Search by date in many forms: `2024-11-02`, `02/11/2024`, `november 2`, `2 nov`,
-  `november 2024`, `2 november 2024`.
-- Typing a search also shows private activities.
-- Escape clears every filter.
-- Filter by gear, by sport type (click to toggle, double click to keep only that one),
-  bikes only, commutes (all, none, only), private on or off.
-- A refresh button pulls the latest 30 activities from Strava.
-
-v2: **Keep**. Gear filter accepts several gears (today only the first one counts).
-
-### 2.4 Unprocessed activities
-An activity whose name has no emoji is "unprocessed". These sit in their own section at
-the top of the list, with a random unused emoji to copy (click to copy and roll a new
-one) and a button to hide the row.
-
-v2: **Setting** (on or off; most riders do not tag names with emojis).
+### 3.4 Activities without an emoji
+For riders who tag names with an emoji (a setting, off by default). A card at the top
+counts the activities whose name has none, names the first three, and offers an emoji no
+name uses yet: click to copy it and roll a new one.
 
 ---
 
-## 3. Stats panel
+## 4. Activity page
 
-### 3.1 This week
-Training load (suffer score), active time and distance for this week, each compared with
-the same days of last week (green up, red down), plus a sparkline of the training load
-per day, week, month or year, with +/- to show more or fewer periods.
-
-### 3.2 Per sport
-A sport switch (ride, run, swim, tennis) shows a grid of stat cards:
-- **Ride**: rides, distance, yearly goal progress ring, total D+, commute distance, days
-  spent riding, average distance (no commutes), best average speed, FTP and W/kg,
-  rides over 100 km and over 200 km, Eddington number with rides needed for the next one,
-  and club stats (count, distance, average speed, average normalized power).
-- **Run**: runs, distance, average distance, average suffer score, days spent running.
-- **Swim**: sessions, distance, average distance, average suffer score, days swimming.
-- **Tennis**: sessions, total time, average duration, average heart rate, suffer score.
-
-v2: **Keep**. Sports shown: **Setting** (the sports the rider actually does). Yearly goal
-(10 000 km today): **Setting**. Club name: **Setting**.
-
-### 3.3 Week grid
-The last 5 weeks (+ adds one), one row per week, one column per weekday. Each day shows
-the icon of its longest activity, linked to Strava. A last column draws the weekly suffer
-score as a funnel shape. Each week can be renamed in place (stored as a label).
-
-v2: **Keep**.
+- Back link to the list as it was left; date, name, and badges (gear, commute, private,
+  KOM, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
+- **Map** of the full track (the summary track until the details are in).
+- **Figures**: distance, times, climbing, speeds, average, weighted and normalized power
+  (with power zone badges), intensity, training stress, average and max heart rate (with
+  heart rate zone badges), cadence, calories, temperature, suffer score, kudos,
+  achievements, PRs.
+- **Photos**: all of them, fetched from Strava on open; one opens full size.
+- **Notes** (description and private note), **heart rate zones** (time in each of
+  Strava's zones) and **recorded with** (device, power meter or not).
 
 ---
 
-## 4. Bike, parts and maintenance
+## 5. Bike, parts and maintenance
 
-### 4.1 Events
+### 5.1 Events
 An event is something that happened to a bike on a date.
 
 | Type | Extra fields | Wears out? |
 |---|---|---|
-| Chain | which chain (an id, emojis in practice) | yes, by stint |
-| Cassette | brand, model, range | yes, summed over every fitting |
+| Chain | which chain (an id, emojis in practice) | yes, per stint |
+| Cassette | brand, model, range | yes, summed over every stint |
 | Tire | brand, model, width | yes |
-| Brake pads | none | yes |
-| Brake bleed | none | yes, no limit |
-| Battery | none | yes |
+| Brake pads, brake bleed, battery | none | yes |
 | Saddle | brand, model, width | no |
 | Puncture | none | no, one-off |
 | Fall | description | no, one-off |
 
-### 4.2 Log flow
-1. Pick what happened from a grid of 9 types.
+### 5.2 Log flow
+1. Pick what happened from a grid of the 9 types (skipped when opened from a part).
 2. Confirm. The date (today), the bike and the part are already filled in:
-   - for a chain, the least used chain of the set is preselected, with its total km;
-   - for tires, cassettes and saddles, the last 3 parts fitted are offered as chips
-     ("fit the same as before"), with "something else" to type a new one.
-3. A toast confirms with an **Undo** button.
+   - for a chain, the least used chain of the set is preselected (not the one on the
+     bike, not retired ones), with each chain's total km;
+   - for tires, cassettes and saddles, the last 3 parts fitted are offered as chips, with
+     "Something else" to type a new one.
+3. A toast confirms, with **Undo**.
 
 On a phone the dialog opens from the bottom, with thumb-sized buttons.
 
-v2: **Keep**. **Merge** the two older ways to add an event (inline row and the events
-dialog in the timeline chart) into this one flow.
+### 5.3 Bike page
+- A chip per bike (retired ones behind a toggle); figures for distance, this year, rides,
+  events.
+- **Parts**: every wearing part's distance since fitted against its expected life, as a
+  bar (green, amber from 80 %, red from 100 %), most worn first, with the fitting date,
+  weeks left at the pace of the last 8 weeks, cost per km when priced, and a **Replace**
+  button. Below, the total wear cost per km.
+- Expected life is the part's limit from the settings (by default chain 400 km per stint,
+  tire 8000 km, cassette 30 000 km over all its stints), otherwise the average life of the
+  earlier parts of that type on that bike.
+- **History**: every event, newest first, grouped by month, each removable (with Undo).
+- **Chain rotation**: one bar per chain split into stints, current chain in orange, next
+  chain in green, km left before the current one is due, and a line at the average life
+  of retired chains.
+- **Parts, stint by stint**: distance or D+ per stint for each part type.
+- **Timeline**: a Gantt chart of each part's time on the bike, with falls and punctures.
+- **Running costs**, on the bike set for costs: cost per km and per hour month by month,
+  monthly spend as bars, an option to skip the oldest months, and the expenses list.
 
-### 4.3 Parts panel
-For the chosen bike, every wearing part with its distance since fitted against its
-expected life, as a bar: green, amber from 80 %, red from 100 %, worst first.
-- Expected life is a known limit where one is set (chain 400 km per stint, tire 8000 km,
-  cassette 30 000 km summed over every time it was fitted), otherwise the average life of
-  the previous parts of that type on that bike.
-- Each part is a shortcut to log its replacement.
-
-v2: **Keep**. Limits, due ratio, retired chains and retired bikes: **Setting**.
-
-### 4.4 Charts
-- **Chain rotation**: one bar per chain, split into stints, current chain in orange, the
-  suggested next chain in green, a line for the average life of retired chains, and a
-  header with km left before the current chain is due.
-- **Part odometer**: per part type, distance or D+ per stint, current part highlighted.
-- **Event timeline**: a Gantt chart of how long each part stayed on the bike, with falls
-  and punctures as marks.
-
-v2: **Keep**.
-
-### 4.5 Workshop page
-Parts panel, full event history (newest first, removable), backup to clipboard as JSON.
-
-v2: **Keep**, plus export and import as a file.
+### 5.4 Costs
+An expense has a date, an amount (negative for a sale) and a description. Part prices
+(settings) give each part a cost per km over its expected life. Chains have no price,
+since their limit is one stint of a rotation, not their whole life.
 
 ---
 
-## 5. Training
+## 6. Stats
 
-- **FTP tests**: date, weight, FTP. Added from a form. `FTP at date` is the latest test
-  before that date. Chart of FTP and W/kg over time.
-- **Training load**: fitness (CTL, 42-day average of daily TSS), fatigue (ATL, 7-day) and
-  form (TSB = CTL - ATL) over the last 180 days.
-- **TSS**: from weighted power and FTP when there is power; otherwise from heart rate
-  (TRIMP), with max, resting and threshold heart rate.
-- **Zones**: heart rate zones from fixed bpm thresholds; power zones as Coggan
-  percentages of FTP.
-- **Calories**: from kilojoules when Strava has them, otherwise estimated for runs and
-  swims from duration, distance, heart rate and body weight.
+**Totals**: chips for All and each sport chosen in the settings, and a period (this year,
+12 months, all time). It shows activities, distance, time, climbing, longest and average
+speed. For rides it adds the Eddington number (with the days needed for the next one),
+the club's rides, and the yearly goal: km done, a mark for today, and where the current
+pace ends up.
 
-v2: **Keep**. Max, resting and threshold heart rate, heart rate zones and body weight:
-**Setting** (prefilled from Strava where it has them). Pick one FTP source (today the stat
-card reads Strava's FTP while TSS reads the tests).
+**Charts**, in tabs (only the open tab is drawn):
 
----
-
-## 6. Charts (accordion on the Rides page)
-
-Only open charts are drawn and loaded.
-
-| Group | Charts |
+| Tab | Charts |
 |---|---|
-| Gear | Chain rotation, part odometer, event timeline, distance / time / D+ per gear (pies), average speed per bike, cost per km |
-| Volume | Distance, activities by sport, commute distance, commute speed, moving time, D+, calories, all per day, week, month or year |
-| Effort | Suffer score per period, FTP, average heart rate and power for recent rides, suffer score and cadence per ride, training load |
-| Eddington | Eddington number over time, days over each distance (with a range slider) |
-| Club | Club rides per period, club speed and power, where club rides finished, club groups |
-| Elsewhere | Pools (swims), courts (tennis), solo vs group rides |
+| Training | Power curve by year, time in power zones week by week, threshold power (with a form to add an FTP test), aerobic fitness (normalized power per heartbeat), heart rate drift on long rides, heart rate and power per ride, suffer score per period and per ride, cadence per ride |
+| Volume | Distance, activities by sport, moving time, climbing, calories, per day, week, month or year |
+| Commutes | Routes (same name 3 times or more, with speeds and what a car would have cost), commute distance, commute speed |
+| Running | Best times from 1 km to the marathon, year by year, from Strava's best efforts |
+| Gear | Distance, time and climbing per gear, average speed per bike |
+| Eddington | Eddington number over time, days over each distance |
+| Club (only with a club set) | Club rides per period, speed and power, finish places, groups |
+| Other | Solo or in a group, swims per pool, tennis per court |
 
-v2: **Keep** the groups. The Club group appears only when a club name is set.
-"Elsewhere" charts rely on naming habits (`Natation <pool>`, `Tennis <court>`): **Setting**
-(a name pattern per chart), or **Drop**.
-
----
-
-## 7. Costs
-
-Expenses with date, amount (can be negative, for a sale) and description. The cost per
-km chart shows the running cost per km and per hour on one bike, month by month, with
-monthly spend as bars, and an option to skip the oldest part of the history.
-
-v2: **Keep**. Which bike: **Setting** (today fixed to one bike). Link an expense to a
-part so a part's cost per km can be shown (backlog idea).
+Pools and courts are read from activity names (`Natation <pool>`, `Tennis <court>`).
 
 ---
 
-## 8. Dashboard
+## 7. Records
 
-Reads only the stored copy of the activities, never Strava, so it can be opened as
-often as you like.
+Reads only the stored activity details, never Strava, so it can be opened as often as
+you like. An activity whose details are not stored yet does not count.
 
 1. **Totals**: distance, time, climbing, activities, calories, kudos, work (MJ).
-2. **Milestones**: rides over 100, 150, 200, 300 km; rides over 1000 m of climbing.
-3. **Per year**: distance and climbing bars.
-4. **Season pace**: cumulative km by week for the last 4 years.
-5. **This year vs last year, to the same day**: activities, distance, climbing, time, kudos.
-6. **Explorer map**: every track, the explored tiles (zoom 14, about 2.4 km wide), the
-   biggest square of explored tiles, and the "yard" (the biggest connected group of tiles
-   whose 4 neighbours are all explored, as Squadrats defines it).
-7. **Latest photos**: 12, linked to their activity.
-8. **Eddington**: days over each distance, days still needed for the next number, per year.
-9. **Month by month**: a year by month heat grid.
-10. **Fleet**: distance per gear, activities per sport.
-11. **FTP over time**.
-12. **When and how long**: start hour, weekday, ride length bands.
-13. **Hall of fame** (top 3 each, ski excluded): longest, most climbing, hilliest,
+2. **Milestones**: rides over 100, 150, 200 and 300 km, and over 1000 m of climbing.
+3. **Year in review** (any year): totals, new explorer tiles, biggest day, longest ride,
+   most used bike, best month, most kudos, top emojis, first and last activity.
+4. **Per year**: distance and climbing. **Season pace**: cumulative km by week over 4
+   years. **This year vs last year**, up to the same day.
+5. **Where the wheels went**: every track on a map, the explorer tiles (zoom 14, about
+   2.4 km wide), the biggest square of explored tiles, and the yard (the biggest connected
+   group of tiles whose 4 neighbours are all explored, as Squadrats defines it).
+6. **Latest photos**: 12, linked to their activity.
+7. **Eddington**: days over each distance, days needed for the next number, per year.
+8. **Month by month** grid, and a **calendar** of one square per day shaded by distance.
+9. **When you ride** (weekday by hour) and **streaks** (longest and current runs of days
+   and weeks, longest break).
+10. **The fleet** (distance per gear, activities per sport), **threshold power** over
+    time, **start hour**, **weekday**, **ride length**.
+11. **Hall of fame** (top 3 each, skiing left out): longest, most climbing, hilliest,
     fastest, strongest (normalized power), hardest, most PRs, coldest, hottest, earliest
     start, most kudos, biggest group.
-14. **Club**: rides per group, top finish places (parsed from notes).
-15. **Maintenance and running costs**: events per type, spend, cost per km, PRs, KOMs,
+12. **Club** (with a club set): rides per group, finish places.
+13. **Maintenance and running costs**: events per type, spend, cost per km, PRs, KOMs,
     photos, rides with power, solo rides, commutes and CO2 not driven, indoor rides,
-    weekday vs weekend split, median stop per ride, days out, longest streak, biggest
-    week and month, Everests climbed, times around the Earth.
-16. **Conditions**: average heart rate, temperature, recording devices.
-
-v2: **Keep**. Map centre: **Setting**, defaulting to the centre of the
-rider's tracks. Locale for dates and numbers (fr-FR today): **Setting**.
+    weekday vs weekend, typical stop, days out, longest streak, biggest week and month,
+    Everests climbed, times around the Earth.
+14. **Conditions**: average heart rate, temperature, recording devices (a device opens
+    the Activities list filtered on it).
 
 ---
 
-## 9. Routes
+## 8. Training calculations
 
-- **Routes**: pick one of your Strava routes; see it on a map with its distance, climbing
-  and estimated time, and share a link that shows it to anyone.
-- **Check-in**: drop your live position on a route for the people following the link.
-
-v2: **Drop** both.
+- **FTP tests**: date, weight, FTP. The FTP at a date is the latest test before it.
+- **Normalized power**: worked out on the server from the power stream the way Sauce for
+  Strava does (one-second series, 30-second rolling average, stops left out, nothing
+  under 5 minutes), only for rides with a power meter. A setting reads it from the
+  private note instead (`NP: 245`) where the server has none.
+- **Power analysis**, stored with the details: normalized power, best power over 10
+  durations (5 s to 1 h), moving time in 25 W bands, and heart rate drift (power per
+  heartbeat in the first half against the second, rides over an hour).
+- **TSS and intensity**: from Statva's normalized power and the FTP of the day (Strava's
+  weighted power until the normalized power is in); without power, TSS comes from heart
+  rate (TRIMP), with max, resting and threshold heart rate.
+- **Zones**: heart rate zones from bpm thresholds in the settings; 7 power zones as
+  Coggan percentages of FTP.
+- **Calories**: from kilojoules when Strava has them, otherwise estimated for runs and
+  swims from duration, distance, heart rate and body weight.
+- **Training load** on Home is Strava's suffer score.
 
 ---
 
-## 10. Labels
+## 9. Settings
 
-A key-to-text dictionary that renames anything: gear ids to bike names with emojis,
-metric keys to header emojis, event types, sports, timeframes, weeks, pools, club groups.
-Edited in a dialog; backup as JSON.
+Stored settings sit on top of defaults, so a new rider sees a working app at once.
+Changes are kept as a draft until **Save**.
 
-v2: **Keep**, as part of Settings. Ship sensible default labels so a new rider sees
-emojis without setting anything.
+| Section | Settings |
+|---|---|
+| Bikes | Main bike (default: Strava's primary bike), the bike running costs follow, retired bikes |
+| Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), prices (tires, cassette, brake pads, brake fluid), retired chains |
+| Goal and sports | Yearly riding goal, car cost per km, the sports Stats shows |
+| Body | Weight, max, resting and threshold heart rate, heart rate zone thresholds |
+| Club | On or off, club name, groups marked by emojis or words, other group-ride words |
+| Display | Language for dates and numbers, where maps open, normalized power from notes, point out activities without an emoji |
+| Labels | Add, change or remove labels |
+| Account | Export my data (JSON of settings, labels, events, expenses, FTP tests), leave the demo, disconnect from Strava (deletes everything Statva holds) |
+
+**Labels** are a key-to-text dictionary that renames anything: gear, metric keys, event
+types, sports, periods, weeks, pools. The rider's labels win over gear names from Strava,
+which win over built-in defaults (emojis for columns, parts, sports and periods).
 
 ---
 
-## 11. Club detection
+## 10. Club detection
+
+Off until the rider sets a club.
 
 - A club ride is one whose name contains the club name.
-- Its group is read from the name (`Club #670 C1`), unless a marker sits in the name,
-  description or private note (for example 🏴‍☠️ or the word "pirate" for a Pirate group).
-- The finish place is read from a note line `Finish au <place>`.
-- Group rides (for the solo vs group chart) are rides with more than one athlete, races,
-  names with given words, or descriptions with given tags.
-
-v2: **Setting** for all of it: club name, group pattern, markers, finish pattern, group
-words. Off by default.
+- Its group is read from the name (`Club #42 C1`), unless a group's marker sits in the
+  name, description or private note (for example 🏴‍☠️ or the word "pirate" for a Pirate
+  group).
+- The finish place is read from a note line starting with `Finish`.
+- A group ride (solo vs group chart) has more than one athlete, is a race, or has one of
+  the group words in its name.
 
 ---
 
-## 12. Data
+## 11. Server and data
 
-### 12.1 What comes from Strava
+### 11.1 Server routes
+Serverless functions in `api/`. All but login, callback and the webhook need a session.
+
+| Route | Does |
+|---|---|
+| `GET /api/auth/login`, `/callback` | Strava OAuth: consent page, then code for tokens and session cookie |
+| `GET /api/auth/me`, `/logout` | Logged in or not; clear the cookie |
+| `POST /api/auth/disconnect` | Revoke access on Strava, delete the rider's data and tokens |
+| `GET /api/strava` | Call Strava for the rider, on a short list of allowed paths |
+| `POST /api/store` | Read and write the rider's own data |
+| `POST /api/sync` | Bring the rider's stored activities up to date |
+| `POST /api/activity?id=` | Fetch one activity again and store it |
+| `GET, POST /api/webhook` | Strava's subscription check, and its events |
+
+### 11.2 What comes from Strava
 
 | Call | Used for | Cost |
 |---|---|---|
-| `GET /athlete` | Profile, FTP, weight, gear | 1 per session |
-| `GET /athlete/activities` | The activity list | 1 per 200 activities |
-| `GET /activities/{id}` | Description, private note, photos, calories, KOMs, device | 1 per activity |
-| `GET /activities/{id}/zones` | Heart rate zones | 1 per hover |
+| `GET /athlete` | Name, gear | 1 per visit |
+| `GET /athlete/activities` | The activity list | 1 per 200 activities for the history, then 1 per sync |
+| `GET /activities/{id}` | Details: notes, photo, calories, KOMs, device, full track | 1 per activity, again on a webhook event or Refresh |
+| `GET /activities/{id}/streams` | Power analysis | 1 per activity with a power meter |
+| `GET /activities/{id}/zones`, `/photos` | Activity page | 1 each per page open |
 
-### 12.2 What Statva stores
+### 11.3 Sync
+- The app syncs on every visit and on Refresh. The first syncs page through the whole
+  history, a few pages per call, and the list fills up after each. After that a sync
+  fetches what started since the newest known activity, minus a month for late uploads.
+- Each sync then fetches a few missing details (newest first) and works out power for a
+  few stored activities that lack it.
+- Strava's read limit is shared by every rider of the app (100 calls per 15 minutes and
+  1000 a day, twice that after the upgrade to 10 athletes). The server records the usage
+  Strava reports; the details and power backfill stop at half of either window, which
+  leaves the rest for visits and the webhook.
 
-| Data | Today (Upstash Redis hash) | v2 |
+### 11.4 Webhook
+Strava calls it when an activity is created, changed or deleted, and when a rider
+disconnects. These calls are not signed, so nothing trusts the event: other athletes are
+ignored, an activity event fetches the activity again (removed if Strava answers 404),
+and a disconnect is checked with Strava before anything is deleted.
+
+### 11.5 What Statva stores
+Upstash Redis hashes. Each rider's data sits under `athlete:<id>:<name>`. The store route
+adds that prefix itself, so no request can reach another rider's data or the tokens.
+
+| Name | Holds | Written by |
 |---|---|---|
-| Activity details | `activities` | per athlete |
-| Events | `events` | per athlete |
-| Labels | `labels` | per athlete, under Settings |
-| FTP tests | `ftp_tests` | per athlete |
-| Expenses | `expenses` | per athlete |
-| Check-ins | `check_ins` | per athlete |
-| Settings | (written into the code) | per athlete |
-| Strava tokens | (a refresh token in the browser code) | per athlete, server only |
+| `activities` | Summaries for the list (no notes, photos or full track) | server |
+| `details` | Full activities, cut down (no splits or laps, segment efforts reduced to the KOM rank), with the power analysis | server |
+| `sync` | History progress and the newest start time | server |
+| `power` | Activities whose power is worked out (0 without a power meter) | server |
+| `events`, `labels`, `ftp_tests`, `expenses`, `settings` | What the rider enters | rider |
 
-v2 stores the activity list too, so a page load does not page through Strava.
+The rider can read every name but write only their own five. Shared keys:
+`strava_tokens` (every rider's tokens, never reachable from the browser) and
+`strava:usage` (the app's rate limit usage).
 
-### 12.3 Scripts
-- **Backfill**: fetch the details of every activity not stored yet, pacing itself on
-  Strava's rate limit headers.
-- **Check deleted**: find stored activities that no longer exist on Strava, write a report.
-- **Remove deleted**: delete the activities listed in that report.
+### 11.6 Scripts
+Run with `node` from the repo root, reading `.env.local`, for the first athlete in
+`STRAVA_ATHLETE_IDS` (log in once first).
 
-v2: **Merge** into the server: a webhook keeps the store up to date (see 13.2), and the
-backfill runs as a background job that respects the shared limit.
+- **webhook-subscribe**: registers the webhook with Strava, or shows the current one.
+- **prune-deleted-activities**: lists stored activities gone from Strava (deleted while the
+  webhook was not set up or missed), and removes them with `--remove`.
+- **reupload-device**: uploads rides again under another recording device, since Strava
+  cannot change it (prepare, delete the originals on Strava, upload).
+
+None is needed to run the app: the server fills in details and power data on its own.
 
 ---
 
-## 13. Version 2 requirements
+## 12. Demo mode
+
+Two years of made-up riding with bikes, parts, FTP tests, expenses and a club. Dates follow
+today and the same day gives the same data. A stand-in for the server answers from memory,
+so anything logged lasts until a reload. Visitors enter it from the login screen; local
+development runs on it unless `VITE_REAL_DATA=1` (then `vercel dev` serves the API).
+
+---
+
+## 13. Requirements
 
 ### 13.1 Security
-- No secret in the browser. Strava client secret, tokens and the database token live on
-  the server only (today all three ship in the page's JavaScript).
-- No personal data in the build (today `public/local_*.json` is served publicly).
-- The map tile token comes from the environment, limited to the app's domain.
+- No secret in the browser: the Strava client secret, the tokens, the session secret and
+  the database token are server-only settings (no `VITE_` prefix).
+- No personal data in the code or the build. Map tiles need no token.
 - Each rider only ever sees their own data (also required by Strava's terms).
 
-### 13.2 Connect with Strava
-- Sign in with Strava (OAuth). The server swaps the code for tokens, stores them for that
-  athlete, and refreshes them when they expire.
-- A session cookie identifies the rider; every API route checks it.
-- A Strava webhook tells the app when an activity is created, changed or deleted, so the
-  app does not need to keep polling.
-- Rate limit budget: the read limit is shared by the whole app (100 calls per 15 min and
-  1000 per day by default; 200 and 2000 after the self-serve upgrade to 10 athletes). A
-  full backfill costs one call per activity, so it must queue, pace itself, and fetch
-  recent activities first.
-- Disconnect: delete the rider's tokens and data.
+### 13.2 Login
+- Sign in with Strava, asking for `activity:read_all` (private activities) and
+  `profile:read_all` (gear). A state cookie ties the answer to the browser, and every
+  scope must be granted.
+- Only athletes in `STRAVA_ATHLETE_IDS` may log in. A refused athlete has their access
+  handed back to Strava at once and nothing is stored.
+- The session cookie holds the athlete id and an expiry, signed with `SESSION_SECRET`.
+  It lasts 30 days and is HttpOnly, Secure, SameSite=Lax.
+- Tokens are refreshed on the server before they expire.
+- Disconnecting, from Settings or on Strava's side, deletes the rider's tokens and data.
 
 ### 13.3 Self-hosting
-- Anyone can run their own copy with their own Strava app: a README with the steps,
-  a `.env.example`, one click deploy to Vercel.
-- A demo mode with made-up data, so the app can be tried without a Strava account and
-  developed without touching real data.
+- Anyone can run a copy with their own Strava app: a README with the steps, a
+  `.env.example`, a one-click deploy to Vercel, Upstash Redis from Vercel's storage.
+- The demo lets anyone try the app without an account, and develop without real data.
 
 ### 13.4 Phones
-- Bottom bar, one column at a time, thumb-sized buttons, no keyboard on open (as today).
-- Installable as an app (manifest is already there).
+- Floating tab bar, one column at a time, thumb-sized buttons, dialogs from the bottom,
+  pages kept clear of the notch and the home indicator.
+- Installable as an app (web manifest).
 
 ### 13.5 Quality
-- Every computation in `src/models` keeps its tests; add tests for TSS, tags and
-  formatting, which have none today.
+- Every calculation lives in `src/models` with tests, except the column formatting
+  (`tag.ts`). The server has tests for login, the Strava proxy, sync, the store, the
+  webhook and power.
 - Charts follow one palette (orange ramp for periods, a fixed series order).
 
 ---
