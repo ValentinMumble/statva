@@ -170,8 +170,9 @@ On a phone the dialog opens from the bottom, with thumb-sized buttons.
 
 ### 5.4 Costs
 An expense has a date, an amount (negative for a sale) and a description. Part prices
-(settings) give each part a cost per km over its expected life. Chains have no price,
-since their limit is one stint of a rotation, not their whole life.
+(settings) give each part a cost per km over its expected life. A chain's limit is one
+stint of a rotation, so its price is spread over what the retired chains on the bike did
+in all; until one is retired, chains have no cost per km.
 
 ---
 
@@ -263,7 +264,7 @@ Changes are kept as a draft until **Save**.
 | Section | Settings |
 |---|---|
 | Bikes | Main bike (default: Strava's primary bike), the bike running costs follow, retired bikes |
-| Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), prices (tires, cassette, brake pads, brake fluid), retired chains |
+| Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), prices (chain, tires, cassette, brake pads, brake fluid), retired chains |
 | Goal and sports | Yearly riding goal, car cost per km, the sports Stats shows |
 | Body | Weight, max, resting and threshold heart rate, heart rate zone thresholds |
 | Club | On or off, club name, groups marked by emojis or words, other group-ride words |

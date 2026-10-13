@@ -219,17 +219,31 @@ test('it gives no weeks left without recent riding or without a life to measure 
 });
 
 test('it turns a part"s price and life into a cost per km, and adds them up', () => {
-  const events = [on(1, {type: 'tire'}), on(1, {type: 'chain', chain: '🍒'}), on(1, {type: 'battery'})];
-  const rules = {...DEFAULT_PART_RULES, pricesEur: {tire: 40, chain: 30, battery: 50}};
+  // Chains on a rotation: 🍒 1000 + 500 km and 🍓 1000 km, both retired since, then 🥝.
+  const chains = [
+    on(1, {type: 'chain', chain: '🍒'}),
+    {...on(11, {type: 'chain', chain: '🍓'}), id: 'chain-11'},
+    {...on(21, {type: 'chain', chain: '🍒'}), id: 'chain-21'},
+    {...on(26, {type: 'chain', chain: '🥝'}), id: 'chain-26'},
+  ];
+  const events = [on(1, {type: 'tire'}), ...chains, on(1, {type: 'battery'})];
+  const rules = {...DEFAULT_PART_RULES, retiredChains: ['🍒', '🍓'], pricesEur: {tire: 40, chain: 30, battery: 50}};
   const parts = computeBikeParts(events, activities, BIKE, label, rules);
   const costOf = (type: Event['type']) => parts.find(part => type === part.type)?.costPerKm;
 
-  // 40 € over 8000 km, and 30 € over the 400 km chain stint
+  // 40 € over 8000 km, and 30 € over the 1250 km a retired chain did in all
   expect(costOf('tire')).toBeCloseTo(0.005);
-  expect(costOf('chain')).toBeCloseTo(0.075);
+  expect(costOf('chain')).toBeCloseTo(0.024);
   // a price is no use without a life to spread it over
   expect(costOf('battery')).toBeNull();
-  expect(partsCostPerKm(parts)).toBeCloseTo(0.08);
+  expect(partsCostPerKm(parts)).toBeCloseTo(0.029);
+});
+
+test('a chain has no cost per km until one has been retired', () => {
+  const rules = {...DEFAULT_PART_RULES, pricesEur: {chain: 30}};
+  const parts = computeBikeParts([on(1, {type: 'chain', chain: '🍒'})], activities, BIKE, label, rules);
+
+  expect(parts[0].costPerKm).toBeNull();
 });
 
 test('there is no parts wear cost without any priced part', () => {

@@ -47,9 +47,10 @@ const LIMITED_PARTS: [keyof Settings['partLimitsKm'], string][] = [
   ['battery', 'Battery charge'],
 ];
 
-// Parts that cost something to replace, for their cost per km. Not chains: their limit is
-// one stint of a rotation, not a chain's whole life, so the cost per km would read far too high.
+// Parts that cost something to replace, for their cost per km. A chain's price is spread over
+// what the retired chains did in all, since its limit is only one stint of the rotation.
 const PRICED_PARTS: [keyof Settings['partPricesEur'], string][] = [
+  ['chain', 'Chain'],
   ['tire', 'Tires'],
   ['cassette', 'Cassette'],
   ['brake_pad', 'Brake pads'],

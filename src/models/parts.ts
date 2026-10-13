@@ -91,6 +91,29 @@ const onBike = (events: Event[], bikeId: string, type: Event['type']): Event[] =
     .filter(event => bikeId === event.bike && type === event.type)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
+/** Every chain's total on this bike, over all its stints. */
+const chainTotals = (events: Event[], activities: Activity[], bikeId: string): Record<string, number> => {
+  const fittings = onBike(events, bikeId, 'chain').filter(isChainEvent);
+
+  return fittings.reduce((totals: Record<string, number>, event, index) => {
+    totals[event.chain] = (totals[event.chain] ?? 0) + distanceBetween(activities, event.date, fittings[index + 1]?.date);
+
+    return totals;
+  }, {});
+};
+
+/**
+ * How far a chain goes in all: the average of the retired ones on this bike. A chain's
+ * limit is one stint of a rotation, so its price is spread over this instead.
+ */
+const chainLife = (events: Event[], activities: Activity[], bikeId: string, retiredChains: string[]): number | null => {
+  const lives = Object.entries(chainTotals(events, activities, bikeId))
+    .filter(([chain, distance]) => retiredChains.includes(chain) && 0 < distance)
+    .map(([, distance]) => distance);
+
+  return 0 === lives.length ? null : sum(lives) / lives.length;
+};
+
 /**
  * What is fitted right now and how far it has gone, measured against the part's known
  * limit where there is one, and otherwise against how long the previous ones lasted on
@@ -142,7 +165,7 @@ const partStatus = (
     ratio: null === expected || 0 >= expected ? 0 : distance / expected,
     state: stateOf(distance, expected),
     weeksLeft: weeksLeftOf(distance, expected, pace),
-    costPerKm: costPerKmOf(rules.pricesEur[type], expected),
+    costPerKm: costPerKmOf(rules.pricesEur[type], 'chain' === type ? chainLife(events, activities, bikeId, rules.retiredChains) : expected),
   };
 };
 
@@ -178,16 +201,9 @@ const suggestChains = (
   bikeId: string,
   retiredChains: string[] = [],
 ): {chain: string; distance: number}[] => {
-  const fittings = onBike(events, bikeId, 'chain').filter(isChainEvent);
-  const current = fittings.at(-1)?.chain;
+  const current = onBike(events, bikeId, 'chain').filter(isChainEvent).at(-1)?.chain;
 
-  const totals = fittings.reduce((totals: Record<string, number>, event, index) => {
-    totals[event.chain] = (totals[event.chain] ?? 0) + distanceBetween(activities, event.date, fittings[index + 1]?.date);
-
-    return totals;
-  }, {});
-
-  return Object.entries(totals)
+  return Object.entries(chainTotals(events, activities, bikeId))
     .filter(([chain]) => chain !== current && !retiredChains.includes(chain))
     .map(([chain, distance]) => ({chain, distance}))
     .sort((a, b) => a.distance - b.distance);
