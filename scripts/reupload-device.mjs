@@ -419,8 +419,13 @@ const uploadPrepared = async () => {
   const ready = [];
 
   // Strava refuses a copy while the original exists: only rides whose original is gone go up.
+  // A new ride made from another one (original: null) has nothing to wait for.
   for (const folder of chosen) {
     const saved = JSON.parse(await readFile(join(folder, 'activity.json'), 'utf8'));
+    if (null === saved.original) {
+      ready.push({folder, saved});
+      continue;
+    }
     const response = await fetch(`${API}/activities/${saved.id}`, {
       headers: {Authorization: `Bearer ${readToken}`},
     });
@@ -461,4 +466,4 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   });
 }
 
-export {buildFile};
+export {buildFile, finish, pointsOf, storeInStatva, upload, writeAccessToken};
