@@ -250,7 +250,19 @@ const TabBar = () => {
         const active = isActive(to, pathname);
 
         return (
-          <Link key={to} to={to} style={{flex: 1, height: '100%'}} aria-current={active ? 'page' : undefined}>
+          <Link
+            key={to}
+            to={to}
+            style={{flex: 1, height: '100%'}}
+            aria-current={active ? 'page' : undefined}
+            // Tapping the tab of the page already open scrolls it back to the top, as on iOS,
+            // and keeps its filters. From a page under it (an activity), it goes back as usual.
+            onClick={event => {
+              if (pathname !== to) return;
+              event.preventDefault();
+              window.scrollTo({top: 0, behavior: 'smooth'});
+            }}
+          >
             <Stack
               gap="1px"
               height="full"
