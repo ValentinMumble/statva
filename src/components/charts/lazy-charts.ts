@@ -40,3 +40,4 @@ export const HeartRateDriftChart = lazy(() =>
 );
 export const RunBestTimes = lazy(() => import('./RunBestTimes').then(m => ({default: m.RunBestTimes})));
 export const CommuteRoutes = lazy(() => import('./CommuteRoutes').then(m => ({default: m.CommuteRoutes})));
+export const GradesChart = lazy(() => import('./GradesChart').then(m => ({default: m.GradesChart})));
