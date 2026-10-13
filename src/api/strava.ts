@@ -25,7 +25,7 @@ const strava = <T>(path: string, params: Record<string, number | string> = {}): 
 
 const fetchAthlete = (): Promise<Athlete> => strava<Athlete>('athlete');
 
-type SyncReport = {added: number; historyDone: boolean; detailsFetched: number; detailsMissing: number; limited: boolean};
+type SyncReport = {added: number; historyDone: boolean; detailsFetched: number; detailsMissing: number; powerFetched?: number; limited: boolean};
 
 const post = async <T>(url: string): Promise<T> => {
   const response = await fetch(url, {method: 'POST'});

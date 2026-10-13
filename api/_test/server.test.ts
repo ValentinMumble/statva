@@ -111,6 +111,46 @@ describe('refreshing one activity', () => {
   });
 });
 
+describe('normalized power', () => {
+  const steady = (watts: number) => ({
+    time: {data: Array.from({length: 600}, (_, index) => index)},
+    watts: {data: Array(600).fill(watts)},
+  });
+
+  it('is worked out from the power data with the details, for a power meter only', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(2).map(activity => ({...activity, device_watts: 1002 === activity.id}));
+    fake.strava.streams = {1002: steady(230), 1001: steady(999)};
+
+    await refreshActivity(42, 1002);
+    await refreshActivity(42, 1001);
+
+    expect(fake.read('athlete:42:details')['1002']).toMatchObject({normalized_power: 230});
+    expect(fake.read('athlete:42:details')['1001']).toMatchObject({normalized_power: null});
+    expect(fake.read('athlete:42:power')).toEqual({1002: 230, 1001: 0});
+    // No power meter, no streams asked for.
+    expect(fake.strava.calls.filter(call => call.includes('/streams'))).toEqual(['/api/v3/activities/1002/streams?keys=time%2Cwatts%2Cmoving%2Ccadence%2Cdistance%2Cheartrate&key_by_type=true']);
+  });
+
+  it('fills in activities stored before it was worked out, a few per sync', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(15).map(activity => ({...activity, device_watts: 0 === activity.id % 2}));
+    fake.strava.activities.forEach(({id}) => (fake.strava.streams[id] = steady(200)));
+    // Stored the way they were before: details without a normalized power, nothing in power.
+    await syncActivities(42);
+    await syncActivities(42);
+    delete fake.hashes['athlete:42:power'];
+
+    const report = await syncActivities(42);
+
+    expect(report.powerFetched).toBe(7);
+    expect(Object.keys(fake.read('athlete:42:power'))).toHaveLength(15);
+    expect(fake.read('athlete:42:details')['1014']).toMatchObject({normalized_power: 200});
+  });
+});
+
 describe('budget', () => {
   const usage = {short: 60, shortLimit: 100, daily: 100, dailyLimit: 1000, at: Date.UTC(2026, 5, 1, 10, 5)};
 

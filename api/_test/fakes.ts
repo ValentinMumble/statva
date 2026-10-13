@@ -13,6 +13,8 @@ type FakeStrava = {
   limits: {short: number; daily: number};
   calls: string[];
   rateLimited: boolean;
+  // Data streams by activity id, as Strava sends them with key_by_type.
+  streams: Record<number, Record<string, {data: unknown[]}>>;
 };
 
 const ENV = {
@@ -34,6 +36,7 @@ const install = () => {
     limits: {short: 100, daily: 1000},
     calls: [],
     rateLimited: false,
+    streams: {},
   };
 
   Object.assign(process.env, ENV);
@@ -103,6 +106,12 @@ const install = () => {
       }
       const page = Number(url.searchParams.get('page') ?? 1);
       return respond(strava.activities.slice((page - 1) * perPage, page * perPage));
+    }
+
+    const streams = url.pathname.match(/^\/api\/v3\/activities\/(\d+)\/streams$/);
+    if (null !== streams) {
+      const found = strava.streams[Number(streams[1])];
+      return undefined === found ? respond({message: 'Record Not Found'}, 404) : respond(found);
     }
 
     const detail = url.pathname.match(/^\/api\/v3\/activities\/(\d+)$/);

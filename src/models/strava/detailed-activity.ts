@@ -89,4 +89,12 @@ export interface DetailedActivity {
   visibility: string;
   weighted_average_watts: number;
   workout_type: number;
+  // Added by Statva's server, not Strava, from the power data (null without a power meter):
+  normalized_power?: number | null;
+  // best average power over each duration, in seconds;
+  power_curve?: Record<string, number> | null;
+  // moving seconds per 25 W band, from 0 W up;
+  power_histogram?: number[] | null;
+  // percent more heart rate for the same power in the second half (long rides only).
+  heart_rate_drift?: number | null;
 }

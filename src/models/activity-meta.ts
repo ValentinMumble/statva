@@ -4,8 +4,15 @@ import {DetailedActivity} from './strava';
 const hasKom = (activity: DetailedActivity | null): boolean =>
   activity?.segment_efforts.some(effort => effort.kom_rank === 1) ?? false;
 
-// Riders who log it write "NP: 245" in the private note; for everyone else it stays empty.
-const extractNormalizedPower = (activity: DetailedActivity | null): number | null =>
-  riderProfile().normalizedPowerFromNote ? Number(activity?.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null : null;
+/**
+ * The normalized power the server works out from the power data, as Sauce for Strava does.
+ * Until it has (or without a power meter), riders who wrote "NP: 245" in the private note
+ * can have that read instead.
+ */
+const extractNormalizedPower = (activity: DetailedActivity | null): number | null => {
+  if (activity?.normalized_power) return activity.normalized_power;
+
+  return riderProfile().normalizedPowerFromNote ? Number(activity?.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null : null;
+};
 
 export {extractNormalizedPower, hasKom};
