@@ -1,6 +1,6 @@
 import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocation, useParams} from 'react-router';
 import {LuArrowLeft, LuExternalLink, LuRefreshCw} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
@@ -13,10 +13,12 @@ import {
   getHeartRateZone,
   getPowerZone,
   getZoneColor,
+  getTypes,
   hasKom,
   intensityOf,
+  terrainOf,
 } from '../../models';
-import {Activity, ActivityZone, DetailedActivity} from '../../models/strava';
+import {Activity, ActivityType, ActivityZone, DetailedActivity} from '../../models/strava';
 import {ActivityPhoto} from '../../api';
 import {Card, CardTitle} from '../components/Card';
 import {sportIcon} from '../components/sport';
@@ -36,10 +38,12 @@ const largest = (urls: Record<string, string>): string | undefined =>
  * details only hold the main one, shown meanwhile). A photo opens full size on its own.
  */
 const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivity | null}) => {
+  // The details are fetched again on Refresh, so their count is the freshest one.
+  const count = detail?.total_photo_count ?? activity.total_photo_count;
   const {data: photos} = useQuery({
-    queryKey: ['photos', activity.id],
+    queryKey: ['photos', activity.id, count],
     queryFn: () => fetchPhotos(activity.id),
-    enabled: 0 < activity.total_photo_count,
+    enabled: 0 < count,
     retry: false,
   });
   const primary = detail?.photos?.primary?.urls;
@@ -54,12 +58,12 @@ const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivit
         ? [{key: 'primary', url: primary[600] ?? primary[100], full: primary[600] ?? primary[100]}]
         : [];
 
-  if (0 === activity.total_photo_count || 0 === shown.length) return null;
+  if (0 === count || 0 === shown.length) return null;
 
   return (
     <Card>
       <CardTitle>
-        {activity.total_photo_count} {1 === activity.total_photo_count ? 'photo' : 'photos'}
+        {count} {1 === count ? 'photo' : 'photos'}
       </CardTitle>
       <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))'}} gap="8px">
         {shown.map(({key, url, full}) => (
@@ -75,13 +79,15 @@ const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivit
 const ZONE_COLORS = ['gray.400', 'blue.400', 'green.400', 'yellow.400', 'orange.400', 'red.400'];
 
 // zone: the power or heart rate zone of the figure, shown as a badge in its colour.
-type FigureItem = {label: string; value: string | null; zone?: number};
+// zone: the power or heart rate zone of the figure, shown as a badge in its colour; tag: any
+// other badge, with a line explaining it on hover.
+type FigureItem = {label: string; value: string | null; zone?: number; tag?: {label: string; colorPalette: string; title?: string}};
 
 const Figures = ({items}: {items: FigureItem[]}) => (
   <Grid templateColumns={{base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)'}} gap="18px">
     {items
       .filter(({value}) => null !== value)
-      .map(({label, value, zone}) => (
+      .map(({label, value, zone, tag}) => (
         <Stack key={label} gap="0">
           <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
             {label}
@@ -93,6 +99,11 @@ const Figures = ({items}: {items: FigureItem[]}) => (
             {zone ? (
               <Badge size="sm" variant="subtle" colorPalette={getZoneColor(zone)}>
                 Zone {zone}
+              </Badge>
+            ) : null}
+            {tag ? (
+              <Badge size="sm" variant="subtle" colorPalette={tag.colorPalette} title={tag.title}>
+                {tag.label}
               </Badge>
             ) : null}
           </HStack>
@@ -150,6 +161,7 @@ const ActivityPage = () => {
   // Back to the list as it was left, filters included, when the activity was opened from it.
   const list = (useLocation().state as {list?: string} | null)?.list ?? '/activities';
   const {data: activities} = useAllActivities();
+  const queryClient = useQueryClient();
   const {activityMeta, refetch} = useActivityMeta();
   const {label} = useLabels();
   const {locale, mapCenter} = useSettings();
@@ -164,6 +176,13 @@ const ActivityPage = () => {
     () => decodePolyline(detail?.map?.polyline || activity?.map?.summary_polyline || ''),
     [detail, activity],
   );
+  // A ride's climbing, graded against the rider's other rides.
+  const difficulty = useMemo(() => {
+    if (undefined === activity || !activity.sport_type.includes('Ride')) return null;
+    const rides = getTypes(ActivityType.Ride);
+
+    return terrainOf(activity, (activities ?? []).filter(({sport_type}) => rides.includes(sport_type)));
+  }, [activity, activities]);
 
   if (undefined === activities) return <Skeleton height="400px" borderRadius="card" />;
   if (undefined === activity) {
@@ -186,7 +205,12 @@ const ActivityPage = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refreshActivity(activity.id);
+    const fresh = await refreshActivity(activity.id);
+    // The list holds the summary every figure here reads: put the fresh one in it too.
+    queryClient.setQueryData<Activity[]>(['activities'], list =>
+      // Its own light route is kept: the details carry the full-resolution one.
+      list?.map(listed => (listed.id === activity.id ? ({...listed, ...fresh, map: listed.map} as Activity) : listed)),
+    );
     await refetch();
     setRefreshing(false);
   };
@@ -242,6 +266,21 @@ const ActivityPage = () => {
                 {label: 'Moving time', value: duration(activity.moving_time)},
                 {label: 'Elapsed', value: duration(activity.elapsed_time)},
                 {label: 'Climbing', value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null},
+                {
+                  label: 'Elevation',
+                  value: null === difficulty ? null : `${number(difficulty.percent, locale, 2)}%`,
+                  tag:
+                    null === difficulty
+                      ? undefined
+                      : {
+                          label: difficulty.terrain.name,
+                          colorPalette: difficulty.terrain.colorPalette,
+                          title:
+                            null === difficulty.steeperThan
+                              ? 'By metres climbed per km, until there are more rides to compare with'
+                              : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your rides`,
+                        },
+                },
                 {label: 'Average speed', value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null},
                 {label: 'Max speed', value: 0 < activity.max_speed ? `${number(activity.max_speed * 3.6, locale, 1)} km/h` : null},
                 {
