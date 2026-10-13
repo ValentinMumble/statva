@@ -17,7 +17,7 @@ into a home page, stats, records and an explorer map.
   recent weeks day by day, and the parts closest to wearing out.
 - **Activities:** search by name or by date ("2 nov", "2024-11-02"), filter by sport, gear
   and commute, choose and sort columns. Each activity has its own page with its map, power,
-  training stress, heart rate zones and notes.
+  heart rate zones, photos and notes.
 - **Bike:** every part with its wear (chains by stint, cassettes over all their stints,
   tires, pads, battery), chain rotation with the next chain to fit, the history of every
   change, and the running cost per km. Logging a change takes two taps.

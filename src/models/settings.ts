@@ -19,7 +19,7 @@ type Settings = {
   // What a km by car would cost, in euros, to count what commuting by bike saves.
   carCostPerKm: number;
   sports: string[];
-  heartRate: {max: number; resting: number; threshold: number; zones: number[]};
+  heartRate: {zones: number[]};
   weightKg: number;
   // Where maps open when there is nothing better to centre on.
   mapCenter: [number, number];
@@ -40,7 +40,7 @@ const DEFAULT_SETTINGS: Settings = {
   yearGoalKm: 5000,
   carCostPerKm: 0.3,
   sports: ['Ride', 'Run'],
-  heartRate: {max: 188, resting: 52, threshold: 172, zones: [117, 143, 162, 181]},
+  heartRate: {zones: [117, 143, 162, 181]},
   weightKg: 74,
   mapCenter: [48.86, 2.35],
   locale: 'en-GB',

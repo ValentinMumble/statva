@@ -1,4 +1,4 @@
-import {extractNormalizedPower, GetFtp, computeTSS, intensityOf} from '../models';
+import {extractNormalizedPower, GetFtp, intensityOf} from '../models';
 import {Activity, DetailedActivity} from './strava';
 
 type SortType =
@@ -25,7 +25,6 @@ type SortType =
   | 'pr_count'
   | 'suffer_score'
   | 'total_elevation_gain'
-  | 'tss'
   | 'weighted_average_watts';
 
 type SortDirection = 'asc' | 'desc';
@@ -68,7 +67,6 @@ const sortValueGetters: Record<SortType, (ctx: SortContext) => number | null> = 
   pr_count: ({activity}) => activity.pr_count,
   suffer_score: ({activity}) => activity.suffer_score ?? 0,
   total_elevation_gain: ({activity}) => activity.total_elevation_gain,
-  tss: ({activity, detailed, getFtp}) => computeTSS(activity, getFtp(new Date(activity.start_date)), detailed)?.value ?? 0,
   weighted_average_watts: ({activity}) => activity.weighted_average_watts ?? 0,
 };
 

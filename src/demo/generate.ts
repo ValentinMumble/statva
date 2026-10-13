@@ -399,7 +399,7 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       retiredChains: [],
       yearGoalKm: 8000,
       sports: ['Ride', 'Run', 'Swim', 'Tennis'],
-      heartRate: {max: 190, resting: 50, threshold: 172, zones: [120, 145, 160, 175]},
+      heartRate: {zones: [120, 145, 160, 175]},
       weightKg: latestFtp.weight,
       mapCenter: HOME,
       locale: 'en-GB',

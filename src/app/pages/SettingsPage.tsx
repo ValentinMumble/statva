@@ -401,12 +401,9 @@ const SettingsPage = () => {
         </Stack>
       </Section>
 
-      <Section title="Body" description="Used for training stress from heart rate, zones and calorie estimates.">
+      <Section title="Body" description="Used for heart rate zones and calorie estimates.">
         <Grid templateColumns={{base: '1fr 1fr', md: 'repeat(4, 1fr)'}} gap="16px">
           <NumberField label="Weight" unit="kg" value={settings.weightKg} onChange={value => set('weightKg', value ?? DEFAULT_SETTINGS.weightKg)} />
-          <NumberField label="Max heart rate" unit="bpm" value={settings.heartRate.max} onChange={value => set('heartRate', {...settings.heartRate, max: value ?? 0})} />
-          <NumberField label="Resting" unit="bpm" value={settings.heartRate.resting} onChange={value => set('heartRate', {...settings.heartRate, resting: value ?? 0})} />
-          <NumberField label="Threshold" unit="bpm" value={settings.heartRate.threshold} onChange={value => set('heartRate', {...settings.heartRate, threshold: value ?? 0})} />
         </Grid>
         <Field.Root>
           <Field.Label>Heart rate zones start at</Field.Label>

@@ -6,7 +6,6 @@ import {LuArrowLeft, LuExternalLink, LuRefreshCw} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
-  computeTSS,
   decodePolyline,
   extractNormalizedPower,
   getActivityUrl,
@@ -197,7 +196,6 @@ const ActivityPage = () => {
 
   const date = new Date(activity.start_date);
   const ftp = getFtp(date);
-  const tss = computeTSS(activity, ftp, detail);
   const intensity = intensityOf(activity, detail, ftp);
   // No zone without an FTP to measure it against.
   // Cycling zones: none for a run's power, nor without an FTP to measure against.
@@ -298,7 +296,6 @@ const ActivityPage = () => {
                 },
                 {label: 'Normalized power', value: np ? `${np} W` : null, zone: powerZone(np)},
                 {label: 'Intensity', value: null === intensity ? null : `${Math.round(intensity * 100)}%`},
-                {label: 'Training stress', value: tss ? `${Math.round(tss.value)}` : null},
                 {
                   label: 'Average heart rate',
                   value: activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : null,

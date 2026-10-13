@@ -13,7 +13,7 @@ const hasKom = (activity: DetailedActivity | null): boolean =>
  * can have that read instead.
  */
 const extractNormalizedPower = (activity: DetailedActivity | null): number | null => {
-  // Running power (an Apple Watch's, say) is no cycling effort: NP, zones and TSS from it mislead.
+  // Running power (an Apple Watch's, say) is no cycling effort: NP and zones from it mislead.
   if (null !== activity && !isPedalled(activity.sport_type)) return null;
   if (activity?.normalized_power) return activity.normalized_power;
 

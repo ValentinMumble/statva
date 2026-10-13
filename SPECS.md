@@ -79,7 +79,6 @@ the filtered list. Columns that make no sense for a sport stay blank.
 | Intensity | normalized power / FTP at that date | average |
 | Average and max heart rate | bpm, average coloured by heart rate zone | average / max |
 | Suffer score | Strava's relative effort | average |
-| Training stress score (TSS) | from power, or from heart rate | average |
 | Calories | kcal (estimated when Strava has none) | sum |
 | Cadence, temperature | raw | average |
 | PRs, achievements, kudos, photos | count | sum |
@@ -114,7 +113,7 @@ name uses yet: click to copy it and roll a new one.
   KOM, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
 - **Map** of the full track (the summary track until the details are in).
 - **Figures**: distance, times, climbing, speeds, average, weighted and normalized power
-  (with power zone badges), intensity, training stress, average and max heart rate (with
+  (with power zone badges), intensity, average and max heart rate (with
   heart rate zone badges), cadence, calories, temperature, suffer score, kudos,
   achievements, PRs.
 - **Photos**: all of them, fetched from Strava on open; one opens full size.
@@ -245,9 +244,8 @@ you like. An activity whose details are not stored yet does not count.
 - **Power analysis**, stored with the details: normalized power, best power over 10
   durations (5 s to 1 h), moving time in 25 W bands, and heart rate drift (power per
   heartbeat in the first half against the second, rides over an hour).
-- **TSS and intensity**: from Statva's normalized power and the FTP of the day (Strava's
-  weighted power until the normalized power is in); without power, TSS comes from heart
-  rate (TRIMP), with max, resting and threshold heart rate.
+- **Intensity**: Statva's normalized power against the FTP of the day (Strava's weighted
+  power until the normalized power is in), on rides only.
 - **Zones**: heart rate zones from bpm thresholds in the settings; 7 power zones as
   Coggan percentages of FTP.
 - **Calories**: from kilojoules when Strava has them, otherwise estimated for runs and
@@ -266,7 +264,7 @@ Changes are kept as a draft until **Save**.
 | Bikes | Main bike (default: Strava's primary bike), the bike running costs follow, retired bikes |
 | Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), prices (chain, tires, cassette, brake pads, brake fluid), retired chains |
 | Goal and sports | Yearly riding goal, car cost per km, the sports Stats shows |
-| Body | Weight, max, resting and threshold heart rate, heart rate zone thresholds |
+| Body | Weight, heart rate zone thresholds |
 | Club | On or off, club name, groups marked by emojis or words, other group-ride words |
 | Display | Language for dates and numbers, where maps open, normalized power from notes, point out activities without an emoji |
 | Labels | Add, change or remove labels |

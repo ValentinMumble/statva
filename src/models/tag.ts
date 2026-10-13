@@ -18,7 +18,6 @@ import {
   extractNormalizedPower,
   formatDistanceMeters,
   getZoneColor,
-  computeTSS,
   intensityOf,
 } from '../models';
 import {ActivityType, Activity, DetailedActivity} from './strava';
@@ -268,25 +267,6 @@ const TAGS: Tag[] = [
   }),
   optionalRoundedTag('Max heartrate', 'max_heartrate', 'max_heartrate', 'max'),
   optionalRoundedTag('Suffer score', 'suffer_score', 'suffer_score', 'avg'),
-  {
-    help: 'Training Stress Score',
-    sortType: 'tss',
-    value: (activity, fullActivity, ftp) => {
-      const tss = computeTSS(activity, ftp, fullActivity);
-      return {
-        label: tss ? tss.value : null,
-        isRelevant: tss !== null && tss.value > 0,
-        tooltip: tss ? (tss.source === 'power' ? '⚡️ power TSS' : '🫀 HR-based TSS') : null,
-      };
-    },
-    total: (activities, activityMeta, getFtp) => {
-      const values = activities
-        .map(activity => computeTSS(activity, getFtp(new Date(activity.start_date)), activityMeta[activity.id] ?? null))
-        .filter((tss): tss is NonNullable<typeof tss> => tss !== null);
-      if (values.length === 0) return 0;
-      return Math.round(values.reduce((sum, tss) => sum + tss.value, 0) / values.length);
-    },
-  },
   {
     help: 'Calories burned',
     sortType: 'kilojoules',
