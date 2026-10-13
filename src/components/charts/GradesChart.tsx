@@ -36,7 +36,8 @@ const GradesChart = () => {
           <BarChart data={chart.data}>
             <XAxis dataKey="year" stroke={chart.color('fg.muted')} tickLine={false} />
             <YAxis stroke={chart.color('fg.muted')} width={44} tickLine={false} axisLine={false} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} allowDataOverflow={true} tickFormatter={value => `${value}%`} />
-            <Legend content={<Chart.Legend />} />
+            {/* In the order of the grades, not alphabetical as recharts sorts by default. */}
+            <Legend content={<Chart.Legend />} itemSorter={null} />
             <Tooltip
               cursor={{fill: chart.color('bg.muted')}}
               isAnimationActive={false}
