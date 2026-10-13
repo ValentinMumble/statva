@@ -40,9 +40,10 @@ const Delta = ({current, previous, lastWeek}: {current: number; previous: number
   }
   if (null === percent) return null;
 
+  // Against the same days of last week, so a big weekend still to come does not count yet.
   return (
-    <Text fontSize="xs" color={0 <= percent ? 'green.fg' : 'fg.muted'}>
-      {0 <= percent ? '▲' : '▼'} {Math.abs(percent)}% vs last week
+    <Text fontSize="xs" color={0 <= percent ? 'green.fg' : 'fg.muted'} title={`${lastWeek} in all last week`}>
+      {0 <= percent ? '▲' : '▼'} {Math.abs(percent)}% vs this time last week
     </Text>
   );
 };
@@ -85,11 +86,14 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
       </Grid>
       {0 < current.count && (
         <HStack gap="16px" flexWrap="wrap" marginTop="16px" fontSize="sm">
-          {current.bySport.map(({sport, count}) => (
+          {current.bySport.map(({sport, count, commutes}) => (
             <HStack key={sport} gap="6px">
               <Icon as={sportIcon(sport)} color="fg.muted" />
               <Text fontWeight="semibold">{count}</Text>
-              <Text color="fg.muted">{sportName(sport)}</Text>
+              <Text color="fg.muted">
+                {sportName(sport)}
+                {0 < commutes && ` · ${commutes} ${1 === commutes ? 'commute' : 'commutes'}`}
+              </Text>
             </HStack>
           ))}
         </HStack>

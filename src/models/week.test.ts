@@ -25,13 +25,13 @@ describe('weekSummary', () => {
   });
 
   it('counts each sport, most first', () => {
-    const withRun = [...activities, {...ride(new Date(2026, 9, 13, 7).toISOString(), 10), sport_type: 'Run'} as Activity].map(activity =>
-      activity.sport_type ? activity : ({...activity, sport_type: 'Ride'} as Activity),
+    const withRun = [...activities, {...ride(new Date(2026, 9, 13, 7).toISOString(), 10), sport_type: 'Run'} as Activity].map((activity, index) =>
+      activity.sport_type ? activity : ({...activity, sport_type: 'Ride', commute: 0 === index} as Activity),
     );
 
     expect(weekSummary(withRun, now).current.bySport).toEqual([
-      {sport: 'Ride', count: 2},
-      {sport: 'Run', count: 1},
+      {sport: 'Ride', count: 2, commutes: 1},
+      {sport: 'Run', count: 1, commutes: 0},
     ]);
   });
 

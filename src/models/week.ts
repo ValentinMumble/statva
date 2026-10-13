@@ -4,8 +4,8 @@ const DAY_MS = 86400000;
 
 type Totals = {
   count: number;
-  // How many of each sport, most first.
-  bySport: {sport: string; count: number}[];
+  // How many of each sport, most first, and how many of them were commutes.
+  bySport: {sport: string; count: number; commutes: number}[];
   distance: number;
   movingTime: number;
   elevation: number;
@@ -24,11 +24,15 @@ type WeekSummary = {
 };
 
 const bySport = (activities: Activity[]): Totals['bySport'] =>
-  Object.entries(
-    activities.reduce((counts: Record<string, number>, {sport_type}) => ({...counts, [sport_type]: (counts[sport_type] ?? 0) + 1}), {}),
-  )
-    .map(([sport, count]) => ({sport, count}))
-    .sort((first, second) => second.count - first.count);
+  Object.values(
+    activities.reduce((counts: Record<string, Totals['bySport'][number]>, {sport_type, commute}) => {
+      const entry = (counts[sport_type] ??= {sport: sport_type, count: 0, commutes: 0});
+      entry.count++;
+      if (commute) entry.commutes++;
+
+      return counts;
+    }, {}),
+  ).sort((first, second) => second.count - first.count);
 
 const totalsOf = (activities: Activity[]): Totals => ({
   count: activities.length,
