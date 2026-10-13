@@ -16,6 +16,7 @@ import {
   getTypes,
   hasKom,
   intensityOf,
+  isPedalled,
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, DetailedActivity} from '../../models/strava';
@@ -199,7 +200,9 @@ const ActivityPage = () => {
   const tss = computeTSS(activity, ftp, detail);
   const intensity = intensityOf(activity, detail, ftp);
   // No zone without an FTP to measure it against.
-  const powerZone = (watts: number | undefined | null): number => (0 < ftp && watts ? getPowerZone(watts, ftp) : 0);
+  // Cycling zones: none for a run's power, nor without an FTP to measure against.
+  const powerZone = (watts: number | undefined | null): number =>
+    isPedalled(activity.sport_type) && 0 < ftp && watts ? getPowerZone(watts, ftp) : 0;
   const np = extractNormalizedPower(detail);
   const speed = activity.average_speed * 3.6;
 

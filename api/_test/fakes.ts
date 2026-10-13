@@ -165,6 +165,7 @@ const makeActivities = (count: number): FakeActivity[] =>
     return {
       id,
       name: `Ride ${id}`,
+      sport_type: 'Ride',
       start_date: start.toISOString(),
       distance: 30000,
       description: 'notes',

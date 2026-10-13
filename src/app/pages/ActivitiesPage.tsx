@@ -20,7 +20,7 @@ import {useLocalStorage} from 'usehooks-ts';
 import {LuArrowDown, LuArrowUp, LuColumns3, LuFilterX, LuListFilter, LuLock, LuSearch, LuWatch, LuX} from 'react-icons/lu';
 import {GearSelect} from '../../components/GearSelect';
 import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
-import {countBy, DEFAULT_SORTS, getRandomUnusedEmoji, SortDirection, SortType, TAGS} from '../../models';
+import {countBy, DEFAULT_SORTS, getRandomUnusedEmoji, isPedalled, SortDirection, SortType, TAGS} from '../../models';
 import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
@@ -54,7 +54,7 @@ const rememberedScroll = (filters: string): number | null => {
 
 type SportCount = {sport: string; count: number};
 
-const isRide = (sport: string): boolean => sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
+const isRide = isPedalled;
 const isRun = (sport: string): boolean => sport.includes('Run');
 
 // The usual choices in one tap; the menu next to them picks any mix of sports.

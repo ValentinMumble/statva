@@ -55,7 +55,10 @@ const storeSummaries = async (athleteId: number, activities: StravaActivity[]): 
  * read. Estimated power is left out, as Sauce does.
  */
 const powerOf = async (athleteId: number, detail: StravaActivity): Promise<PowerAnalysis | null> => {
-  if (!detail.device_watts) return null;
+  // Rides only: a run's power (an Apple Watch's, say) is no cycling effort.
+  const sport = String(detail.sport_type ?? '');
+  const pedalled = sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
+  if (!detail.device_watts || !pedalled) return null;
 
   const query = new URLSearchParams({keys: 'time,watts,moving,cadence,distance,heartrate', key_by_type: 'true'});
   const response = await stravaGet(athleteId, `activities/${detail.id}/streams`, query);

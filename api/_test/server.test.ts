@@ -133,6 +133,18 @@ describe('normalized power', () => {
     expect(fake.strava.calls.filter(call => call.includes('/streams'))).toEqual(['/api/v3/activities/1002/streams?keys=time%2Cwatts%2Cmoving%2Ccadence%2Cdistance%2Cheartrate&key_by_type=true']);
   });
 
+  it('leaves the power of a run alone, an Apple Watch\'s say', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(1).map(activity => ({...activity, sport_type: 'Run', device_watts: true}));
+    fake.strava.streams = {1001: steady(280)};
+
+    await refreshActivity(42, 1001);
+
+    expect(fake.read('athlete:42:details')['1001']).toMatchObject({normalized_power: null});
+    expect(fake.strava.calls.filter(call => call.includes('/streams'))).toEqual([]);
+  });
+
   it('fills in activities stored before it was worked out, a few per sync', async () => {
     const fake = install();
     fake.login(42);
