@@ -21,7 +21,8 @@ const upsert = <T extends {id: string}>(items: T[], item: T): T[] => [...items.f
 const demoBackend = {
   getAthlete: () => answer(demo().athlete),
   getActivities: () => answer(demo().activities),
-  sync: () => answer({added: 0, historyDone: true, detailsFetched: 0, detailsMissing: 0, limited: false}),
+  sync: () => answer({added: 0, historyDone: true, detailIds: [], limited: false}),
+  backfill: () => answer({detailIds: [], detailsMissing: 0, powerFetched: 0, limited: false}),
   refreshActivity: (id: number) => answer(demo().details[id]),
   getDetails: (): Promise<Record<string, DetailedActivity>> => answer(demo().details),
   getLatestSummaries: (count: number) => answer([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count)),

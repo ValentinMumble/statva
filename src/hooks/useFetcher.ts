@@ -1,4 +1,5 @@
 import {
+  backfillActivities,
   deleteEvent,
   deleteExpense,
   deleteLabel,
@@ -35,6 +36,7 @@ type Fetcher<T> = (...args: any[]) => Promise<T>;
 const REAL: Record<string, Fetcher<unknown>> = {
   'activities.get': getActivitySummaries,
   'activities.sync': syncActivities,
+  'activities.backfill': backfillActivities,
   'activity.refresh': refreshActivity,
   'activity.zones': fetchActivityZones,
   'activity.photos': fetchActivityPhotos,
@@ -61,6 +63,7 @@ const REAL: Record<string, Fetcher<unknown>> = {
 const DEMO: typeof REAL = {
   'activities.get': demoBackend.getActivities,
   'activities.sync': demoBackend.sync,
+  'activities.backfill': demoBackend.backfill,
   'activity.refresh': demoBackend.refreshActivity,
   'activity.zones': demoBackend.getZones,
   // The demo has no photos.

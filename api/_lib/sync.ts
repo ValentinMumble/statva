@@ -24,7 +24,10 @@ const RIDER_NAMES = ['events', 'labels', 'ftp_tests', 'expenses', 'settings'];
 const RETIRED_NAMES = ['check_ins'];
 
 type SyncState = {nextPage: number; historyDone: boolean; newestStart: number};
-type SyncReport = {added: number; historyDone: boolean; detailsFetched: number; detailsMissing: number; powerFetched: number; limited: boolean};
+// What a sync brought in, quickly: new activities and their details (detailIds).
+type SyncReport = {added: number; historyDone: boolean; detailIds: number[]; limited: boolean};
+// What a backfill filled in, slowly: details and power data of older activities.
+type BackfillReport = {detailIds: number[]; detailsMissing: number; powerFetched: number; limited: boolean};
 
 class RateLimitedError extends Error {}
 
@@ -132,8 +135,9 @@ const missingPower = async (athleteId: number): Promise<number[]> => {
  * Works out the normalized power of activities stored before Statva did, a few per call.
  * Those without a power meter are noted at once, without asking Strava anything.
  */
-const backfillPower = async (athleteId: number): Promise<{fetched: number; limited: boolean}> => {
+const backfillPower = async (athleteId: number): Promise<{ids: number[]; limited: boolean}> => {
   const pending = await missingPower(athleteId);
+  const filled: number[] = [];
   let fetched = 0;
 
   for (let start = 0; start < pending.length && fetched < POWER_PER_CALL; start += POWER_BATCH) {
@@ -144,45 +148,49 @@ const backfillPower = async (athleteId: number): Promise<{fetched: number; limit
     if (0 < withoutPower.length) await redis().hset(athleteKey(athleteId, 'power'), Object.fromEntries(withoutPower.map(id => [id, 0])));
 
     for (const id of ids.filter(id => details[id]?.device_watts)) {
-      if (fetched >= POWER_PER_CALL || !canBackfill(await readUsage())) return {fetched, limited: false};
+      if (fetched >= POWER_PER_CALL || !canBackfill(await readUsage())) return {ids: filled, limited: false};
 
       try {
         const detail = details[id] as StravaActivity;
         await storeDetail(athleteId, detail, await powerOf(athleteId, detail));
+        filled.push(Number(id));
         fetched++;
       } catch (error) {
         if (!(error instanceof RateLimitedError)) throw error;
 
-        return {fetched, limited: true};
+        return {ids: filled, limited: true};
       }
     }
   }
 
-  return {fetched, limited: false};
+  return {ids: filled, limited: false};
 };
 
 /**
- * Brings a rider's stored activities up to date. The first calls page through the whole
- * history, a few pages at a time; after that one call fetches what is new. Each call then
- * backfills a few activity details, while the shared rate limit has room.
+ * Brings a rider's stored activities up to date, quickly: the first calls page through the
+ * whole history, a few pages at a time; after that one call fetches what is new, and the
+ * details of the activities that are new. Older details and power data are left to the
+ * backfill, so a refresh never waits for them.
  */
 const syncActivities = async (athleteId: number): Promise<SyncReport> => {
   const stored = await redis().hgetall<Partial<SyncState>>(athleteKey(athleteId, 'sync'));
   const state: SyncState = {nextPage: 1, historyDone: false, newestStart: 0, ...stored};
-  let added = 0;
+  // The client parses replies as JSON, so numeric field names come back as numbers.
+  const known = new Set((await redis().hkeys(athleteKey(athleteId, 'activities'))).map(Number));
+  const listed: StravaActivity[] = [];
   let limited = false;
 
   try {
     if (state.historyDone) {
       const recent = await listPage(athleteId, {after: state.newestStart - OVERLAP_SECONDS, per_page: PAGE_SIZE});
       await storeSummaries(athleteId, recent);
-      added += recent.length;
+      listed.push(...recent);
       state.newestStart = Math.max(state.newestStart, ...recent.map(startOf));
     } else {
       for (let call = 0; call < HISTORY_PAGES_PER_CALL && !state.historyDone; call++) {
         const page = await listPage(athleteId, {page: state.nextPage, per_page: PAGE_SIZE});
         await storeSummaries(athleteId, page);
-        added += page.length;
+        listed.push(...page);
         state.newestStart = Math.max(state.newestStart, ...page.map(startOf));
 
         if (page.length < PAGE_SIZE) state.historyDone = true;
@@ -196,15 +204,40 @@ const syncActivities = async (athleteId: number): Promise<SyncReport> => {
 
   await redis().hset(athleteKey(athleteId, 'sync'), state);
 
+  // The new activities, newest first, get their details now: they are the ones on screen.
+  const added = listed.filter(({id}) => !known.has(id)).sort((first, second) => second.id - first.id);
+  const detailIds: number[] = [];
+
+  for (const {id} of added.slice(0, DETAILS_PER_CALL)) {
+    if (limited) break;
+
+    try {
+      await refreshActivity(athleteId, id);
+      detailIds.push(id);
+    } catch (error) {
+      if (!(error instanceof RateLimitedError)) throw error;
+      limited = true;
+    }
+  }
+
+  return {added: added.length, historyDone: state.historyDone, detailIds, limited};
+};
+
+/**
+ * Fills in what older activities still lack, a few per call, while the shared rate limit
+ * has room: their details first, newest first, then their power data.
+ */
+const backfillActivities = async (athleteId: number): Promise<BackfillReport> => {
   const missing = await missingDetails(athleteId);
-  let detailsFetched = 0;
+  const detailIds: number[] = [];
+  let limited = false;
 
   for (const activityId of missing.slice(0, DETAILS_PER_CALL)) {
     if (limited || !canBackfill(await readUsage())) break;
 
     try {
       await refreshActivity(athleteId, activityId);
-      detailsFetched++;
+      detailIds.push(activityId);
     } catch (error) {
       if (!(error instanceof RateLimitedError)) throw error;
       limited = true;
@@ -212,14 +245,12 @@ const syncActivities = async (athleteId: number): Promise<SyncReport> => {
   }
 
   // Normalized power for activities stored before Statva worked it out, with what room is left.
-  const power = limited ? {fetched: 0, limited: false} : await backfillPower(athleteId);
+  const power = limited ? {ids: [], limited: false} : await backfillPower(athleteId);
 
   return {
-    added,
-    historyDone: state.historyDone,
-    detailsFetched,
-    detailsMissing: missing.length - detailsFetched,
-    powerFetched: power.fetched,
+    detailIds: [...detailIds, ...power.ids],
+    detailsMissing: missing.length - detailIds.length,
+    powerFetched: power.ids.length,
     limited: limited || power.limited,
   };
 };
@@ -229,5 +260,5 @@ const forgetAthlete = async (athleteId: number): Promise<void> => {
   await redis().del(...[...SERVER_NAMES, ...RIDER_NAMES, ...RETIRED_NAMES].map(name => athleteKey(athleteId, name)));
 };
 
-export {forgetAthlete, refreshActivity, RIDER_NAMES, SERVER_NAMES, syncActivities};
-export type {SyncReport};
+export {backfillActivities, forgetAthlete, refreshActivity, RIDER_NAMES, SERVER_NAMES, syncActivities};
+export type {BackfillReport, SyncReport};

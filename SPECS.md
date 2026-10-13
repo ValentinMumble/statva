@@ -302,7 +302,8 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `POST /api/auth/disconnect` | Revoke access on Strava, delete the rider's data and tokens |
 | `GET /api/strava` | Call Strava for the rider, on a short list of allowed paths |
 | `POST /api/store` | Read and write the rider's own data |
-| `POST /api/sync` | Bring the rider's stored activities up to date |
+| `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
+| `POST /api/backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
@@ -320,8 +321,11 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 - The app syncs on every visit and on Refresh. The first syncs page through the whole
   history, a few pages per call, and the list fills up after each. After that a sync
   fetches what started since the newest known activity, minus a month for late uploads.
-- Each sync then fetches a few missing details (newest first) and works out power for a
-  few stored activities that lack it.
+- A sync also fetches the details of the activities that are new (up to 10), and answers.
+  The app then puts just those details into what it has loaded, rather than reloading all.
+- After each sync the app asks for a backfill without waiting for it: the details of a
+  few older activities (newest first) and the power data of a few that lack it. Its
+  details are merged in the same way when it ends.
 - Strava's read limit is shared by every rider of the app (100 calls per 15 minutes and
   1000 a day, twice that after the upgrade to 10 athletes). The server records the usage
   Strava reports; the details and power backfill stop at half of either window, which

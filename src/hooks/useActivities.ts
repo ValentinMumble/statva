@@ -1,8 +1,8 @@
 import {useMemo, useCallback} from 'react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {ActivityFilter, dateSearchHaystack, hasEmoji, normalizeString, sortActivities} from '../models';
-import {SyncReport} from '../api';
-import {Activity} from '../models/strava';
+import {BackfillReport, SyncReport} from '../api';
+import {Activity, DetailedActivity} from '../models/strava';
 import {getFetcher} from './useFetcher';
 import {useFtp} from './useFtp';
 import {useActivityMeta} from './useActivityMeta';
@@ -16,6 +16,13 @@ const FIRST_COUNT = 20;
 const byId = (activities: Activity[]): Record<number, Activity> =>
   Object.fromEntries(activities.map(activity => [activity.id, activity]));
 const syncActivities = getFetcher<SyncReport>('activities.sync');
+const backfillActivities = getFetcher<BackfillReport>('activities.backfill');
+const fetchSomeDetails = getFetcher<Record<string, DetailedActivity | null>>('activities.details.some');
+
+// The store reads this many entries at once.
+const DETAILS_PER_READ = 50;
+// One backfill at a time, however many pages ask for a sync.
+let backfilling = false;
 
 /**
  * The stored activities, shown at once, and a sync with Strava on every visit. A first
@@ -47,6 +54,23 @@ const useAllActivities = () => {
     },
   });
 
+  // Puts freshly stored details into what is loaded, rather than reloading them all (MBs).
+  const addDetails = useCallback(
+    async (ids: number[]) => {
+      if (0 === ids.length) return;
+
+      for (let start = 0; start < ids.length; start += DETAILS_PER_READ) {
+        const fresh = await fetchSomeDetails(ids.slice(start, start + DETAILS_PER_READ));
+        const found = Object.fromEntries(
+          Object.entries(fresh).filter((entry): entry is [string, DetailedActivity] => null !== entry[1]),
+        );
+        queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded => (loaded ? {...loaded, ...found} : loaded));
+      }
+      await queryClient.invalidateQueries({queryKey: ['someDetails']});
+    },
+    [queryClient],
+  );
+
   const sync = useCallback(async (): Promise<SyncReport> => {
     let report: SyncReport;
     let pagedHistory = false;
@@ -61,13 +85,24 @@ const useAllActivities = () => {
     // Usually only a few new activities: the newest ones are fetched and added, not the whole list.
     if (!pagedHistory && 0 < report.added) addToList(await fetchLatest(FIRST_COUNT));
 
-    if (0 < report.detailsFetched) {
-      await queryClient.invalidateQueries({queryKey: ['activityMeta']});
-      await queryClient.invalidateQueries({queryKey: ['someDetails']});
+    await addDetails(report.detailIds);
+
+    // Older activities are filled in behind the scenes: nothing waits for it.
+    if (!backfilling && !report.limited) {
+      backfilling = true;
+      void (async () => {
+        try {
+          await addDetails((await backfillActivities()).detailIds);
+        } catch {
+          // The next sync tries again.
+        } finally {
+          backfilling = false;
+        }
+      })();
     }
 
     return report;
-  }, [queryClient, addToList]);
+  }, [queryClient, addToList, addDetails]);
 
   useQuery({queryKey: ['sync'], queryFn: sync, retry: false});
 

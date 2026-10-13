@@ -1,7 +1,7 @@
 import {install, makeActivities} from './fakes.js';
 import {canBackfill} from '../_lib/budget.js';
 import {webhookVerifyToken} from '../_lib/env.js';
-import {syncActivities, refreshActivity} from '../_lib/sync.js';
+import {backfillActivities, syncActivities, refreshActivity} from '../_lib/sync.js';
 import {sessionCookie} from '../_lib/session.js';
 import {POST as store} from '../store.js';
 import {GET as webhookCheck, POST as webhook} from '../webhook.js';
@@ -37,11 +37,14 @@ describe('sync', () => {
 
     fake.strava.calls = [];
     fake.strava.activities.unshift({id: 5000, name: 'New ride', start_date: '2030-01-01T08:00:00Z'});
-    await syncActivities(42);
+    const third = await syncActivities(42);
     const listCalls = fake.strava.calls.filter(call => call.startsWith('/api/v3/athlete/activities'));
     expect(listCalls).toHaveLength(1);
     expect(listCalls[0]).toContain('after=');
     expect(fake.read('athlete:42:activities')['5000']).toBeDefined();
+    // Only what is new counts as added, and only its details are fetched.
+    expect(third).toMatchObject({added: 1, detailIds: [5000]});
+    expect(fake.strava.calls.filter(call => /^\/api\/v3\/activities\/\d+$/.test(call))).toEqual(['/api/v3/activities/5000']);
   });
 
   it('stores light summaries and cleaned details', async () => {
@@ -61,28 +64,30 @@ describe('sync', () => {
     expect(detail.laps).toBeUndefined();
   });
 
-  it('backfills a few details per call, newest first', async () => {
+  it('fetches the details of the newest new activities with the sync, and backfills the rest', async () => {
     const fake = install();
     fake.login(42);
     fake.strava.activities = makeActivities(25);
 
-    const report = await syncActivities(42);
+    const sync = await syncActivities(42);
+    expect(sync).toMatchObject({added: 25, detailIds: Array.from({length: 10}, (_, index) => 1025 - index)});
 
-    expect(report).toMatchObject({detailsFetched: 10, detailsMissing: 15});
-    expect(Object.keys(fake.read('athlete:42:details')).map(Number).sort()).toEqual(
-      Array.from({length: 10}, (_, index) => 1016 + index),
-    );
+    const backfill = await backfillActivities(42);
+    expect(backfill).toMatchObject({detailIds: Array.from({length: 10}, (_, index) => 1015 - index), detailsMissing: 5});
+    expect(Object.keys(fake.read('athlete:42:details'))).toHaveLength(20);
   });
 
   it('stops backfilling when half the shared rate limit is used', async () => {
     const fake = install();
     fake.login(42);
     fake.strava.activities = makeActivities(25);
+    await syncActivities(42);
     fake.strava.usage = {short: 49, daily: 100};
 
-    const report = await syncActivities(42);
+    const report = await backfillActivities(42);
 
-    expect(report.detailsFetched).toBe(1);
+    // It goes by what Strava last reported: 49 then 50 of 100, where it stops.
+    expect(report.detailIds).toHaveLength(2);
   });
 
   it('reports a rate limit instead of failing', async () => {
@@ -91,7 +96,7 @@ describe('sync', () => {
     fake.strava.activities = makeActivities(5);
     fake.strava.rateLimited = true;
 
-    await expect(syncActivities(42)).resolves.toMatchObject({limited: true, added: 0, detailsFetched: 0});
+    await expect(syncActivities(42)).resolves.toMatchObject({limited: true, added: 0, detailIds: []});
   });
 });
 
@@ -152,10 +157,10 @@ describe('normalized power', () => {
     fake.strava.activities.forEach(({id}) => (fake.strava.streams[id] = steady(200)));
     // Stored the way they were before: details without a normalized power, nothing in power.
     await syncActivities(42);
-    await syncActivities(42);
+    await backfillActivities(42);
     delete fake.hashes['athlete:42:power'];
 
-    const report = await syncActivities(42);
+    const report = await backfillActivities(42);
 
     expect(report.powerFetched).toBe(7);
     expect(Object.keys(fake.read('athlete:42:power'))).toHaveLength(15);

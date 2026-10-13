@@ -25,7 +25,9 @@ const strava = <T>(path: string, params: Record<string, number | string> = {}): 
 
 const fetchAthlete = (): Promise<Athlete> => strava<Athlete>('athlete');
 
-type SyncReport = {added: number; historyDone: boolean; detailsFetched: number; detailsMissing: number; powerFetched?: number; limited: boolean};
+// detailIds: the activities whose details the call stored, for the app to fetch those alone.
+type SyncReport = {added: number; historyDone: boolean; detailIds: number[]; limited: boolean};
+type BackfillReport = {detailIds: number[]; detailsMissing: number; powerFetched: number; limited: boolean};
 
 const post = async <T>(url: string): Promise<T> => {
   const response = await fetch(url, {method: 'POST'});
@@ -39,6 +41,9 @@ const post = async <T>(url: string): Promise<T> => {
 /** Asks the server to bring the stored activities up to date with Strava. */
 const syncActivities = (): Promise<SyncReport> => post<SyncReport>('/api/sync');
 
+/** Asks the server to fill in the details and power data of a few older activities. Slow. */
+const backfillActivities = (): Promise<BackfillReport> => post<BackfillReport>('/api/backfill');
+
 /** Asks the server to fetch one activity from Strava again and store it. */
 const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
 
@@ -51,6 +56,7 @@ const fetchActivityPhotos = (id: number): Promise<ActivityPhoto[]> =>
   strava<ActivityPhoto[]>(`activities/${id}/photos`, {size: 1000, photo_sources: 'true'});
 
 export {
+  backfillActivities,
   fetchActivityPhotos,
   fetchActivityZones,
   fetchAthlete,
@@ -59,4 +65,4 @@ export {
   refreshActivity,
   syncActivities,
 };
-export type {ActivityPhoto, SyncReport};
+export type {ActivityPhoto, BackfillReport, SyncReport};
