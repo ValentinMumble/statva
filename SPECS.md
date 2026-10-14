@@ -314,6 +314,8 @@ figures.
 - **Sessions**: the latest 8 (or all), with their route, group, finish place, riders,
   km and speed.
 - **Groups**: sessions, average riders, speed and power (rides with a power meter).
+- **Bikes**: for each bike ridden to the club, its sessions, km, years used, average
+  speed and power, and a bar for its share of the sessions.
 - **Group size**: riders Strava matched on the same ride (1 counts as unknown), on
   average, the biggest ride, and month by month over the years.
 - **Session records**: fastest, longest, hilliest, most power, hardest, most kudos,

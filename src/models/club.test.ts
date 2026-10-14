@@ -1,5 +1,5 @@
 import {buildDetailedActivity} from '../../test/test-util';
-import {clubRecords, clubSessions, clubTotals, clubWeeks, groupSize, groupStats, sessionsHeld, startPoints} from './club';
+import {clubRecords, clubSessions, clubTotals, clubWeeks, gearStats, groupSize, groupStats, sessionsHeld, startPoints} from './club';
 import {ClubRules} from './activity-npeloton';
 import {Activity} from './strava';
 
@@ -21,6 +21,7 @@ const ride = (day: string, name: string, fields: Partial<Activity> = {}): Activi
     device_watts: false,
     start_latlng: [47.2, -1.55],
     kudos_count: 0,
+    gear_id: 'b1',
     ...fields,
   } as never) as unknown as Activity;
 
@@ -29,7 +30,7 @@ const activities = [
   ride('2026-09-02', 'N-Peloton #640 🏴‍☠️', {athlete_count: 8, average_temp: 22, device_watts: true, weighted_average_watts: 210}),
   ride('2026-09-09', 'N-Peloton #641 G2', {athlete_count: 12, average_speed: 9, average_temp: 9}),
   ride('2026-09-16', 'N-Peloton #642 🏴‍☠️', {distance: 60000, start_latlng: [47.2005, -1.5502]}),
-  ride('2026-09-30', 'N-Peloton #644 G2', {device_watts: true, weighted_average_watts: 190, kudos_count: 7}),
+  ride('2026-09-30', 'N-Peloton #644 G2', {device_watts: true, weighted_average_watts: 190, kudos_count: 7, gear_id: 'b2'}),
   ride('2026-10-07', 'N-Peloton #645 🏴‍☠️', {start_latlng: [47.3, -1.4]}),
   ride('2026-10-10', 'Saturday ride', {distance: 100000}),
 ];
@@ -85,6 +86,15 @@ describe('groupStats and groupSize', () => {
     expect(size.biggest?.number).toBe(641);
     expect(size.byMonth[8]).toBe(10);
     expect(size.byMonth[9]).toBeNull();
+  });
+});
+
+describe('gearStats', () => {
+  it('sums the sessions on each bike, most used first', () => {
+    expect(gearStats(sessions).map(({gearId, sessions: count, distance, power, first, last}) => [gearId, count, distance, power, first, last])).toEqual([
+      ['b1', 4, 180000, 210, '2026-09-02', '2026-10-07'],
+      ['b2', 1, 40000, 190, '2026-09-30', '2026-09-30'],
+    ]);
   });
 });
 

@@ -27,6 +27,8 @@ type ClubWeeks = {
 
 type GroupStats = {name: string; sessions: number; speed: number; power: number | null; riders: number | null};
 
+type GearStats = {gearId: string | null; sessions: number; distance: number; speed: number; power: number | null; first: string; last: string};
+
 type ClubRecord = {key: string; heading: string; session: ClubSession; value: number};
 
 type StartPoint = {point: [number, number]; sessions: number};
@@ -141,6 +143,28 @@ const groupStats = (sessions: ClubSession[]): GroupStats[] => {
     .sort((first, second) => second.sessions - first.sessions);
 };
 
+/** Each bike's sessions, km, average speed and power, and the first and last day it came along, most used first. */
+const gearStats = (sessions: ClubSession[]): GearStats[] => {
+  const bikes = new Map<string | null, ClubSession[]>();
+  for (const session of sessions) bikes.set(session.activity.gear_id, [...(bikes.get(session.activity.gear_id) ?? []), session]);
+
+  return [...bikes.entries()]
+    .map(([gearId, rides]) => {
+      const days = rides.map(({activity}) => localDay(activity)).sort();
+
+      return {
+        gearId,
+        sessions: rides.length,
+        distance: rides.reduce((sum, {activity}) => sum + activity.distance, 0),
+        speed: average(rides.map(({activity}) => activity.average_speed)) ?? 0,
+        power: average(rides.map(({activity}) => (activity.device_watts ? activity.weighted_average_watts : 0)).filter((watts): watts is number => 0 < (watts ?? 0))),
+        first: days[0],
+        last: days[days.length - 1],
+      };
+    })
+    .sort((first, second) => second.sessions - first.sessions);
+};
+
 /** How many rode along, on average, at most, and month by month (0 is January) over the years. */
 const groupSize = (sessions: ClubSession[]): {average: number | null; biggest: ClubSession | null; byMonth: (number | null)[]} => {
   const counted = sessions.filter(({activity}) => null !== ridersOf(activity));
@@ -189,5 +213,5 @@ const startPoints = (sessions: ClubSession[]): StartPoint[] => {
   return points.sort((first, second) => second.sessions - first.sessions);
 };
 
-export {clubRecords, clubSessions, clubTotals, clubWeeks, groupSize, groupStats, sessionsHeld, startPoints};
-export type {ClubRecord, ClubSession, ClubTotals, ClubWeeks, GroupStats, StartPoint};
+export {clubRecords, clubSessions, clubTotals, clubWeeks, gearStats, groupSize, groupStats, sessionsHeld, startPoints};
+export type {ClubRecord, ClubSession, ClubTotals, ClubWeeks, GearStats, GroupStats, StartPoint};

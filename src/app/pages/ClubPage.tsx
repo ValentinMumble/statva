@@ -3,7 +3,7 @@ import {Badge, Box, Button, Grid, HStack, Icon, Spinner, Stack, Text} from '@cha
 import {Link} from 'react-router';
 import {CircleMarker, Tooltip} from 'react-leaflet';
 import {LuExternalLink, LuUsers} from 'react-icons/lu';
-import {useActivityMeta, useAllActivities, useSettings} from '../../hooks';
+import {useActivityMeta, useAllActivities, useLabels, useSettings} from '../../hooks';
 import {
   ClubRecord,
   ClubSession,
@@ -13,6 +13,7 @@ import {
   clubWeeks,
   decodePolyline,
   formatSpeed,
+  gearStats,
   groupSize,
   groupStats,
   sessionsHeld,
@@ -182,6 +183,8 @@ const ClubPage = () => {
   const held = sessionsHeld(sessions);
   const weeks = useMemo(() => clubWeeks(sessions, deviceDay(now)), [sessions, now]);
   const groups = useMemo(() => groupStats(sessions), [sessions]);
+  const bikes = useMemo(() => gearStats(sessions), [sessions]);
+  const {label} = useLabels();
   const size = useMemo(() => groupSize(sessions), [sessions]);
   const records = useMemo(() => clubRecords(sessions), [sessions]);
   const starts = useMemo(() => startPoints(sessions).slice(0, 5), [sessions]);
@@ -211,7 +214,8 @@ const ClubPage = () => {
   }, Array(7).fill(0));
   const usualWeekday = 0 === sessions.length ? undefined : weekdayCounts.indexOf(Math.max(...weekdayCounts));
   // 2024-01-01 was a Monday.
-  const weekdayName = undefined === usualWeekday ? null : new Date(Date.UTC(2024, 0, 1 + usualWeekday)).toLocaleDateString(locale, {weekday: 'long', timeZone: 'UTC'});
+  // In English, like the sentence around it, whatever the date setting.
+  const weekdayName = undefined === usualWeekday ? null : new Date(Date.UTC(2024, 0, 1 + usualWeekday)).toLocaleDateString('en-GB', {weekday: 'long', timeZone: 'UTC'});
   const kudos = sessions.reduce((sum, {activity}) => sum + activity.kudos_count, 0);
   const photos = sessions.reduce((sum, {activity}) => sum + (activity.total_photo_count ?? activity.photo_count ?? 0), 0);
   const prs = sessions.reduce((sum, {activity}) => sum + (activity.pr_count ?? 0), 0);
@@ -236,8 +240,10 @@ const ClubPage = () => {
         </HStack>
         {undefined !== first && (
           <Text color="fg.muted">
-            Since {new Date(first.activity.start_date).toLocaleDateString(locale, {month: 'long', year: 'numeric'})}
-            {null !== weekdayName ? `, usually on ${weekdayName}` : ''}
+            Since {new Date(first.activity.start_date).toLocaleDateString('en-GB', {month: 'long', year: 'numeric'})}
+            {null !== weekdayName && undefined !== usualWeekday
+              ? `, ${weekdayCounts[usualWeekday] === sessions.length ? 'every' : 'mostly on'} ${weekdayName}`
+              : ''}
           </Text>
         )}
       </Stack>
@@ -304,6 +310,35 @@ const ClubPage = () => {
                       <Text color="fg.muted">{null === group.power ? '—' : `${Math.round(group.power)} W`}</Text>
                     </Stack>
                   </HStack>
+                ))}
+              </Stack>
+            </Panel>
+
+            <Panel title="Bikes" note="power from rides with a power meter">
+              <Stack gap="12px">
+                {bikes.map(bike => (
+                  <Stack key={bike.gearId ?? 'none'} gap="4px">
+                    <HStack justifyContent="space-between" gap="12px" fontSize="sm">
+                      <Stack gap="0" minWidth="0">
+                        <Text fontWeight="medium" truncate={true}>
+                          {null === bike.gearId ? 'No bike set' : label(bike.gearId)}
+                        </Text>
+                        <Text color="fg.muted">
+                          {bike.sessions} {1 === bike.sessions ? 'session' : 'sessions'} · {km(bike.distance, locale)} ·{' '}
+                          {bike.first.slice(0, 4) === bike.last.slice(0, 4) ? bike.first.slice(0, 4) : `${bike.first.slice(0, 4)} to ${bike.last.slice(0, 4)}`}
+                        </Text>
+                      </Stack>
+                      <Stack gap="0" alignItems="flex-end" flexShrink={0}>
+                        <Text fontFamily="figure" fontWeight="semibold">
+                          {formatSpeed(bike.speed)}
+                        </Text>
+                        <Text color="fg.muted">{null === bike.power ? '—' : `${Math.round(bike.power)} W`}</Text>
+                      </Stack>
+                    </HStack>
+                    <Box height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
+                      <Box height="full" width={`${(bike.sessions / sessions.length) * 100}%`} background="brand.solid" borderRadius="full" />
+                    </Box>
+                  </Stack>
                 ))}
               </Stack>
             </Panel>
