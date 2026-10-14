@@ -227,6 +227,50 @@ describe('renaming an activity', () => {
 
     expect((await rename({name: '  '})).status).toBe(400);
   });
+
+  it('moves it to other gear, or takes the gear off', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(1);
+    await syncActivities(42);
+
+    expect((await rename({gear_id: 'b42'})).status).toBe(200);
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({gear_id: 'b42'});
+    expect((await rename({gear_id: 'none'})).status).toBe(200);
+    expect(fake.strava.puts).toEqual([
+      {id: 1001, gear_id: 'b42'},
+      {id: 1001, gear_id: 'none'},
+    ]);
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({gear_id: null});
+  });
+
+  it('changes the description and the private note, empty ones too', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(1);
+    await syncActivities(42);
+
+    expect((await rename({description: 'Finish au Zazou\n'})).status).toBe(200);
+    expect((await rename({private_note: ''})).status).toBe(200);
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({description: 'Finish au Zazou', private_note: ''});
+  });
+
+  it('says so, and stores nothing, when Strava keeps a note as it was', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(1);
+    fake.strava.ignoredFields = ['private_note'];
+    await syncActivities(42);
+
+    expect((await rename({private_note: 'NP: 210'})).status).toBe(422);
+    expect(fake.read('athlete:42:activities')['1001']).not.toHaveProperty('private_note');
+  });
+
+  it('refuses gear that is not a Strava id', async () => {
+    install().login(42);
+
+    expect((await rename({gear_id: 'my bike'})).status).toBe(400);
+  });
 });
 
 describe('budget', () => {

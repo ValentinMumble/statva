@@ -28,6 +28,14 @@ const demoBackend = {
     demo().activities = demo().activities.map(activity => (activity.id === id ? {...activity, name} : activity));
     if (demo().details[id]) demo().details[id] = {...demo().details[id], name};
   },
+  setActivityNote: async (id: number, note: 'description' | 'private_note', text: string) => {
+    if (demo().details[id]) demo().details[id] = {...demo().details[id], [note]: text};
+  },
+  setActivityGear: async (id: number, gearId: string) => {
+    const newGearId = 'none' === gearId ? null : gearId;
+    demo().activities = demo().activities.map(activity => (activity.id === id ? {...activity, gear_id: newGearId} : activity));
+    if (demo().details[id]) demo().details[id] = {...demo().details[id], gear_id: newGearId};
+  },
   getDetails: (): Promise<Record<string, DetailedActivity>> => answer(demo().details),
   getLatestSummaries: (count: number) => answer([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count)),
   getLatestDetails: (count: number) =>

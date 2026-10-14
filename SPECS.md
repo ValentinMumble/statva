@@ -115,13 +115,20 @@ again.
 
 - Back link to the list as it was left; date, name, and badges (gear, commute, private,
   KOM, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
+- The name has a pencil to rename it, and the gear badge is a menu to move a ride to
+  another bike (or a run to other shoes, or to none; retired gear only when it is already
+  on it). Both are saved on Strava, which needs write access (a login after Statva asked
+  for it), and in the stored copies.
 - **Map** of the full track (the summary track until the details are in).
 - **Figures**: distance, times, climbing, speeds, average, weighted and normalized power
   (with power zone badges), intensity, average and max heart rate (with
   heart rate zone badges), cadence, calories, temperature, suffer score, kudos,
   achievements, PRs.
 - **Photos**: all of them, fetched from Strava on open; one opens full size.
-- **Notes** (description and private note), **heart rate zones** (time in each of
+- **Notes**: the description and the private note, each with a pencil to change it (or
+  write one), saved on Strava. When Strava answers but keeps a note as it was (apps may
+  not be allowed to write it), nothing changes in Statva and the rider is told to edit it
+  on Strava. **Heart rate zones** (time in each of
   Strava's zones) and **recorded with** (device, power meter or not).
 
 ---
@@ -341,7 +348,7 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
 | `POST /api/backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
-| `PUT /api/activity?id=` | Rename an activity on Strava and in Statva |
+| `PUT /api/activity?id=` | Rename an activity, move it to other gear, or change its description or private note, on Strava and in Statva (422 when Strava keeps a text as it was) |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
 ### 11.2 What comes from Strava

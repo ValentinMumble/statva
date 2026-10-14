@@ -1,9 +1,9 @@
 import {useMemo, useState} from 'react';
-import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
+import {Badge, Box, Button, Grid, HStack, Icon, IconButton, Image, Input, NativeSelect, Skeleton, Stack, Text, Textarea} from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocation, useParams} from 'react-router';
-import {LuArrowLeft, LuExternalLink, LuRefreshCw} from 'react-icons/lu';
-import {useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
+import {LuArrowLeft, LuExternalLink, LuPencil, LuRefreshCw} from 'react-icons/lu';
+import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
   decodePolyline,
@@ -19,7 +19,8 @@ import {
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, DetailedActivity} from '../../models/strava';
-import {ActivityPhoto} from '../../api';
+import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError} from '../../api';
+import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
@@ -27,6 +28,206 @@ import {duration, km, metres, number} from '../format';
 
 const fetchZones = getFetcher<ActivityZone[]>('activity.zones');
 const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
+const renameActivity = getFetcher<void>('activity.rename');
+const setActivityGear = getFetcher<void>('activity.gear');
+const setActivityNote = getFetcher<void>('activity.note');
+
+const NOTE_NAMES: Record<ActivityNote, string> = {description: 'Description', private_note: 'Private note'};
+
+/** One of the activity's notes, with a pencil to change it, saved on Strava. */
+const NoteField = ({activity, detail, note}: {activity: Activity; detail: DetailedActivity; note: ActivityNote}) => {
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const text = detail[note] ?? '';
+
+  const save = async () => {
+    const value = (draft ?? '').trim();
+    if (value === text) return setDraft(null);
+
+    setSaving(true);
+    try {
+      await setActivityNote(activity.id, note, value);
+      queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
+        loaded?.[activity.id] ? {...loaded, [activity.id]: {...loaded[activity.id], [note]: value}} : loaded,
+      );
+      setDraft(null);
+    } catch (error) {
+      toaster.create({
+        type: 'error',
+        title:
+          error instanceof NoWriteAccessError
+            ? 'Log out and in again to let Statva change it on Strava'
+            : error instanceof IgnoredByStravaError
+              ? `Strava does not let apps change the ${NOTE_NAMES[note].toLowerCase()}: edit it on Strava`
+              : 'Strava did not take the change',
+      });
+    }
+    setSaving(false);
+  };
+
+  return (
+    <Box background={'private_note' === note ? 'bg.subtle' : undefined} borderRadius="10px" padding={'private_note' === note ? '12px' : undefined}>
+      <HStack justifyContent="space-between" marginBottom="4px">
+        <Text fontSize="xs" color="fg.muted">
+          {NOTE_NAMES[note]}
+        </Text>
+        {null === draft && (
+          <IconButton aria-label={`Edit the ${NOTE_NAMES[note].toLowerCase()}`} size="xs" variant="ghost" color="fg.muted" onClick={() => setDraft(text)}>
+            <LuPencil />
+          </IconButton>
+        )}
+      </HStack>
+      {null === draft ? (
+        <Text whiteSpace="pre-wrap" color={'' === text ? 'fg.subtle' : undefined}>
+          {'' === text ? 'None' : text}
+        </Text>
+      ) : (
+        <Stack gap="8px">
+          <Textarea
+            autoFocus={true}
+            autoresize={true}
+            value={draft}
+            onChange={({target}) => setDraft(target.value)}
+            onKeyDown={event => 'Escape' === event.key && setDraft(null)}
+            background="bg.panel"
+            aria-label={NOTE_NAMES[note]}
+          />
+          <HStack gap="8px">
+            <Button size="sm" colorPalette="brand" loading={saving} onClick={save}>
+              Save
+            </Button>
+            <Button size="sm" variant="ghost" disabled={saving} onClick={() => setDraft(null)}>
+              Cancel
+            </Button>
+          </HStack>
+        </Stack>
+      )}
+    </Box>
+  );
+};
+
+const FOOT_SPORTS = ['Run', 'TrailRun', 'VirtualRun', 'Walk', 'Hike'];
+
+/** The bike (or shoes) the activity was done with, changed in place and saved on Strava. */
+const GearSelect = ({activity}: {activity: Activity}) => {
+  const queryClient = useQueryClient();
+  const gear = useGear();
+  const {label} = useLabels();
+  const [saving, setSaving] = useState(false);
+  const type = isPedalled(activity.sport_type) ? 'bike' : FOOT_SPORTS.includes(activity.sport_type) ? 'shoes' : null;
+  // Retired gear is offered only when the activity is already on it.
+  const options = gear.filter(item => item.type === type && (!item.retired || item.id === activity.gear_id));
+
+  if (null === type) return activity.gear_id ? <Badge variant="surface">{label(activity.gear_id)}</Badge> : null;
+
+  const change = async (gearId: string) => {
+    setSaving(true);
+    try {
+      await setActivityGear(activity.id, gearId || 'none');
+      const newGearId = gearId || null;
+      queryClient.setQueryData<Activity[]>(['activities'], list =>
+        list?.map(listed => (listed.id === activity.id ? {...listed, gear_id: newGearId} : listed)),
+      );
+      queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
+        loaded?.[activity.id] ? {...loaded, [activity.id]: {...loaded[activity.id], gear_id: newGearId}} : loaded,
+      );
+    } catch (error) {
+      toaster.create({
+        type: 'error',
+        title: error instanceof NoWriteAccessError ? 'Log out and in again to let Statva change it on Strava' : 'Strava did not take the change',
+      });
+    }
+    setSaving(false);
+  };
+
+  return (
+    <NativeSelect.Root size="xs" width="auto" disabled={saving}>
+      <NativeSelect.Field
+        value={activity.gear_id ?? ''}
+        onChange={({target}) => change(target.value)}
+        aria-label={'bike' === type ? 'Bike' : 'Shoes'}
+        borderRadius="full"
+      >
+        <option value="">{'bike' === type ? 'No bike' : 'No shoes'}</option>
+        {options.map(item => (
+          <option key={item.id} value={item.id}>
+            {label(item.id) === item.id ? item.name : label(item.id)}
+            {item.retired ? ' (retired)' : ''}
+          </option>
+        ))}
+      </NativeSelect.Field>
+      <NativeSelect.Indicator />
+    </NativeSelect.Root>
+  );
+};
+// Strava's own limit on an activity name.
+const MAX_NAME_LENGTH = 255;
+
+/** The activity's name, and a pencil to change it, saved on Strava. */
+const ActivityTitle = ({activity}: {activity: Activity}) => {
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    const name = draft?.trim() ?? '';
+    if ('' === name || name === activity.name) return setDraft(null);
+
+    setSaving(true);
+    try {
+      await renameActivity(activity.id, name);
+      queryClient.setQueryData<Activity[]>(['activities'], list => list?.map(listed => (listed.id === activity.id ? {...listed, name} : listed)));
+      queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
+        loaded?.[activity.id] ? {...loaded, [activity.id]: {...loaded[activity.id], name}} : loaded,
+      );
+      setDraft(null);
+    } catch (error) {
+      toaster.create({
+        type: 'error',
+        title: error instanceof NoWriteAccessError ? 'Log out and in again to let Statva rename on Strava' : 'Strava did not take the new name',
+      });
+    }
+    setSaving(false);
+  };
+
+  if (null === draft) {
+    return (
+      <HStack gap="6px" alignItems="center">
+        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
+          {activity.name}
+        </Text>
+        <IconButton aria-label="Rename" size="sm" variant="ghost" color="fg.muted" onClick={() => setDraft(activity.name)}>
+          <LuPencil />
+        </IconButton>
+      </HStack>
+    );
+  }
+
+  return (
+    <Stack direction={{base: 'column', md: 'row'}} gap="8px" width="full">
+      <Input
+        autoFocus={true}
+        value={draft}
+        maxLength={MAX_NAME_LENGTH}
+        onChange={({target}) => setDraft(target.value)}
+        onKeyDown={({key}) => ('Enter' === key ? save() : 'Escape' === key && setDraft(null))}
+        fontFamily="heading"
+        fontSize={{base: 'lg', md: 'xl'}}
+        fontWeight="bold"
+        aria-label="Activity name"
+      />
+      <HStack gap="8px" flexShrink={0}>
+        <Button size="sm" colorPalette="brand" loading={saving} disabled={'' === draft.trim()} onClick={save}>
+          Save
+        </Button>
+        <Button size="sm" variant="ghost" disabled={saving} onClick={() => setDraft(null)}>
+          Cancel
+        </Button>
+      </HStack>
+    </Stack>
+  );
+};
 const fetchPhotos = getFetcher<ActivityPhoto[]>('activity.photos');
 
 // The biggest size Strava sent, for a photo opened on its own.
@@ -163,7 +364,6 @@ const ActivityPage = () => {
   const {data: activities} = useAllActivities();
   const queryClient = useQueryClient();
   const {activityMeta, refetch} = useActivityMeta();
-  const {label} = useLabels();
   const {locale, mapCenter} = useSettings();
   const {getFtp} = useFtp();
   const [refreshing, setRefreshing] = useState(false);
@@ -225,7 +425,7 @@ const ActivityPage = () => {
       </Link>
 
       <HStack justifyContent="space-between" alignItems="flex-start" gap="16px" flexWrap="wrap">
-        <Stack gap="4px" minWidth="0">
+        <Stack gap="4px" minWidth="0" flex="1" flexBasis={{base: '100%', md: '0'}}>
           <HStack gap="8px" color="fg.muted" fontSize="sm">
             <Icon as={sportIcon(activity.sport_type)} />
             <Text>
@@ -233,11 +433,9 @@ const ActivityPage = () => {
               {date.toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit'})}
             </Text>
           </HStack>
-          <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
-            {activity.name}
-          </Text>
+          <ActivityTitle key={activity.id} activity={activity} />
           <HStack gap="6px" flexWrap="wrap">
-            {activity.gear_id && <Badge variant="surface">{label(activity.gear_id)}</Badge>}
+            <GearSelect activity={activity} />
             {activity.commute && <Badge variant="surface">Commute</Badge>}
             {activity.private && <Badge variant="surface">Private</Badge>}
             {hasKom(detail) && <Badge colorPalette="yellow">KOM 👑</Badge>}
@@ -317,19 +515,12 @@ const ActivityPage = () => {
             />
           </Card>
           <Photos activity={activity} detail={detail} />
-          {(detail?.description || detail?.private_note) && (
+          {null !== detail && (
             <Card>
               <CardTitle>Notes</CardTitle>
               <Stack gap="12px">
-                {detail.description && <Text whiteSpace="pre-wrap">{detail.description}</Text>}
-                {detail.private_note && (
-                  <Box background="bg.subtle" borderRadius="10px" padding="12px">
-                    <Text fontSize="xs" color="fg.muted" marginBottom="4px">
-                      Private note
-                    </Text>
-                    <Text whiteSpace="pre-wrap">{detail.private_note}</Text>
-                  </Box>
-                )}
+                <NoteField key={`${activity.id}-description`} activity={activity} detail={detail} note="description" />
+                <NoteField key={`${activity.id}-private_note`} activity={activity} detail={detail} note="private_note" />
               </Stack>
             </Card>
           )}

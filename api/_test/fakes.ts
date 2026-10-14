@@ -17,6 +17,8 @@ type FakeStrava = {
   streams: Record<number, Record<string, {data: unknown[]}>>;
   // What was changed on Strava, in order.
   puts: Record<string, unknown>[];
+  // Fields Strava answers for without changing them, as it may for what apps cannot write.
+  ignoredFields: string[];
 };
 
 const ENV = {
@@ -40,6 +42,7 @@ const install = () => {
     rateLimited: false,
     streams: {},
     puts: [],
+    ignoredFields: [],
   };
 
   Object.assign(process.env, ENV);
@@ -119,7 +122,8 @@ const install = () => {
     if (null !== detail && 'PUT' === init.method) {
       const activity = strava.activities.find(({id}) => id === Number(detail[1]));
       if (undefined === activity) return respond({message: 'Record Not Found'}, 404);
-      Object.assign(activity, JSON.parse(String(init.body)));
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+      Object.assign(activity, Object.fromEntries(Object.entries(body).filter(([key]) => !strava.ignoredFields.includes(key))));
       strava.puts.push({id: activity.id, ...JSON.parse(String(init.body))});
       return respond(activity);
     }

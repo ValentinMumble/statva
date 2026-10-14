@@ -46,15 +46,28 @@ const backfillActivities = (): Promise<BackfillReport> => post<BackfillReport>('
 
 /** Thrown when Strava refuses a change: the rider logged in before Statva asked for write access. */
 class NoWriteAccessError extends Error {}
+// Strava answered but kept the text as it was, as it may for a field apps cannot write.
+class IgnoredByStravaError extends Error {}
 
-/** Renames an activity on Strava (and in Statva). */
-const renameActivity = async (id: number, name: string): Promise<void> => {
-  const response = await fetch(`/api/activity?id=${id}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name})});
+type ActivityNote = 'description' | 'private_note';
+
+/** Changes an activity on Strava (and in Statva). */
+const changeActivity = async (id: number, change: {name: string} | {gear_id: string} | Partial<Record<ActivityNote, string>>): Promise<void> => {
+  const response = await fetch(`/api/activity?id=${id}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(change)});
 
   if (401 === response.status) throw new NotLoggedInError('Not logged in');
   if (403 === response.status) throw new NoWriteAccessError('No write access');
-  if (!response.ok) throw new Error(`Renaming failed: ${response.status}`);
+  if (422 === response.status) throw new IgnoredByStravaError('Strava kept it as it was');
+  if (!response.ok) throw new Error(`Changing the activity failed: ${response.status}`);
 };
+
+const renameActivity = (id: number, name: string): Promise<void> => changeActivity(id, {name});
+
+/** Moves an activity to other gear on Strava, or takes it off with "none". */
+const setActivityGear = (id: number, gearId: string): Promise<void> => changeActivity(id, {gear_id: gearId});
+
+/** Changes an activity's description or private note on Strava. */
+const setActivityNote = (id: number, note: ActivityNote, text: string): Promise<void> => changeActivity(id, {[note]: text});
 
 /** Asks the server to fetch one activity from Strava again and store it. */
 const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
@@ -71,6 +84,9 @@ export {
   backfillActivities,
   NoWriteAccessError,
   renameActivity,
+  setActivityGear,
+  setActivityNote,
+  IgnoredByStravaError,
   fetchActivityPhotos,
   fetchActivityZones,
   fetchAthlete,
@@ -79,4 +95,4 @@ export {
   refreshActivity,
   syncActivities,
 };
-export type {ActivityPhoto, BackfillReport, SyncReport};
+export type {ActivityNote, ActivityPhoto, BackfillReport, SyncReport};

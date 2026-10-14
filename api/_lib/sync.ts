@@ -167,21 +167,35 @@ const backfillPower = async (athleteId: number): Promise<{ids: number[]; limited
   return {ids: filled, limited: false};
 };
 
-/**
- * Changes an activity on Strava and in the stored copies, without reading it again. False
- * when Strava refused, which it does without write access (riders who logged in before
- * Statva asked for it).
- */
-const changeActivity = async (athleteId: number, activityId: number, update: Record<string, unknown>): Promise<boolean> => {
-  const response = await stravaPut(athleteId, `activities/${activityId}`, update);
-  if (!response.ok) return false;
+type ChangeResult = 'changed' | 'denied' | 'ignored';
 
+// Strava may tidy spaces and line breaks; only a text that comes back different was dropped.
+const sameText = (sent: unknown, received: unknown): boolean =>
+  String(sent ?? '').replace(/\s+/g, ' ').trim() === String(received ?? '').replace(/\s+/g, ' ').trim();
+
+/**
+ * Changes an activity on Strava and in the stored copies, without reading it again.
+ * "denied" when Strava refused, which it does without write access (riders who logged in
+ * before Statva asked for it). "ignored" when Strava answered but kept a text as it was,
+ * as it may for a field apps cannot change: nothing is stored then, so Statva never shows
+ * what Strava does not have.
+ */
+const changeActivity = async (athleteId: number, activityId: number, update: Record<string, unknown>): Promise<ChangeResult> => {
+  const response = await stravaPut(athleteId, `activities/${activityId}`, update);
+  if (!response.ok) return 'denied';
+
+  const changed = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+  const texts = ['name', 'description', 'private_note'].filter(key => key in update);
+  if (null !== changed && texts.some(key => !sameText(update[key], changed[key]))) return 'ignored';
+
+  // Strava takes "none" to take the gear off, and stores no gear as null.
+  const storedUpdate = 'none' === update.gear_id ? {...update, gear_id: null} : update;
   for (const name of ['activities', 'details']) {
     const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), String(activityId));
-    if (null !== stored) await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...update}});
+    if (null !== stored) await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...storedUpdate}});
   }
 
-  return true;
+  return 'changed';
 };
 
 /**
