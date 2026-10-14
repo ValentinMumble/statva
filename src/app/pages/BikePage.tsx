@@ -8,7 +8,7 @@ import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
 import {useAllActivities, useEvents, useExpenses, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeBikeParts, Event, getEventLabel, isTireEvent, partsCostPerKm, PartState, shoeWear} from '../../models';
+import {computeBikeParts, Event, getEventLabel, isTireEvent, partsCostPerKm, PartState, shoeWear, tyrePressure} from '../../models';
 import {Card, CardTitle} from '../components/Card';
 import {km, number, relativeDay} from '../format';
 
@@ -54,11 +54,11 @@ const ChartCard = ({title, children}: {title: string; children: React.ReactNode}
 );
 
 const saveSetting = getFetcher<void>('settings.set');
-// SILCA's calculator has no API or prefilled link: the card gives the inputs to type in.
+// A second opinion, with surface and speed: it has no API, so its inputs are listed to type in.
 const SILCA_CALCULATOR = 'https://silca.cc/pages/sppc-form';
 const KG_PER_LB = 0.4536;
 
-/** What SILCA's tyre pressure calculator asks for, ready, and the pressures it gave, kept. */
+/** Front and rear pressure from Berto's 15% tyre drop, what goes into it, and the pressures the rider runs. */
 const TyrePressure = ({bike}: {bike: string}) => {
   const queryClient = useQueryClient();
   const {events} = useEvents();
@@ -68,6 +68,8 @@ const TyrePressure = ({bike}: {bike: string}) => {
   const width = tyre && isTireEvent(tyre) ? tyre.width : undefined;
   const saved = tyrePressures[bike] ?? {front: null, rear: null};
   const totalKg = undefined === bikeKg ? null : weightKg + bikeKg + kitWeightKg;
+  const tubeless = tubelessBikes.includes(bike);
+  const advised = null === totalKg || undefined === width ? null : tyrePressure(totalKg, width, tubeless);
 
   const save = async (wheel: 'front' | 'rear', value: string) => {
     const psi = '' === value.trim() ? null : Number(value);
@@ -80,13 +82,30 @@ const TyrePressure = ({bike}: {bike: string}) => {
     ['Total weight', null === totalKg ? 'Set the bike\'s weight in Settings' : `${number(totalKg, locale, 1)} kg (${number(totalKg / KG_PER_LB, locale)} lb)`],
     ['Tyre width', undefined === width ? 'Log a tyre change with its width' : `${width} mm`],
     ['Wheel', '700C'],
-    ['Setup', tubelessBikes.includes(bike) ? 'Tubeless' : 'Inner tubes'],
+    ['Setup', tubeless ? 'Tubeless' : 'Inner tubes'],
   ];
 
   return (
     <Card>
       <CardTitle>Tyre pressure</CardTitle>
       <Stack gap="14px">
+        {null !== advised && (
+          <HStack gap="12px">
+            {(['front', 'rear'] as const).map(wheel => (
+              <Stack key={wheel} gap="0" flex="1">
+                <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
+                  {wheel}
+                </Text>
+                <Text fontSize="2xl" fontWeight="semibold" lineHeight="1.2">
+                  {advised[wheel]} psi
+                </Text>
+                <Text fontSize="sm" color="fg.muted">
+                  {number('front' === wheel ? advised.frontBar : advised.rearBar, locale, 1)} bar
+                </Text>
+              </Stack>
+            ))}
+          </HStack>
+        )}
         <Grid templateColumns="auto 1fr" columnGap="16px" rowGap="4px" fontSize="sm">
           {inputs.map(([name, value]) => [
             <Text key={`${name}-name`} color="fg.muted">
@@ -98,13 +117,18 @@ const TyrePressure = ({bike}: {bike: string}) => {
           ])}
         </Grid>
         <Text fontSize="xs" color="fg.muted">
-          You, the bike and {number(kitWeightKg, locale, 1)} kg of kit. Surface, speed and tyre model are yours to pick there.
+          You, the bike and {number(kitWeightKg, locale, 1)} kg of kit, 45% on the front wheel. The pressure that squashes each tyre by 15% of
+          its height (Frank Berto's rule), 8% lower when tubeless. Go a little lower on rough roads or in the wet.
+          {advised?.outOfRange && ' Below 23 mm the rule reads high, take it as a ceiling.'}
         </Text>
         <Button size="sm" variant="outline" asChild={true} alignSelf="flex-start">
           <a href={SILCA_CALCULATOR} target="_blank" rel="noreferrer">
-            Open SILCA's calculator <LuExternalLink />
+            Cross-check with SILCA <LuExternalLink />
           </a>
         </Button>
+        <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
+          What you run
+        </Text>
         <HStack gap="12px">
           {(['front', 'rear'] as const).map(wheel => (
             <Stack key={wheel} gap="4px" flex="1">
