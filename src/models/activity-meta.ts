@@ -12,12 +12,13 @@ const hasKom = (activity: DetailedActivity | null): boolean =>
  * Until it has (or without a power meter), riders who wrote "NP: 245" in the private note
  * can have that read instead.
  */
-const extractNormalizedPower = (activity: DetailedActivity | null): number | null => {
+const extractNormalizedPower = (activity: DetailedActivity | null | undefined): number | null => {
   // Running power (an Apple Watch's, say) is no cycling effort: NP and zones from it mislead.
-  if (null !== activity && !isPedalled(activity.sport_type)) return null;
-  if (activity?.normalized_power) return activity.normalized_power;
+  // Activities whose details have not arrived yet come as undefined: no NP for them yet.
+  if (!activity || !isPedalled(activity.sport_type)) return null;
+  if (activity.normalized_power) return activity.normalized_power;
 
-  return riderProfile().normalizedPowerFromNote ? Number(activity?.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null : null;
+  return riderProfile().normalizedPowerFromNote ? Number(activity.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null : null;
 };
 
 export {extractNormalizedPower, hasKom, isPedalled};

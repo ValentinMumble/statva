@@ -1,4 +1,5 @@
 import {buildActivity, buildDetailedActivity} from '../../test/test-util';
+import {extractNormalizedPower} from './activity-meta';
 import {effortPower, intensityOf} from './effort';
 import {ActivityType} from './strava';
 
@@ -27,4 +28,9 @@ test("a run's power is no cycling effort: no effort power or intensity", () => {
 test('intensity is the effort power against the FTP of the day', () => {
   expect(intensityOf(hour, buildDetailedActivity({normalized_power: 250}), 250)).toBe(1);
   expect(intensityOf(hour, null, 0)).toBeNull();
+});
+
+test('an activity whose details have not arrived has no normalized power, rather than crashing', () => {
+  expect(extractNormalizedPower(undefined)).toBeNull();
+  expect(extractNormalizedPower(null)).toBeNull();
 });
