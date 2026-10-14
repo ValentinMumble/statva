@@ -34,6 +34,10 @@ import {TrackMap} from '../components/TrackMap';
 import {duration, km, metres, number, relativeDay} from '../format';
 
 const LATEST_COUNT = 8;
+// Fewer rides than this on the calendar is a one-off, not a series of its own.
+const SERIES_MIN_RIDES = 10;
+
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const fetchCalendar = getFetcher<{rides: ClubRide[]; complete: boolean}>('club.calendar');
 
 const recordValue = ({key, value}: ClubRecord, locale: string): string => {
@@ -203,13 +207,22 @@ const ClubPage = () => {
     // Each call keeps what it read, so a call that failed or ran out of time is worth retrying.
     retry: 5,
   });
-  const rides = useMemo(() => calendar?.rides ?? [], [calendar]);
-  // The club's other numbered rides the rider has done too, like its Sunday ride.
+  // The club writes some sessions under its initials ("NP#622" for N-Peloton): they are its own.
+  const rides = useMemo(() => {
+    const initials = (club?.name ?? '').split(/[\s-]+/).map(part => part.charAt(0)).join('').toUpperCase();
+
+    return (calendar?.rides ?? []).map(ride => (null !== club && 1 < initials.length && ride.series === initials ? {...ride, series: club.name} : ride));
+  }, [calendar, club]);
+  // The club's other regular rides the rider has done too, like its Sunday ride: a series with
+  // at least SERIES_MIN_RIDES numbered rides, one of them in an activity name as "<series> #<n>".
   const seriesNames = useMemo(() => {
     if (null === club) return [];
-    const others = [...new Set(rides.filter(({number}) => null !== number).map(({series}) => series))].filter(
-      name => name !== club.name && activities.some(activity => activity.name.includes(name)),
-    );
+    const counts = new Map<string, number>();
+    for (const {series: name, number: rideNumber} of rides) if (null !== rideNumber) counts.set(name, (counts.get(name) ?? 0) + 1);
+    const others = [...counts.entries()]
+      .filter(([name, count]) => name !== club.name && SERIES_MIN_RIDES <= count)
+      .map(([name]) => name)
+      .filter(name => activities.some(activity => new RegExp(`${escapeRegExp(name)}\\s*#\\d+`).test(activity.name)));
 
     return [club.name, ...others];
   }, [rides, club, activities]);

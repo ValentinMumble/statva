@@ -155,18 +155,46 @@ const clubWeeks = (sessions: ClubSession[], today: string, heldWeeks: Set<string
  */
 const matchCalendar = (sessions: ClubSession[], rides: ClubRide[], series: string, today: string): CalendarMatch => {
   const first = sessions.length ? localDay(sessions[sessions.length - 1].activity) : today;
-  const held = rides.filter(ride => ride.series === series && first <= ride.day && ride.day <= today);
   const byNumber = new Map(sessions.filter(({number}) => null !== number).map(session => [session.number, session]));
   const byDay = new Map(sessions.map(session => [localDay(session.activity), session]));
-  const riddenAs = (ride: ClubRide): ClubSession | undefined => (null === ride.number ? undefined : byNumber.get(ride.number)) ?? byDay.get(ride.day);
-  const finishes = new Map<number, string>();
-  for (const ride of held) {
-    const session = riddenAs(ride);
-    if (undefined !== session && null !== ride.finish) finishes.set(session.activity.id, ride.finish);
-  }
-  const missed = held.filter(ride => undefined === riddenAs(ride));
 
-  return {held, missed, attended: held.length - missed.length, finishes, heldWeeks: new Set(held.map(({day}) => mondayOf(day)))};
+  // One session under one number, even when the club lists it in parts (a road and a gravel
+  // ride, or each day of a special week): its groups add up, its days all count.
+  const merged = new Map<string, {ride: ClubRide; days: string[]}>();
+  for (const ride of rides.filter(candidate => candidate.series === series && first <= candidate.day && candidate.day <= today)) {
+    const key = null === ride.number ? `${ride.day} ${ride.title}` : String(ride.number);
+    const known = merged.get(key);
+    merged.set(
+      key,
+      undefined === known
+        ? {ride: null === ride.number ? ride : {...ride, title: `${series} #${ride.number}`}, days: [ride.day]}
+        : {
+            ride: {
+              ...known.ride,
+              day: ride.day < known.ride.day ? ride.day : known.ride.day,
+              groups: null === known.ride.groups && null === ride.groups ? null : (known.ride.groups ?? 0) + (ride.groups ?? 0),
+              finish: known.ride.finish ?? ride.finish,
+            },
+            days: [...known.days, ride.day],
+          },
+    );
+  }
+
+  const riddenAs = ({ride, days}: {ride: ClubRide; days: string[]}): ClubSession | undefined =>
+    (null === ride.number ? undefined : byNumber.get(ride.number)) ?? days.map(day => byDay.get(day)).find(Boolean);
+  // A session later today is not missed yet.
+  const entries = [...merged.values()]
+    .filter(entry => entry.days.some(day => day < today) || undefined !== riddenAs(entry))
+    .sort((first, second) => second.ride.day.localeCompare(first.ride.day));
+  const finishes = new Map<number, string>();
+  for (const entry of entries) {
+    const session = riddenAs(entry);
+    if (undefined !== session && null !== entry.ride.finish) finishes.set(session.activity.id, entry.ride.finish);
+  }
+  const held = entries.map(({ride}) => ride);
+  const missed = entries.filter(entry => undefined === riddenAs(entry)).map(({ride}) => ride);
+
+  return {held, missed, attended: held.length - missed.length, finishes, heldWeeks: new Set(entries.flatMap(({days}) => days.map(mondayOf)))};
 };
 
 // "Caf'K", "CafK" and "Le CafK" are the same bar.

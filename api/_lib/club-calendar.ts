@@ -129,16 +129,27 @@ const readClubCalendar = async (athleteId: number, website: string | undefined, 
   const stored = await redis().hmget<{rides: ClubRide[]; state: CalendarState}>(key, 'rides', 'state');
   const rides = new Map((stored?.rides ?? []).map(ride => [rideKey(ride), ride]));
   let state: CalendarState = stored?.state ?? {cursor: today, since, newestDay: today, checkedAt: now};
+  // Written back only when something changed: most calls just answer from what is kept.
+  let unsaved = undefined === stored?.state || null === stored?.state;
   // An earlier first ride (more history in Statva) reaches further back.
-  if (since < state.since) state = {...state, since, cursor: state.cursor ?? shiftDay([...rides.values()].reduce((oldest, {day}) => (day < oldest ? day : oldest), today), -1)};
+  if (since < state.since) {
+    state = {...state, since, cursor: state.cursor ?? shiftDay([...rides.values()].reduce((oldest, {day}) => (day < oldest ? day : oldest), today), -1)};
+    unsaved = true;
+  }
 
   let budget = PAGES_PER_CALL;
   const deadline = Date.now() + TIME_PER_CALL_MS;
   const hasTime = () => 0 < budget-- && Date.now() < deadline;
   const sorted = () => [...rides.values()].sort((first, second) => second.day.localeCompare(first.day));
   // Kept after every page, so a call cut short never loses what it read.
-  const keep = async () => await redis().hset(key, {rides: sorted(), state});
-  const add = (found: ClubRide[]) => found.forEach(ride => rides.set(rideKey(ride), ride));
+  const keep = async () => {
+    await redis().hset(key, {rides: sorted(), state});
+    unsaved = false;
+  };
+  const add = (found: ClubRide[]) => {
+    found.forEach(ride => rides.set(rideKey(ride), ride));
+    unsaved = true;
+  };
 
   try {
     if (null === state.cursor && now - state.checkedAt > RECHECK_MS) {
@@ -165,7 +176,7 @@ const readClubCalendar = async (athleteId: number, website: string | undefined, 
     // The site is down or changed: keep what is known, and try again next time.
   }
 
-  await keep();
+  if (unsaved) await keep();
 
   return {rides: sorted(), complete: null === state.cursor};
 };

@@ -68,9 +68,12 @@ describe('readClubCalendar', () => {
 
     fake.site.rides = weekly(4);
     fake.site.requests = [];
+    // Spaced out, so a rewrite (which would write it compactly) shows.
+    fake.hashes['athlete:42:club'].state = JSON.stringify(JSON.parse(fake.hashes['athlete:42:club'].state), null, 1);
     const soon = await readClubCalendar(42, WEBSITE, '2026-01-01', '2026-01-29', now + 3_600_000);
     expect(fake.site.requests).toHaveLength(0);
     expect(soon.rides).toHaveLength(6);
+    expect(fake.hashes['athlete:42:club'].state).toContain('\n');
 
     const later = await readClubCalendar(42, WEBSITE, '2026-01-01', '2026-01-29', now + 7 * 3_600_000);
     expect(fake.site.requests).toEqual(['2026-01-11..2026-01-29']);

@@ -137,6 +137,22 @@ describe('with the club calendar', () => {
     expect(match.attended).toBe(5);
   });
 
+  it('counts a session listed in parts once, and one later today as not missed yet', () => {
+    const parts = [
+      held(646, '2026-10-14'),
+      {...held(645, '2026-10-07', 'Atomics'), title: 'N-Peloton #645 Route'},
+      {...held(645, '2026-10-07'), title: 'N-Peloton #645 Gravel', groups: 3},
+      held(643, '2026-09-23'),
+    ];
+    const today = matchCalendar(sessions, parts, 'N-Peloton', '2026-10-14');
+
+    expect(today.held.map(({title, groups, finish}) => [title, groups, finish])).toEqual([
+      ['N-Peloton #645', 12, 'Atomics'],
+      ['N-Peloton #643', 9, null],
+    ]);
+    expect(today.missed.map(({number}) => number)).toEqual([643]);
+  });
+
   it('does not count a week without a session held as missed, nor let it break a run', () => {
     const weeks = clubWeeks(sessions, '2026-10-21', match.heldWeeks);
 
