@@ -23,6 +23,8 @@ const fetchSomeDetails = getFetcher<Record<string, DetailedActivity | null>>('ac
 const DETAILS_PER_READ = 50;
 // One backfill at a time, however many pages ask for a sync.
 let backfilling = false;
+// Whether the whole list has arrived once: until then what is on screen is only its first pages.
+let wholeListLoaded = false;
 
 /**
  * The stored activities, shown at once, and a sync with Strava on every visit. A first
@@ -49,6 +51,7 @@ const useAllActivities = () => {
 
       addToList(await fetchLatest(FIRST_COUNT));
       const all = await fetchActivities((sofar: Activity[]) => addToList(sofar));
+      wholeListLoaded = true;
 
       return addToList(all) ?? all;
     },
@@ -108,7 +111,7 @@ const useAllActivities = () => {
 
   const refreshLatest = useCallback(() => queryClient.refetchQueries({queryKey: ['sync']}), [queryClient]);
 
-  return {...query, refreshLatest};
+  return {...query, refreshLatest, isComplete: wholeListLoaded || !query.isFetching};
 };
 
 const useActivities = ({

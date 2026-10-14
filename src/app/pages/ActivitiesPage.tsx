@@ -14,7 +14,7 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import {useNavigate, useSearchParams} from 'react-router';
+import {useLocation, useNavigate, useSearchParams} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
 import {useWindowVirtualizer} from '@tanstack/react-virtual';
 import {useLocalStorage} from 'usehooks-ts';
@@ -451,7 +451,9 @@ const ActivitiesPage = () => {
       : setParams({sort: 'date' === sortType ? null : sortType, dir: null});
 
   // Back from an activity: scroll to where the list was, once it is tall enough to get there.
-  const scrollTarget = useRef(rememberedScroll(searchParams.toString()));
+  // Opened from the tab bar, it starts at the top.
+  const fromTab = true === (useLocation().state as {fromTab?: boolean} | null)?.fromTab;
+  const scrollTarget = useRef(fromTab ? null : rememberedScroll(searchParams.toString()));
   useLayoutEffect(() => {
     const target = scrollTarget.current;
     if (null === target || 0 === rows.length) return;

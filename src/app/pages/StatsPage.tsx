@@ -163,7 +163,7 @@ const ChartCard = ({title, children}: {title: string; children: React.ReactNode}
 );
 
 const StatsPage = () => {
-  const {data} = useAllActivities();
+  const {data, isComplete} = useAllActivities();
   const {club} = useSettings();
   const [now] = useState(() => new Date());
   const activities = data ?? [];
@@ -258,27 +258,36 @@ const StatsPage = () => {
       <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
         Stats
       </Text>
-      <Totals activities={activities} now={now} />
-      <Tabs.Root defaultValue="training" lazyMount={true} unmountOnExit={true} variant="enclosed">
-        <Tabs.List overflowX="auto" maxWidth="full">
-          {tabs.map(({value, label}) => (
-            <Tabs.Trigger key={value} value={value}>
-              {label}
-            </Tabs.Trigger>
-          ))}
-        </Tabs.List>
-        {tabs.map(({value, charts}) => (
-          <Tabs.Content key={value} value={value}>
-            <Grid templateColumns={{base: 'minmax(0, 1fr)', xl: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}}>
-              {charts.map(([title, chart]) => (
-                <ChartCard key={title} title={title}>
-                  {chart}
-                </ChartCard>
+      {!isComplete ? (
+        <HStack gap="10px" color="fg.muted">
+          <Spinner size="sm" />
+          <Text fontSize="sm">Loading all your activities…</Text>
+        </HStack>
+      ) : (
+        <>
+          <Totals activities={activities} now={now} />
+          <Tabs.Root defaultValue="training" lazyMount={true} unmountOnExit={true} variant="enclosed">
+            <Tabs.List overflowX="auto" maxWidth="full">
+              {tabs.map(({value, label}) => (
+                <Tabs.Trigger key={value} value={value}>
+                  {label}
+                </Tabs.Trigger>
               ))}
-            </Grid>
-          </Tabs.Content>
-        ))}
-      </Tabs.Root>
+            </Tabs.List>
+            {tabs.map(({value, charts}) => (
+              <Tabs.Content key={value} value={value}>
+                <Grid templateColumns={{base: 'minmax(0, 1fr)', xl: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}}>
+                  {charts.map(([title, chart]) => (
+                    <ChartCard key={title} title={title}>
+                      {chart}
+                    </ChartCard>
+                  ))}
+                </Grid>
+              </Tabs.Content>
+            ))}
+          </Tabs.Root>
+        </>
+      )}
     </Stack>
   );
 };

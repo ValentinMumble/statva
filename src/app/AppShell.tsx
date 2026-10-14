@@ -253,12 +253,17 @@ const TabBar = () => {
           <Link
             key={to}
             to={to}
+            // Another tab opens at the top, rather than where the last page was scrolled to.
+            state={{fromTab: true}}
             style={{flex: 1, height: '100%'}}
             aria-current={active ? 'page' : undefined}
             // Tapping the tab of the page already open scrolls it back to the top, as on iOS,
             // and keeps its filters. From a page under it (an activity), it goes back as usual.
             onClick={event => {
-              if (pathname !== to) return;
+              if (pathname !== to) {
+                window.scrollTo(0, 0);
+                return;
+              }
               event.preventDefault();
               window.scrollTo({top: 0, behavior: 'smooth'});
             }}

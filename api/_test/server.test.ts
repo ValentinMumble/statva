@@ -280,10 +280,22 @@ describe('store', () => {
     expect(Object.keys((await response.json()) as object).map(Number).sort()).toEqual([1028, 1029, 1030]);
   });
 
+  it('reads a big hash in pages, newest first, saying how many there are', async () => {
+    install().login(42);
+    for (let id = 1; id <= 160; id++) await storeCall(42, {command: 'hset', name: 'events', field: String(id), value: {id}});
+
+    const first = (await (await storeCall(42, {command: 'hpage', name: 'events', page: 0})).json()) as {pages: number; entries: object};
+    const second = (await (await storeCall(42, {command: 'hpage', name: 'events', page: 1})).json()) as {pages: number; entries: object};
+
+    expect(first.pages).toBe(2);
+    expect(Object.keys(first.entries)).toHaveLength(150);
+    expect(Object.keys(second.entries).map(Number).sort((first, second) => first - second)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  });
+
   it('lets riders read but not write what the server owns', async () => {
     install();
 
-    expect((await storeCall(42, {command: 'hscan', name: 'activities', cursor: '0'})).status).toBe(200);
+    expect((await storeCall(42, {command: 'hpage', name: 'activities', page: 0})).status).toBe(200);
     expect((await storeCall(42, {command: 'hset', name: 'activities', field: '1', value: {}})).status).toBe(403);
     expect((await storeCall(42, {command: 'hdel', name: 'details', field: '1'})).status).toBe(403);
   });

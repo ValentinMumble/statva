@@ -63,8 +63,6 @@ const install = () => {
         return Object.keys(hash).length;
       case 'hdel':
         return args.filter(field => delete hash[field]).length;
-      case 'hscan':
-        return ['0', Object.entries(hash).flat()];
       case 'set':
         strings[key] = args[0];
         return 'OK';
