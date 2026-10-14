@@ -561,6 +561,16 @@ const SettingsPage = () => {
               <Field.HelperText>A ride named "{settings.club.name || 'Club'} #42 C1" is a club ride in group C1.</Field.HelperText>
             </Field.Root>
             <Field.Root>
+              <Field.Label>Club website</Field.Label>
+              <Input
+                type="url"
+                defaultValue={settings.club.url ?? ''}
+                placeholder="https://"
+                onBlur={({target}) => settings.club && set('club', {...settings.club, url: target.value.trim() || undefined})}
+              />
+              <Field.HelperText>Linked from the club's page.</Field.HelperText>
+            </Field.Root>
+            <Field.Root>
               <Field.Label>Groups marked in names or notes</Field.Label>
               <Textarea
                 defaultValue={markersToText(settings.club.markers)}

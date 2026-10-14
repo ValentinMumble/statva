@@ -11,7 +11,8 @@ import {ChartTooltip} from './ChartTooltip';
 const MIN_DISTANCE_METERS = 30 * 1000;
 const DEFAULT_ITEM_COUNT = 50;
 
-const HeartChart = () => {
+// search narrows it to the rides whose name has it, like a club's.
+const HeartChart = ({search}: {search?: string}) => {
   const {locale} = useSettings();
   const [itemCount, setItemCount] = useState<number>(DEFAULT_ITEM_COUNT);
   const {activities} = useActivities({
@@ -20,6 +21,7 @@ const HeartChart = () => {
     sort: 'date',
     sortDirection: 'asc',
     includedActivityTypes: getTypes(ActivityType.Ride),
+    search,
   });
 
   const rides = (activities ?? []).filter(

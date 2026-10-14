@@ -20,6 +20,7 @@ export * from './parts';
 export * from './rider';
 export * from './settings';
 export * from './shoes';
+export * from './club';
 export * from './tyre-pressure';
 export * from './tag';
 export * from './training';

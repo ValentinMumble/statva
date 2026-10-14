@@ -14,18 +14,15 @@ import {
   DataLineChart,
   EddingtonChart,
   EddingtonDayChart,
-  FinishPieChart,
   FTPChart,
   GearChart,
   GradesChart,
   GroupChart,
   HeartChart,
   HeartRateDriftChart,
-  NPGroupPieChart,
   PoolPieChart,
   PowerCurveChart,
   PowerZonesChart,
-  ProgressChart,
   RunBestTimes,
   TimeframeChart,
 } from '../../components/charts/lazy-charts';
@@ -164,7 +161,6 @@ const ChartCard = ({title, children}: {title: string; children: React.ReactNode}
 
 const StatsPage = () => {
   const {data, isComplete} = useAllActivities();
-  const {club} = useSettings();
   const [now] = useState(() => new Date());
   const activities = data ?? [];
 
@@ -228,20 +224,6 @@ const StatsPage = () => {
         ['Days over each distance', <EddingtonDayChart />],
       ],
     },
-    ...(null === club
-      ? []
-      : [
-          {
-            value: 'club',
-            label: club.name,
-            charts: [
-              ['Rides per period', <TimeframeChart filter={{search: club.name}} data={1} displayTypes={false} />],
-              ['Speed and power', <ProgressChart search={club.name} />],
-              ['Where rides finished', <FinishPieChart club={club} />],
-              ['Groups', <NPGroupPieChart club={club} />],
-            ] as [string, React.ReactNode][],
-          },
-        ]),
     {
       value: 'other',
       label: 'Other',

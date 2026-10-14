@@ -2,7 +2,7 @@ import {buildActivity, buildDetailedActivity, TEST_CLUB} from '../../test/test-u
 import {
   calculateRunCalories,
   calculateSwimCalories,
-  computeFinishCount,
+  extractFinish,
   daysExceedingDistance,
   eddingtonNumber,
   extractNPGroup,
@@ -277,8 +277,8 @@ describe('extractNPGroup', () => {
   });
 });
 
-describe('computeFinishCount', () => {
-  test('it can compute finish count by location', () => {
+describe('extractFinish', () => {
+  test('it reads where a ride finished, however it was written', () => {
     const rides = [
       buildDetailedActivity({description: "Finish Caf'K"}),
       buildDetailedActivity({description: 'Finish Zazou'}),
@@ -300,16 +300,25 @@ describe('computeFinishCount', () => {
 Finish au Chemin de Traverse`}),
     ];
 
-    expect(computeFinishCount(rides, TEST_CLUB)).toEqual({
-      "Caf'K": 3,
-      Zazou: 1,
-      'Belle De Jour': 2,
-      Laloko: 2,
-      Équipe: 2,
-      Atlantide: 1,
-      Générale: 1,
-      Atomics: 4,
-      'Chemin De Traverse': 1,
-    });
+    expect(rides.map(ride => extractFinish(ride))).toEqual([
+      "Caf'K",
+      'Zazou',
+      "Caf'K",
+      "Caf'K",
+      'Belle De Jour',
+      'Belle De Jour',
+      'Laloko',
+      'Laloko',
+      'Équipe',
+      'Équipe',
+      'Atlantide',
+      'Générale',
+      'Atomics',
+      'Atomics',
+      'Atomics',
+      'Atomics',
+      'Chemin De Traverse',
+    ]);
+    expect(extractFinish(buildDetailedActivity({description: 'No finish line here'}))).toBeNull();
   });
 });

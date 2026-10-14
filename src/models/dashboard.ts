@@ -1,5 +1,4 @@
 import {extractNormalizedPower} from './activity-meta';
-import {ClubRules, computeFinishCount, extractNPGroup, isClubRide} from './activity-npeloton';
 import {daysExceedingDistance, eddingtonNumber} from './activity-stats';
 import {countBy} from './util';
 import {GetLabel} from './label';
@@ -58,7 +57,6 @@ type Dashboard = {
   weekdays: Named[];
   sports: {type: string; rides: number; distance: number}[];
   records: {key: string; heading: string; note: string; rides: Record_[]}[];
-  npeloton: {rides: number; distance: number; groups: Named[]; finishes: Named[]};
   ftp: {date: string; label: string; power: number; wattsPerKilo: number; weight: number}[];
   maintenance: {total: number; byType: Named[]};
   spending: {count: number; total: number; centsPerKm: number | null};
@@ -248,8 +246,6 @@ const computeDashboard = (
   ftpTests: FTPTest[],
   expenses: BikeExpense[],
   label: GetLabel,
-  // Without a club, the club sections stay empty.
-  club: ClubRules | null = null,
   // Dates and numbers are written the rider's way.
   locale = 'en-GB',
 ): Dashboard => {
@@ -294,9 +290,6 @@ const computeDashboard = (
   )
     .map(([gearId, entry]) => ({name: 'none' === gearId ? '🤷' : label(gearId), ...entry}))
     .sort((a, b) => b.distance - a.distance);
-
-  const npRides = null === club ? [] : sorted.filter(({name}) => isClubRide(name, club));
-  const npGroups = null === club ? {} : countBy(npRides, activity => extractNPGroup(activity.name, activity, club));
 
   const onFoot = sorted.filter(({sport_type}) => !SKI_TYPES.includes(sport_type));
   const rides = sorted.filter(({sport_type}) => sport_type.includes('Ride'));
@@ -512,12 +505,6 @@ const computeDashboard = (
         wattsPerKilo: Math.round((test.ftp / test.weight) * 100) / 100,
         weight: test.weight,
       })),
-    npeloton: {
-      rides: npRides.length,
-      distance: sum(npRides.map(({distance}) => distance)),
-      groups: toSorted(npGroups),
-      finishes: null === club ? [] : toSorted(computeFinishCount(sorted, club), 10),
-    },
     maintenance: {
       total: events.length,
       byType: toSorted(countBy(events, ({type}) => label(type))),

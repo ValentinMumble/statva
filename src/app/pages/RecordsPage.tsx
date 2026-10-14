@@ -472,14 +472,14 @@ const RecordsPage = () => {
   const {tests: ftpTests} = useFtp();
   const {expenses} = useExpenses();
   const {label} = useLabels();
-  const {club, mapCenter, locale} = useSettings();
+  const {mapCenter, locale} = useSettings();
   const navigate = useNavigate();
   const [now] = useState(() => new Date());
 
   const activities = useMemo(() => Object.values(activityMeta), [activityMeta]);
   const data = useMemo(
-    () => computeDashboard(activities, events, ftpTests, expenses, label, club, locale),
-    [activities, events, ftpTests, expenses, label, club, locale],
+    () => computeDashboard(activities, events, ftpTests, expenses, label, locale),
+    [activities, events, ftpTests, expenses, label, locale],
   );
   const streaks = useMemo(() => computeStreaks(activities, deviceDay(now)), [activities, now]);
   const rideClock = useMemo(() => buildRideClock(activities), [activities]);
@@ -511,7 +511,7 @@ const RecordsPage = () => {
     );
   }
 
-  const {totals, spending, npeloton, maintenance, conditions} = data;
+  const {totals, spending, maintenance, conditions} = data;
 
 
   return (
@@ -661,29 +661,6 @@ const RecordsPage = () => {
         </Text>
         <Records records={data.records} />
       </Stack>
-
-      {null !== club && (
-        <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
-          <Panel title={`${club.name} groups`} note={`${count(npeloton.rides)} sessions · ${formatDistance(npeloton.distance)}`}>
-            <Bars
-              data={npeloton.groups}
-              format={value => `${count(value)} sessions`}
-              layout="vertical"
-              height={Math.max(160, npeloton.groups.length * 30)}
-              labelWidth={70}
-            />
-          </Panel>
-          <Panel title="Where it finished" note="from ride notes">
-            <Bars
-              data={npeloton.finishes}
-              format={value => `${count(value)} visits`}
-              layout="vertical"
-              height={Math.max(160, npeloton.finishes.length * 30)}
-              labelWidth={128}
-            />
-          </Panel>
-        </Grid>
-      )}
 
       <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap="16px">
         <Panel title="Maintenance" note={`${count(maintenance.total)} events`}>

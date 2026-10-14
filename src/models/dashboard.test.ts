@@ -1,4 +1,4 @@
-import {buildDetailedActivity, TEST_CLUB} from '../../test/test-util';
+import {buildDetailedActivity} from '../../test/test-util';
 import {computeDashboard} from './dashboard';
 import {Event} from './event';
 import {FTPTest} from './ftp';
@@ -77,7 +77,7 @@ const ftpTests: FTPTest[] = [
   {id: 'f1', date: new Date('2024-01-01'), ftp: 250, weight: 75},
 ];
 
-const build = () => computeDashboard(activities, events, ftpTests, [], label, TEST_CLUB);
+const build = () => computeDashboard(activities, events, ftpTests, [], label);
 
 test('it totals the cached activities', () => {
   const {totals} = build();
@@ -126,15 +126,6 @@ test('it ranks rides by each measure and formats the winner', () => {
 
   expect(longest?.rides[0]).toEqual({id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 60, label: '60 km'});
   expect(records.find(({key}) => 'hilliest' === key)?.rides[0].label).toBe('6.7 m/km');
-});
-
-test('it summarises the club rides and where they finished', () => {
-  const {npeloton} = build();
-
-  expect(npeloton.rides).toBe(1);
-  expect(npeloton.distance).toBe(60000);
-  expect(npeloton.groups).toEqual([{name: 'G2', value: 1}]);
-  expect(npeloton.finishes).toEqual([{name: 'Zazou', value: 1}]);
 });
 
 test('it counts maintenance by labelled type', () => {

@@ -9,7 +9,7 @@ import {leaveDemo} from '../demo/mode';
 import {useAllActivities, useAthlete, useEvents, useSession, useSettings} from '../hooks';
 import {hasEmoji} from '../models';
 import {Activity} from '../models/strava';
-import {isActive, NAV} from './nav';
+import {isActive, NAV, navFor} from './nav';
 
 const SIDEBAR_WIDTH = '232px';
 // About the 62 pt of iOS 26's tab bar.
@@ -107,9 +107,12 @@ const useUnprocessedCount = (): number => {
   return unprocessedEmoji ? (data ?? []).filter(({name}) => !hasEmoji(name)).length : 0;
 };
 
+const useNav = () => navFor(useSettings().club?.name || null);
+
 const Sidebar = () => {
   const {pathname} = useLocation();
   const unprocessed = useUnprocessedCount();
+  const nav = useNav();
 
   return (
     <Stack
@@ -129,7 +132,7 @@ const Sidebar = () => {
         Statva <Box as="span" color="brand.solid">🛹</Box>
       </Text>
       <Stack gap="2px" flex="1">
-        {NAV.map(({to, label, icon}) => {
+        {nav.map(({to, label, icon}) => {
           const active = isActive(to, pathname);
 
           return (
@@ -181,7 +184,8 @@ const Sidebar = () => {
 
 const PhoneHeader = () => {
   const {pathname} = useLocation();
-  const current = NAV.find(({to}) => isActive(to, pathname));
+  const nav = useNav();
+  const current = nav.find(({to}) => isActive(to, pathname));
 
   return (
     <HStack
@@ -202,7 +206,7 @@ const PhoneHeader = () => {
         {current?.label ?? 'Statva'}
       </Text>
       <HStack gap="4px">
-        {NAV.filter(({onPhone}) => !onPhone).map(({to, label, icon}) => (
+        {nav.filter(({onPhone}) => !onPhone).map(({to, label, icon}) => (
           <IconButton key={to} aria-label={label} size="sm" variant="ghost" asChild={true}>
             <Link to={to}>
               <Icon as={icon} />

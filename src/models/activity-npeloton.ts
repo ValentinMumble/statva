@@ -3,6 +3,8 @@ import {DetailedActivity} from './strava';
 /** How a rider's club names its rides and marks its groups (a rider setting). */
 type ClubRules = {
   name: string;
+  // The club's own site, linked from its page.
+  url?: string;
   // Group name -> emojis or words that put a ride in that group, wherever they appear.
   markers: Record<string, string[]>;
   // Fixes applied to a name before reading its group, like "Chill 1" -> "C1".
@@ -21,35 +23,20 @@ const REPLACEMENTS: [string, string][] = [
   ['cependant', ''],
 ];
 
-const computeFinishCount = (rideMeta: DetailedActivity[], club: Pick<ClubRules, 'name'>): Record<string, number> => {
-  const locationCount: Record<string, number> = {};
+/** Where a club ride finished, from a "Finish au Zazou" line in its notes, or null. */
+const extractFinish = (meta: Pick<DetailedActivity, 'description' | 'private_note'> | null | undefined): string | null => {
+  const fullText = [meta?.private_note ?? '', meta?.description ?? ''].join('\n');
+  const match = fullText.match(/(?:^|\n)Finish\s+(?:au\s+|à\s+)?([\w\u2018\u2019'\s\p{L}]+)/iu);
 
-  rideMeta.forEach(activity => {
-    if (!isClubRide(activity.name, club)) {
-      return;
-    }
+  if (!match) return null;
 
-    const fullText = [activity.private_note ?? '', activity.description].join('\n');
-    const match = fullText.match(/(?:^|\n)Finish\s+(?:au\s+|à\s+)?([\w\u2018\u2019'\s\p{L}]+)/iu);
+  let location = match[1].split('\n')[0];
+  REPLACEMENTS.forEach(([from, to]) => (location = location.replace(from, to)));
 
-    if (match) {
-      let location = match[1].split('\n')[0];
-      REPLACEMENTS.forEach(([from, to]) => (location = location.replace(from, to)));
+  // Strip French articles (l', la)
+  location = location.replace(/^l[']\s*/i, '').replace(/^la\s+/i, '');
 
-      // Strip French articles (l', la)
-      location = location.replace(/^l[']\s*/i, '').replace(/^la\s+/i, '');
-
-      location = location.trim().replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
-
-      if (locationCount[location]) {
-        locationCount[location]++;
-      } else {
-        locationCount[location] = 1;
-      }
-    }
-  });
-
-  return Object.fromEntries(Object.entries(locationCount).sort());
+  return location.trim().replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
 };
 
 // A marker word matches as a whole word, singular or plural; anything else (emojis) anywhere.
@@ -75,5 +62,5 @@ const extractNPGroup = (activityName: string, meta: DetailedActivity | null | un
   return renamed.match(new RegExp(`${escapeRegExp(club.name)}\\s+#\\d+\\s+([A-Za-z0-9.-\\s]+)`))?.[1].trim() || 'Unknown';
 };
 
-export {computeFinishCount, extractNPGroup, isClubRide};
+export {extractFinish, extractNPGroup, isClubRide};
 export type {ClubRules};

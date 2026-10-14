@@ -9,6 +9,7 @@ import {AppShell} from './app/AppShell';
 import {ActivitiesPage} from './app/pages/ActivitiesPage';
 import {ActivityPage} from './app/pages/ActivityPage';
 import {BikePage} from './app/pages/BikePage';
+import {ClubPage} from './app/pages/ClubPage';
 import {HomePage} from './app/pages/HomePage';
 import {RecordsPage} from './app/pages/RecordsPage';
 import {SettingsPage} from './app/pages/SettingsPage';
@@ -62,6 +63,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="bike/:bikeId?" element={<BikePage />} />
               <Route path="stats" element={<StatsPage />} />
               <Route path="records" element={<RecordsPage />} />
+              <Route path="club" element={<ClubPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
 

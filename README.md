@@ -22,9 +22,11 @@ into a home page, stats, records and an explorer map.
   tires, pads, battery), chain rotation with the next chain to fit, the history of every
   change, and the running cost per km. Logging a change takes two taps.
 - **Stats:** totals per sport and period, the yearly goal and your pace, Eddington, and
-  charts for training load, volume, gear and your club.
+  charts for training load, volume and gear.
 - **Records:** all-time totals, the hall of fame, Eddington by year, and the explorer tiles
   you have ridden, with the biggest square and the yard as Squadrats defines them.
+- **Club:** for riders in a club, its own page: attendance week by week, groups and their
+  pace, session records, finish places, every route on one map.
 - **Settings:** bikes, part limits, goal, heart rate, weight, club rules, language, labels.
   Export your data or disconnect from Strava (which deletes everything Statva holds).
 

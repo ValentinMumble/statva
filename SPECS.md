@@ -19,6 +19,7 @@ personal (bikes, goals, heart rate, club) is a setting, not part of the code.
 | Bike | `/bike/:bikeId?` | One bike's parts, history, charts and running costs |
 | Stats | `/stats` | Totals per sport and period, and charts in tabs |
 | Records | `/records` | All-time numbers, year in review, streaks, explorer map, hall of fame |
+| Club | `/club` | Everything about the club rides (only with a club set, named after the club) |
 | Settings | `/settings` | Settings, labels, export and disconnect |
 
 Anyone not logged in sees a **Connect with Strava** screen with a way into the demo. When
@@ -26,8 +27,8 @@ a login fails, it says why (not on the allowed list, a scope unticked, access de
 took too long).
 
 On a computer, a sidebar holds the pages, **Refresh**, **Log an event** and the account
-row (log out, or leave the demo). On a phone, a header shows the page title with Settings,
-Refresh and Log icons, and a floating tab bar in the style of iOS Liquid Glass (a frosted,
+row (log out, or leave the demo). On a phone, a header shows the page title with Club,
+Settings, Refresh and Log icons, and a floating tab bar in the style of iOS Liquid Glass (a frosted,
 see-through capsule) holds Home, Activities, Bike, Stats and Records.
 
 **Refresh** syncs with Strava now (11.3) and says "Up to date" or how many activities
@@ -204,7 +205,6 @@ pace ends up.
 | Running | Best times from 1 km to the marathon, year by year, from Strava's best efforts |
 | Gear | Distance, time and climbing per gear, average speed per bike |
 | Eddington | Eddington number over time, days over each distance |
-| Club (only with a club set) | Club rides per period, speed and power, finish places, groups |
 | Other | Solo or in a group, swims per pool, tennis per court |
 
 Pools and courts are read from activity names (`Natation <pool>`, `Tennis <court>`).
@@ -235,12 +235,11 @@ you like. An activity whose details are not stored yet does not count.
 11. **Hall of fame** (top 3 each, skiing left out): longest, most climbing, hilliest,
     fastest, strongest (normalized power), hardest, most PRs, coldest, hottest, earliest
     start, most kudos, biggest group.
-12. **Club** (with a club set): rides per group, finish places.
-13. **Maintenance and running costs**: events per type, spend, cost per km, PRs, KOMs,
+12. **Maintenance and running costs**: events per type, spend, cost per km, PRs, KOMs,
     photos, rides with power, solo rides, commutes and CO2 not driven, indoor rides,
     weekday vs weekend, typical stop, days out, biggest week and month,
     Everests climbed, times around the Earth.
-14. **Conditions**: average heart rate, temperature, recording devices (a device opens
+13. **Conditions**: average heart rate, temperature, recording devices (a device opens
     the Activities list filtered on it).
 
 ---
@@ -277,7 +276,7 @@ Changes are kept as a draft until **Save**.
 | Ride rules | For recurring rides: where they turn around (and how close), the longest they are, weekdays only, then the name, commute flag and bike they get |
 | Goal and sports | Yearly riding goal, car cost per km, the sports Stats shows |
 | Body | Weight, heart rate zone thresholds |
-| Club | On or off, club name, groups marked by emojis or words, other group-ride words |
+| Club | On or off, club name, the club's website, groups marked by emojis or words, other group-ride words |
 | Display | Language for dates and numbers, where maps open, normalized power from notes, point out activities without an emoji |
 | Labels | Add, change or remove labels |
 | Account | Export my data (JSON of settings, labels, events, expenses, FTP tests), leave the demo, disconnect from Strava (deletes everything Statva holds) |
@@ -299,6 +298,29 @@ Off until the rider sets a club.
 - The finish place is read from a note line starting with `Finish`.
 - A group ride (solo vs group chart) has more than one athlete, is a race, or has one of
   the group words in its name.
+- The session number is the `#672` in the name: the club's own count of sessions.
+
+### 10.1 Club page
+Named after the club, with a link to the club's site when one is set, the month of the
+first session and the usual weekday. It waits for the whole activity list before showing
+figures.
+
+- **Figures**: sessions (and how many the club ran from the first one ridden to the last,
+  from the session numbers), km and the share of all riding km, climbing, time, and the
+  sessions and km of this year.
+- **Attendance**: the current and longest run of weeks in a row with a session (this
+  week does not break the current run until it is over), weeks missed of the last 8, and
+  a strip with one cell per week, a row per year, each filled cell opening its session.
+- **Sessions**: the latest 8 (or all), with their route, group, finish place, riders,
+  km and speed.
+- **Groups**: sessions, average riders, speed and power (rides with a power meter).
+- **Group size**: riders Strava matched on the same ride (1 counts as unknown), on
+  average, the biggest ride, and month by month over the years.
+- **Session records**: fastest, longest, hilliest, most power, hardest, most kudos,
+  coldest, hottest, each opening its ride; PRs, achievements, kudos and photos in all.
+- **Where it finished**: the 10 most visited finish places.
+- **Routes**: every session's track on one map, with the 5 most used starts sized by use.
+- **Charts**: sessions per period, speed and power, heart rate and power.
 
 ---
 
