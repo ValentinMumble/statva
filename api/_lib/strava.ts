@@ -62,6 +62,14 @@ const accessToken = async (athleteId: number): Promise<string> => {
   return refreshed.access_token;
 };
 
+/** Changes an activity on Strava (name, commute, gear, mute): needs the activity:write scope. */
+const stravaPut = async (athleteId: number, path: string, body: Record<string, unknown>): Promise<Response> =>
+  await fetch(`${API}/${path}`, {
+    method: 'PUT',
+    headers: {Authorization: `Bearer ${await accessToken(athleteId)}`, 'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+
 const stravaGet = async (athleteId: number, path: string, query = new URLSearchParams()): Promise<Response> => {
   const url = `${API}/${path}${0 < [...query].length ? `?${query}` : ''}`;
   const response = await fetch(url, {headers: {Authorization: `Bearer ${await accessToken(athleteId)}`}});
@@ -92,4 +100,4 @@ const hasAccess = async (athleteId: number): Promise<boolean> => {
   }
 };
 
-export {deauthorize, exchangeCode, forgetTokens, hasAccess, stravaGet};
+export {deauthorize, exchangeCode, forgetTokens, hasAccess, stravaGet, stravaPut};

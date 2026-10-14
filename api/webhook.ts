@@ -3,7 +3,7 @@ import {json} from './_lib/http.js';
 import {TOKENS_KEY} from './_lib/keys.js';
 import {redis} from './_lib/redis.js';
 import {forgetTokens, hasAccess} from './_lib/strava.js';
-import {forgetAthlete, refreshActivity} from './_lib/sync.js';
+import {applyRideRules, forgetAthlete, refreshActivity} from './_lib/sync.js';
 
 type StravaEvent = {
   object_type: 'activity' | 'athlete';
@@ -39,7 +39,8 @@ export const POST = async (request: Request): Promise<Response> => {
   }
 
   if ('activity' === event.object_type) {
-    await refreshActivity(event.owner_id, event.object_id);
+    const activity = await refreshActivity(event.owner_id, event.object_id);
+    if ('create' === event.aspect_type) await applyRideRules(event.owner_id, activity);
   }
 
   if ('athlete' === event.object_type && 'false' === event.updates?.authorized && !(await hasAccess(event.owner_id))) {

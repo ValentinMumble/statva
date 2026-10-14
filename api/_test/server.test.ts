@@ -5,6 +5,7 @@ import {backfillActivities, syncActivities, refreshActivity} from '../_lib/sync.
 import {sessionCookie} from '../_lib/session.js';
 import {POST as store} from '../store.js';
 import {GET as webhookCheck, POST as webhook} from '../webhook.js';
+import {PUT as renameActivity} from '../activity.js';
 
 const ORIGIN = 'https://statva.test';
 
@@ -165,6 +166,66 @@ describe('normalized power', () => {
     expect(report.powerFetched).toBe(7);
     expect(Object.keys(fake.read('athlete:42:power'))).toHaveLength(15);
     expect(fake.read('athlete:42:details')['1014']).toMatchObject({normalized_power: 200});
+  });
+});
+
+describe('ride rules', () => {
+  // A short weekday ride through the office, which a rule names and puts on the right bike.
+  const OFFICE = [47.2112, -1.5757];
+  const rule = {name: 'Akeneo ⚙️', place: OFFICE, radiusM: 150, maxKm: 20, weekdaysOnly: true, commute: true, gearId: 'b1'};
+  // From home (47.2306, -1.5518) to the office, as a Google polyline.
+  const track = 'gvg_HvanHfxBjtC';
+
+  const withRule = () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = [
+      {id: 7001, name: 'Morning Ride', sport_type: 'Ride', distance: 9000, commute: false, gear_id: 'b2', start_date: '2026-10-13T07:00:00Z', start_date_local: '2026-10-13T09:00:00Z', map: {id: 'a7001', summary_polyline: track, polyline: track}},
+    ];
+    fake.hashes['athlete:42:settings'] = {rideRules: JSON.stringify([rule])};
+    return fake;
+  };
+
+  it('applies to a ride when it lands, on Strava and in the stored copies', async () => {
+    const fake = withRule();
+
+    await hook({object_type: 'activity', object_id: 7001, aspect_type: 'create', owner_id: 42});
+
+    expect(fake.strava.puts).toEqual([{id: 7001, name: 'Akeneo ⚙️', commute: true, gear_id: 'b1'}]);
+    expect(fake.read('athlete:42:activities')['7001']).toMatchObject({name: 'Akeneo ⚙️', commute: true, gear_id: 'b1'});
+    expect(fake.read('athlete:42:details')['7001']).toMatchObject({name: 'Akeneo ⚙️'});
+  });
+
+  it('never undoes a later change', async () => {
+    const fake = withRule();
+
+    await hook({object_type: 'activity', object_id: 7001, aspect_type: 'update', owner_id: 42});
+
+    expect(fake.strava.puts).toEqual([]);
+  });
+});
+
+describe('renaming an activity', () => {
+  const rename = async (body: unknown, id = 1001) =>
+    await renameActivity(
+      new Request(`${ORIGIN}/api/activity?id=${id}`, {method: 'PUT', headers: {cookie: sessionOf(42)}, body: JSON.stringify(body)}),
+    );
+
+  it('changes the name on Strava and in the stored copies', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(1);
+    await syncActivities(42);
+
+    expect((await rename({name: ' Akeneo ⚙️ '})).status).toBe(200);
+    expect(fake.strava.puts).toEqual([{id: 1001, name: 'Akeneo ⚙️'}]);
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({name: 'Akeneo ⚙️'});
+  });
+
+  it('needs a name', async () => {
+    install().login(42);
+
+    expect((await rename({name: '  '})).status).toBe(400);
   });
 });
 

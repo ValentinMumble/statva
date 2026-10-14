@@ -24,6 +24,10 @@ const demoBackend = {
   sync: () => answer({added: 0, historyDone: true, detailIds: [], limited: false}),
   backfill: () => answer({detailIds: [], detailsMissing: 0, powerFetched: 0, limited: false}),
   refreshActivity: (id: number) => answer(demo().details[id]),
+  renameActivity: async (id: number, name: string) => {
+    demo().activities = demo().activities.map(activity => (activity.id === id ? {...activity, name} : activity));
+    if (demo().details[id]) demo().details[id] = {...demo().details[id], name};
+  },
   getDetails: (): Promise<Record<string, DetailedActivity>> => answer(demo().details),
   getLatestSummaries: (count: number) => answer([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count)),
   getLatestDetails: (count: number) =>

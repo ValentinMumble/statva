@@ -1,5 +1,6 @@
 import {
   backfillActivities,
+  renameActivity,
   deleteEvent,
   deleteExpense,
   deleteLabel,
@@ -38,6 +39,7 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'activities.sync': syncActivities,
   'activities.backfill': backfillActivities,
   'activity.refresh': refreshActivity,
+  'activity.rename': renameActivity,
   'activity.zones': fetchActivityZones,
   'activity.photos': fetchActivityPhotos,
   'activities.meta.get': getActivities,
@@ -65,6 +67,7 @@ const DEMO: typeof REAL = {
   'activities.sync': demoBackend.sync,
   'activities.backfill': demoBackend.backfill,
   'activity.refresh': demoBackend.refreshActivity,
+  'activity.rename': demoBackend.renameActivity,
   'activity.zones': demoBackend.getZones,
   // The demo has no photos.
   'activity.photos': () => Promise.resolve([]),

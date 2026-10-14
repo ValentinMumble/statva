@@ -84,13 +84,21 @@ const randomFromRange = (): string => {
   return String.fromCodePoint(codePoint);
 };
 
+// The ranges hold a few symbols that are no emoji (🎕) and some unassigned code points: only
+// characters shown as an emoji by default are kept, so a picked one counts as an emoji too.
+const isShownAsEmoji = (character: string): boolean => /^\p{Emoji_Presentation}$/u.test(character);
+
 const getRandomUnusedEmoji = (usedEmojis: Set<string>): string => {
-  for (let i = 0; i < 50; i++) {
+  let fallback = '🚲';
+
+  for (let attempt = 0; attempt < 200; attempt++) {
     const emoji = randomFromRange();
+    if (!isShownAsEmoji(emoji)) continue;
     if (!usedEmojis.has(emoji)) return emoji;
+    fallback = emoji;
   }
 
-  return randomFromRange();
+  return fallback;
 };
 
 /**

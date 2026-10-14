@@ -15,6 +15,8 @@ type FakeStrava = {
   rateLimited: boolean;
   // Data streams by activity id, as Strava sends them with key_by_type.
   streams: Record<number, Record<string, {data: unknown[]}>>;
+  // What was changed on Strava, in order.
+  puts: Record<string, unknown>[];
 };
 
 const ENV = {
@@ -37,6 +39,7 @@ const install = () => {
     calls: [],
     rateLimited: false,
     streams: {},
+    puts: [],
   };
 
   Object.assign(process.env, ENV);
@@ -115,6 +118,13 @@ const install = () => {
     }
 
     const detail = url.pathname.match(/^\/api\/v3\/activities\/(\d+)$/);
+    if (null !== detail && 'PUT' === init.method) {
+      const activity = strava.activities.find(({id}) => id === Number(detail[1]));
+      if (undefined === activity) return respond({message: 'Record Not Found'}, 404);
+      Object.assign(activity, JSON.parse(String(init.body)));
+      strava.puts.push({id: activity.id, ...JSON.parse(String(init.body))});
+      return respond(activity);
+    }
     if (null !== detail) {
       const activity = strava.activities.find(({id}) => id === Number(detail[1]));
       return undefined === activity ? respond({message: 'Record Not Found'}, 404) : respond(activity);

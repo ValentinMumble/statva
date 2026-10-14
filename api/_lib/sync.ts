@@ -3,7 +3,8 @@ import {canBackfill, readUsage} from './budget.js';
 import {athleteKey} from './keys.js';
 import {analysePower, PowerAnalysis, PowerStreams} from './power.js';
 import {redis} from './redis.js';
-import {stravaGet} from './strava.js';
+import {RideRule, ruleUpdate, RuledActivity} from './rules.js';
+import {stravaGet, stravaPut} from './strava.js';
 
 const PAGE_SIZE = 200;
 // Kept small so one call stays well inside a function's time limit.
@@ -167,6 +168,40 @@ const backfillPower = async (athleteId: number): Promise<{ids: number[]; limited
 };
 
 /**
+ * Changes an activity on Strava and in the stored copies, without reading it again. False
+ * when Strava refused, which it does without write access (riders who logged in before
+ * Statva asked for it).
+ */
+const changeActivity = async (athleteId: number, activityId: number, update: Record<string, unknown>): Promise<boolean> => {
+  const response = await stravaPut(athleteId, `activities/${activityId}`, update);
+  if (!response.ok) return false;
+
+  for (const name of ['activities', 'details']) {
+    const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), String(activityId));
+    if (null !== stored) await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...update}});
+  }
+
+  return true;
+};
+
+/**
+ * Applies the rider's ride rules to an activity that has just landed (the webhook's create
+ * event, or a sync bringing it in): names it, flags it as a commute, puts it on the bike.
+ * Only then, so a change the rider makes on Strava later is never undone. Without write
+ * access (logged in before Statva asked for it), nothing changes.
+ */
+const applyRideRules = async (athleteId: number, detail: StravaActivity | null): Promise<void> => {
+  if (null === detail) return;
+
+  const rules = (await redis().hget<RideRule[]>(athleteKey(athleteId, 'settings'), 'rideRules')) ?? [];
+  const update = ruleUpdate(detail as unknown as RuledActivity, rules);
+
+  if (null === update) return;
+
+  await changeActivity(athleteId, detail.id, update);
+};
+
+/**
  * Brings a rider's stored activities up to date, quickly: the first calls page through the
  * whole history, a few pages at a time; after that one call fetches what is new, and the
  * details of the activities that are new. Older details and power data are left to the
@@ -212,7 +247,9 @@ const syncActivities = async (athleteId: number): Promise<SyncReport> => {
     if (limited) break;
 
     try {
-      await refreshActivity(athleteId, id);
+      const detail = await refreshActivity(athleteId, id);
+      // While the history pages in, nothing is new to the rider: rules are for rides just done.
+      if (stored?.historyDone) await applyRideRules(athleteId, detail);
       detailIds.push(id);
     } catch (error) {
       if (!(error instanceof RateLimitedError)) throw error;
@@ -260,5 +297,5 @@ const forgetAthlete = async (athleteId: number): Promise<void> => {
   await redis().del(...[...SERVER_NAMES, ...RIDER_NAMES, ...RETIRED_NAMES].map(name => athleteKey(athleteId, name)));
 };
 
-export {backfillActivities, forgetAthlete, refreshActivity, RIDER_NAMES, SERVER_NAMES, syncActivities};
+export {applyRideRules, backfillActivities, changeActivity, forgetAthlete, refreshActivity, RIDER_NAMES, SERVER_NAMES, syncActivities};
 export type {BackfillReport, SyncReport};

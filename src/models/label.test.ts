@@ -1,4 +1,4 @@
-import {extractEmoji, hasEmoji} from './label';
+import {extractEmoji, getRandomUnusedEmoji, hasEmoji} from './label';
 
 test.each([
   ['nice 🚲 here', '🚲'],
@@ -26,4 +26,11 @@ test.each([
   ['Afternoon Ride', false],
 ])('hasEmoji(%s) = %s', (name, expected) => {
   expect(hasEmoji(name)).toBe(expected);
+});
+
+test('a random unused emoji is always a real emoji, one the emoji check counts', () => {
+  for (let attempt = 0; attempt < 300; attempt++) {
+    const emoji = getRandomUnusedEmoji(new Set());
+    expect(hasEmoji(emoji)).toBe(true);
+  }
 });

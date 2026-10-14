@@ -44,6 +44,18 @@ const syncActivities = (): Promise<SyncReport> => post<SyncReport>('/api/sync');
 /** Asks the server to fill in the details and power data of a few older activities. Slow. */
 const backfillActivities = (): Promise<BackfillReport> => post<BackfillReport>('/api/backfill');
 
+/** Thrown when Strava refuses a change: the rider logged in before Statva asked for write access. */
+class NoWriteAccessError extends Error {}
+
+/** Renames an activity on Strava (and in Statva). */
+const renameActivity = async (id: number, name: string): Promise<void> => {
+  const response = await fetch(`/api/activity?id=${id}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name})});
+
+  if (401 === response.status) throw new NotLoggedInError('Not logged in');
+  if (403 === response.status) throw new NoWriteAccessError('No write access');
+  if (!response.ok) throw new Error(`Renaming failed: ${response.status}`);
+};
+
 /** Asks the server to fetch one activity from Strava again and store it. */
 const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
 
@@ -57,6 +69,8 @@ const fetchActivityPhotos = (id: number): Promise<ActivityPhoto[]> =>
 
 export {
   backfillActivities,
+  NoWriteAccessError,
+  renameActivity,
   fetchActivityPhotos,
   fetchActivityZones,
   fetchAthlete,

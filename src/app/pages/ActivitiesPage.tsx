@@ -15,12 +15,16 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import {useNavigate, useSearchParams} from 'react-router';
+import {useQueryClient} from '@tanstack/react-query';
 import {useWindowVirtualizer} from '@tanstack/react-virtual';
 import {useLocalStorage} from 'usehooks-ts';
 import {LuArrowDown, LuArrowUp, LuColumns3, LuFilterX, LuListFilter, LuLock, LuSearch, LuWatch, LuX} from 'react-icons/lu';
 import {GearSelect} from '../../components/GearSelect';
+import {toaster} from '../../components/ui';
+import {NoWriteAccessError} from '../../api';
+import {getFetcher} from '../../hooks/useFetcher';
 import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
-import {countBy, DEFAULT_SORTS, getRandomUnusedEmoji, isPedalled, SortDirection, SortType, TAGS} from '../../models';
+import {countBy, DEFAULT_SORTS, isPedalled, SortDirection, SortType, suggestName, TAGS} from '../../models';
 import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
@@ -271,30 +275,70 @@ const Toolbar = ({
 };
 
 /** Activities whose name has no emoji yet, for riders who tag names with one. */
-const Unprocessed = ({activities, usedEmojis}: {activities: Activity[]; usedEmojis: Set<string>}) => {
-  const [emoji, setEmoji] = useState(() => getRandomUnusedEmoji(usedEmojis));
+const renameActivity = getFetcher<void>('activity.rename');
+// The card stays short: the rest show once these are named.
+const RENAME_ROWS = 5;
+
+/** One activity to name, with a suggestion from its route or an emoji not used yet, saved on Strava. */
+const RenameRow = ({activity, history, usedEmojis}: {activity: Activity; history: Activity[]; usedEmojis: Set<string>}) => {
+  const queryClient = useQueryClient();
+  const {locale} = useSettings();
+  // Suggested once, so it does not change while the rider types.
+  const [name, setName] = useState(() => suggestName(activity, history, usedEmojis));
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await renameActivity(activity.id, name);
+      queryClient.setQueryData<Activity[]>(['activities'], list => list?.map(listed => (listed.id === activity.id ? {...listed, name} : listed)));
+      toaster.create({title: `Renamed to ${name}`});
+    } catch (error) {
+      toaster.create({
+        type: 'error',
+        title: error instanceof NoWriteAccessError ? 'Log out and in again to let Statva rename on Strava' : 'Strava did not take the new name',
+      });
+      setSaving(false);
+    }
+  };
+
+  return (
+    <HStack gap="8px">
+      <Text fontSize="sm" color="fg.muted" width="96px" flexShrink={0} truncate={true} title={activity.name}>
+        {new Date(activity.start_date).toLocaleDateString(locale, {day: 'numeric', month: 'short'})}
+      </Text>
+      <Input
+        size="sm"
+        value={name}
+        onChange={({target}) => setName(target.value)}
+        onKeyDown={({key}) => 'Enter' === key && handleSave()}
+        background="bg.panel"
+        aria-label={`New name for ${activity.name}`}
+      />
+      <Button size="sm" colorPalette="brand" loading={saving} disabled={'' === name.trim()} onClick={handleSave}>
+        Save
+      </Button>
+    </HStack>
+  );
+};
+
+/** Activities whose name has no emoji yet, named here and saved on Strava. */
+const Unprocessed = ({activities, history, usedEmojis}: {activities: Activity[]; history: Activity[]; usedEmojis: Set<string>}) => {
+  const rows = activities.slice(0, RENAME_ROWS);
 
   if (0 === activities.length) return null;
 
   return (
     <Card padding="14px" background="brand.subtle" borderColor="brand.muted">
-      <HStack justifyContent="space-between" gap="12px" flexWrap="wrap">
+      <Stack gap="10px">
         <Text fontSize="sm">
-          <strong>{activities.length}</strong> {1 === activities.length ? 'activity has' : 'activities have'} no emoji yet:{' '}
-          {activities.slice(0, 3).map(({name}) => name).join(', ')}
+          <strong>{activities.length}</strong> {1 === activities.length ? 'activity has' : 'activities have'} no emoji yet
+          {activities.length > RENAME_ROWS ? `, here are the ${RENAME_ROWS} newest` : ''}:
         </Text>
-        <Button
-          size="sm"
-          variant="surface"
-          colorPalette="brand"
-          onClick={() => {
-            navigator.clipboard.writeText(emoji);
-            setEmoji(getRandomUnusedEmoji(usedEmojis));
-          }}
-        >
-          Copy an unused emoji: {emoji}
-        </Button>
-      </HStack>
+        {rows.map(activity => (
+          <RenameRow key={activity.id} activity={activity} history={history} usedEmojis={usedEmojis} />
+        ))}
+      </Stack>
     </Card>
   );
 };
@@ -451,7 +495,7 @@ const ActivitiesPage = () => {
         label={label}
       />
 
-      {unprocessedEmoji && <Unprocessed activities={unprocessedActivities} usedEmojis={usedEmojis} />}
+      {unprocessedEmoji && <Unprocessed activities={unprocessedActivities} history={allActivities ?? []} usedEmojis={usedEmojis} />}
 
       {/* Only when filtering, or when nothing shows: unfiltered, hidden private activities are expected. */}
       {0 < hiddenPrivate && (0 === rows.length || null !== types || 0 < gearIds.length || true !== commute) && (
