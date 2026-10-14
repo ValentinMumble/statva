@@ -15,6 +15,22 @@ import {SettingsPage} from './app/pages/SettingsPage';
 import {StatsPage} from './app/pages/StatsPage';
 import {system} from './app/theme';
 
+// A page opened before a deploy asks for chart files the new deploy no longer has: reload
+// to get the new ones, rather than leave the page blank. Not twice in a row, so a file that
+// is really missing cannot start a reload loop.
+const RELOADED_AT_KEY = 'reloaded-for-deploy-at';
+const RELOAD_GAP_MS = 10_000;
+window.addEventListener('vite:preloadError', event => {
+  try {
+    if (Date.now() - Number(sessionStorage.getItem(RELOADED_AT_KEY) ?? 0) < RELOAD_GAP_MS) return;
+    sessionStorage.setItem(RELOADED_AT_KEY, String(Date.now()));
+  } catch {
+    return;
+  }
+  event.preventDefault();
+  window.location.reload();
+});
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
