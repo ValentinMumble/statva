@@ -21,6 +21,32 @@ type FakeStrava = {
   ignoredFields: string[];
 };
 
+// A ride on the fake club site: what its feed shows on a card.
+type SiteRide = {title: string; day: string; groups?: number; finish?: string};
+
+const FRENCH_MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+/** A feed card as prendslaroue.fr writes it. */
+const siteCard = ({title, day, groups, finish}: SiteRide): string => {
+  const [year, month, date] = day.split('-').map(Number);
+  const slug = title.replace(/\s*#/, '_').replace(/\s+/g, '_');
+
+  return `<div class="col-12">
+        <div class="card">
+            <div class="done-ribbon" data-ribbon="Terminé"></div>
+            <div class="card-header p-1"><div><a class="link-dark" href="https://www.prendslaroue.fr/club/rides/${slug}">${title}</a></div></div>
+            <div class="card-body">
+            <h5 class="card-title">${date} ${FRENCH_MONTHS[month - 1]} ${year}</h5>
+            <ul class="list-unstyled m-0">
+                ${undefined === groups ? '' : `<li >${groups} groupes</li>`}
+                    <li>Départ de 19:30 à 20:30 - Fonderies</li>
+                    ${undefined === finish ? '' : `<li>Arrivée : ${finish}</li>`}
+             </ul>
+            </div>
+        </div>
+      </div>`;
+};
+
 const ENV = {
   STRAVA_CLIENT_ID: '1',
   STRAVA_CLIENT_SECRET: 'secret',
@@ -33,6 +59,8 @@ const ENV = {
 const install = () => {
   const hashes: Hashes = {};
   const strings: Record<string, string> = {};
+  // The club site: its rides, and every page asked for.
+  const site: {rides: SiteRide[]; requests: string[]; down: boolean} = {rides: [], requests: [], down: false};
   const strava: FakeStrava = {
     activities: [],
     tokens: {},
@@ -154,6 +182,19 @@ const install = () => {
       return new Response(JSON.stringify(result));
     }
 
+    if ('www.prendslaroue.fr' === url.host) {
+      site.requests.push(`${url.searchParams.get('from')}..${url.searchParams.get('to')}`);
+      if (site.down) return new Response('Down', {status: 503});
+      const from = url.searchParams.get('from') ?? '';
+      const to = url.searchParams.get('to') || '9999-12-31';
+      // Like the site: at most 10 rides between the two days, newest first.
+      const shown = site.rides
+        .filter(({day}) => from <= day && day <= to)
+        .sort((first, second) => second.day.localeCompare(first.day))
+        .slice(0, 10);
+      return new Response(`<html><body>${shown.map(siteCard).join('')}</body></html>`);
+    }
+
     return stravaResponse(url, init);
   }) as typeof fetch;
 
@@ -165,7 +206,7 @@ const install = () => {
   const read = (key: string): Record<string, unknown> =>
     Object.fromEntries(Object.entries(hashes[key] ?? {}).map(([field, value]) => [field, JSON.parse(value)]));
 
-  return {hashes, strings, strava, login, read};
+  return {hashes, strings, strava, site, login, read, run};
 };
 
 /** Activities as Strava lists them: newest first, ids growing with time. */

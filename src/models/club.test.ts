@@ -1,5 +1,5 @@
 import {buildDetailedActivity} from '../../test/test-util';
-import {clubRecords, clubSessions, clubTotals, clubWeeks, gearStats, groupSize, groupStats, sessionsHeld, startPoints} from './club';
+import {ClubRide, clubRecords, clubSessions, clubTotals, clubWeeks, finishCounts, gearStats, groupSize, groupStats, matchCalendar, sessionsHeld, startPoints} from './club';
 import {ClubRules} from './activity-npeloton';
 import {Activity} from './strava';
 
@@ -112,5 +112,46 @@ describe('clubRecords and startPoints', () => {
 
   it('counts starts a few metres apart as one place', () => {
     expect(startPoints(sessions).map(({sessions: count}) => count)).toEqual([4, 1]);
+  });
+});
+
+describe('with the club calendar', () => {
+  const held = (number: number, day: string, finish: string | null = null): ClubRide => ({title: `N-Peloton #${number}`, series: 'N-Peloton', number, day, groups: 9, finish});
+  // #643 on 09-23 was held and missed; no session in the week of 10-12; 09-02 #640 noted no finish.
+  const calendar = [
+    held(646, '2026-10-14'),
+    held(645, '2026-10-07', 'Atomics'),
+    held(644, '2026-09-30', 'CafK'),
+    held(643, '2026-09-23', 'Zazou'),
+    held(642, '2026-09-16', 'Live bar'),
+    held(641, '2026-09-09'),
+    held(640, '2026-09-02', 'Zazou'),
+    held(639, '2026-08-26', 'Before the first'),
+    {title: 'Raymond Ride #300', series: 'Raymond Ride', number: 300, day: '2026-09-06', groups: 3, finish: null},
+  ];
+  const match = matchCalendar(sessions, calendar, 'N-Peloton', '2026-10-13');
+
+  it('counts the sessions held from the first one ridden to today, and those missed', () => {
+    expect(match.held.map(({number}) => number)).toEqual([645, 644, 643, 642, 641, 640]);
+    expect(match.missed.map(({number}) => number)).toEqual([643]);
+    expect(match.attended).toBe(5);
+  });
+
+  it('does not count a week without a session held as missed, nor let it break a run', () => {
+    const weeks = clubWeeks(sessions, '2026-10-21', match.heldWeeks);
+
+    expect(weeks.weeks.map(({held}) => held)).toEqual([true, true, true, true, true, true, false, false]);
+    expect(weeks.current).toEqual({length: 2, from: '2026-09-28', to: '2026-10-05'});
+    expect(weeks.missedRecently).toBe(1);
+  });
+
+  it('takes finish places from the calendar when the notes say nothing, one place for each spelling', () => {
+    const noted = sessions.map(session => (645 === session.number ? {...session, finish: "Caf'K"} : session));
+
+    expect(finishCounts(noted, match.finishes)).toEqual([
+      ["Caf'K", 2],
+      ['Live bar', 1],
+      ['Zazou', 1],
+    ]);
   });
 });

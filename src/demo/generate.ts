@@ -554,5 +554,5 @@ const demoZones = (activity: Activity): ActivityZone[] => {
   ];
 };
 
-export {demoZones, generateDemo};
+export {CLUB as DEMO_CLUB, demoZones, FINISHES as DEMO_FINISHES, generateDemo};
 export type {DemoData};

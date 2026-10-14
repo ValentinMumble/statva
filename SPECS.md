@@ -312,14 +312,26 @@ Named after the club, with a link to the club's site when one is set, the month 
 first session and the usual weekday. It waits for the whole activity list before showing
 figures.
 
-- **Figures**: sessions (and how many the club ran from the first one ridden to the last,
-  from the session numbers), km and the share of all riding km, climbing, time, and the
-  sessions and km of this year.
+**The club's calendar.** When the club's website is a team page on prendslaroue.fr, the
+server reads its ride list (number, day, groups out, finish bar) back to the first club
+ride and keeps it, 6 pages a call (the site shows 10 rides a page), then reads the newest
+rides again at most every 6 hours. The page asks again until the history is in. A ride
+counts as ridden when a session has its number, or else falls on its day. No other site
+is ever read. When the calendar lists other numbered rides the rider has done too (the
+Sunday "Raymond Ride"), a switch at the top shows the whole page for either series.
+
+- **Figures**: sessions ridden of those held since the first one (from the calendar;
+  without it, from the session numbers), km and the share of all riding km, climbing,
+  time, and the sessions and km of this year.
 - **Attendance**: the current and longest run of weeks in a row with a session (this
-  week does not break the current run until it is over), weeks missed of the last 8, and
-  a strip with one cell per week, a row per year, each filled cell opening its session.
-- **Sessions**: the latest 8 (or all), with their route, group, finish place, riders,
-  km and speed.
+  week does not break the current run until it is over), sessions missed of the last 8
+  held, and a strip with one cell per week, a row per year, each filled cell opening its
+  session. With the calendar, a week without any session held is outlined and neither
+  breaks a run nor counts as missed.
+- **Missed sessions**: from the calendar, the latest 8 (or all), with their day, finish
+  bar and groups out.
+- **Sessions**: the latest 8 (or all), with their route, group, finish place (from the
+  notes, or else the calendar), riders, km and speed.
 - **Groups**: sessions, average riders, speed and power (rides with a power meter).
 - **Bikes**: for each bike ridden to the club, its sessions, km, years used, average
   speed and power, and a bar for its share of the sessions.
@@ -327,7 +339,8 @@ figures.
   average, the biggest ride, and month by month over the years.
 - **Session records**: fastest, longest, hilliest, most power, hardest, most kudos,
   coldest, hottest, each opening its ride; PRs, achievements, kudos and photos in all.
-- **Where it finished**: the 10 most visited finish places.
+- **Where it finished**: the 10 most visited finish places, from the notes or else the
+  calendar, spellings of one place counted together ("Caf'K" and "CafK").
 - **Routes**: every session's track on one map, with the 5 most used starts sized by use.
 - **Charts**: sessions per period, speed and power, heart rate and power.
 
@@ -348,6 +361,7 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
 | `POST /api/backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
+| `GET /api/club?since=` | The club's calendar from its website, read a few pages further each call |
 | `PUT /api/activity?id=` | Rename an activity, move it to other gear, or change its description or private note, on Strava and in Statva (422 when Strava keeps a text as it was) |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
@@ -397,6 +411,7 @@ adds that prefix itself, so no request can reach another rider's data or the tok
 | `details` | Full activities, cut down (no splits or laps, segment efforts reduced to the KOM rank), with the power analysis | server |
 | `sync` | History progress and the newest start time | server |
 | `power` | Activities whose power is worked out (0 without a power meter) | server |
+| `club` | The club's calendar read from its website, and how far back it goes | server |
 | `events`, `labels`, `ftp_tests`, `expenses`, `settings` | What the rider enters | rider |
 
 The rider can read every name but write only their own five. Shared keys:

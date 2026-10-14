@@ -17,8 +17,9 @@ type ClubTotals = {sessions: number; distance: number; elevation: number; time: 
 type WeekRun = {length: number; from: string | null; to: string | null};
 
 type ClubWeeks = {
-  // Every week (from Monday) since the first session, oldest first.
-  weeks: {start: string; session: ClubSession | null}[];
+  // Every week (from Monday) since the first session, oldest first; held is false for a week
+  // the club's calendar has no session in.
+  weeks: {start: string; session: ClubSession | null; held: boolean}[];
   longest: WeekRun;
   current: WeekRun;
   // Of the last weeks gone by, those without a session.
@@ -32,6 +33,20 @@ type GearStats = {gearId: string | null; sessions: number; distance: number; spe
 type ClubRecord = {key: string; heading: string; session: ClubSession; value: number};
 
 type StartPoint = {point: [number, number]; sessions: number};
+
+/** A ride on the club's own calendar (its website), as the server reads it. */
+type ClubRide = {title: string; series: string; number: number | null; day: string; groups: number | null; finish: string | null};
+
+type CalendarMatch = {
+  // The series' rides held from the first one ridden to today, newest first.
+  held: ClubRide[];
+  missed: ClubRide[];
+  attended: number;
+  // Where each ridden session finished, by activity id, for sessions the notes say nothing about.
+  finishes: Map<number, string>;
+  // The Mondays of the weeks the club held a ride of the series.
+  heldWeeks: Set<string>;
+};
 
 const RECENT_WEEKS = 8;
 // Starts this close together are the same meeting point.
@@ -89,9 +104,11 @@ const sessionsHeld = (sessions: ClubSession[]): {attended: number; held: number}
 
 /**
  * Week by week since the first session: which had one, the longest and the current run of
- * weeks in a row. This week does not break the current run until it is over.
+ * weeks in a row. This week does not break the current run until it is over. With the
+ * club's calendar (the Mondays of weeks it held a session), a week it held none neither
+ * breaks a run nor counts as missed.
  */
-const clubWeeks = (sessions: ClubSession[], today: string): ClubWeeks => {
+const clubWeeks = (sessions: ClubSession[], today: string, heldWeeks: Set<string> | null = null): ClubWeeks => {
   const empty = {length: 0, from: null, to: null};
 
   if (0 === sessions.length) return {weeks: [], longest: empty, current: empty, missedRecently: 0};
@@ -108,23 +125,79 @@ const clubWeeks = (sessions: ClubSession[], today: string): ClubWeeks => {
   const weeks: ClubWeeks['weeks'] = [];
   for (let number = dayNumber(first); number <= dayNumber(thisWeek); number += 7) {
     const start = dayFromNumber(number);
-    weeks.push({start, session: byWeek.get(start) ?? null});
+    const session = byWeek.get(start) ?? null;
+    weeks.push({start, session, held: null !== session || null === heldWeeks || heldWeeks.has(start)});
   }
 
   let longest: WeekRun = empty;
   let run: WeekRun = empty;
-  for (const {start, session} of weeks) {
-    run = null === session ? empty : {length: run.length + 1, from: run.from ?? start, to: start};
+  for (const {start, session, held} of weeks) {
+    if (null !== session) run = {length: run.length + 1, from: run.from ?? start, to: start};
+    else if (held) run = empty;
     if (run.length > longest.length) longest = run;
   }
 
+  // This week, without a session yet, is not over: the run is counted up to last week.
   const past = null === weeks[weeks.length - 1].session ? weeks.slice(0, -1) : weeks;
-  const currentLength = [...past].reverse().findIndex(({session}) => null === session);
-  const length = -1 === currentLength ? past.length : currentLength;
-  const current = 0 === length ? empty : {length, from: past[past.length - length].start, to: past[past.length - 1].start};
-  const done = weeks.slice(0, -1);
+  let current: WeekRun = empty;
+  for (const {start, session, held} of [...past].reverse()) {
+    if (null !== session) current = {length: current.length + 1, from: start, to: current.to ?? start};
+    else if (held) break;
+  }
+  const heldPast = weeks.slice(0, -1).filter(({held}) => held);
 
-  return {weeks, longest, current, missedRecently: done.slice(-RECENT_WEEKS).filter(({session}) => null === session).length};
+  return {weeks, longest, current, missedRecently: heldPast.slice(-RECENT_WEEKS).filter(({session}) => null === session).length};
+};
+
+/**
+ * The club's calendar against the sessions ridden: a ride is ridden when a session has its
+ * number, or else falls on its day. Counted from the first session to today.
+ */
+const matchCalendar = (sessions: ClubSession[], rides: ClubRide[], series: string, today: string): CalendarMatch => {
+  const first = sessions.length ? localDay(sessions[sessions.length - 1].activity) : today;
+  const held = rides.filter(ride => ride.series === series && first <= ride.day && ride.day <= today);
+  const byNumber = new Map(sessions.filter(({number}) => null !== number).map(session => [session.number, session]));
+  const byDay = new Map(sessions.map(session => [localDay(session.activity), session]));
+  const riddenAs = (ride: ClubRide): ClubSession | undefined => (null === ride.number ? undefined : byNumber.get(ride.number)) ?? byDay.get(ride.day);
+  const finishes = new Map<number, string>();
+  for (const ride of held) {
+    const session = riddenAs(ride);
+    if (undefined !== session && null !== ride.finish) finishes.set(session.activity.id, ride.finish);
+  }
+  const missed = held.filter(ride => undefined === riddenAs(ride));
+
+  return {held, missed, attended: held.length - missed.length, finishes, heldWeeks: new Set(held.map(({day}) => mondayOf(day)))};
+};
+
+// "Caf'K", "CafK" and "Le CafK" are the same bar.
+const placeKey = (place: string): string =>
+  place
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/^(le|la|les|l')\s*/, '')
+    .replace(/[^a-z0-9]/g, '');
+
+/**
+ * Visits per finish place, most visited first: from the notes, or else the club's calendar.
+ * Spellings of one place count together, under the one seen first in the notes.
+ */
+const finishCounts = (sessions: ClubSession[], calendarFinishes: Map<number, string> = new Map()): [string, number][] => {
+  const places = new Map<string, {name: string; visits: number; fromNotes: boolean}>();
+  for (const {activity, finish} of sessions) {
+    const place = finish ?? calendarFinishes.get(activity.id) ?? null;
+    if (null === place) continue;
+    const key = placeKey(place);
+    const known = places.get(key);
+    const fromNotes = null !== finish;
+    places.set(key, {
+      name: undefined === known || (fromNotes && !known.fromNotes) ? place : known.name,
+      visits: (known?.visits ?? 0) + 1,
+      fromNotes: fromNotes || (known?.fromNotes ?? false),
+    });
+  }
+
+  return [...places.values()].map(({name, visits}): [string, number] => [name, visits]).sort((first, second) => second[1] - first[1]);
 };
 
 /** Each group's sessions, average speed, power (rides with a power meter) and riders, most ridden first. */
@@ -213,5 +286,5 @@ const startPoints = (sessions: ClubSession[]): StartPoint[] => {
   return points.sort((first, second) => second.sessions - first.sessions);
 };
 
-export {clubRecords, clubSessions, clubTotals, clubWeeks, gearStats, groupSize, groupStats, sessionsHeld, startPoints};
-export type {ClubRecord, ClubSession, ClubTotals, ClubWeeks, GearStats, GroupStats, StartPoint};
+export {clubRecords, clubSessions, clubTotals, clubWeeks, finishCounts, gearStats, groupSize, groupStats, matchCalendar, sessionsHeld, startPoints};
+export type {CalendarMatch, ClubRecord, ClubRide, ClubSession, ClubTotals, ClubWeeks, GearStats, GroupStats, StartPoint};

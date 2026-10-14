@@ -1,6 +1,6 @@
-import {BikeExpense, Event, FTPTest, Labels} from '../models';
+import {BikeExpense, ClubRide, Event, FTPTest, Labels} from '../models';
 import {Activity, DetailedActivity} from '../models/strava';
-import {DemoData, demoZones, generateDemo} from './generate';
+import {DEMO_CLUB, DEMO_FINISHES, DemoData, demoZones, generateDemo} from './generate';
 
 /**
  * The demo's stand-in for the server: the same calls as the real fetchers, answered
@@ -14,6 +14,29 @@ const answer = async <T>(value: T): Promise<T> => {
   await new Promise(resolve => setTimeout(resolve, 150));
 
   return structuredClone(value);
+};
+
+const DAY_MS = 86_400_000;
+
+/**
+ * The demo club's calendar: every session ridden, and those between them that were missed,
+ * a week apart, finishing at one of the usual bars.
+ */
+const demoCalendar = (): ClubRide[] => {
+  const ridden = demo()
+    .activities.map(({name, start_date_local}) => ({number: Number(name.match(new RegExp(`${DEMO_CLUB} #(\\d+)`))?.[1]), day: String(start_date_local).slice(0, 10)}))
+    .filter(({number}) => !Number.isNaN(number))
+    .sort((first, second) => first.number - second.number);
+  const rides: ClubRide[] = [];
+  ridden.forEach(({number, day}, index) => {
+    const next = ridden[index + 1];
+    for (let missing = number; missing < (next?.number ?? number + 1); missing++) {
+      const date = new Date(Date.parse(`${day}T00:00:00Z`) + (missing - number) * 7 * DAY_MS).toISOString().slice(0, 10);
+      rides.push({title: `${DEMO_CLUB} #${missing}`, series: DEMO_CLUB, number: missing, day: date, groups: 5 + (missing % 4), finish: DEMO_FINISHES[missing % DEMO_FINISHES.length]});
+    }
+  });
+
+  return rides.reverse();
 };
 
 const upsert = <T extends {id: string}>(items: T[], item: T): T[] => [...items.filter(({id}) => id !== item.id), item];
@@ -70,6 +93,7 @@ const demoBackend = {
   setSetting: async (field: string, value: unknown) => {
     demo().settings = {...demo().settings, [field]: value};
   },
+  getClubCalendar: () => answer({rides: demoCalendar(), complete: true}),
   getZones: (id: number) => {
     const activity = demo().activities.find(activity => activity.id === id);
 

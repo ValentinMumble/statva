@@ -18,8 +18,9 @@ const POWER_BATCH = 50;
 const OVERLAP_SECONDS = 30 * 86400;
 
 // Everything Statva keeps for a rider. These are only written by the server; power lists the
-// activities whose normalized power has been worked out (0 for those without power data).
-const SERVER_NAMES = ['activities', 'details', 'sync', 'power'];
+// activities whose normalized power has been worked out (0 for those without power data), and
+// club the calendar read from the club's website.
+const SERVER_NAMES = ['activities', 'details', 'sync', 'power', 'club'];
 const RIDER_NAMES = ['events', 'labels', 'ftp_tests', 'expenses', 'settings'];
 // Data from features that are gone, still removed when a rider disconnects.
 const RETIRED_NAMES = ['check_ins'];

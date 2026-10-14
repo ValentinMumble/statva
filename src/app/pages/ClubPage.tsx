@@ -1,21 +1,27 @@
 import {Suspense, useMemo, useState} from 'react';
-import {Badge, Box, Button, Grid, HStack, Icon, Spinner, Stack, Text} from '@chakra-ui/react';
+import {Badge, Box, Button, Grid, HStack, Icon, SegmentGroup, Spinner, Stack, Text} from '@chakra-ui/react';
 import {Link} from 'react-router';
+import {useQuery} from '@tanstack/react-query';
+import {useLocalStorage} from 'usehooks-ts';
 import {CircleMarker, Tooltip} from 'react-leaflet';
 import {LuExternalLink, LuUsers} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useLabels, useSettings} from '../../hooks';
+import {getFetcher} from '../../hooks/useFetcher';
 import {
   ClubRecord,
+  ClubRide,
   ClubSession,
   clubRecords,
   clubSessions,
   clubTotals,
   clubWeeks,
   decodePolyline,
+  finishCounts,
   formatSpeed,
   gearStats,
   groupSize,
   groupStats,
+  matchCalendar,
   sessionsHeld,
   startPoints,
 } from '../../models';
@@ -28,6 +34,7 @@ import {TrackMap} from '../components/TrackMap';
 import {duration, km, metres, number, relativeDay} from '../format';
 
 const LATEST_COUNT = 8;
+const fetchCalendar = getFetcher<{rides: ClubRide[]; complete: boolean}>('club.calendar');
 
 const recordValue = ({key, value}: ClubRecord, locale: string): string => {
   switch (key) {
@@ -89,15 +96,20 @@ const WeekStrip = ({weeks, locale}: {weeks: ReturnType<typeof clubWeeks>['weeks'
           <HStack gap="2px" flexWrap="wrap">
             {weeks
               .filter(({start}) => start.startsWith(year))
-              .map(({start, session}) => {
+              .map(({start, session, held}) => {
                 const cell = (
                   <Box
                     key={start}
                     width="10px"
                     height="12px"
                     borderRadius="2px"
-                    background={null === session ? 'bg.muted' : 'brand.solid'}
-                    title={null === session ? `Week of ${formatDay(start, locale)}: no session` : `${session.activity.name}, ${dateOf(session, locale)}`}
+                    background={null !== session ? 'brand.solid' : held ? 'bg.muted' : 'transparent'}
+                    boxShadow={null === session && !held ? 'inset 0 0 0 1px var(--chakra-colors-border)' : undefined}
+                    title={
+                      null !== session
+                        ? `${session.activity.name}, ${dateOf(session, locale)}`
+                        : `Week of ${formatDay(start, locale)}: ${held ? 'missed' : 'no session held'}`
+                    }
                   />
                 );
 
@@ -114,8 +126,8 @@ const WeekStrip = ({weeks, locale}: {weeks: ReturnType<typeof clubWeeks>['weeks'
   );
 };
 
-const SessionRow = ({session, locale, now}: {session: ClubSession; locale: string; now: Date}) => {
-  const {activity, group, finish} = session;
+const SessionRow = ({session, finish, locale, now}: {session: ClubSession; finish: string | null; locale: string; now: Date}) => {
+  const {activity, group} = session;
 
   return (
     <Link to={`/activities/${activity.id}`}>
@@ -173,15 +185,43 @@ const ClubPage = () => {
   const {club, locale, mapCenter} = useSettings();
   const [now] = useState(() => new Date());
   const [showAll, setShowAll] = useState(false);
+  const [showAllMissed, setShowAllMissed] = useState(false);
+  const [savedSeries, setSeries] = useLocalStorage<string | null>('club-series', null);
   const activities = useMemo(() => data ?? [], [data]);
+  const today = deviceDay(now);
 
-  const sessions = useMemo(() => (null === club ? [] : clubSessions(activities, activityMeta, club)), [activities, activityMeta, club]);
+  // The club's calendar, from its website, back to the first club ride; read a few pages a
+  // call, so it is asked again until it is complete.
+  const since = useMemo(
+    () => (null === club ? null : activities.filter(({name}) => name.includes(club.name)).reduce<string | null>((oldest, activity) => (null === oldest || localDay(activity) < oldest ? localDay(activity) : oldest), null)),
+    [activities, club],
+  );
+  const {data: calendar} = useQuery({
+    queryKey: ['clubCalendar', since],
+    queryFn: () => fetchCalendar(since),
+    enabled: null !== since && isComplete,
+    refetchInterval: query => (false === query.state.data?.complete ? 1000 : false),
+  });
+  const rides = useMemo(() => calendar?.rides ?? [], [calendar]);
+  // The club's other numbered rides the rider has done too, like its Sunday ride.
+  const seriesNames = useMemo(() => {
+    if (null === club) return [];
+    const others = [...new Set(rides.filter(({number}) => null !== number).map(({series}) => series))].filter(
+      name => name !== club.name && activities.some(activity => activity.name.includes(name)),
+    );
+
+    return [club.name, ...others];
+  }, [rides, club, activities]);
+  const series = null !== savedSeries && seriesNames.includes(savedSeries) ? savedSeries : (club?.name ?? '');
+
+  const sessions = useMemo(() => (null === club ? [] : clubSessions(activities, activityMeta, {...club, name: series})), [activities, activityMeta, club, series]);
+  const match = useMemo(() => (0 === rides.length ? null : matchCalendar(sessions, rides, series, today)), [sessions, rides, series, today]);
   const year = String(now.getFullYear());
   const thisYear = useMemo(() => sessions.filter(({activity}) => localDay(activity).startsWith(year)), [sessions, year]);
   const totals = clubTotals(sessions, activities);
   const yearTotals = clubTotals(thisYear, activities.filter(activity => localDay(activity).startsWith(year)));
   const held = sessionsHeld(sessions);
-  const weeks = useMemo(() => clubWeeks(sessions, deviceDay(now)), [sessions, now]);
+  const weeks = useMemo(() => clubWeeks(sessions, today, match?.heldWeeks ?? null), [sessions, today, match]);
   const groups = useMemo(() => groupStats(sessions), [sessions]);
   const bikes = useMemo(() => gearStats(sessions), [sessions]);
   const {label} = useLabels();
@@ -192,12 +232,7 @@ const ClubPage = () => {
     () => sessions.map(({activity}) => decodePolyline(activity.map?.summary_polyline ?? '')).filter(track => 0 < track.length),
     [sessions],
   );
-  const finishes = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const {finish} of sessions) if (null !== finish) counts.set(finish, (counts.get(finish) ?? 0) + 1);
-
-    return [...counts.entries()].sort((first, second) => second[1] - first[1]).slice(0, 10);
-  }, [sessions]);
+  const finishes = useMemo(() => finishCounts(sessions, match?.finishes).slice(0, 10), [sessions, match]);
 
   if (null === club) {
     return (
@@ -221,6 +256,8 @@ const ClubPage = () => {
   const prs = sessions.reduce((sum, {activity}) => sum + (activity.pr_count ?? 0), 0);
   const achievements = sessions.reduce((sum, {activity}) => sum + activity.achievement_count, 0);
   const shown = showAll ? sessions : sessions.slice(0, LATEST_COUNT);
+  const missed = match?.missed ?? [];
+  const shownMissed = showAllMissed ? missed : missed.slice(0, LATEST_COUNT);
   const run = (length: number) => `${length} ${1 === length ? 'week' : 'weeks'}`;
 
   return (
@@ -230,6 +267,12 @@ const ClubPage = () => {
           <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
             {club.name}
           </Text>
+          {1 < seriesNames.length && (
+            <SegmentGroup.Root size="sm" value={series} onValueChange={({value}) => value && setSeries(value)}>
+              <SegmentGroup.Indicator />
+              <SegmentGroup.Items items={seriesNames} />
+            </SegmentGroup.Root>
+          )}
           {club.url && (
             <Button size="sm" variant="outline" asChild={true}>
               <a href={club.url} target="_blank" rel="noreferrer">
@@ -254,11 +297,15 @@ const ClubPage = () => {
           <Text fontSize="sm">Loading all your activities…</Text>
         </HStack>
       ) : 0 === sessions.length ? (
-        <Text color="fg.muted">No ride has "{club.name}" in its name yet.</Text>
+        <Text color="fg.muted">No ride has "{series}" in its name yet.</Text>
       ) : (
         <>
           <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))', xl: 'repeat(6, minmax(0, 1fr))'}} gap="12px">
-            <Readout value={number(totals.sessions, locale)} caption={null === held ? 'sessions' : `sessions, of ${number(held.held, locale)} the club ran`} />
+            {null !== match ? (
+              <Readout value={number(match.attended, locale)} caption={`of the ${number(match.held.length, locale)} sessions held since your first`} />
+            ) : (
+              <Readout value={number(totals.sessions, locale)} caption={null === held ? 'sessions' : `sessions, of ${number(held.held, locale)} the club ran`} />
+            )}
             <Readout value={number(totals.distance / 1000, locale)} unit="km" caption={`${number(totals.share * 100, locale)}% of your riding`} />
             <Readout value={number(totals.elevation, locale)} unit="m" caption="climbed" />
             <Readout value={duration(totals.time)} caption="in the saddle" />
@@ -266,11 +313,11 @@ const ClubPage = () => {
             <Readout value={number(yearTotals.distance / 1000, locale)} unit="km" caption={`in ${year}, ${number(yearTotals.share * 100, locale)}% of your riding`} />
           </Grid>
 
-          <Panel title="Attendance" note="weeks from Monday">
+          <Panel title="Attendance" note={null === match ? 'weeks from Monday' : 'weeks from Monday, outlined when no session was held'}>
             <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))'}} gap="16px">
               <Figure value={run(weeks.current.length)} caption="in a row now" detail={null === weeks.current.from ? 'none going' : `since the week of ${formatDay(weeks.current.from, locale)}`} />
               <Figure value={run(weeks.longest.length)} caption="longest run" detail={null === weeks.longest.from || null === weeks.longest.to ? undefined : formatDayRange(weeks.longest.from, weeks.longest.to, locale)} />
-              <Figure value={`${weeks.missedRecently} of 8`} caption="weeks missed lately" />
+              <Figure value={`${weeks.missedRecently} of 8`} caption={null === match ? 'weeks missed lately' : 'sessions missed lately'} />
             </Grid>
             <WeekStrip weeks={weeks.weeks} locale={locale} />
           </Panel>
@@ -279,7 +326,13 @@ const ClubPage = () => {
             <CardTitle>Sessions</CardTitle>
             <Stack gap="4px">
               {shown.map(session => (
-                <SessionRow key={session.activity.id} session={session} locale={locale} now={now} />
+                <SessionRow
+                  key={session.activity.id}
+                  session={session}
+                  finish={session.finish ?? match?.finishes.get(session.activity.id) ?? null}
+                  locale={locale}
+                  now={now}
+                />
               ))}
             </Stack>
             {LATEST_COUNT < sessions.length && (
@@ -288,6 +341,37 @@ const ClubPage = () => {
               </Button>
             )}
           </Card>
+
+          {0 < missed.length && (
+            <Card>
+              <CardTitle>Missed sessions</CardTitle>
+              <Stack gap="8px">
+                {shownMissed.map(ride => (
+                  <HStack key={`${ride.day} ${ride.title}`} justifyContent="space-between" gap="12px" fontSize="sm">
+                    <Stack gap="0" minWidth="0">
+                      <Text fontWeight="medium" truncate={true}>
+                        {ride.title}
+                      </Text>
+                      <Text color="fg.muted" truncate={true}>
+                        {relativeDay(new Date(`${ride.day}T12:00:00`), locale, now)}
+                        {null !== ride.finish ? ` · ${ride.finish}` : ''}
+                      </Text>
+                    </Stack>
+                    {null !== ride.groups && (
+                      <Text color="fg.muted" flexShrink={0}>
+                        {ride.groups} {1 === ride.groups ? 'group' : 'groups'}
+                      </Text>
+                    )}
+                  </HStack>
+                ))}
+              </Stack>
+              {LATEST_COUNT < missed.length && (
+                <Button size="sm" variant="ghost" marginTop="8px" onClick={() => setShowAllMissed(!showAllMissed)}>
+                  {showAllMissed ? 'Show fewer' : `Show all ${missed.length}`}
+                </Button>
+              )}
+            </Card>
+          )}
 
           <Grid templateColumns={{base: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}}>
             <Panel title="Groups" note="power from rides with a power meter">
@@ -395,7 +479,7 @@ const ClubPage = () => {
               </Grid>
             </Panel>
 
-            <Panel title="Where it finished" note="from ride notes">
+            <Panel title="Where it finished" note={null === match ? 'from ride notes' : "from ride notes and the club's calendar"}>
               {0 === finishes.length ? (
                 <Text fontSize="sm" color="fg.muted">
                   Write "Finish au …" in a ride's notes to see where sessions end.
@@ -420,13 +504,13 @@ const ClubPage = () => {
 
           <Grid templateColumns={{base: 'minmax(0, 1fr)', xl: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}}>
             <ChartPanel title="Sessions per period">
-              <TimeframeChart filter={{search: club.name}} data={1} displayTypes={false} />
+              <TimeframeChart filter={{search: series}} data={1} displayTypes={false} />
             </ChartPanel>
             <ChartPanel title="Speed and power">
-              <ProgressChart search={club.name} />
+              <ProgressChart search={series} />
             </ChartPanel>
             <ChartPanel title="Heart rate and power">
-              <HeartChart search={club.name} />
+              <HeartChart search={series} />
             </ChartPanel>
           </Grid>
         </>
