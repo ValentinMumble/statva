@@ -220,9 +220,10 @@ const BikePage = () => {
   const [withRetired, setWithRetired] = useLocalStorage('bikes-with-retired', false);
 
   const bike = bikeId ?? defaultBike;
-  const bikes = gear.filter(
-    ({type, id, retired}) => 'bike' === type && (withRetired || id === bike || (!retired && !retiredBikes.includes(id))),
-  );
+  // The main bike first, the others in Strava's order.
+  const bikes = gear
+    .filter(({type, id, retired}) => 'bike' === type && (withRetired || id === bike || (!retired && !retiredBikes.includes(id))))
+    .sort((first, second) => Number(second.id === defaultBike) - Number(first.id === defaultBike));
   const rides = useMemo(() => (activities ?? []).filter(({gear_id}) => bike === gear_id), [activities, bike]);
   const parts = useMemo(() => computeBikeParts(events, rides, bike, label, partRules), [events, rides, bike, label, partRules]);
   const wearCost = partsCostPerKm(parts);

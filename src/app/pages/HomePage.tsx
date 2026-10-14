@@ -222,10 +222,15 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
   const {events, refetch} = useEvents();
   const {label} = useLabels();
   const bikeActivities = useMemo(() => activities.filter(({gear_id}) => defaultBike === gear_id), [activities, defaultBike]);
-  const parts = useMemo(
-    () => computeBikeParts(events, bikeActivities, defaultBike, label, partRules).slice(0, PARTS_SHOWN),
-    [events, bikeActivities, defaultBike, label, partRules],
-  );
+  // The most worn parts, and always the chain, the part looked after most often: when it is not
+  // among them, it takes the last place.
+  const parts = useMemo(() => {
+    const all = computeBikeParts(events, bikeActivities, defaultBike, label, partRules);
+    const worn = all.slice(0, PARTS_SHOWN);
+    const chain = all.find(({type}) => 'chain' === type);
+
+    return undefined === chain || worn.includes(chain) ? worn : [...worn.slice(0, PARTS_SHOWN - 1), chain];
+  }, [events, bikeActivities, defaultBike, label, partRules]);
   const total = bikeActivities.reduce((sum, {distance}) => sum + distance, 0);
 
   return (

@@ -47,7 +47,8 @@ Activities carries a count in the sidebar and a dot on the tab.
    and time.
 3. **Weeks**: the last 5 weeks (+4 on demand). Each day shows its longest activity, each
    week its distance and training load. A week can be renamed in place (stored as a label).
-4. **Bike**: the main bike's distance and its 4 most worn parts, with a button to log a
+4. **Bike**: the main bike's distance and its 4 most worn parts, the chain always among
+   them (in last place when it is not one of the most worn), with a button to log a
    change.
 
 ---
@@ -161,7 +162,7 @@ An event is something that happened to a bike on a date.
 On a phone the dialog opens from the bottom, with thumb-sized buttons.
 
 ### 5.3 Bike page
-- A chip per bike (retired ones behind a toggle); figures for distance, this year, rides,
+- A chip per bike, the main bike first (retired ones behind a toggle); figures for distance, this year, rides,
   events.
 - **Parts**: every wearing part's distance since fitted against its expected life, as a
   bar (green, amber from 80 %, red from 100 %), most worn first, with the fitting date,
