@@ -1,13 +1,14 @@
 import {lazy, Suspense, useMemo, useState} from 'react';
-import {Badge, Box, Button, Grid, HStack, IconButton, Spinner, Stack, Switch, Text} from '@chakra-ui/react';
+import {Badge, Box, Button, Grid, HStack, IconButton, Input, Spinner, Stack, Switch, Text} from '@chakra-ui/react';
 import {useNavigate, useParams} from 'react-router';
+import {useQueryClient} from '@tanstack/react-query';
 import {useLocalStorage} from 'usehooks-ts';
-import {LuTrash2} from 'react-icons/lu';
+import {LuExternalLink, LuTrash2} from 'react-icons/lu';
 import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
 import {useAllActivities, useEvents, useExpenses, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeBikeParts, Event, getEventLabel, partsCostPerKm, PartState, shoeWear} from '../../models';
+import {computeBikeParts, Event, getEventLabel, isTireEvent, partsCostPerKm, PartState, shoeWear} from '../../models';
 import {Card, CardTitle} from '../components/Card';
 import {km, number, relativeDay} from '../format';
 
@@ -51,6 +52,86 @@ const ChartCard = ({title, children}: {title: string; children: React.ReactNode}
     <Suspense fallback={<Spinner />}>{children}</Suspense>
   </Card>
 );
+
+const saveSetting = getFetcher<void>('settings.set');
+// SILCA's calculator has no API or prefilled link: the card gives the inputs to type in.
+const SILCA_CALCULATOR = 'https://silca.cc/pages/sppc-form';
+const KG_PER_LB = 0.4536;
+
+/** What SILCA's tyre pressure calculator asks for, ready, and the pressures it gave, kept. */
+const TyrePressure = ({bike}: {bike: string}) => {
+  const queryClient = useQueryClient();
+  const {events} = useEvents();
+  const {weightKg, kitWeightKg, bikeWeightsKg, tubelessBikes, tyrePressures, locale} = useSettings();
+  const bikeKg = bikeWeightsKg[bike];
+  const tyre = events.filter(event => bike === event.bike && isTireEvent(event)).sort((first, second) => second.date.getTime() - first.date.getTime())[0];
+  const width = tyre && isTireEvent(tyre) ? tyre.width : undefined;
+  const saved = tyrePressures[bike] ?? {front: null, rear: null};
+  const totalKg = undefined === bikeKg ? null : weightKg + bikeKg + kitWeightKg;
+
+  const save = async (wheel: 'front' | 'rear', value: string) => {
+    const psi = '' === value.trim() ? null : Number(value);
+    if (null !== psi && !Number.isFinite(psi)) return;
+    await saveSetting('tyrePressures', {...tyrePressures, [bike]: {...saved, [wheel]: psi}});
+    await queryClient.invalidateQueries({queryKey: ['settings']});
+  };
+
+  const inputs: [string, string][] = [
+    ['Total weight', null === totalKg ? 'Set the bike\'s weight in Settings' : `${number(totalKg, locale, 1)} kg (${number(totalKg / KG_PER_LB, locale)} lb)`],
+    ['Tyre width', undefined === width ? 'Log a tyre change with its width' : `${width} mm`],
+    ['Wheel', '700C'],
+    ['Setup', tubelessBikes.includes(bike) ? 'Tubeless' : 'Inner tubes'],
+  ];
+
+  return (
+    <Card>
+      <CardTitle>Tyre pressure</CardTitle>
+      <Stack gap="14px">
+        <Grid templateColumns="auto 1fr" columnGap="16px" rowGap="4px" fontSize="sm">
+          {inputs.map(([name, value]) => [
+            <Text key={`${name}-name`} color="fg.muted">
+              {name}
+            </Text>,
+            <Text key={`${name}-value`} fontWeight="medium">
+              {value}
+            </Text>,
+          ])}
+        </Grid>
+        <Text fontSize="xs" color="fg.muted">
+          You, the bike and {number(kitWeightKg, locale, 1)} kg of kit. Surface, speed and tyre model are yours to pick there.
+        </Text>
+        <Button size="sm" variant="outline" asChild={true} alignSelf="flex-start">
+          <a href={SILCA_CALCULATOR} target="_blank" rel="noreferrer">
+            Open SILCA's calculator <LuExternalLink />
+          </a>
+        </Button>
+        <HStack gap="12px">
+          {(['front', 'rear'] as const).map(wheel => (
+            <Stack key={wheel} gap="4px" flex="1">
+              <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
+                {wheel}
+              </Text>
+              <HStack gap="6px">
+                <Input
+                  size="sm"
+                  type="number"
+                  inputMode="decimal"
+                  defaultValue={saved[wheel] ?? ''}
+                  placeholder="psi"
+                  onBlur={({target}) => save(wheel, target.value)}
+                  aria-label={`${wheel} pressure in psi`}
+                />
+                <Text fontSize="sm" color="fg.muted">
+                  psi
+                </Text>
+              </HStack>
+            </Stack>
+          ))}
+        </HStack>
+      </Stack>
+    </Card>
+  );
+};
 
 /** Running shoes in service, each against how far a pair lasts (Settings). */
 const Shoes = () => {
@@ -311,6 +392,7 @@ const BikePage = () => {
           <CostPerKmChart />
         </ChartCard>
       )}
+      <TyrePressure key={bike} bike={bike} />
       <Shoes />
     </Stack>
   );

@@ -47,6 +47,12 @@ type Settings = {
   rideRules: RideRule[];
   // How far a pair of running shoes goes before it is worn out.
   shoeLifeKm: number;
+  // For the tyre pressure calculator: each bike's weight, which run tubeless, what the rider
+  // carries (bottles, tools, shoes, helmet), and the pressures the calculator gave, in psi.
+  bikeWeightsKg: Record<string, number>;
+  tubelessBikes: string[];
+  kitWeightKg: number;
+  tyrePressures: Record<string, {front: number | null; rear: number | null}>;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -68,6 +74,10 @@ const DEFAULT_SETTINGS: Settings = {
   club: null,
   rideRules: [],
   shoeLifeKm: 700,
+  bikeWeightsKg: {},
+  tubelessBikes: [],
+  kitWeightKg: 2,
+  tyrePressures: {},
 };
 
 export {DEFAULT_SETTINGS};

@@ -411,6 +411,42 @@ const SettingsPage = () => {
             ))}
           </HStack>
         </Stack>
+        <Stack gap="6px">
+          <GroupLabel>For the tyre pressure calculator</GroupLabel>
+          <Grid templateColumns={{base: '1fr 1fr', md: 'repeat(4, 1fr)'}} gap="16px" alignItems="end">
+            {bikes
+              .filter(({id, retired}) => !retired && !settings.retiredBikes.includes(id))
+              .map(({id}) => (
+                <Stack key={id} gap="6px">
+                  <NumberField
+                    label={label(id)}
+                    unit="kg"
+                    step={0.1}
+                    placeholder="Weight"
+                    value={settings.bikeWeightsKg[id]}
+                    onChange={value => set('bikeWeightsKg', {...settings.bikeWeightsKg, [id]: value as number})}
+                  />
+                  <Checkbox.Root
+                    checked={settings.tubelessBikes.includes(id)}
+                    onCheckedChange={({checked}) =>
+                      set('tubelessBikes', checked ? [...settings.tubelessBikes, id] : settings.tubelessBikes.filter(bike => bike !== id))
+                    }
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control />
+                    <Checkbox.Label>Tubeless</Checkbox.Label>
+                  </Checkbox.Root>
+                </Stack>
+              ))}
+            <NumberField
+              label="What you carry"
+              unit="kg"
+              step={0.1}
+              value={settings.kitWeightKg}
+              onChange={value => set('kitWeightKg', value ?? DEFAULT_SETTINGS.kitWeightKg)}
+            />
+          </Grid>
+        </Stack>
       </Section>
 
       <Section title="Parts" description="How long parts last and what they cost. Left empty, a life is judged against how long the previous ones lasted.">
