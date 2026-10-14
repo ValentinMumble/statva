@@ -1,4 +1,4 @@
-import {lazy, Suspense, useMemo} from 'react';
+import {lazy, Suspense, useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, IconButton, Spinner, Stack, Switch, Text} from '@chakra-ui/react';
 import {useNavigate, useParams} from 'react-router';
 import {useLocalStorage} from 'usehooks-ts';
@@ -7,7 +7,7 @@ import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
 import {useAllActivities, useEvents, useExpenses, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeBikeParts, Event, getEventLabel, partsCostPerKm, PartState} from '../../models';
+import {computeBikeParts, Event, getEventLabel, partsCostPerKm, PartState, shoeWear} from '../../models';
 import {Card, CardTitle} from '../components/Card';
 import {km, number, relativeDay} from '../format';
 
@@ -51,6 +51,53 @@ const ChartCard = ({title, children}: {title: string; children: React.ReactNode}
     <Suspense fallback={<Spinner />}>{children}</Suspense>
   </Card>
 );
+
+/** Running shoes in service, each against how far a pair lasts (Settings). */
+const Shoes = () => {
+  const gear = useGear();
+  const {label} = useLabels();
+  const {locale, shoeLifeKm} = useSettings();
+  const {data: activities} = useAllActivities();
+  // Read once, so the weeks left do not shift while the page is open.
+  const [now] = useState(() => new Date());
+  const shoes = useMemo(
+    () =>
+      shoeWear(
+        gear.filter(({type, retired}) => 'shoes' === type && !retired).map(({id}) => id),
+        activities ?? [],
+        shoeLifeKm,
+        now,
+      ),
+    [gear, activities, shoeLifeKm, now],
+  );
+
+  if (0 === shoes.length) return null;
+
+  return (
+    <Card>
+      <CardTitle>Running shoes</CardTitle>
+      <Stack gap="16px">
+        {shoes.map(shoe => (
+          <Stack key={shoe.id} gap="6px">
+            <Text fontWeight="medium">{label(shoe.id)}</Text>
+            <Text fontSize="xs" color="fg.muted">
+              {km(shoe.distance, locale)} of {km(shoe.life, locale)}
+              {null !== shoe.weeksLeft && ` · ${weeksLeftText(shoe.weeksLeft)}`}
+            </Text>
+            <Box height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
+              <Box
+                height="full"
+                borderRadius="full"
+                background={STATE_COLOR[1 <= shoe.ratio ? 'overdue' : 0.8 <= shoe.ratio ? 'due' : 'ok']}
+                width={`${Math.min(100, Math.max(3, shoe.ratio * 100))}%`}
+              />
+            </Box>
+          </Stack>
+        ))}
+      </Stack>
+    </Card>
+  );
+};
 
 const BikePage = () => {
   const {bikeId} = useParams();
@@ -264,6 +311,7 @@ const BikePage = () => {
           <CostPerKmChart />
         </ChartCard>
       )}
+      <Shoes />
     </Stack>
   );
 };

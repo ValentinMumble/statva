@@ -2,6 +2,22 @@ import {ClubRules} from './activity-npeloton';
 import {Event} from './event';
 
 /**
+ * A ride that comes back again and again, like a commute: one that turns around at the place
+ * (there and back, or ending there), on a weekday if asked and no longer than maxKm, gets the
+ * name, the commute flag and the bike as soon as it lands on Strava. The server applies these
+ * (api/_lib/rules.ts).
+ */
+type RideRule = {
+  name: string;
+  place: [number, number];
+  radiusM: number;
+  maxKm: number;
+  weekdaysOnly: boolean;
+  commute: boolean;
+  gearId: string | null;
+};
+
+/**
  * Everything that used to be written into the code for one rider. Each rider's stored
  * settings sit on top of these defaults, so a new rider sees a working app at once.
  */
@@ -28,6 +44,9 @@ type Settings = {
   unprocessedEmoji: boolean;
   // Rides whose name holds one of the group words, or whose notes hold a group tag, count as group rides.
   club: (ClubRules & {groupWords: string[]; groupTags: string[]}) | null;
+  rideRules: RideRule[];
+  // How far a pair of running shoes goes before it is worn out.
+  shoeLifeKm: number;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -47,7 +66,9 @@ const DEFAULT_SETTINGS: Settings = {
   normalizedPowerFromNote: false,
   unprocessedEmoji: false,
   club: null,
+  rideRules: [],
+  shoeLifeKm: 700,
 };
 
 export {DEFAULT_SETTINGS};
-export type {Settings};
+export type {RideRule, Settings};

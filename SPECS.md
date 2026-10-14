@@ -102,8 +102,11 @@ moving time, normalized power, suffer score. Headers are labels (emojis by defau
 
 ### 3.4 Activities without an emoji
 For riders who tag names with an emoji (a setting, off by default). A card at the top
-counts the activities whose name has none, names the first three, and offers an emoji no
-name uses yet: click to copy it and roll a new one.
+counts the activities whose name has none and lists the five newest, each with a name to
+save on Strava: the name most often given to the same route (same start and end, about
+the same length), or its own name with an emoji no name uses yet. Saving needs Strava
+write access, which riders who logged in before Statva asked for it grant by logging in
+again.
 
 ---
 
@@ -166,6 +169,8 @@ On a phone the dialog opens from the bottom, with thumb-sized buttons.
 - **Timeline**: a Gantt chart of each part's time on the bike, with falls and punctures.
 - **Running costs**, on the bike set for costs: cost per km and per hour month by month,
   monthly spend as bars, an option to skip the oldest months, and the expenses list.
+- **Running shoes**: each pair in service, its km against how far a pair lasts (Settings,
+  700 km by default), with weeks left at the pace of the last 8 weeks.
 
 ### 5.4 Costs
 An expense has a date, an amount (negative for a sale) and a description. Part prices
@@ -262,7 +267,8 @@ Changes are kept as a draft until **Save**.
 | Section | Settings |
 |---|---|
 | Bikes | Main bike (default: Strava's primary bike), the bike running costs follow, retired bikes |
-| Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), prices (chain, tires, cassette, brake pads, brake fluid), retired chains |
+| Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), prices (chain, tires, cassette, brake pads, brake fluid), retired chains, how far running shoes last |
+| Ride rules | For recurring rides: where they turn around (and how close), the longest they are, weekdays only, then the name, commute flag and bike they get |
 | Goal and sports | Yearly riding goal, car cost per km, the sports Stats shows |
 | Body | Weight, heart rate zone thresholds |
 | Club | On or off, club name, groups marked by emojis or words, other group-ride words |
@@ -305,6 +311,7 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
 | `POST /api/backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
+| `PUT /api/activity?id=` | Rename an activity on Strava and in Statva |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
 ### 11.2 What comes from Strava
@@ -336,6 +343,12 @@ Strava calls it when an activity is created, changed or deleted, and when a ride
 disconnects. These calls are not signed, so nothing trusts the event: other athletes are
 ignored, an activity event fetches the activity again (removed if Strava answers 404),
 and a disconnect is checked with Strava before anything is deleted.
+
+On a new activity (and on one a sync brings in after the history is in), the rider's ride
+rules apply: a pedalled ride, short enough, on a weekday if asked, whose farthest point
+from its start is by the rule's place, gets the rule's name (only if its own has no
+emoji), the commute flag and the bike, on Strava and in Statva. Only then, so a change
+made on Strava later is never undone.
 
 ### 11.5 What Statva stores
 Upstash Redis hashes. Each rider's data sits under `athlete:<id>:<name>`. The store route

@@ -20,7 +20,7 @@ import {toaster} from '../../components/ui';
 import {leaveDemo} from '../../demo/mode';
 import {useAllActivities, useEvents, useExpenses, useFtp, useGear, useLabels, useSession, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {countBy, DEFAULT_SETTINGS, Settings} from '../../models';
+import {countBy, DEFAULT_SETTINGS, RideRule, Settings} from '../../models';
 import {Card} from '../components/Card';
 import {sportName} from '../components/sport';
 
@@ -101,6 +101,85 @@ const GroupLabel = ({children}: {children: React.ReactNode}) => (
     {children}
   </Text>
 );
+
+const NEW_RULE: RideRule = {name: '', place: [0, 0], radiusM: 250, maxKm: 20, weekdaysOnly: true, commute: true, gearId: null};
+
+/** The ride rules, one card each: where, which rides, and what they get. */
+const RideRules = ({
+  rules,
+  bikes,
+  label,
+  onChange,
+}: {
+  rules: RideRule[];
+  bikes: {id: string}[];
+  label: (key: string) => string;
+  onChange: (rules: RideRule[]) => void;
+}) => {
+  const change = (index: number, update: Partial<RideRule>) => onChange(rules.map((rule, at) => (at === index ? {...rule, ...update} : rule)));
+
+  return (
+    <Stack gap="12px">
+      {rules.map((rule, index) => (
+        <Stack key={index} gap="12px" borderWidth="1px" borderRadius="10px" padding="12px">
+          <HStack gap="12px" alignItems="flex-end">
+            <Field.Root>
+              <Field.Label>Name, with its emoji</Field.Label>
+              <Input value={rule.name} placeholder="Akeneo ⚙️" onChange={({target}) => change(index, {name: target.value})} />
+            </Field.Root>
+            <IconButton aria-label="Remove this rule" variant="ghost" onClick={() => onChange(rules.filter((_, at) => at !== index))}>
+              <LuTrash2 />
+            </IconButton>
+          </HStack>
+          <Grid templateColumns={{base: '1fr 1fr', md: '2fr 1fr 1fr 2fr'}} gap="12px">
+            <Field.Root>
+              <Field.Label>Turns around at (latitude, longitude)</Field.Label>
+              <Input
+                defaultValue={rule.place.join(', ')}
+                placeholder="47.2112, -1.5757"
+                onBlur={({target}) => {
+                  const [latitude, longitude] = list(target.value).map(Number);
+                  if (Number.isFinite(latitude) && Number.isFinite(longitude)) change(index, {place: [latitude, longitude]});
+                }}
+              />
+            </Field.Root>
+            <NumberField label="Within" unit="m" value={rule.radiusM} onChange={value => change(index, {radiusM: value ?? NEW_RULE.radiusM})} />
+            <NumberField label="Rides up to" unit="km" value={rule.maxKm} onChange={value => change(index, {maxKm: value ?? NEW_RULE.maxKm})} />
+            <Field.Root>
+              <Field.Label>Bike</Field.Label>
+              <NativeSelect.Root>
+                <NativeSelect.Field value={rule.gearId ?? ''} onChange={({target}) => change(index, {gearId: target.value || null})}>
+                  <option value="">Leave as it is</option>
+                  {bikes.map(({id}) => (
+                    <option key={id} value={id}>
+                      {label(id)}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Field.Root>
+          </Grid>
+          <HStack gap="20px" flexWrap="wrap">
+            <Checkbox.Root checked={rule.weekdaysOnly} onCheckedChange={({checked}) => change(index, {weekdaysOnly: true === checked})}>
+              <Checkbox.HiddenInput />
+              <Checkbox.Control />
+              <Checkbox.Label>Weekdays only</Checkbox.Label>
+            </Checkbox.Root>
+            <Checkbox.Root checked={rule.commute} onCheckedChange={({checked}) => change(index, {commute: true === checked})}>
+              <Checkbox.HiddenInput />
+              <Checkbox.Control />
+              <Checkbox.Label>Mark as a commute</Checkbox.Label>
+            </Checkbox.Root>
+          </HStack>
+        </Stack>
+      ))}
+      <Button variant="outline" size="sm" alignSelf="flex-start" onClick={() => onChange([...rules, NEW_RULE])}>
+        Add a rule
+      </Button>
+    </Stack>
+  );
+};
 
 const Toggle = ({label, checked, onChange}: {label: string; checked: boolean; onChange: (checked: boolean) => void}) => (
   <Switch.Root checked={checked} onCheckedChange={({checked}) => onChange(checked)}>
@@ -372,6 +451,19 @@ const SettingsPage = () => {
           />
           <Field.HelperText>Never suggested as the next chain to fit.</Field.HelperText>
         </Field.Root>
+        <NumberField
+          label="Running shoes last"
+          unit="km"
+          value={settings.shoeLifeKm}
+          onChange={value => set('shoeLifeKm', value ?? DEFAULT_SETTINGS.shoeLifeKm)}
+        />
+      </Section>
+
+      <Section
+        title="Ride rules"
+        description="For rides that come back again and again, like a commute: as soon as one lands on Strava, it gets the name, the commute flag and the bike. A name you gave with an emoji is kept."
+      >
+        <RideRules rules={settings.rideRules} bikes={bikes} label={label} onChange={rules => set('rideRules', rules)} />
       </Section>
 
       <Section title="Goal and sports" description="The yearly target, and the sports the stats show.">
