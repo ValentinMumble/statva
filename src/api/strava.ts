@@ -51,9 +51,13 @@ class NoWriteAccessError extends Error {}
 class IgnoredByStravaError extends Error {}
 
 type ActivityNote = 'description' | 'private_note';
+// Who sees an activity, as Strava names it.
+type Visibility = 'everyone' | 'followers_only' | 'only_me';
 
 /** Changes an activity on Strava (and in Statva). */
-const changeActivity = async (id: number, change: {name: string} | {gear_id: string} | Partial<Record<ActivityNote, string>>): Promise<void> => {
+type ActivityChange = {name: string} | {gear_id: string} | {commute: boolean} | {visibility: Visibility} | Partial<Record<ActivityNote, string>>;
+
+const changeActivity = async (id: number, change: ActivityChange): Promise<void> => {
   const response = await fetch(`/api/activity?id=${id}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(change)});
 
   if (401 === response.status) throw new NotLoggedInError('Not logged in');
@@ -66,6 +70,12 @@ const renameActivity = (id: number, name: string): Promise<void> => changeActivi
 
 /** Moves an activity to other gear on Strava, or takes it off with "none". */
 const setActivityGear = (id: number, gearId: string): Promise<void> => changeActivity(id, {gear_id: gearId});
+
+/** Flags an activity as a commute on Strava, or not. */
+const setActivityCommute = (id: number, commute: boolean): Promise<void> => changeActivity(id, {commute});
+
+/** Changes who sees an activity on Strava. */
+const setActivityVisibility = (id: number, visibility: Visibility): Promise<void> => changeActivity(id, {visibility});
 
 /** Changes an activity's description or private note on Strava. */
 const setActivityNote = (id: number, note: ActivityNote, text: string): Promise<void> => changeActivity(id, {[note]: text});
@@ -90,6 +100,8 @@ export {
   renameActivity,
   setActivityGear,
   setActivityNote,
+  setActivityCommute,
+  setActivityVisibility,
   fetchClubCalendar,
   IgnoredByStravaError,
   fetchActivityPhotos,
@@ -100,4 +112,4 @@ export {
   refreshActivity,
   syncActivities,
 };
-export type {ActivityNote, ActivityPhoto, BackfillReport, SyncReport};
+export type {ActivityNote, ActivityPhoto, BackfillReport, SyncReport, Visibility};

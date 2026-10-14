@@ -19,7 +19,7 @@ import {
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, DetailedActivity} from '../../models/strava';
-import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError} from '../../api';
+import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, Visibility} from '../../api';
 import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
 import {sportIcon} from '../components/sport';
@@ -31,6 +31,99 @@ const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
 const renameActivity = getFetcher<void>('activity.rename');
 const setActivityGear = getFetcher<void>('activity.gear');
 const setActivityNote = getFetcher<void>('activity.note');
+const setActivityCommute = getFetcher<void>('activity.commute');
+const setActivityVisibility = getFetcher<void>('activity.visibility');
+
+const VISIBILITIES: [Visibility, string][] = [
+  ['everyone', 'Everyone'],
+  ['followers_only', 'Followers'],
+  ['only_me', 'Only me'],
+];
+
+/** Puts a change made on Strava into the list and the details on screen. */
+const useApplyChange = (id: number) => {
+  const queryClient = useQueryClient();
+
+  return (change: Partial<Activity>) => {
+    queryClient.setQueryData<Activity[]>(['activities'], list => list?.map(listed => (listed.id === id ? {...listed, ...change} : listed)));
+    queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
+      loaded?.[id] ? {...loaded, [id]: {...loaded[id], ...change}} : loaded,
+    );
+  };
+};
+
+const changeFailed = (error: unknown, what: string) =>
+  toaster.create({
+    type: 'error',
+    title:
+      error instanceof NoWriteAccessError
+        ? 'Log out and in again to let Statva change it on Strava'
+        : error instanceof IgnoredByStravaError
+          ? `Strava does not let apps change the ${what}: change it on Strava`
+          : 'Strava did not take the change',
+  });
+
+/** Whether the activity is a commute, switched with a tap and saved on Strava. */
+const CommuteToggle = ({activity}: {activity: Activity}) => {
+  const apply = useApplyChange(activity.id);
+  const [saving, setSaving] = useState(false);
+
+  const toggle = async () => {
+    setSaving(true);
+    try {
+      await setActivityCommute(activity.id, !activity.commute);
+      apply({commute: !activity.commute});
+    } catch (error) {
+      changeFailed(error, 'commute flag');
+    }
+    setSaving(false);
+  };
+
+  return (
+    <Button
+      size="xs"
+      borderRadius="full"
+      variant={activity.commute ? 'solid' : 'outline'}
+      loading={saving}
+      onClick={toggle}
+      aria-pressed={activity.commute}
+      title={activity.commute ? 'A commute: tap to unmark it' : 'Not a commute: tap to mark it'}
+    >
+      Commute
+    </Button>
+  );
+};
+
+/** Who sees the activity on Strava, changed in place. */
+const VisibilitySelect = ({activity}: {activity: Activity}) => {
+  const apply = useApplyChange(activity.id);
+  const [saving, setSaving] = useState(false);
+  const current = (activity.visibility as Visibility | undefined) ?? (activity.private ? 'only_me' : 'everyone');
+
+  const change = async (visibility: Visibility) => {
+    setSaving(true);
+    try {
+      await setActivityVisibility(activity.id, visibility);
+      apply({visibility, private: 'only_me' === visibility});
+    } catch (error) {
+      changeFailed(error, 'visibility');
+    }
+    setSaving(false);
+  };
+
+  return (
+    <NativeSelect.Root size="xs" width="auto" disabled={saving}>
+      <NativeSelect.Field value={current} onChange={({target}) => change(target.value as Visibility)} aria-label="Who sees it" borderRadius="full">
+        {VISIBILITIES.map(([value, name]) => (
+          <option key={value} value={value}>
+            {name}
+          </option>
+        ))}
+      </NativeSelect.Field>
+      <NativeSelect.Indicator />
+    </NativeSelect.Root>
+  );
+};
 
 const NOTE_NAMES: Record<ActivityNote, string> = {description: 'Description', private_note: 'Private note'};
 
@@ -436,8 +529,8 @@ const ActivityPage = () => {
           <ActivityTitle key={activity.id} activity={activity} />
           <HStack gap="6px" flexWrap="wrap">
             <GearSelect activity={activity} />
-            {activity.commute && <Badge variant="surface">Commute</Badge>}
-            {activity.private && <Badge variant="surface">Private</Badge>}
+            <CommuteToggle activity={activity} />
+            <VisibilitySelect activity={activity} />
             {hasKom(detail) && <Badge colorPalette="yellow">KOM 👑</Badge>}
             {1 < activity.athlete_count && <Badge variant="surface">{activity.athlete_count} riders</Badge>}
           </HStack>

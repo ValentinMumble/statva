@@ -177,8 +177,8 @@ const sameText = (sent: unknown, received: unknown): boolean =>
 /**
  * Changes an activity on Strava and in the stored copies, without reading it again.
  * "denied" when Strava refused, which it does without write access (riders who logged in
- * before Statva asked for it). "ignored" when Strava answered but kept a text as it was,
- * as it may for a field apps cannot change: nothing is stored then, so Statva never shows
+ * before Statva asked for it). "ignored" when Strava answered but kept a field as it was,
+ * as it may for one apps cannot change: nothing is stored then, so Statva never shows
  * what Strava does not have.
  */
 const changeActivity = async (athleteId: number, activityId: number, update: Record<string, unknown>): Promise<ChangeResult> => {
@@ -187,10 +187,16 @@ const changeActivity = async (athleteId: number, activityId: number, update: Rec
 
   const changed = (await response.json().catch(() => null)) as Record<string, unknown> | null;
   const texts = ['name', 'description', 'private_note'].filter(key => key in update);
-  if (null !== changed && texts.some(key => !sameText(update[key], changed[key]))) return 'ignored';
+  const flags = ['commute', 'visibility'].filter(key => key in update && null !== changed && key in changed);
+  if (null !== changed && (texts.some(key => !sameText(update[key], changed[key])) || flags.some(key => update[key] !== changed[key]))) return 'ignored';
 
-  // Strava takes "none" to take the gear off, and stores no gear as null.
-  const storedUpdate = 'none' === update.gear_id ? {...update, gear_id: null} : update;
+  // Strava takes "none" to take the gear off, and stores no gear as null. Only the rider sees
+  // an activity whose visibility is only_me: Strava's private flag.
+  const storedUpdate = {
+    ...update,
+    ...('none' === update.gear_id ? {gear_id: null} : {}),
+    ...('visibility' in update ? {private: 'only_me' === update.visibility} : {}),
+  };
   for (const name of ['activities', 'details']) {
     const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), String(activityId));
     if (null !== stored) await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...storedUpdate}});

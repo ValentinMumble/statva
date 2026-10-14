@@ -184,7 +184,6 @@ const ClubPage = () => {
   const {activityMeta} = useActivityMeta();
   const {club, locale, mapCenter} = useSettings();
   const [now] = useState(() => new Date());
-  const [showAll, setShowAll] = useState(false);
   const [showAllMissed, setShowAllMissed] = useState(false);
   const [savedSeries, setSeries] = useLocalStorage<string | null>('club-series', null);
   const activities = useMemo(() => data ?? [], [data]);
@@ -201,6 +200,8 @@ const ClubPage = () => {
     queryFn: () => fetchCalendar(since),
     enabled: null !== since && isComplete,
     refetchInterval: query => (false === query.state.data?.complete ? 1000 : false),
+    // Each call keeps what it read, so a call that failed or ran out of time is worth retrying.
+    retry: 5,
   });
   const rides = useMemo(() => calendar?.rides ?? [], [calendar]);
   // The club's other numbered rides the rider has done too, like its Sunday ride.
@@ -255,7 +256,7 @@ const ClubPage = () => {
   const photos = sessions.reduce((sum, {activity}) => sum + (activity.total_photo_count ?? activity.photo_count ?? 0), 0);
   const prs = sessions.reduce((sum, {activity}) => sum + (activity.pr_count ?? 0), 0);
   const achievements = sessions.reduce((sum, {activity}) => sum + activity.achievement_count, 0);
-  const shown = showAll ? sessions : sessions.slice(0, LATEST_COUNT);
+  const shown = sessions.slice(0, LATEST_COUNT);
   const missed = match?.missed ?? [];
   const shownMissed = showAllMissed ? missed : missed.slice(0, LATEST_COUNT);
   const run = (length: number) => `${length} ${1 === length ? 'week' : 'weeks'}`;
@@ -323,7 +324,10 @@ const ClubPage = () => {
           </Panel>
 
           <Card>
-            <CardTitle>Sessions</CardTitle>
+            {/* All of them in the activities list, searched by the series' name. */}
+            <CardTitle to={`/activities?q=${encodeURIComponent(series)}`} linkLabel={`All ${sessions.length}`}>
+              Sessions
+            </CardTitle>
             <Stack gap="4px">
               {shown.map(session => (
                 <SessionRow
@@ -335,11 +339,6 @@ const ClubPage = () => {
                 />
               ))}
             </Stack>
-            {LATEST_COUNT < sessions.length && (
-              <Button size="sm" variant="ghost" marginTop="8px" onClick={() => setShowAll(!showAll)}>
-                {showAll ? 'Show fewer' : `Show all ${sessions.length}`}
-              </Button>
-            )}
           </Card>
 
           {0 < missed.length && (

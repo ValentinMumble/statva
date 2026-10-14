@@ -45,16 +45,18 @@ describe('teamPage', () => {
 describe('readClubCalendar', () => {
   it('reads the history back a few pages per call until it is complete', async () => {
     const fake = install();
-    fake.site.rides = weekly(40);
+    fake.site.rides = weekly(100);
 
-    const first = await readClubCalendar(42, WEBSITE, '2026-01-01', '2026-10-14');
+    const first = await readClubCalendar(42, WEBSITE, '2026-01-01', '2028-01-01');
     expect(first.complete).toBe(false);
-    expect(fake.site.requests).toHaveLength(6);
+    expect(fake.site.requests).toHaveLength(15);
+    // What a call read is kept as it goes, even if the call is cut short.
+    expect(fake.read('athlete:42:club').rides).toHaveLength(150);
 
-    const second = await readClubCalendar(42, WEBSITE, '2026-01-01', '2026-10-14');
+    const second = await readClubCalendar(42, WEBSITE, '2026-01-01', '2028-01-01');
     expect(second.complete).toBe(true);
-    expect(second.rides).toHaveLength(80);
-    expect(second.rides[0]).toMatchObject({series: 'Raymond Ride', number: 339});
+    expect(second.rides).toHaveLength(200);
+    expect(second.rides[0]).toMatchObject({series: 'Raymond Ride', number: 399});
     expect(second.rides.find(({number}) => 600 === number)).toMatchObject({day: '2026-01-07', groups: 8, finish: 'Zazou'});
   });
 

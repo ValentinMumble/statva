@@ -1,3 +1,4 @@
 {
-  "rewrites": [{"source": "/((?!api/|assets/).*)", "destination": "/"}]
+  "rewrites": [{"source": "/((?!api/|assets/).*)", "destination": "/"}],
+  "functions": {"api/club.ts": {"maxDuration": 60}}
 }

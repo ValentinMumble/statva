@@ -33,8 +33,10 @@ type ClubCalendar = {rides: ClubRide[]; complete: boolean};
 
 const HOSTS = ['www.prendslaroue.fr', 'prendslaroue.fr'];
 const PAGE_SIZE = 10;
-// Few enough that a call stays quick, and polite to the site.
-const PAGES_PER_CALL = 6;
+// The site takes about 3 seconds a page: a call reads pages while it has time (its function
+// may run 60 seconds), keeping what it read after each one, and stops at this many anyway.
+const PAGES_PER_CALL = 15;
+const TIME_PER_CALL_MS = 40_000;
 const RECHECK_MS = 6 * 3_600_000;
 // The newest rides are read again a little before the last check, for late changes.
 const RECHECK_OVERLAP_DAYS = 14;
@@ -131,35 +133,41 @@ const readClubCalendar = async (athleteId: number, website: string | undefined, 
   if (since < state.since) state = {...state, since, cursor: state.cursor ?? shiftDay([...rides.values()].reduce((oldest, {day}) => (day < oldest ? day : oldest), today), -1)};
 
   let budget = PAGES_PER_CALL;
+  const deadline = Date.now() + TIME_PER_CALL_MS;
+  const hasTime = () => 0 < budget-- && Date.now() < deadline;
+  const sorted = () => [...rides.values()].sort((first, second) => second.day.localeCompare(first.day));
+  // Kept after every page, so a call cut short never loses what it read.
+  const keep = async () => await redis().hset(key, {rides: sorted(), state});
   const add = (found: ClubRide[]) => found.forEach(ride => rides.set(rideKey(ride), ride));
 
   try {
     if (null === state.cursor && now - state.checkedAt > RECHECK_MS) {
       const from = shiftDay(state.newestDay, -RECHECK_OVERLAP_DAYS);
       let to = today;
-      while (0 < budget--) {
+      while (hasTime()) {
         const found = await readPage(page, from, to);
         add(found);
         if (found.length < PAGE_SIZE) break;
         to = shiftDay(found[found.length - 1].day, -1);
       }
       state = {...state, newestDay: today, checkedAt: now};
+      await keep();
     }
 
-    while (null !== state.cursor && 0 < budget--) {
+    while (null !== state.cursor && hasTime()) {
       const found = await readPage(page, state.since, state.cursor);
       add(found);
       // A full page may have more before it; the next one ends the day before its oldest ride.
       state = {...state, cursor: found.length < PAGE_SIZE ? null : shiftDay(found[found.length - 1].day, -1)};
+      await keep();
     }
   } catch {
     // The site is down or changed: keep what is known, and try again next time.
   }
 
-  const sorted = [...rides.values()].sort((first, second) => second.day.localeCompare(first.day));
-  await redis().hset(key, {rides: sorted, state});
+  await keep();
 
-  return {rides: sorted, complete: null === state.cursor};
+  return {rides: sorted(), complete: null === state.cursor};
 };
 
 export {parseRides, readClubCalendar, teamPage};
