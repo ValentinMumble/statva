@@ -48,7 +48,7 @@ type Settings = {
   // How far a pair of running shoes goes before it is worn out.
   shoeLifeKm: number;
   // For the tyre pressure calculator: each bike's weight, which run tubeless, what the rider
-  // carries (bottles, tools, shoes, helmet), and the pressures the calculator gave, in psi.
+  // carries (bottles, tools, shoes, helmet), and the pressures the rider runs, in bar.
   bikeWeightsKg: Record<string, number>;
   tubelessBikes: string[];
   kitWeightKg: number;

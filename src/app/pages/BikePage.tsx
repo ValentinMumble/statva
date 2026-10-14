@@ -8,7 +8,7 @@ import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
 import {useAllActivities, useEvents, useExpenses, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeBikeParts, Event, getEventLabel, isTireEvent, partsCostPerKm, PartState, shoeWear, tyrePressure} from '../../models';
+import {computeBikeParts, Event, getEventLabel, isTireEvent, partsCostPerKm, PartState, shoeWear, tyrePressure, tyreWidths} from '../../models';
 import {Card, CardTitle} from '../components/Card';
 import {km, number, relativeDay} from '../format';
 
@@ -65,22 +65,25 @@ const TyrePressure = ({bike}: {bike: string}) => {
   const {weightKg, kitWeightKg, bikeWeightsKg, tubelessBikes, tyrePressures, locale} = useSettings();
   const bikeKg = bikeWeightsKg[bike];
   const tyre = events.filter(event => bike === event.bike && isTireEvent(event)).sort((first, second) => second.date.getTime() - first.date.getTime())[0];
-  const width = tyre && isTireEvent(tyre) ? tyre.width : undefined;
+  const widths = tyre && isTireEvent(tyre) ? tyreWidths(tyre.width) : null;
   const saved = tyrePressures[bike] ?? {front: null, rear: null};
   const totalKg = undefined === bikeKg ? null : weightKg + bikeKg + kitWeightKg;
   const tubeless = tubelessBikes.includes(bike);
-  const advised = null === totalKg || undefined === width ? null : tyrePressure(totalKg, width, tubeless);
+  const advised = null === totalKg || null === widths ? null : tyrePressure(totalKg, widths, tubeless);
 
   const save = async (wheel: 'front' | 'rear', value: string) => {
-    const psi = '' === value.trim() ? null : Number(value);
-    if (null !== psi && !Number.isFinite(psi)) return;
-    await saveSetting('tyrePressures', {...tyrePressures, [bike]: {...saved, [wheel]: psi}});
+    const bar = '' === value.trim() ? null : Number(value.replace(',', '.'));
+    if (null !== bar && !Number.isFinite(bar)) return;
+    await saveSetting('tyrePressures', {...tyrePressures, [bike]: {...saved, [wheel]: bar}});
     await queryClient.invalidateQueries({queryKey: ['settings']});
   };
 
   const inputs: [string, string][] = [
     ['Total weight', null === totalKg ? 'Set the bike\'s weight in Settings' : `${number(totalKg, locale, 1)} kg (${number(totalKg / KG_PER_LB, locale)} lb)`],
-    ['Tyre width', undefined === width ? 'Log a tyre change with its width' : `${width} mm`],
+    [
+      'Tyre width',
+      null === widths ? 'Log a tyre change with its width' : widths.front === widths.rear ? `${widths.front} mm` : `${widths.front} mm front, ${widths.rear} mm rear`,
+    ],
     ['Wheel', '700C'],
     ['Setup', tubeless ? 'Tubeless' : 'Inner tubes'],
   ];
@@ -97,10 +100,10 @@ const TyrePressure = ({bike}: {bike: string}) => {
                   {wheel}
                 </Text>
                 <Text fontSize="2xl" fontWeight="semibold" lineHeight="1.2">
-                  {advised[wheel]} psi
+                  {number(advised[wheel], locale, 1)} bar
                 </Text>
                 <Text fontSize="sm" color="fg.muted">
-                  {number('front' === wheel ? advised.frontBar : advised.rearBar, locale, 1)} bar
+                  {'front' === wheel ? advised.frontPsi : advised.rearPsi} psi
                 </Text>
               </Stack>
             ))}
@@ -140,13 +143,14 @@ const TyrePressure = ({bike}: {bike: string}) => {
                   size="sm"
                   type="number"
                   inputMode="decimal"
+                  step="0.1"
                   defaultValue={saved[wheel] ?? ''}
-                  placeholder="psi"
+                  placeholder="bar"
                   onBlur={({target}) => save(wheel, target.value)}
-                  aria-label={`${wheel} pressure in psi`}
+                  aria-label={`${wheel} pressure in bar`}
                 />
                 <Text fontSize="sm" color="fg.muted">
-                  psi
+                  bar
                 </Text>
               </HStack>
             </Stack>

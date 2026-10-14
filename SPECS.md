@@ -171,12 +171,12 @@ On a phone the dialog opens from the bottom, with thumb-sized buttons.
   monthly spend as bars, an option to skip the oldest months, and the expenses list.
 - **Running shoes**: each pair in service, its km against how far a pair lasts (Settings,
   700 km by default), with weeks left at the pace of the last 8 weeks.
-- **Tyre pressure**: front and rear in psi and bar from Frank Berto's 15 % tyre drop
-  (fit: psi = 600 × wheel load in lb / width² + 0.75 × width − 25), on the total weight
+- **Tyre pressure**: front and rear in bar (psi underneath) from Frank Berto's 15 % tyre
+  drop (fit: psi = 600 × wheel load in lb / width² + 0.75 × width − 25), on the total weight
   (rider, the bike's weight from Settings, kit) split 45 % front and 55 % rear, the width of
-  the latest tire change, and 8 % lower for tubeless. Below 23 mm it warns the rule reads
-  high. It lists those inputs for a cross-check on SILCA's calculator, and keeps the
-  pressures the rider actually runs.
+  the latest tire change ("28", or "30/32" for a front and a rear width), and 8 % lower for
+  tubeless. Below 23 mm it warns the rule reads high. It lists those inputs for a
+  cross-check on SILCA's calculator, and keeps the pressures the rider actually runs, in bar.
 
 ### 5.4 Costs
 An expense has a date, an amount (negative for a sale) and a description. Part prices
