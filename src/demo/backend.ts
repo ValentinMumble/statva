@@ -54,10 +54,6 @@ const demoBackend = {
   setActivityNote: async (id: number, note: 'description' | 'private_note', text: string) => {
     if (demo().details[id]) demo().details[id] = {...demo().details[id], [note]: text};
   },
-  setActivityCommute: async (id: number, commute: boolean) => {
-    demo().activities = demo().activities.map(activity => (activity.id === id ? {...activity, commute} : activity));
-    if (demo().details[id]) demo().details[id] = {...demo().details[id], commute};
-  },
   setActivityVisibility: async (id: number, visibility: string) => {
     const change = {visibility, private: 'only_me' === visibility};
     demo().activities = demo().activities.map(activity => (activity.id === id ? {...activity, ...change} : activity));
@@ -115,6 +111,8 @@ const demoBackend = {
         text,
         athlete: {firstname: ['Camille', 'Jules', 'Inès'][index], lastname: 'D.'},
         created_at: new Date(start + (index + 3) * 3_600_000).toISOString(),
+        reaction_count: index,
+        has_reacted: 1 === index,
       })),
     );
   },

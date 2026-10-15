@@ -178,31 +178,39 @@ const sameText = (sent: unknown, received: unknown): boolean =>
  * Changes an activity on Strava and in the stored copies, without reading it again.
  * "denied" when Strava refused, which it does without write access (riders who logged in
  * before Statva asked for it). "ignored" when Strava answered but kept a field as it was,
- * as it may for one apps cannot change: nothing is stored then, so Statva never shows
- * what Strava does not have.
+ * as it does for some apps cannot change (the commute flag): the fields it took are stored,
+ * not that one.
  */
 const changeActivity = async (athleteId: number, activityId: number, update: Record<string, unknown>): Promise<ChangeResult> => {
   const response = await stravaPut(athleteId, `activities/${activityId}`, update);
   if (!response.ok) return 'denied';
 
+  // What Strava kept as it was, comparing its answer with what was sent: texts loosely,
+  // flags exactly. Only what it took is stored, so Statva never shows what Strava does not have.
   const changed = (await response.json().catch(() => null)) as Record<string, unknown> | null;
-  const texts = ['name', 'description', 'private_note'].filter(key => key in update);
-  const flags = ['commute', 'visibility'].filter(key => key in update && null !== changed && key in changed);
-  if (null !== changed && (texts.some(key => !sameText(update[key], changed[key])) || flags.some(key => update[key] !== changed[key]))) return 'ignored';
+  // A text missing from the answer was kept too; a flag only when the answer has it.
+  const kept = (key: string): boolean =>
+    null !== changed &&
+    (['name', 'description', 'private_note'].includes(key)
+      ? !sameText(update[key], changed[key])
+      : ['commute', 'visibility'].includes(key) && key in changed && update[key] !== changed[key]);
+  const taken = Object.fromEntries(Object.entries(update).filter(([key]) => !kept(key)));
 
   // Strava takes "none" to take the gear off, and stores no gear as null. Only the rider sees
   // an activity whose visibility is only_me: Strava's private flag.
   const storedUpdate = {
-    ...update,
-    ...('none' === update.gear_id ? {gear_id: null} : {}),
-    ...('visibility' in update ? {private: 'only_me' === update.visibility} : {}),
+    ...taken,
+    ...('none' === taken.gear_id ? {gear_id: null} : {}),
+    ...('visibility' in taken ? {private: 'only_me' === taken.visibility} : {}),
   };
-  for (const name of ['activities', 'details']) {
-    const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), String(activityId));
-    if (null !== stored) await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...storedUpdate}});
+  if (0 < Object.keys(taken).length) {
+    for (const name of ['activities', 'details']) {
+      const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), String(activityId));
+      if (null !== stored) await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...storedUpdate}});
+    }
   }
 
-  return 'changed';
+  return Object.keys(taken).length < Object.keys(update).length ? 'ignored' : 'changed';
 };
 
 /**

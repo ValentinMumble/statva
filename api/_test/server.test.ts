@@ -1,7 +1,7 @@
 import {install, makeActivities} from './fakes.js';
 import {canBackfill} from '../_lib/budget.js';
 import {webhookVerifyToken} from '../_lib/env.js';
-import {backfillActivities, syncActivities, refreshActivity} from '../_lib/sync.js';
+import {backfillActivities, changeActivity, syncActivities, refreshActivity} from '../_lib/sync.js';
 import {sessionCookie} from '../_lib/session.js';
 import {POST as store} from '../store.js';
 import {GET as webhookCheck, POST as webhook} from '../webhook.js';
@@ -266,17 +266,26 @@ describe('renaming an activity', () => {
     expect(fake.read('athlete:42:activities')['1001']).not.toHaveProperty('private_note');
   });
 
-  it('flags it as a commute, and changes who sees it', async () => {
+  it('stores what Strava took and leaves what it kept, like the commute flag a rule sends', async () => {
+    const fake = install();
+    fake.login(42);
+    fake.strava.activities = makeActivities(1).map(activity => ({...activity, commute: false}));
+    fake.strava.ignoredFields = ['commute'];
+    await syncActivities(42);
+
+    expect(await changeActivity(42, 1001, {name: 'Akeneo ⚙️', commute: true, gear_id: 'b7'})).toBe('ignored');
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({name: 'Akeneo ⚙️', gear_id: 'b7', commute: false});
+  });
+
+  it('changes who sees it', async () => {
     const fake = install();
     fake.login(42);
     fake.strava.activities = makeActivities(1);
     await syncActivities(42);
 
-    expect((await rename({commute: true})).status).toBe(200);
     expect((await rename({visibility: 'only_me'})).status).toBe(200);
-    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({commute: true, visibility: 'only_me', private: true});
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({visibility: 'only_me', private: true});
     expect((await rename({visibility: 'friends'})).status).toBe(400);
-    expect((await rename({commute: 'yes'})).status).toBe(400);
   });
 
   it('says so when Strava keeps the visibility as it was', async () => {

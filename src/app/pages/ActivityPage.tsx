@@ -2,7 +2,8 @@ import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, IconButton, Image, Input, NativeSelect, Skeleton, Stack, Text, Textarea} from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocation, useParams} from 'react-router';
-import {LuArrowLeft, LuCheck, LuExternalLink, LuPencil, LuPlus, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
+import {LuArrowLeft, LuExternalLink, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
+import {FaHeart} from 'react-icons/fa6';
 import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
@@ -33,7 +34,6 @@ const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
 const renameActivity = getFetcher<void>('activity.rename');
 const setActivityGear = getFetcher<void>('activity.gear');
 const setActivityNote = getFetcher<void>('activity.note');
-const setActivityCommute = getFetcher<void>('activity.commute');
 const setActivityVisibility = getFetcher<void>('activity.visibility');
 
 const VISIBILITIES: [Visibility, string][] = [
@@ -64,41 +64,6 @@ const changeFailed = (error: unknown, what: string) =>
           ? `Strava does not let apps change the ${what}: change it on Strava`
           : 'Strava did not take the change',
   });
-
-/** Whether the activity is a commute, switched with a tap and saved on Strava. */
-const CommuteToggle = ({activity}: {activity: Activity}) => {
-  const apply = useApplyChange(activity.id);
-  const [saving, setSaving] = useState(false);
-
-  const toggle = async () => {
-    setSaving(true);
-    try {
-      await setActivityCommute(activity.id, !activity.commute);
-      apply({commute: !activity.commute});
-    } catch (error) {
-      changeFailed(error, 'commute flag');
-    }
-    setSaving(false);
-  };
-
-  return (
-    // Off, it reads as something to add (dashed, muted, a plus); on, as a filled tag with a tick.
-    <Button
-      size="xs"
-      borderRadius="full"
-      variant={activity.commute ? 'solid' : 'outline'}
-      colorPalette={activity.commute ? 'brand' : undefined}
-      borderStyle={activity.commute ? undefined : 'dashed'}
-      color={activity.commute ? undefined : 'fg.muted'}
-      loading={saving}
-      onClick={toggle}
-      aria-pressed={activity.commute}
-      title={activity.commute ? 'A commute: tap to unmark it' : 'Not a commute: tap to mark it'}
-    >
-      {activity.commute ? <LuCheck /> : <LuPlus />} Commute
-    </Button>
-  );
-};
 
 /** Who sees the activity on Strava, changed in place. */
 const VisibilitySelect = ({activity}: {activity: Activity}) => {
@@ -339,6 +304,8 @@ const ActivityTitle = ({activity, history}: {activity: Activity; history: Activi
 };
 const fetchPhotos = getFetcher<ActivityPhoto[]>('activity.photos');
 const fetchComments = getFetcher<Comment[]>('activity.comments');
+// Strava's own orange, as for kudos on Home.
+const STRAVA_ORANGE = '#fc4c02';
 
 /**
  * The comments on the activity, and a box to answer. Strava lets apps read comments but not
@@ -373,11 +340,17 @@ const Comments = ({activity, detail, locale}: {activity: Activity; detail: Detai
         {undefined === comments ? (
           <Skeleton height="40px" borderRadius="10px" />
         ) : (
-          comments.map(({id, athlete, text, created_at}) => (
+          comments.map(({id, athlete, text, created_at, reaction_count: likes = 0, has_reacted: liked = false}) => (
             <Stack key={id} gap="2px">
               <HStack gap="8px" fontSize="sm">
                 <Text fontWeight="medium">{[athlete?.firstname, athlete?.lastname].filter(Boolean).join(' ') || 'Someone'}</Text>
                 <Text color="fg.muted">{relativeDay(new Date(created_at), locale)}</Text>
+                {0 < likes && (
+                  <HStack gap="4px" color={liked ? STRAVA_ORANGE : 'fg.muted'} title={liked ? `${likes} likes, yours among them` : `${likes} likes`}>
+                    <Icon as={FaHeart} boxSize="12px" />
+                    <Text>{likes}</Text>
+                  </HStack>
+                )}
               </HStack>
               <Text whiteSpace="pre-wrap">{text}</Text>
             </Stack>
@@ -609,7 +582,7 @@ const ActivityPage = () => {
           <ActivityTitle key={activity.id} activity={activity} history={activities} />
           <HStack gap="6px" flexWrap="wrap">
             <GearSelect activity={activity} />
-            <CommuteToggle activity={activity} />
+            {activity.commute && <Badge variant="surface">Commute</Badge>}
             <VisibilitySelect activity={activity} />
             {hasKom(detail) && <Badge colorPalette="yellow">KOM 👑</Badge>}
             {1 < activity.athlete_count && <Badge variant="surface">{activity.athlete_count} riders</Badge>}

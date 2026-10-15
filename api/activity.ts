@@ -26,7 +26,7 @@ const MAX_NOTE = 10_000;
 // Who sees an activity, as Strava names it.
 const VISIBILITIES = ['everyone', 'followers_only', 'only_me'];
 
-/** Renames an activity on Strava, moves it to other gear, flags it as a commute, or changes its visibility, description or private note. */
+/** Renames an activity on Strava, moves it to other gear, or changes its visibility, description or private note. */
 export const PUT = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
@@ -38,7 +38,6 @@ export const PUT = async (request: Request): Promise<Response> => {
     gear_id?: unknown;
     description?: unknown;
     private_note?: unknown;
-    commute?: unknown;
     visibility?: unknown;
   } | null;
 
@@ -46,10 +45,7 @@ export const PUT = async (request: Request): Promise<Response> => {
 
   let update: Record<string, string | boolean>;
   const note = (['description', 'private_note'] as const).find(key => undefined !== body?.[key]);
-  if (undefined !== body?.commute) {
-    if ('boolean' !== typeof body.commute) return json({error: 'Commute is true or false'}, 400);
-    update = {commute: body.commute};
-  } else if (undefined !== body?.visibility) {
+  if (undefined !== body?.visibility) {
     if ('string' !== typeof body.visibility || !VISIBILITIES.includes(body.visibility)) return json({error: 'Unknown visibility'}, 400);
     update = {visibility: body.visibility};
   } else if (undefined !== note) {

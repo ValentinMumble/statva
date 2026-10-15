@@ -55,7 +55,7 @@ type ActivityNote = 'description' | 'private_note';
 type Visibility = 'everyone' | 'followers_only' | 'only_me';
 
 /** Changes an activity on Strava (and in Statva). */
-type ActivityChange = {name: string} | {gear_id: string} | {commute: boolean} | {visibility: Visibility} | Partial<Record<ActivityNote, string>>;
+type ActivityChange = {name: string} | {gear_id: string} | {visibility: Visibility} | Partial<Record<ActivityNote, string>>;
 
 const changeActivity = async (id: number, change: ActivityChange): Promise<void> => {
   const response = await fetch(`/api/activity?id=${id}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(change)});
@@ -70,9 +70,6 @@ const renameActivity = (id: number, name: string): Promise<void> => changeActivi
 
 /** Moves an activity to other gear on Strava, or takes it off with "none". */
 const setActivityGear = (id: number, gearId: string): Promise<void> => changeActivity(id, {gear_id: gearId});
-
-/** Flags an activity as a commute on Strava, or not. */
-const setActivityCommute = (id: number, commute: boolean): Promise<void> => changeActivity(id, {commute});
 
 /** Changes who sees an activity on Strava. */
 const setActivityVisibility = (id: number, visibility: Visibility): Promise<void> => changeActivity(id, {visibility});
@@ -103,7 +100,6 @@ export {
   renameActivity,
   setActivityGear,
   setActivityNote,
-  setActivityCommute,
   setActivityVisibility,
   fetchClubCalendar,
   IgnoredByStravaError,
