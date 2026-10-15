@@ -118,7 +118,9 @@ again.
 
 - Back link to the list as it was left; date, name, and badges (gear, commute, private,
   KOM, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
-- The name has a pencil to rename it, the gear badge is a menu to move a ride to
+- The name has a pencil to rename it, and, when it has no emoji, a button that opens the
+  editor with a suggested name (the name most given to the same route, or the name with an
+  emoji not used yet). The gear badge is a menu to move a ride to
   another bike (or a run to other shoes, or to none; retired gear only when it is already
   on it), a **Commute** button marks it as one or not, and a menu sets who sees it
   (everyone, followers, only me). All are saved on Strava, which needs write access (a login after Statva asked
@@ -340,8 +342,9 @@ Sunday "Raymond Ride"), a switch at the top shows the whole page for either seri
   breaks a run nor counts as missed.
 - **Missed sessions**: from the calendar, the latest 8 (or all), with their day, finish
   bar and groups out.
-- **Sessions**: the latest 8 (or all), with their route, group, finish place (from the
-  notes, or else the calendar), riders, km and speed.
+- **Sessions**: the latest 8, with their route, group, finish place (from the notes, or
+  else the calendar), riders, km and speed, and a link to all of them in the activities
+  list, searched by the series' name.
 - **Groups**: sessions, average riders, speed and power (rides with a power meter).
 - **Bikes**: for each bike ridden to the club, its sessions, km, years used, average
   speed and power, and a bar for its share of the sessions.
@@ -390,7 +393,9 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
   history, a few pages per call, and the list fills up after each. After that a sync
   fetches what started since the newest known activity, minus a month for late uploads.
 - A sync also fetches the details of the activities that are new (up to 10), and answers.
-  The app then puts just those details into what it has loaded, rather than reloading all.
+  The app then puts just those details into what it has loaded, rather than reloading all,
+  and reads the newest 20 stored activities, so one the webhook stored before the sync
+  (which then finds nothing new) still shows at once.
 - After each sync the app asks for a backfill without waiting for it: the details of a
   few older activities (newest first) and the power data of a few that lack it. Its
   details are merged in the same way when it ends.

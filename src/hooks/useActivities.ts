@@ -85,8 +85,10 @@ const useAllActivities = () => {
       if (pagedHistory) await queryClient.invalidateQueries({queryKey: ['activities']});
     } while (!report.historyDone && !report.limited);
 
-    // Usually only a few new activities: the newest ones are fetched and added, not the whole list.
-    if (!pagedHistory && 0 < report.added) addToList(await fetchLatest(FIRST_COUNT));
+    // The newest activities are fetched and added, not the whole list, even when this sync found
+    // none: Strava's webhook stores a new activity on the server as soon as it is uploaded, so
+    // the sync has nothing to add, but this screen has not seen it yet. One small call.
+    if (!pagedHistory) addToList(await fetchLatest(FIRST_COUNT));
 
     await addDetails(report.detailIds);
 

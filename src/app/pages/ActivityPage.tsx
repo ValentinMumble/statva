@@ -2,7 +2,7 @@ import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, IconButton, Image, Input, NativeSelect, Skeleton, Stack, Text, Textarea} from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocation, useParams} from 'react-router';
-import {LuArrowLeft, LuExternalLink, LuPencil, LuRefreshCw} from 'react-icons/lu';
+import {LuArrowLeft, LuExternalLink, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
@@ -13,9 +13,11 @@ import {
   getPowerZone,
   getZoneColor,
   getTypes,
+  hasEmoji,
   hasKom,
   intensityOf,
   isPedalled,
+  suggestName,
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, DetailedActivity} from '../../models/strava';
@@ -258,9 +260,14 @@ const GearSelect = ({activity}: {activity: Activity}) => {
 const MAX_NAME_LENGTH = 255;
 
 /** The activity's name, and a pencil to change it, saved on Strava. */
-const ActivityTitle = ({activity}: {activity: Activity}) => {
+const ActivityTitle = ({activity, history}: {activity: Activity; history: Activity[]}) => {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<string | null>(null);
+  // A name without an emoji gets the one most given to the same route, or an emoji not used yet.
+  const addEmoji = () => {
+    const usedEmojis = new Set(history.flatMap(({name}) => [...name.matchAll(/\p{Extended_Pictographic}/gu)].map(([match]) => match)));
+    setDraft(suggestName(activity, history, usedEmojis));
+  };
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -293,6 +300,11 @@ const ActivityTitle = ({activity}: {activity: Activity}) => {
         <IconButton aria-label="Rename" size="sm" variant="ghost" color="fg.muted" onClick={() => setDraft(activity.name)}>
           <LuPencil />
         </IconButton>
+        {!hasEmoji(activity.name) && (
+          <IconButton aria-label="Add an emoji" title="Add an emoji" size="sm" variant="ghost" color="fg.muted" onClick={addEmoji}>
+            <LuSmilePlus />
+          </IconButton>
+        )}
       </HStack>
     );
   }
@@ -526,7 +538,7 @@ const ActivityPage = () => {
               {date.toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit'})}
             </Text>
           </HStack>
-          <ActivityTitle key={activity.id} activity={activity} />
+          <ActivityTitle key={activity.id} activity={activity} history={activities} />
           <HStack gap="6px" flexWrap="wrap">
             <GearSelect activity={activity} />
             <CommuteToggle activity={activity} />
