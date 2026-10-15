@@ -6,14 +6,16 @@ import {LogEvent} from '../../components/event';
 import {useAllActivities, useEvents, useFtp, useLabels, useSettings, useSomeActivityDetails} from '../../hooks';
 import {
   computeBikeParts,
+  eddingtonNumber,
   Event,
   extractNormalizedPower,
+  getTypes,
   getPowerZone,
   getZoneColor,
   PartState,
   weekSummary,
 } from '../../models';
-import {Activity} from '../../models/strava';
+import {Activity, ActivityType} from '../../models/strava';
 import {Card, CardTitle} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
 import {RouteThumb} from '../components/RouteThumb';
@@ -217,6 +219,48 @@ const STATE_COLOR: Record<PartState, string> = {ok: 'green.solid', due: 'orange.
 const STATE_LABEL: Record<PartState, string> = {ok: 'Fine', due: 'Due soon', overdue: 'Overdue'};
 const PARTS_SHOWN = 4;
 
+/** The Eddington number of rides (E days of at least E km), this year's, and how close the next one is. */
+const EddingtonCard = ({activities, locale, now}: {activities: Activity[]; locale: string; now: Date}) => {
+  const rides = useMemo(() => {
+    const types = getTypes(ActivityType.Ride);
+
+    return activities.filter(({sport_type}) => types.includes(sport_type));
+  }, [activities]);
+  const [eddington, needed] = useMemo(() => eddingtonNumber(rides), [rides]);
+  const [thisYear] = useMemo(() => eddingtonNumber(rides.filter(({start_date}) => new Date(start_date).getFullYear() === now.getFullYear())), [rides, now]);
+  const next = eddington + 1;
+  const done = next - needed;
+
+  return (
+    <Card>
+      <CardTitle to="/records" linkLabel="Records">
+        Eddington
+      </CardTitle>
+      <HStack justifyContent="space-between" alignItems="baseline" gap="12px">
+        <Text fontFamily="figure" fontSize="3xl" fontWeight="semibold" lineHeight="1">
+          {eddington}
+          <Text as="span" fontSize="md" color="fg.muted" fontWeight="normal">
+            {' '}
+            km
+          </Text>
+        </Text>
+        <Text fontSize="sm" color="fg.muted">
+          {thisYear} km in {now.getFullYear()}
+        </Text>
+      </HStack>
+      <Text fontSize="sm" color="fg.muted" marginTop="4px" marginBottom="14px">
+        {eddington} days of {eddington} km or more
+      </Text>
+      <Box height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
+        <Box height="full" borderRadius="full" background="brand.solid" width={`${Math.max(3, (done / next) * 100)}%`} />
+      </Box>
+      <Text fontSize="xs" color="fg.muted" marginTop="6px">
+        {number(done, locale)} of {number(next, locale)} days of {next} km: {needed} more for the next
+      </Text>
+    </Card>
+  );
+};
+
 const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}) => {
   const {defaultBike, partRules} = useSettings();
   const {events, refetch} = useEvents();
@@ -306,7 +350,10 @@ const HomePage = () => {
               <LatestActivities activities={activities} locale={locale} now={now} />
               <WeeksCard activities={activities} now={now} locale={locale} />
             </Stack>
-            <BikeCard activities={activities} locale={locale} />
+            <Stack gap={{base: '16px', md: '24px'}}>
+              <BikeCard activities={activities} locale={locale} />
+              <EddingtonCard activities={activities} locale={locale} now={now} />
+            </Stack>
           </Grid>
         </>
       )}

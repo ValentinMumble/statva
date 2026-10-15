@@ -50,6 +50,8 @@ Activities carries a count in the sidebar and a dot on the tab.
 4. **Bike**: the main bike's distance and its 4 most worn parts, the chain always among
    them (in last place when it is not one of the most worn), with a button to log a
    change.
+5. **Eddington**: the rides' Eddington number, this year's, and a bar of the days done
+   toward the next one.
 
 ---
 
