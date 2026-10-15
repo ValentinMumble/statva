@@ -9,6 +9,7 @@ import {
   deleteEvent,
   deleteExpense,
   deleteLabel,
+  fetchActivityComments,
   fetchActivityPhotos,
   fetchActivityZones,
   fetchAthlete,
@@ -52,6 +53,7 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'club.calendar': fetchClubCalendar,
   'activity.zones': fetchActivityZones,
   'activity.photos': fetchActivityPhotos,
+  'activity.comments': fetchActivityComments,
   'activities.meta.get': getActivities,
   'activities.details.some': getSomeDetails,
   'activities.latest': getLatestSummaries,
@@ -86,6 +88,7 @@ const DEMO: typeof REAL = {
   'activity.zones': demoBackend.getZones,
   // The demo has no photos.
   'activity.photos': () => Promise.resolve([]),
+  'activity.comments': demoBackend.getComments,
   'activities.meta.get': demoBackend.getDetails,
   'activities.details.some': demoBackend.getSomeDetails,
   'activities.latest': demoBackend.getLatestSummaries,

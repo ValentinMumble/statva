@@ -2,7 +2,7 @@ import {useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, IconButton, Image, Input, NativeSelect, Skeleton, Stack, Text, Textarea} from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocation, useParams} from 'react-router';
-import {LuArrowLeft, LuExternalLink, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
+import {LuArrowLeft, LuCheck, LuExternalLink, LuPencil, LuPlus, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
 import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
@@ -20,13 +20,13 @@ import {
   suggestName,
   terrainOf,
 } from '../../models';
-import {Activity, ActivityType, ActivityZone, DetailedActivity} from '../../models/strava';
+import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '../../models/strava';
 import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, Visibility} from '../../api';
 import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
-import {duration, km, metres, number} from '../format';
+import {duration, km, metres, number, relativeDay} from '../format';
 
 const fetchZones = getFetcher<ActivityZone[]>('activity.zones');
 const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
@@ -82,16 +82,20 @@ const CommuteToggle = ({activity}: {activity: Activity}) => {
   };
 
   return (
+    // Off, it reads as something to add (dashed, muted, a plus); on, as a filled tag with a tick.
     <Button
       size="xs"
       borderRadius="full"
       variant={activity.commute ? 'solid' : 'outline'}
+      colorPalette={activity.commute ? 'brand' : undefined}
+      borderStyle={activity.commute ? undefined : 'dashed'}
+      color={activity.commute ? undefined : 'fg.muted'}
       loading={saving}
       onClick={toggle}
       aria-pressed={activity.commute}
       title={activity.commute ? 'A commute: tap to unmark it' : 'Not a commute: tap to mark it'}
     >
-      Commute
+      {activity.commute ? <LuCheck /> : <LuPlus />} Commute
     </Button>
   );
 };
@@ -334,6 +338,70 @@ const ActivityTitle = ({activity, history}: {activity: Activity; history: Activi
   );
 };
 const fetchPhotos = getFetcher<ActivityPhoto[]>('activity.photos');
+const fetchComments = getFetcher<Comment[]>('activity.comments');
+
+/**
+ * The comments on the activity, and a box to answer. Strava lets apps read comments but not
+ * post them, so the box copies the text and opens the activity on Strava to paste it there.
+ */
+const Comments = ({activity, detail, locale}: {activity: Activity; detail: DetailedActivity | null; locale: string}) => {
+  const count = detail?.comment_count ?? activity.comment_count;
+  const [draft, setDraft] = useState('');
+  const {data: comments} = useQuery({
+    queryKey: ['comments', activity.id, count],
+    queryFn: () => fetchComments(activity.id),
+    enabled: 0 < count,
+    retry: false,
+  });
+
+  if (0 === count) return null;
+
+  const answer = async () => {
+    try {
+      await navigator.clipboard.writeText(draft.trim());
+      toaster.create({title: 'Copied: paste it in the comment box on Strava'});
+    } catch {
+      toaster.create({type: 'error', title: 'Could not copy the text: type it on Strava'});
+    }
+    window.open(getActivityUrl(activity), '_blank', 'noreferrer');
+  };
+
+  return (
+    <Card>
+      <CardTitle>Comments</CardTitle>
+      <Stack gap="12px">
+        {undefined === comments ? (
+          <Skeleton height="40px" borderRadius="10px" />
+        ) : (
+          comments.map(({id, athlete, text, created_at}) => (
+            <Stack key={id} gap="2px">
+              <HStack gap="8px" fontSize="sm">
+                <Text fontWeight="medium">{[athlete?.firstname, athlete?.lastname].filter(Boolean).join(' ') || 'Someone'}</Text>
+                <Text color="fg.muted">{relativeDay(new Date(created_at), locale)}</Text>
+              </HStack>
+              <Text whiteSpace="pre-wrap">{text}</Text>
+            </Stack>
+          ))
+        )}
+        <Stack gap="8px">
+          <Textarea
+            autoresize={true}
+            value={draft}
+            onChange={({target}) => setDraft(target.value)}
+            placeholder="Write a comment"
+            aria-label="Your comment"
+          />
+          <Button size="sm" variant="outline" alignSelf="flex-start" disabled={'' === draft.trim()} onClick={answer}>
+            Copy and open on Strava <LuExternalLink />
+          </Button>
+          <Text fontSize="xs" color="fg.muted">
+            Strava does not let apps post comments: paste it there.
+          </Text>
+        </Stack>
+      </Stack>
+    </Card>
+  );
+};
 
 // The biggest size Strava sent, for a photo opened on its own.
 const largest = (urls: Record<string, string>): string | undefined =>
@@ -629,6 +697,7 @@ const ActivityPage = () => {
               </Stack>
             </Card>
           )}
+          <Comments key={activity.id} activity={activity} detail={detail} locale={locale} />
         </Stack>
         <Stack gap={{base: '16px', md: '24px'}}>
           <HeartRateZones activity={activity} />

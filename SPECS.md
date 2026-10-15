@@ -131,6 +131,9 @@ again.
   heart rate zone badges), cadence, calories, temperature, suffer score, kudos,
   achievements, PRs.
 - **Photos**: all of them, fetched from Strava on open; one opens full size.
+- **Comments**, when the activity has some: who wrote each and when, and a box to answer.
+  Strava lets apps read comments but not post them, so the box copies the text and opens
+  the activity on Strava to paste it there.
 - **Notes**: the description and the private note, each with a pencil to change it (or
   write one), saved on Strava. When Strava answers but keeps a note as it was (apps may
   not be allowed to write it), nothing changes in Statva and the rider is told to edit it

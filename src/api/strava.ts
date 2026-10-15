@@ -1,5 +1,5 @@
 import type {ClubRide} from '../models/club';
-import {ActivityZone, Athlete, DetailedActivity} from '../models/strava';
+import {ActivityZone, Athlete, Comment, DetailedActivity} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
 class NotLoggedInError extends Error {}
@@ -91,6 +91,9 @@ const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<Activ
 type ActivityPhoto = {unique_id: string; urls: Record<string, string>; caption?: string};
 
 /** Every photo of an activity (the details only hold the main one), at about 1000 px. */
+/** An activity's comments, oldest first. Strava lets apps read them, not write them. */
+const fetchActivityComments = (id: number): Promise<Comment[]> => strava<Comment[]>(`activities/${id}/comments`, {page_size: 100});
+
 const fetchActivityPhotos = (id: number): Promise<ActivityPhoto[]> =>
   strava<ActivityPhoto[]>(`activities/${id}/photos`, {size: 1000, photo_sources: 'true'});
 
@@ -104,6 +107,7 @@ export {
   setActivityVisibility,
   fetchClubCalendar,
   IgnoredByStravaError,
+  fetchActivityComments,
   fetchActivityPhotos,
   fetchActivityZones,
   fetchAthlete,

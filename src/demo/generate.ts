@@ -245,7 +245,8 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       athlete_count: extra.athletes ?? (random.chance(0.1) ? random.integer(2, 3) : 1),
       total_photo_count: 0,
       photo_count: 0,
-      comment_count: 0,
+      // A few club rides get comments, picked by id so the rest of the made-up data stays the same.
+      comment_count: 'club' === kind ? id % 3 : 0,
       commute: 'commute' === kind,
       private: random.chance(0.04),
       trainer: 'zwift' === kind,

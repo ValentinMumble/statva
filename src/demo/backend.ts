@@ -103,6 +103,21 @@ const demoBackend = {
     demo().settings = {...demo().settings, [field]: value};
   },
   getClubCalendar: () => answer({rides: demoCalendar(), complete: true}),
+  getComments: (id: number) => {
+    const count = demo().activities.find(activity => activity.id === id)?.comment_count ?? 0;
+    const texts = ['Great pace tonight!', 'See you next week', 'That last climb though'];
+    const start = new Date(demo().activities.find(activity => activity.id === id)?.start_date ?? Date.now()).getTime();
+
+    return answer(
+      texts.slice(0, count).map((text, index) => ({
+        id: id * 10 + index,
+        activity_id: id,
+        text,
+        athlete: {firstname: ['Camille', 'Jules', 'Inès'][index], lastname: 'D.'},
+        created_at: new Date(start + (index + 3) * 3_600_000).toISOString(),
+      })),
+    );
+  },
   getZones: (id: number) => {
     const activity = demo().activities.find(activity => activity.id === id);
 

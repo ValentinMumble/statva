@@ -9,8 +9,9 @@ const ALLOWED_PATHS = [
   /^activities\/\d+$/,
   /^activities\/\d+\/zones$/,
   /^activities\/\d+\/photos$/,
+  /^activities\/\d+\/comments$/,
 ];
-const ALLOWED_PARAMS = ['page', 'per_page', 'size', 'photo_sources'];
+const ALLOWED_PARAMS = ['page', 'per_page', 'page_size', 'size', 'photo_sources'];
 
 /** Calls Strava for the logged-in athlete. */
 export const GET = async (request: Request): Promise<Response> => {
