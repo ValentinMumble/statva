@@ -33,14 +33,18 @@ import {deviceDay, localDay} from '../../models/local-day';
 import {computeStreaks} from '../../models/streaks';
 import {DatedRoute} from '../../models/year-review';
 import {CalendarHeatmap} from '../components/CalendarHeatmap';
-import {Panel, Readout} from '../components/Panel';
+import {Figure, Panel, Readout} from '../components/Panel';
 import {RideClock} from '../components/RideClock';
 import {StreaksPanel} from '../components/StreaksPanel';
 import {YearReview} from '../components/YearReview';
 import {
+  CLIMBING_STEP_M,
   computeDashboard,
+  computeEddingtons,
   computeExplorerTiles,
   Dashboard as DashboardData,
+  darkRides,
+  Eddington,
   decodePolyline,
   formatCurrency,
   formatDistance,
@@ -483,6 +487,8 @@ const RecordsPage = () => {
   );
   const streaks = useMemo(() => computeStreaks(activities, deviceDay(now)), [activities, now]);
   const rideClock = useMemo(() => buildRideClock(activities), [activities]);
+  const eddingtons = useMemo(() => computeEddingtons(activities), [activities]);
+  const dark = useMemo(() => darkRides(activities, now.getFullYear()), [activities, now]);
 
   // Decoding every route is the heavy part of this page, so it happens once. The map is
   // drawn from the light summary routes; the tiles are counted from the full ones, since
@@ -613,6 +619,41 @@ const RecordsPage = () => {
             format={value => `E${count(value)}`}
             height={240}
           />
+        </Panel>
+      </Grid>
+
+      <Grid templateColumns={{base: '1fr', lg: '2fr 1fr'}} gap="16px">
+        <Panel title="More Eddingtons" note="E of them with at least E">
+          <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))'}} gap="16px">
+            {(
+              [
+                ['Climbing', eddingtons.climbing, (value: number) => `${count(value * CLIMBING_STEP_M)} m`, 'days'],
+                ['Minutes', eddingtons.minutes, (value: number) => `${count(value)} min`, 'days'],
+                ['Kudos', eddingtons.kudos, (value: number) => `${count(value)} kudos`, 'activities'],
+                ['Riders', eddingtons.riders, (value: number) => `${count(value)} riders`, 'rides'],
+              ] as [string, Eddington, (value: number) => string, string][]
+            ).map(([name, eddington, amount, unit]) => (
+              <Figure
+                key={name}
+                value={`E${count(eddington.number)}`}
+                caption={`${name}: ${count(eddington.number)} ${unit} of ${amount(eddington.number)}`}
+                detail={`${count(eddington.needed)} more of ${amount(eddington.next)} for the next`}
+              />
+            ))}
+          </Grid>
+        </Panel>
+        <Panel title="Dark rides" note="before sunrise or after sunset, where they started">
+          <Grid templateColumns="repeat(2, minmax(0, 1fr))" gap="16px">
+            <Figure value={count(dark.count)} caption="rides in the dark" detail={`${Math.round(dark.share * 100)}% of outdoor rides`} />
+            <Figure value={count(dark.thisYear)} caption={`in ${now.getFullYear()}`} />
+          </Grid>
+          {null !== dark.latest && (
+            <Link to={`/activities/${dark.latest.id}`}>
+              <Text fontSize="sm" color="fg.muted" _hover={{color: 'fg'}} truncate={true}>
+                Latest: {dark.latest.name}, {new Date(dark.latest.start_date).toLocaleDateString(locale, {day: 'numeric', month: 'short', year: 'numeric'})}
+              </Text>
+            </Link>
+          )}
         </Panel>
       </Grid>
 

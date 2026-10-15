@@ -238,6 +238,12 @@ you like. An activity whose details are not stored yet does not count.
    group of tiles whose 4 neighbours are all explored, as Squadrats defines it).
 6. **Latest photos**: 12, linked to their activity.
 7. **Eddington**: days over each distance, days needed for the next number, per year.
+   **More Eddingtons** (as VeloViewer counts them), each with what the next one needs:
+   climbing (E days of at least 20 × E m), minutes (E days of at least E minutes ridden),
+   kudos (VeloViewer's K-Index: E activities with at least E kudos) and riders (E rides
+   with at least E riders, as Strava matched them). **Dark rides**: outdoor rides started
+   before sunrise or still out after sunset where they started (sun times from the usual
+   solar formulas), in all and this year, their share, and the latest.
 8. **Month by month** grid, and a **calendar** of one square per day shaded by distance.
 9. **When you ride** (weekday by hour) and **streaks** (longest and current runs of days
    and weeks, longest break).
