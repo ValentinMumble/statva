@@ -21,30 +21,16 @@ type FakeStrava = {
   ignoredFields: string[];
 };
 
-// A ride on the fake club site: what its feed shows on a card.
-type SiteRide = {title: string; day: string; groups?: number; finish?: string};
-
-const FRENCH_MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-
-/** A feed card as prendslaroue.fr writes it. */
-const siteCard = ({title, day, groups, finish}: SiteRide): string => {
-  const [year, month, date] = day.split('-').map(Number);
-  const slug = title.replace(/\s*#/, '_').replace(/\s+/g, '_');
-
-  return `<div class="col-12">
-        <div class="card">
-            <div class="done-ribbon" data-ribbon="Terminé"></div>
-            <div class="card-header p-1"><div><a class="link-dark" href="https://www.prendslaroue.fr/club/rides/${slug}">${title}</a></div></div>
-            <div class="card-body">
-            <h5 class="card-title">${date} ${FRENCH_MONTHS[month - 1]} ${year}</h5>
-            <ul class="list-unstyled m-0">
-                ${undefined === groups ? '' : `<li >${groups} groupes</li>`}
-                    <li>Départ de 19:30 à 20:30 - Fonderies</li>
-                    ${undefined === finish ? '' : `<li>Arrivée : ${finish}</li>`}
-             </ul>
-            </div>
-        </div>
-      </div>`;
+// A publication on the fake club site, as its API sends it (only what the calendar reads).
+type SitePublication = {
+  type: string;
+  status: string;
+  deleted?: boolean;
+  name: string;
+  dateTime: string;
+  timezone?: string;
+  groupCount?: number | null;
+  endPlace?: {name: string} | null;
 };
 
 const ENV = {
@@ -59,8 +45,8 @@ const ENV = {
 const install = () => {
   const hashes: Hashes = {};
   const strings: Record<string, string> = {};
-  // The club site: its rides, and every page asked for.
-  const site: {rides: SiteRide[]; requests: string[]; down: boolean} = {rides: [], requests: [], down: false};
+  // The club site: its publications, newest first, and every page asked for.
+  const site: {publications: SitePublication[]; requests: string[]; down: boolean} = {publications: [], requests: [], down: false};
   const strava: FakeStrava = {
     activities: [],
     tokens: {},
@@ -182,17 +168,13 @@ const install = () => {
       return new Response(JSON.stringify(result));
     }
 
-    if ('www.prendslaroue.fr' === url.host) {
-      site.requests.push(`${url.searchParams.get('from')}..${url.searchParams.get('to')}`);
+    if ('www.pedalons.fr' === url.host) {
+      site.requests.push(`${url.pathname}?page=${url.searchParams.get('page')}&size=${url.searchParams.get('size')}`);
       if (site.down) return new Response('Down', {status: 503});
-      const from = url.searchParams.get('from') ?? '';
-      const to = url.searchParams.get('to') || '9999-12-31';
-      // Like the site: at most 10 rides between the two days, newest first.
-      const shown = site.rides
-        .filter(({day}) => from <= day && day <= to)
-        .sort((first, second) => second.day.localeCompare(first.day))
-        .slice(0, 10);
-      return new Response(`<html><body>${shown.map(siteCard).join('')}</body></html>`);
+      const page = Number(url.searchParams.get('page') ?? 0);
+      const size = Number(url.searchParams.get('size') ?? 20);
+      const publications = site.publications.slice(page * size, (page + 1) * size);
+      return new Response(JSON.stringify({publications, total: site.publications.length, page, size}));
     }
 
     return stravaResponse(url, init);

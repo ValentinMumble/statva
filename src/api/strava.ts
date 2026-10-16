@@ -77,8 +77,8 @@ const setActivityVisibility = (id: number, visibility: Visibility): Promise<void
 /** Changes an activity's description or private note on Strava. */
 const setActivityNote = (id: number, note: ActivityNote, text: string): Promise<void> => changeActivity(id, {[note]: text});
 
-/** The club's calendar from its website, back to since; called again while not complete. */
-const fetchClubCalendar = (since: string): Promise<{rides: ClubRide[]; complete: boolean}> => getJson(`/api/club?since=${since}`);
+/** The club's calendar, from its team on pedalons.fr. */
+const fetchClubCalendar = (): Promise<{rides: ClubRide[]; complete: boolean}> => getJson('/api/club');
 
 /** Asks the server to fetch one activity from Strava again and store it. */
 const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);

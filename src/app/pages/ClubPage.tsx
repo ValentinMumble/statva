@@ -193,25 +193,25 @@ const ClubPage = () => {
   const activities = useMemo(() => data ?? [], [data]);
   const today = deviceDay(now);
 
-  // The club's calendar, from its website, back to the first club ride; read a few pages a
-  // call, so it is asked again until it is complete.
-  const since = useMemo(
-    () => (null === club ? null : activities.filter(({name}) => name.includes(club.name)).reduce<string | null>((oldest, activity) => (null === oldest || localDay(activity) < oldest ? localDay(activity) : oldest), null)),
-    [activities, club],
-  );
-  const {data: calendar} = useQuery({
-    queryKey: ['clubCalendar', since],
-    queryFn: () => fetchCalendar(since),
-    enabled: null !== since && isComplete,
-    refetchInterval: query => (false === query.state.data?.complete ? 1000 : false),
-    // Each call keeps what it read, so a call that failed or ran out of time is worth retrying.
-    retry: 5,
-  });
-  // The club writes some sessions under its initials ("NP#622" for N-Peloton): they are its own.
+  // The club's calendar, from its team on pedalons.fr.
+  const {data: calendar} = useQuery({queryKey: ['clubCalendar'], queryFn: () => fetchCalendar(), enabled: null !== club, retry: 2});
+  // One series under one name: the club writes some sessions under its initials ("NP #411" for
+  // N-Peloton) or in capitals ("RAYMOND RIDE #42"); its most used spelling wins.
   const rides = useMemo(() => {
     const initials = (club?.name ?? '').split(/[\s-]+/).map(part => part.charAt(0)).join('').toUpperCase();
+    const spellings = new Map<string, Map<string, number>>();
+    for (const {series: name} of calendar?.rides ?? []) {
+      const seen = spellings.get(name.toLowerCase()) ?? new Map<string, number>();
+      spellings.set(name.toLowerCase(), seen.set(name, (seen.get(name) ?? 0) + 1));
+    }
+    const canonical = (name: string): string => {
+      if (null !== club && 1 < initials.length && name.toUpperCase() === initials) return club.name;
+      const seen = [...(spellings.get(name.toLowerCase()) ?? new Map([[name, 1]])).entries()];
 
-    return (calendar?.rides ?? []).map(ride => (null !== club && 1 < initials.length && ride.series === initials ? {...ride, series: club.name} : ride));
+      return seen.sort((first, second) => second[1] - first[1])[0][0];
+    };
+
+    return (calendar?.rides ?? []).map(ride => ({...ride, series: canonical(ride.series)}));
   }, [calendar, club]);
   // The club's other regular rides the rider has done too, like its Sunday ride: a series with
   // at least SERIES_MIN_RIDES numbered rides, one of them in an activity name as "<series> #<n>".

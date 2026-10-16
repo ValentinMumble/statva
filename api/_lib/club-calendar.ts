@@ -2,9 +2,9 @@ import {athleteKey} from './keys.js';
 import {redis} from './redis.js';
 
 /**
- * A club's ride calendar, read from its page on prendslaroue.fr (the site has no API).
- * The page lists at most 10 rides, newest first, between two dates, so the history is
- * read backwards a few pages per call and kept, then topped up now and then. Only that
+ * A club's ride calendar, read from its team on pedalons.fr, whose public API lists the
+ * team's publications (rides and posts), newest first, a page at a time. The whole history
+ * is a few pages, so it is read again in full now and then and kept in between. Only that
  * site is read, whatever the rider writes in the club's website setting.
  */
 
@@ -13,173 +13,107 @@ type ClubRide = {
   // "N-Peloton" for "N-Peloton #676", or the whole title for a one-off ride.
   series: string;
   number: number | null;
-  // The local day of the ride, as the page writes it.
+  // The local day of the ride, where it rides.
   day: string;
   groups: number | null;
   finish: string | null;
 };
 
-type CalendarState = {
-  // Where the next page back starts (its last day), or null once the history is in.
-  cursor: string | null;
-  // How far back the history goes: the rider's first club ride.
-  since: string;
-  // The last day the newest rides were read up to, and when.
-  newestDay: string;
-  checkedAt: number;
-};
-
 type ClubCalendar = {rides: ClubRide[]; complete: boolean};
 
-const HOSTS = ['www.prendslaroue.fr', 'prendslaroue.fr'];
-const PAGE_SIZE = 10;
-// The site takes about 3 seconds a page: a call reads pages while it has time (its function
-// may run 60 seconds), keeping what it read after each one, and stops at this many anyway.
-const PAGES_PER_CALL = 15;
-const TIME_PER_CALL_MS = 40_000;
-const RECHECK_MS = 6 * 3_600_000;
-// The newest rides are read again a little before the last check, for late changes.
-const RECHECK_OVERLAP_DAYS = 14;
-const DAY_MS = 86_400_000;
-const USER_AGENT = 'Statva (https://statva.vumble.dev)';
-const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-
-const shiftDay = (day: string, days: number): string => new Date(Date.parse(`${day}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
-
-const decode = (html: string): string =>
-  html
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&#0?39;|&apos;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-/** "14 octobre 2026" as 2026-10-14, or null. */
-const frenchDay = (text: string): string | null => {
-  const [, day, month, year] = text.trim().toLowerCase().match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/) ?? [];
-  const index = MONTHS.indexOf(month ?? '');
-
-  return -1 === index ? null : `${year}-${String(index + 1).padStart(2, '0')}-${day.padStart(2, '0')}`;
+// What the site sends for a publication, as far as the calendar reads it.
+type Publication = {
+  type: string;
+  status: string;
+  deleted?: boolean;
+  name: string;
+  dateTime: string;
+  timezone?: string;
+  groupCount?: number | null;
+  endPlace?: {name?: string} | null;
 };
 
-/** The rides on one page of a team's feed; announcements and anything unreadable are left out. */
-const parseRides = (html: string): ClubRide[] =>
-  html
-    .split('<div class="col-12">')
-    .slice(1)
-    .flatMap(card => {
-      const title = card.match(/\/rides\/[^"]*">([^<]*)</)?.[1];
-      const day = frenchDay(card.match(/<h5 class="card-title">([^<]*)</)?.[1] ?? '');
+const SITE = 'https://www.pedalons.fr';
+const HOSTS = ['www.pedalons.fr', 'pedalons.fr'];
+const PAGE_SIZE = 200;
+// The history is a handful of pages; this only stops a site gone wrong from paging forever.
+const MAX_PAGES = 20;
+const RECHECK_MS = 6 * 3_600_000;
+const USER_AGENT = 'Statva (https://statva.vumble.dev)';
 
-      if (undefined === title || null === day) return [];
+/** The local day of a moment where it happens, as 2026-10-14. */
+const localDayOf = (moment: string, timeZone = 'Europe/Paris'): string =>
+  new Intl.DateTimeFormat('en-CA', {timeZone, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date(moment));
 
-      const name = decode(title);
-      const [, series, number] = name.match(/^(.*?)\s*#(\d+)/) ?? [];
-      const items = [...card.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map(([, item]) => decode(item));
-      const groups = items.map(item => item.match(/^(\d+)\s+groupes?$/i)?.[1]).find(Boolean);
-      const finish = items.map(item => item.match(/^Arrivée\s*:\s*(.+)$/i)?.[1]).find(Boolean);
+/** The published rides among a page of publications; posts, drafts and deleted rides are left out. */
+const ridesOf = (publications: Publication[]): ClubRide[] =>
+  publications
+    .filter(({type, status, deleted}) => 'RIDE' === type && 'PUBLISHED' === status && true !== deleted)
+    .map(({name, dateTime, timezone, groupCount, endPlace}) => {
+      const title = name.trim();
+      const [, series, number] = title.match(/^(.*?)\s*#(\d+)/) ?? [];
 
-      return [
-        {
-          title: name,
-          series: undefined === series ? name : series.trim(),
-          number: undefined === number ? null : Number(number),
-          day,
-          groups: undefined === groups ? null : Number(groups),
-          finish: finish ?? null,
-        },
-      ];
+      return {
+        title,
+        series: undefined === series ? title : series.trim(),
+        number: undefined === number ? null : Number(number),
+        day: localDayOf(dateTime, timezone),
+        groups: groupCount ?? null,
+        finish: endPlace?.name?.trim() || null,
+      };
     });
 
-/** The team page, when the club's website is one on prendslaroue.fr. */
-const teamPage = (website: string | undefined): string | null => {
+/** The team's id on pedalons.fr (https://www.pedalons.fr/equipes/n-peloton), or null. */
+const teamSlug = (website: string | undefined): string | null => {
   try {
     const url = new URL(website ?? '');
+    const [, slug] = url.pathname.match(/^\/equipes\/([\w-]+)\/?$/) ?? [];
 
-    return 'https:' === url.protocol && HOSTS.includes(url.hostname) && /^\/[\w-]+\/?$/.test(url.pathname)
-      ? `https://www.prendslaroue.fr${url.pathname.replace(/\/$/, '')}`
-      : null;
+    return 'https:' === url.protocol && HOSTS.includes(url.hostname) && undefined !== slug ? slug : null;
   } catch {
     return null;
   }
 };
 
-const readPage = async (page: string, from: string, to: string): Promise<ClubRide[]> => {
-  const response = await fetch(`${page}?from=${from}&to=${to}`, {headers: {'User-Agent': USER_AGENT}});
-  if (!response.ok) throw new Error(`Club page ${response.status}`);
+const readAll = async (slug: string): Promise<ClubRide[]> => {
+  const rides: ClubRide[] = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const response = await fetch(`${SITE}/api/teams/${slug}/publications?page=${page}&size=${PAGE_SIZE}`, {
+      headers: {'User-Agent': USER_AGENT, Accept: 'application/json'},
+    });
+    if (!response.ok) throw new Error(`Club site ${response.status}`);
 
-  return parseRides(await response.text());
+    const {publications = [], total = 0} = (await response.json()) as {publications?: Publication[]; total?: number};
+    rides.push(...ridesOf(publications));
+    if (publications.length < PAGE_SIZE || (page + 1) * PAGE_SIZE >= total) break;
+  }
+
+  return rides;
 };
-
-const rideKey = ({day, title}: ClubRide): string => `${day} ${title}`;
 
 /**
- * The club's rides from since to today, newest first, read a few pages further on each call:
- * complete once the history back to since is in. When the site cannot be read, what is kept
- * is returned as it is.
+ * The club's rides, newest first: read from the site at most every few hours, and kept in
+ * between. When the site cannot be read, what is kept is returned as it is.
  */
-const readClubCalendar = async (athleteId: number, website: string | undefined, since: string, today: string, now = Date.now()): Promise<ClubCalendar> => {
-  const page = teamPage(website);
-  if (null === page) return {rides: [], complete: true};
+const readClubCalendar = async (athleteId: number, website: string | undefined, now = Date.now()): Promise<ClubCalendar> => {
+  const slug = teamSlug(website);
+  if (null === slug) return {rides: [], complete: true};
 
   const key = athleteKey(athleteId, 'club');
-  const stored = await redis().hmget<{rides: ClubRide[]; state: CalendarState}>(key, 'rides', 'state');
-  const rides = new Map((stored?.rides ?? []).map(ride => [rideKey(ride), ride]));
-  let state: CalendarState = stored?.state ?? {cursor: today, since, newestDay: today, checkedAt: now};
-  // Written back only when something changed: most calls just answer from what is kept.
-  let unsaved = undefined === stored?.state || null === stored?.state;
-  // An earlier first ride (more history in Statva) reaches further back.
-  if (since < state.since) {
-    state = {...state, since, cursor: state.cursor ?? shiftDay([...rides.values()].reduce((oldest, {day}) => (day < oldest ? day : oldest), today), -1)};
-    unsaved = true;
+  const stored = await redis().hmget<{rides: ClubRide[]; state: {slug: string; checkedAt: number}}>(key, 'rides', 'state');
+  let rides = stored?.rides ?? [];
+
+  if (null === stored?.state || undefined === stored?.state || stored.state.slug !== slug || now - stored.state.checkedAt > RECHECK_MS) {
+    try {
+      rides = (await readAll(slug)).sort((first, second) => second.day.localeCompare(first.day));
+      await redis().hset(key, {rides, state: {slug, checkedAt: now}});
+    } catch {
+      // The site is down or changed: keep what is known, and try again next time.
+    }
   }
 
-  let budget = PAGES_PER_CALL;
-  const deadline = Date.now() + TIME_PER_CALL_MS;
-  const hasTime = () => 0 < budget-- && Date.now() < deadline;
-  const sorted = () => [...rides.values()].sort((first, second) => second.day.localeCompare(first.day));
-  // Kept after every page, so a call cut short never loses what it read.
-  const keep = async () => {
-    await redis().hset(key, {rides: sorted(), state});
-    unsaved = false;
-  };
-  const add = (found: ClubRide[]) => {
-    found.forEach(ride => rides.set(rideKey(ride), ride));
-    unsaved = true;
-  };
-
-  try {
-    if (null === state.cursor && now - state.checkedAt > RECHECK_MS) {
-      const from = shiftDay(state.newestDay, -RECHECK_OVERLAP_DAYS);
-      let to = today;
-      while (hasTime()) {
-        const found = await readPage(page, from, to);
-        add(found);
-        if (found.length < PAGE_SIZE) break;
-        to = shiftDay(found[found.length - 1].day, -1);
-      }
-      state = {...state, newestDay: today, checkedAt: now};
-      await keep();
-    }
-
-    while (null !== state.cursor && hasTime()) {
-      const found = await readPage(page, state.since, state.cursor);
-      add(found);
-      // A full page may have more before it; the next one ends the day before its oldest ride.
-      state = {...state, cursor: found.length < PAGE_SIZE ? null : shiftDay(found[found.length - 1].day, -1)};
-      await keep();
-    }
-  } catch {
-    // The site is down or changed: keep what is known, and try again next time.
-  }
-
-  if (unsaved) await keep();
-
-  return {rides: sorted(), complete: null === state.cursor};
+  return {rides, complete: true};
 };
 
-export {parseRides, readClubCalendar, teamPage};
-export type {ClubCalendar, ClubRide};
+export {readClubCalendar, ridesOf, teamSlug};
+export type {ClubCalendar, ClubRide, Publication};

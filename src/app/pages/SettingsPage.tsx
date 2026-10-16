@@ -568,7 +568,9 @@ const SettingsPage = () => {
                 placeholder="https://"
                 onBlur={({target}) => settings.club && set('club', {...settings.club, url: target.value.trim() || undefined})}
               />
-              <Field.HelperText>Linked from the club's page.</Field.HelperText>
+              <Field.HelperText>
+                Linked from the club's page. Its team page on pedalons.fr (https://www.pedalons.fr/equipes/…) also brings in the club's calendar.
+              </Field.HelperText>
             </Field.Root>
             <Field.Root>
               <Field.Label>Groups marked in names or notes</Field.Label>

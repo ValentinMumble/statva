@@ -328,10 +328,12 @@ Named after the club, with a link to the club's site when one is set, the month 
 first session and the usual weekday. It waits for the whole activity list before showing
 figures.
 
-**The club's calendar.** When the club's website is a team page on prendslaroue.fr, the
-server reads its ride list (number, day, groups out, finish bar) back to the first club
-ride and keeps it, 6 pages a call (the site shows 10 rides a page), then reads the newest
-rides again at most every 6 hours. The page asks again until the history is in. A ride
+**The club's calendar.** When the club's website is its team page on pedalons.fr
+(`https://www.pedalons.fr/equipes/<team>`), the server reads the team's published rides
+(number, local day, groups out, finish place) from the site's public API, the whole history
+in a few pages of 200, and keeps them, reading them again at most every 6 hours. Posts,
+drafts and deleted rides are left out. A series written under the club's initials
+("NP #411") or in another case ("RAYMOND RIDE #42") counts as the same series. A ride
 counts as ridden when a session has its number, or else falls on its day. No other site
 is ever read. When the calendar lists other numbered rides the rider has done too (the
 Sunday "Raymond Ride"), a switch at the top shows the whole page for either series.
@@ -378,7 +380,7 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
 | `POST /api/backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
-| `GET /api/club?since=` | The club's calendar from its website, read a few pages further each call |
+| `GET /api/club` | The club's calendar from its team on pedalons.fr, read again at most every 6 hours |
 | `PUT /api/activity?id=` | Rename an activity, move it to other gear, change who sees it, or its description or private note, on Strava and in Statva (422 when Strava keeps a field as it was) |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
@@ -431,7 +433,7 @@ adds that prefix itself, so no request can reach another rider's data or the tok
 | `details` | Full activities, cut down (no splits or laps, segment efforts reduced to the KOM rank), with the power analysis | server |
 | `sync` | History progress and the newest start time | server |
 | `power` | Activities whose power is worked out (0 without a power meter) | server |
-| `club` | The club's calendar read from its website, and how far back it goes | server |
+| `club` | The club's calendar read from its website, and when it was read | server |
 | `events`, `labels`, `ftp_tests`, `expenses`, `settings` | What the rider enters | rider |
 
 The rider can read every name but write only their own five. Shared keys:
