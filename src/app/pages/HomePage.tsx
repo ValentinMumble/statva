@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useMemo} from 'react';
 import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
 import {Link} from 'react-router';
 import {FaThumbsUp} from 'react-icons/fa6';
@@ -326,10 +326,11 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
 
 /** What a rider wants on opening the app: how the week is going, what they just did, what needs doing. */
 const HomePage = () => {
-  const {data} = useAllActivities();
+  const {data, dataUpdatedAt} = useAllActivities();
   const {locale} = useSettings();
-  // Read once per visit, so the page renders the same way every time React redraws it.
-  const [now] = useState(() => new Date());
+  // When the list last changed (a Refresh always changes it): a page left open since last
+  // week counts this week after a Refresh, and the same between two redraws.
+  const now = useMemo(() => new Date(dataUpdatedAt), [dataUpdatedAt]);
   const activities = useMemo(
     () => [...(data ?? [])].sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()),
     [data],

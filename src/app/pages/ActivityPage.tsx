@@ -22,7 +22,7 @@ import {
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '../../models/strava';
-import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, Visibility} from '../../api';
+import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError} from '../../api';
 import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
 import {sportIcon} from '../components/sport';
@@ -34,67 +34,6 @@ const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
 const renameActivity = getFetcher<void>('activity.rename');
 const setActivityGear = getFetcher<void>('activity.gear');
 const setActivityNote = getFetcher<void>('activity.note');
-const setActivityVisibility = getFetcher<void>('activity.visibility');
-
-const VISIBILITIES: [Visibility, string][] = [
-  ['everyone', 'Everyone'],
-  ['followers_only', 'Followers'],
-  ['only_me', 'Only me'],
-];
-
-/** Puts a change made on Strava into the list and the details on screen. */
-const useApplyChange = (id: number) => {
-  const queryClient = useQueryClient();
-
-  return (change: Partial<Activity>) => {
-    queryClient.setQueryData<Activity[]>(['activities'], list => list?.map(listed => (listed.id === id ? {...listed, ...change} : listed)));
-    queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
-      loaded?.[id] ? {...loaded, [id]: {...loaded[id], ...change}} : loaded,
-    );
-  };
-};
-
-const changeFailed = (error: unknown, what: string) =>
-  toaster.create({
-    type: 'error',
-    title:
-      error instanceof NoWriteAccessError
-        ? 'Log out and in again to let Statva change it on Strava'
-        : error instanceof IgnoredByStravaError
-          ? `Strava does not let apps change the ${what}: change it on Strava`
-          : 'Strava did not take the change',
-  });
-
-/** Who sees the activity on Strava, changed in place. */
-const VisibilitySelect = ({activity}: {activity: Activity}) => {
-  const apply = useApplyChange(activity.id);
-  const [saving, setSaving] = useState(false);
-  const current = (activity.visibility as Visibility | undefined) ?? (activity.private ? 'only_me' : 'everyone');
-
-  const change = async (visibility: Visibility) => {
-    setSaving(true);
-    try {
-      await setActivityVisibility(activity.id, visibility);
-      apply({visibility, private: 'only_me' === visibility});
-    } catch (error) {
-      changeFailed(error, 'visibility');
-    }
-    setSaving(false);
-  };
-
-  return (
-    <NativeSelect.Root size="xs" width="auto" disabled={saving}>
-      <NativeSelect.Field value={current} onChange={({target}) => change(target.value as Visibility)} aria-label="Who sees it" borderRadius="full">
-        {VISIBILITIES.map(([value, name]) => (
-          <option key={value} value={value}>
-            {name}
-          </option>
-        ))}
-      </NativeSelect.Field>
-      <NativeSelect.Indicator />
-    </NativeSelect.Root>
-  );
-};
 
 const NOTE_NAMES: Record<ActivityNote, string> = {description: 'Description', private_note: 'Private note'};
 
@@ -583,7 +522,7 @@ const ActivityPage = () => {
           <HStack gap="6px" flexWrap="wrap">
             <GearSelect activity={activity} />
             {activity.commute && <Badge variant="surface">Commute</Badge>}
-            <VisibilitySelect activity={activity} />
+            {activity.private && <Badge variant="surface">Private</Badge>}
             {hasKom(detail) && <Badge colorPalette="yellow">KOM 👑</Badge>}
             {1 < activity.athlete_count && <Badge variant="surface">{activity.athlete_count} riders</Badge>}
           </HStack>

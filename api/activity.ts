@@ -23,10 +23,8 @@ const MAX_NAME = 255;
 const GEAR_ID = /^([bg]\d+|none)$/;
 // Notes are free text; this only keeps a request from being huge.
 const MAX_NOTE = 10_000;
-// Who sees an activity, as Strava names it.
-const VISIBILITIES = ['everyone', 'followers_only', 'only_me'];
 
-/** Renames an activity on Strava, moves it to other gear, or changes its visibility, description or private note. */
+/** Renames an activity on Strava, moves it to other gear, or changes its description or private note. */
 export const PUT = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
@@ -38,17 +36,13 @@ export const PUT = async (request: Request): Promise<Response> => {
     gear_id?: unknown;
     description?: unknown;
     private_note?: unknown;
-    visibility?: unknown;
   } | null;
 
   if (!Number.isInteger(activityId) || 0 >= activityId) return json({error: 'Not found'}, 404);
 
   let update: Record<string, string | boolean>;
   const note = (['description', 'private_note'] as const).find(key => undefined !== body?.[key]);
-  if (undefined !== body?.visibility) {
-    if ('string' !== typeof body.visibility || !VISIBILITIES.includes(body.visibility)) return json({error: 'Unknown visibility'}, 400);
-    update = {visibility: body.visibility};
-  } else if (undefined !== note) {
+  if (undefined !== note) {
     const text = body?.[note];
     if ('string' !== typeof text || text.length > MAX_NOTE) return json({error: 'A note is text'}, 400);
     update = {[note]: text.trim()};

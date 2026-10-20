@@ -277,27 +277,6 @@ describe('renaming an activity', () => {
     expect(fake.read('athlete:42:activities')['1001']).toMatchObject({name: 'Akeneo ⚙️', gear_id: 'b7', commute: false});
   });
 
-  it('changes who sees it', async () => {
-    const fake = install();
-    fake.login(42);
-    fake.strava.activities = makeActivities(1);
-    await syncActivities(42);
-
-    expect((await rename({visibility: 'only_me'})).status).toBe(200);
-    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({visibility: 'only_me', private: true});
-    expect((await rename({visibility: 'friends'})).status).toBe(400);
-  });
-
-  it('says so when Strava keeps the visibility as it was', async () => {
-    const fake = install();
-    fake.login(42);
-    fake.strava.activities = makeActivities(1).map(activity => ({...activity, visibility: 'everyone'}));
-    fake.strava.ignoredFields = ['visibility'];
-    await syncActivities(42);
-
-    expect((await rename({visibility: 'only_me'})).status).toBe(422);
-  });
-
   it('refuses gear that is not a Strava id', async () => {
     install().login(42);
 

@@ -41,7 +41,8 @@ Activities carries a count in the sidebar and a dot on the tab.
 
 1. **This week**: distance, time, climbing and training load (sum of Strava's suffer
    score) since Monday, each against the same days of last week (last week's total before
-   anything is done), and one bar per day.
+   anything is done), and one bar per day. "This week" is counted from when the activity
+   list last changed, so a Refresh on a page left open since last week moves to this week.
 2. **Latest**: the 6 newest activities with route shape, marks (private, race, 100 km+,
    no emoji), sport, day, kudos, first photo, normalized power coloured by zone, distance
    and time.
@@ -122,9 +123,9 @@ again.
   editor with a suggested name (the name most given to the same route, or the name with an
   emoji not used yet). The gear badge is a menu to move a ride to
   another bike (or a run to other shoes, or to none; retired gear only when it is already
-  on it), and a menu sets who sees it (everyone, followers, only me). A commute shows a
-  Commute badge, which cannot be changed here: Strava does not let apps change the flag.
-  All are saved on Strava, which needs write access (a login after Statva asked
+  on it). A commute shows a Commute badge and a private activity a Private badge, which
+  cannot be changed here: Strava does not let apps change either. Both edits are saved on
+  Strava, which needs write access (a login after Statva asked
   for it), and in the stored copies.
 - **Map** of the full track (the summary track until the details are in).
 - **Figures**: distance, times, climbing, speeds, average, weighted and normalized power
@@ -381,7 +382,7 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `POST /api/backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
 | `GET /api/club` | The club's calendar from its team on pedalons.fr, read again at most every 6 hours |
-| `PUT /api/activity?id=` | Rename an activity, move it to other gear, change who sees it, or its description or private note, on Strava and in Statva (422 when Strava keeps a field as it was) |
+| `PUT /api/activity?id=` | Rename an activity, move it to other gear, or change its description or private note, on Strava and in Statva (422 when Strava keeps a field as it was) |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
 ### 11.2 What comes from Strava

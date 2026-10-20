@@ -3,7 +3,6 @@ import {
   renameActivity,
   setActivityGear,
   setActivityNote,
-  setActivityVisibility,
   fetchClubCalendar,
   deleteEvent,
   deleteExpense,
@@ -47,7 +46,6 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'activity.rename': renameActivity,
   'activity.gear': setActivityGear,
   'activity.note': setActivityNote,
-  'activity.visibility': setActivityVisibility,
   'club.calendar': fetchClubCalendar,
   'activity.zones': fetchActivityZones,
   'activity.photos': fetchActivityPhotos,
@@ -80,7 +78,6 @@ const DEMO: typeof REAL = {
   'activity.rename': demoBackend.renameActivity,
   'activity.gear': demoBackend.setActivityGear,
   'activity.note': demoBackend.setActivityNote,
-  'activity.visibility': demoBackend.setActivityVisibility,
   'club.calendar': demoBackend.getClubCalendar,
   'activity.zones': demoBackend.getZones,
   // The demo has no photos.
