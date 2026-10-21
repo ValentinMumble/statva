@@ -18,7 +18,10 @@ const AerobicFitnessChart = () => {
 
     return rides.map((ride, index) => {
       const recent = rides.slice(Math.max(0, index - TREND_RIDES + 1), index + 1);
-      return {...ride, trend: Math.round((recent.reduce((sum, {efficiency}) => sum + efficiency, 0) / recent.length) * 100) / 100};
+      return {
+        ...ride,
+        trend: Math.round((recent.reduce((sum, {efficiency}) => sum + efficiency, 0) / recent.length) * 100) / 100,
+      };
     });
   }, [activityMeta]);
   const chart = useChart({
@@ -29,7 +32,8 @@ const AerobicFitnessChart = () => {
     ],
   });
 
-  if (0 === points.length) return <Text color="fg.muted">Needs rides with both a normalized power and a heart rate.</Text>;
+  if (0 === points.length)
+    return <Text color="fg.muted">Needs rides with both a normalized power and a heart rate.</Text>;
 
   return (
     <>
@@ -47,7 +51,13 @@ const AerobicFitnessChart = () => {
               tickLine={false}
               tickFormatter={date => new Date(date).toLocaleDateString(locale, {month: 'short', year: '2-digit'})}
             />
-            <YAxis stroke={chart.color('fg.muted')} width={40} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+            <YAxis
+              stroke={chart.color('fg.muted')}
+              width={40}
+              tickLine={false}
+              axisLine={false}
+              domain={['auto', 'auto']}
+            />
             <Tooltip
               isAnimationActive={false}
               content={({payload, active}) => {
@@ -62,8 +72,19 @@ const AerobicFitnessChart = () => {
                 );
               }}
             />
-            <Scatter dataKey={chart.key('efficiency')} fill={chart.color('teal.solid')} fillOpacity={0.5} isAnimationActive={false} />
-            <Line dataKey={chart.key('trend')} stroke={chart.color('orange.solid')} strokeWidth={2} dot={false} isAnimationActive={false} />
+            <Scatter
+              dataKey={chart.key('efficiency')}
+              fill={chart.color('teal.solid')}
+              fillOpacity={0.5}
+              isAnimationActive={false}
+            />
+            <Line
+              dataKey={chart.key('trend')}
+              stroke={chart.color('orange.solid')}
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </Chart.Root>

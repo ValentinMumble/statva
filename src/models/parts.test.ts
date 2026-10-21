@@ -20,7 +20,12 @@ const ridesOn = (days: number[], km = 100) =>
 const activities = ridesOn([...Array(31).keys()].map(day => day + 1));
 
 const on = (day: number, event: Partial<Event> & {type: Event['type']}): Event =>
-  ({id: `${event.type}-${day}`, bike: BIKE, date: new Date(`2025-01-${String(day).padStart(2, '0')}`), ...event}) as Event;
+  ({
+    id: `${event.type}-${day}`,
+    bike: BIKE,
+    date: new Date(`2025-01-${String(day).padStart(2, '0')}`),
+    ...event,
+  }) as Event;
 
 test('it reports nothing for a bike with no events', () => {
   expect(computeBikeParts([], activities, BIKE, label)).toEqual([]);
@@ -56,7 +61,10 @@ test('it has no expectation for the first of its kind', () => {
 
 test('it measures a part with a known limit against that, not its past lives', () => {
   // three quick tire changes, which say when they were swapped, not when they wore out
-  const rides = ridesOn([...Array(30).keys()].map(day => day + 1), 100);
+  const rides = ridesOn(
+    [...Array(30).keys()].map(day => day + 1),
+    100,
+  );
   const events = [on(1, {type: 'tire'}), on(6, {type: 'tire'}), on(11, {type: 'tire'})];
   const [tire] = computeBikeParts(events, rides, BIKE, label);
 
@@ -66,7 +74,10 @@ test('it measures a part with a known limit against that, not its past lives', (
 });
 
 test('it measures the chain against the rotation limit, not its past lives', () => {
-  const rides = ridesOn([...Array(10).keys()].map(day => day + 1), 50);
+  const rides = ridesOn(
+    [...Array(10).keys()].map(day => day + 1),
+    50,
+  );
   const events = [on(1, {type: 'chain', chain: '🍓'}), on(4, {type: 'chain', chain: '🍒'})];
   const [chain] = computeBikeParts(events, rides, BIKE, label);
 
@@ -79,11 +90,7 @@ test('it measures the chain against the rotation limit, not its past lives', () 
 
 test('it puts the part needing attention first', () => {
   const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
-  const events = [
-    on(1, {type: 'battery'}),
-    on(11, {type: 'battery'}),
-    on(20, {type: 'chain', chain: '🍒'}),
-  ];
+  const events = [on(1, {type: 'battery'}), on(11, {type: 'battery'}), on(20, {type: 'chain', chain: '🍒'})];
 
   // the battery is at 100% of its expected life, the chain a quarter into its stint
   expect(computeBikeParts(events, rides, BIKE, label).map(({type}) => type)).toEqual(['battery', 'chain']);
@@ -149,9 +156,7 @@ test('the suggested chain does not depend on the order either', () => {
     on(16, {type: 'chain', chain: '🍇'}),
   ];
 
-  expect(suggestChains([events[2], events[0], events[1]], rides, BIKE)).toEqual(
-    suggestChains(events, rides, BIKE),
-  );
+  expect(suggestChains([events[2], events[0], events[1]], rides, BIKE)).toEqual(suggestChains(events, rides, BIKE));
 });
 
 test('a swapped part counts every stint it has been on for, not just the last one', () => {
@@ -192,7 +197,14 @@ test('a part that is replaced rather than swapped only counts its current fittin
 
 test('it tells how many weeks a part has left at the recent pace on the bike', () => {
   const rides = ridesOn([...Array(20).keys()].map(day => day + 1));
-  const [tire] = computeBikeParts([on(11, {type: 'tire'})], rides, BIKE, label, DEFAULT_PART_RULES, new Date('2025-01-21T12:00:00Z'));
+  const [tire] = computeBikeParts(
+    [on(11, {type: 'tire'})],
+    rides,
+    BIKE,
+    label,
+    DEFAULT_PART_RULES,
+    new Date('2025-01-21T12:00:00Z'),
+  );
 
   // 2000 km over the last 8 weeks is 250 km a week, and the tire has 7000 of its 8000 km to go
   expect(tire.weeksLeft).toBe(28);

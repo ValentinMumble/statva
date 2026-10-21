@@ -22,12 +22,20 @@ const main = async () => {
   if (undefined === origin) {
     const current = await (await fetch(`${ENDPOINT}?${credentials}`)).json();
 
-    return console.log(0 === current.length ? 'No subscription yet.' : current.map(({id, callback_url}) => `${id}  ${callback_url}`).join('\n'));
+    return console.log(
+      0 === current.length
+        ? 'No subscription yet.'
+        : current.map(({id, callback_url}) => `${id}  ${callback_url}`).join('\n'),
+    );
   }
 
   const response = await fetch(ENDPOINT, {
     method: 'POST',
-    body: new URLSearchParams({...Object.fromEntries(credentials), callback_url: `${origin}/api/webhook`, verify_token: verifyToken}),
+    body: new URLSearchParams({
+      ...Object.fromEntries(credentials),
+      callback_url: `${origin}/api/webhook`,
+      verify_token: verifyToken,
+    }),
   });
   const body = await response.json();
 

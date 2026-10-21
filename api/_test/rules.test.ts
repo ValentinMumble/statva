@@ -27,7 +27,15 @@ const encode = (points: [number, number][]): string => {
 
 const HOME: [number, number] = [47.2306, -1.5518];
 const OFFICE: [number, number] = [47.2112, -1.5757];
-const AKENEO: RideRule = {name: 'Akeneo ⚙️', place: OFFICE, radiusM: 150, maxKm: 20, weekdaysOnly: true, commute: true, gearId: 'b13905696'};
+const AKENEO: RideRule = {
+  name: 'Akeneo ⚙️',
+  place: OFFICE,
+  radiusM: 150,
+  maxKm: 20,
+  weekdaysOnly: true,
+  commute: true,
+  gearId: 'b13905696',
+};
 
 const ride = (fields: Partial<RuledActivity> = {}): RuledActivity => ({
   id: 1,
@@ -55,7 +63,9 @@ describe('ride rules', () => {
   });
 
   it('leaves out a ride that only passes by and turns somewhere further', () => {
-    expect(matchesRule(ride({map: {summary_polyline: encode([HOME, OFFICE, [47.195, -1.6], OFFICE, HOME])}}), AKENEO)).toBe(false);
+    expect(
+      matchesRule(ride({map: {summary_polyline: encode([HOME, OFFICE, [47.195, -1.6], OFFICE, HOME])}}), AKENEO),
+    ).toBe(false);
   });
 
   it('names it, flags it as a commute and puts it on the bike', () => {

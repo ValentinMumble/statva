@@ -1,4 +1,4 @@
-import { Stream } from '.';
+import {Stream} from '.';
 
 export interface StreamSet {
   time: Stream;

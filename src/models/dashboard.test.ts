@@ -35,7 +35,11 @@ const activities = [
     commute: false,
     trainer: false,
     timezone: '(GMT+01:00) Europe/Paris',
-    photos: {primary: {unique_id: 'p1', urls: {100: 'small-1.jpg', 600: 'big-1.jpg'}, source: 1, media_type: 1}, use_primary_photo: false, count: 1},
+    photos: {
+      primary: {unique_id: 'p1', urls: {100: 'small-1.jpg', 600: 'big-1.jpg'}, source: 1, media_type: 1},
+      use_primary_photo: false,
+      count: 1,
+    },
   }),
   buildDetailedActivity({
     id: 2,
@@ -62,7 +66,11 @@ const activities = [
     commute: true,
     trainer: false,
     timezone: '(GMT+02:00) Europe/Stockholm',
-    photos: {primary: {unique_id: 'p2', urls: {100: 'small-2.jpg'}, source: 1, media_type: 1}, use_primary_photo: false, count: 1},
+    photos: {
+      primary: {unique_id: 'p2', urls: {100: 'small-2.jpg'}, source: 1, media_type: 1},
+      use_primary_photo: false,
+      count: 1,
+    },
   }),
 ];
 
@@ -280,7 +288,9 @@ test('it leaves ski out of the records, where it would take every altitude', () 
   const {records, totals} = computeDashboard(withSki, [], [], [], label);
 
   // the ski day has the most metres gained by far, and must not appear
-  expect(records.find(({key}) => 'elevation' === key)?.rides.map(({name}) => name)).not.toContain('Les Menuires jour 2');
+  expect(records.find(({key}) => 'elevation' === key)?.rides.map(({name}) => name)).not.toContain(
+    'Les Menuires jour 2',
+  );
   // it still counts towards the totals, it is only kept out of the records
   expect(totals.rides).toBe(3);
 });
@@ -289,9 +299,24 @@ test('it works out the eddington number from rides only', () => {
   // three days of 60 km and one of 40 km gives an eddington of 3
   const {totals} = computeDashboard(
     [
-      buildDetailedActivity({id: 30, distance: 60000, start_date: '2024-04-01T08:00:00Z', start_date_local: '2024-04-01T10:00:00Z'}),
-      buildDetailedActivity({id: 31, distance: 60000, start_date: '2024-04-02T08:00:00Z', start_date_local: '2024-04-02T10:00:00Z'}),
-      buildDetailedActivity({id: 32, distance: 60000, start_date: '2024-04-03T08:00:00Z', start_date_local: '2024-04-03T10:00:00Z'}),
+      buildDetailedActivity({
+        id: 30,
+        distance: 60000,
+        start_date: '2024-04-01T08:00:00Z',
+        start_date_local: '2024-04-01T10:00:00Z',
+      }),
+      buildDetailedActivity({
+        id: 31,
+        distance: 60000,
+        start_date: '2024-04-02T08:00:00Z',
+        start_date_local: '2024-04-02T10:00:00Z',
+      }),
+      buildDetailedActivity({
+        id: 32,
+        distance: 60000,
+        start_date: '2024-04-03T08:00:00Z',
+        start_date_local: '2024-04-03T10:00:00Z',
+      }),
     ],
     [],
     [],
@@ -306,9 +331,24 @@ test('it says how many more days the next eddington level needs', () => {
   // three days of 60 km: E is 3, and E4 needs four days of 4 km or more, so one is missing
   const {eddingtonNext} = computeDashboard(
     [
-      buildDetailedActivity({id: 30, distance: 60000, start_date: '2024-04-01T08:00:00Z', start_date_local: '2024-04-01T10:00:00Z'}),
-      buildDetailedActivity({id: 31, distance: 60000, start_date: '2024-04-02T08:00:00Z', start_date_local: '2024-04-02T10:00:00Z'}),
-      buildDetailedActivity({id: 32, distance: 60000, start_date: '2024-04-03T08:00:00Z', start_date_local: '2024-04-03T10:00:00Z'}),
+      buildDetailedActivity({
+        id: 30,
+        distance: 60000,
+        start_date: '2024-04-01T08:00:00Z',
+        start_date_local: '2024-04-01T10:00:00Z',
+      }),
+      buildDetailedActivity({
+        id: 31,
+        distance: 60000,
+        start_date: '2024-04-02T08:00:00Z',
+        start_date_local: '2024-04-02T10:00:00Z',
+      }),
+      buildDetailedActivity({
+        id: 32,
+        distance: 60000,
+        start_date: '2024-04-03T08:00:00Z',
+        start_date_local: '2024-04-03T10:00:00Z',
+      }),
     ],
     [],
     [],
@@ -335,14 +375,22 @@ test('it ranks strength by the logged normalized power, so estimated running pow
   ];
   const strongest = computeDashboard(withRun, [], [], [], label).records.find(({key}) => 'power' === key);
 
-  expect(strongest?.rides).toEqual([{id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 211, label: '211 W'}]);
+  expect(strongest?.rides).toEqual([
+    {id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 211, label: '211 W'},
+  ]);
 });
 
 test('it counts the milestone rides', () => {
   const {bigRides} = computeDashboard(
     [
       ...activities,
-      buildDetailedActivity({id: 50, distance: 210000, total_elevation_gain: 1500, start_date: '2024-08-01T06:00:00Z', start_date_local: '2024-08-01T08:00:00Z'}),
+      buildDetailedActivity({
+        id: 50,
+        distance: 210000,
+        total_elevation_gain: 1500,
+        start_date: '2024-08-01T06:00:00Z',
+        start_date_local: '2024-08-01T08:00:00Z',
+      }),
     ],
     [],
     [],
@@ -363,7 +411,13 @@ test('it compares this year with last year up to the same day', () => {
   // the latest ride is 13 July 2025, so 2024 only counts up to 13 July
   const withLateRide = [
     ...activities,
-    buildDetailedActivity({id: 60, distance: 100000, kudos_count: 3, start_date: '2024-11-20T06:00:00Z', start_date_local: '2024-11-20T08:00:00Z'}),
+    buildDetailedActivity({
+      id: 60,
+      distance: 100000,
+      kudos_count: 3,
+      start_date: '2024-11-20T06:00:00Z',
+      start_date_local: '2024-11-20T08:00:00Z',
+    }),
   ];
   const {yearOverYear} = computeDashboard(withLateRide, [], [], [], label);
 

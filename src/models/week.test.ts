@@ -3,7 +3,13 @@ import {weekSummary} from './week';
 import {Activity} from './strava';
 
 const ride = (start: string, km: number, load = 50) =>
-  ({start_date: start, distance: km * 1000, moving_time: km * 120, total_elevation_gain: km * 10, suffer_score: load}) as Activity;
+  ({
+    start_date: start,
+    distance: km * 1000,
+    moving_time: km * 120,
+    total_elevation_gain: km * 10,
+    suffer_score: load,
+  }) as Activity;
 
 describe('weekSummary', () => {
   // A Wednesday afternoon.
@@ -25,7 +31,10 @@ describe('weekSummary', () => {
   });
 
   it('counts each sport, most first', () => {
-    const withRun = [...activities, {...ride(new Date(2026, 9, 13, 7).toISOString(), 10), sport_type: 'Run'} as Activity].map((activity, index) =>
+    const withRun = [
+      ...activities,
+      {...ride(new Date(2026, 9, 13, 7).toISOString(), 10), sport_type: 'Run'} as Activity,
+    ].map((activity, index) =>
       activity.sport_type ? activity : ({...activity, sport_type: 'Ride', commute: 0 === index} as Activity),
     );
 
@@ -49,7 +58,15 @@ describe('weekSummary', () => {
 
 describe('routeShape', () => {
   it('fits a track in the square and keeps its proportions', () => {
-    const shape = routeShape([[45.9, 6.1], [45.95, 6.1], [45.95, 6.2]], 100, 0)!;
+    const shape = routeShape(
+      [
+        [45.9, 6.1],
+        [45.95, 6.1],
+        [45.95, 6.2],
+      ],
+      100,
+      0,
+    )!;
     const coordinates = shape.path.match(/-?\d+(\.\d+)?/g)!.map(Number);
 
     expect(Math.min(...coordinates)).toBeGreaterThanOrEqual(0);

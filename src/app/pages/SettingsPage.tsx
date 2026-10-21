@@ -18,7 +18,16 @@ import {useQueryClient} from '@tanstack/react-query';
 import {LuTrash2} from 'react-icons/lu';
 import {toaster} from '../../components/ui';
 import {leaveDemo} from '../../demo/mode';
-import {useAllActivities, useEvents, useExpenses, useFtp, useGear, useLabels, useSession, useSettings} from '../../hooks';
+import {
+  useAllActivities,
+  useEvents,
+  useExpenses,
+  useFtp,
+  useGear,
+  useLabels,
+  useSession,
+  useSettings,
+} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {countBy, DEFAULT_SETTINGS, RideRule, Settings} from '../../models';
 import {Card} from '../components/Card';
@@ -102,7 +111,15 @@ const GroupLabel = ({children}: {children: React.ReactNode}) => (
   </Text>
 );
 
-const NEW_RULE: RideRule = {name: '', place: [0, 0], radiusM: 250, maxKm: 20, weekdaysOnly: true, commute: true, gearId: null};
+const NEW_RULE: RideRule = {
+  name: '',
+  place: [0, 0],
+  radiusM: 250,
+  maxKm: 20,
+  weekdaysOnly: true,
+  commute: true,
+  gearId: null,
+};
 
 /** The ride rules, one card each: where, which rides, and what they get. */
 const RideRules = ({
@@ -116,7 +133,8 @@ const RideRules = ({
   label: (key: string) => string;
   onChange: (rules: RideRule[]) => void;
 }) => {
-  const change = (index: number, update: Partial<RideRule>) => onChange(rules.map((rule, at) => (at === index ? {...rule, ...update} : rule)));
+  const change = (index: number, update: Partial<RideRule>) =>
+    onChange(rules.map((rule, at) => (at === index ? {...rule, ...update} : rule)));
 
   return (
     <Stack gap="12px">
@@ -125,9 +143,17 @@ const RideRules = ({
           <HStack gap="12px" alignItems="flex-end">
             <Field.Root>
               <Field.Label>Name, with its emoji</Field.Label>
-              <Input value={rule.name} placeholder="Akeneo ⚙️" onChange={({target}) => change(index, {name: target.value})} />
+              <Input
+                value={rule.name}
+                placeholder="Akeneo ⚙️"
+                onChange={({target}) => change(index, {name: target.value})}
+              />
             </Field.Root>
-            <IconButton aria-label="Remove this rule" variant="ghost" onClick={() => onChange(rules.filter((_, at) => at !== index))}>
+            <IconButton
+              aria-label="Remove this rule"
+              variant="ghost"
+              onClick={() => onChange(rules.filter((_, at) => at !== index))}
+            >
               <LuTrash2 />
             </IconButton>
           </HStack>
@@ -139,16 +165,30 @@ const RideRules = ({
                 placeholder="47.2112, -1.5757"
                 onBlur={({target}) => {
                   const [latitude, longitude] = list(target.value).map(Number);
-                  if (Number.isFinite(latitude) && Number.isFinite(longitude)) change(index, {place: [latitude, longitude]});
+                  if (Number.isFinite(latitude) && Number.isFinite(longitude))
+                    change(index, {place: [latitude, longitude]});
                 }}
               />
             </Field.Root>
-            <NumberField label="Within" unit="m" value={rule.radiusM} onChange={value => change(index, {radiusM: value ?? NEW_RULE.radiusM})} />
-            <NumberField label="Rides up to" unit="km" value={rule.maxKm} onChange={value => change(index, {maxKm: value ?? NEW_RULE.maxKm})} />
+            <NumberField
+              label="Within"
+              unit="m"
+              value={rule.radiusM}
+              onChange={value => change(index, {radiusM: value ?? NEW_RULE.radiusM})}
+            />
+            <NumberField
+              label="Rides up to"
+              unit="km"
+              value={rule.maxKm}
+              onChange={value => change(index, {maxKm: value ?? NEW_RULE.maxKm})}
+            />
             <Field.Root>
               <Field.Label>Bike</Field.Label>
               <NativeSelect.Root>
-                <NativeSelect.Field value={rule.gearId ?? ''} onChange={({target}) => change(index, {gearId: target.value || null})}>
+                <NativeSelect.Field
+                  value={rule.gearId ?? ''}
+                  onChange={({target}) => change(index, {gearId: target.value || null})}
+                >
                   <option value="">Leave as it is</option>
                   {bikes.map(({id}) => (
                     <option key={id} value={id}>
@@ -161,12 +201,18 @@ const RideRules = ({
             </Field.Root>
           </Grid>
           <HStack gap="20px" flexWrap="wrap">
-            <Checkbox.Root checked={rule.weekdaysOnly} onCheckedChange={({checked}) => change(index, {weekdaysOnly: true === checked})}>
+            <Checkbox.Root
+              checked={rule.weekdaysOnly}
+              onCheckedChange={({checked}) => change(index, {weekdaysOnly: true === checked})}
+            >
               <Checkbox.HiddenInput />
               <Checkbox.Control />
               <Checkbox.Label>Weekdays only</Checkbox.Label>
             </Checkbox.Root>
-            <Checkbox.Root checked={rule.commute} onCheckedChange={({checked}) => change(index, {commute: true === checked})}>
+            <Checkbox.Root
+              checked={rule.commute}
+              onCheckedChange={({checked}) => change(index, {commute: true === checked})}
+            >
               <Checkbox.HiddenInput />
               <Checkbox.Control />
               <Checkbox.Label>Mark as a commute</Checkbox.Label>
@@ -181,7 +227,15 @@ const RideRules = ({
   );
 };
 
-const Toggle = ({label, checked, onChange}: {label: string; checked: boolean; onChange: (checked: boolean) => void}) => (
+const Toggle = ({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) => (
   <Switch.Root checked={checked} onCheckedChange={({checked}) => onChange(checked)}>
     <Switch.HiddenInput />
     <Switch.Control />
@@ -189,7 +243,21 @@ const Toggle = ({label, checked, onChange}: {label: string; checked: boolean; on
   </Switch.Root>
 );
 
-const NumberField = ({label, value, unit, onChange, placeholder, step}: {label: string; value: number | undefined; unit?: string; onChange: (value: number | undefined) => void; placeholder?: string; step?: number}) => (
+const NumberField = ({
+  label,
+  value,
+  unit,
+  onChange,
+  placeholder,
+  step,
+}: {
+  label: string;
+  value: number | undefined;
+  unit?: string;
+  onChange: (value: number | undefined) => void;
+  placeholder?: string;
+  step?: number;
+}) => (
   <Field.Root>
     <Field.Label>{label}</Field.Label>
     <HStack gap="8px">
@@ -343,7 +411,8 @@ const SettingsPage = () => {
       .sort((a, b) => counts[b] - counts[a]);
   }, [activities]);
 
-  const set = <K extends keyof Settings>(field: K, value: Settings[K]) => setDraft(draft => ({...draft, [field]: value}));
+  const set = <K extends keyof Settings>(field: K, value: Settings[K]) =>
+    setDraft(draft => ({...draft, [field]: value}));
 
   const handleSave = async () => {
     setSaving(true);
@@ -365,7 +434,10 @@ const SettingsPage = () => {
           <Field.Root>
             <Field.Label>Main bike</Field.Label>
             <NativeSelect.Root>
-              <NativeSelect.Field value={settings.defaultBike ?? ''} onChange={({target}) => set('defaultBike', target.value || null)}>
+              <NativeSelect.Field
+                value={settings.defaultBike ?? ''}
+                onChange={({target}) => set('defaultBike', target.value || null)}
+              >
                 <option value="">Primary bike on Strava</option>
                 {bikes.map(({id}) => (
                   <option key={id} value={id}>
@@ -379,7 +451,10 @@ const SettingsPage = () => {
           <Field.Root>
             <Field.Label>Running costs follow</Field.Label>
             <NativeSelect.Root>
-              <NativeSelect.Field value={settings.costBike ?? ''} onChange={({target}) => set('costBike', target.value || null)}>
+              <NativeSelect.Field
+                value={settings.costBike ?? ''}
+                onChange={({target}) => set('costBike', target.value || null)}
+              >
                 <option value="">The main bike</option>
                 {bikes.map(({id}) => (
                   <option key={id} value={id}>
@@ -401,7 +476,10 @@ const SettingsPage = () => {
                 disabled={retired}
                 checked={retired || settings.retiredBikes.includes(id)}
                 onCheckedChange={({checked}) =>
-                  set('retiredBikes', checked ? [...settings.retiredBikes, id] : settings.retiredBikes.filter(bike => bike !== id))
+                  set(
+                    'retiredBikes',
+                    checked ? [...settings.retiredBikes, id] : settings.retiredBikes.filter(bike => bike !== id),
+                  )
                 }
               >
                 <Checkbox.HiddenInput />
@@ -429,7 +507,10 @@ const SettingsPage = () => {
                   <Checkbox.Root
                     checked={settings.tubelessBikes.includes(id)}
                     onCheckedChange={({checked}) =>
-                      set('tubelessBikes', checked ? [...settings.tubelessBikes, id] : settings.tubelessBikes.filter(bike => bike !== id))
+                      set(
+                        'tubelessBikes',
+                        checked ? [...settings.tubelessBikes, id] : settings.tubelessBikes.filter(bike => bike !== id),
+                      )
                     }
                   >
                     <Checkbox.HiddenInput />
@@ -449,7 +530,10 @@ const SettingsPage = () => {
         </Stack>
       </Section>
 
-      <Section title="Parts" description="How long parts last and what they cost. Left empty, a life is judged against how long the previous ones lasted.">
+      <Section
+        title="Parts"
+        description="How long parts last and what they cost. Left empty, a life is judged against how long the previous ones lasted."
+      >
         <Grid templateColumns={{base: '1fr', md: '1fr 1fr'}} gap="16px">
           {LIMITED_PARTS.map(([part, name]) => (
             <NumberField
@@ -503,7 +587,12 @@ const SettingsPage = () => {
       </Section>
 
       <Section title="Goal and sports" description="The yearly target, and the sports the stats show.">
-        <NumberField label="Yearly riding goal" unit="km" value={settings.yearGoalKm} onChange={value => set('yearGoalKm', value ?? DEFAULT_SETTINGS.yearGoalKm)} />
+        <NumberField
+          label="Yearly riding goal"
+          unit="km"
+          value={settings.yearGoalKm}
+          onChange={value => set('yearGoalKm', value ?? DEFAULT_SETTINGS.yearGoalKm)}
+        />
         <NumberField
           label="Car cost per km (€), to count what commuting saves"
           unit="€"
@@ -518,7 +607,9 @@ const SettingsPage = () => {
               <Checkbox.Root
                 key={sport}
                 checked={settings.sports.includes(sport)}
-                onCheckedChange={({checked}) => set('sports', checked ? [...settings.sports, sport] : settings.sports.filter(item => item !== sport))}
+                onCheckedChange={({checked}) =>
+                  set('sports', checked ? [...settings.sports, sport] : settings.sports.filter(item => item !== sport))
+                }
               >
                 <Checkbox.HiddenInput />
                 <Checkbox.Control />
@@ -531,20 +622,30 @@ const SettingsPage = () => {
 
       <Section title="Body" description="Used for heart rate zones and calorie estimates.">
         <Grid templateColumns={{base: '1fr 1fr', md: 'repeat(4, 1fr)'}} gap="16px">
-          <NumberField label="Weight" unit="kg" value={settings.weightKg} onChange={value => set('weightKg', value ?? DEFAULT_SETTINGS.weightKg)} />
+          <NumberField
+            label="Weight"
+            unit="kg"
+            value={settings.weightKg}
+            onChange={value => set('weightKg', value ?? DEFAULT_SETTINGS.weightKg)}
+          />
         </Grid>
         <Field.Root>
           <Field.Label>Heart rate zones start at</Field.Label>
           <Input
             defaultValue={settings.heartRate.zones.join(', ')}
             placeholder="120, 145, 160, 175"
-            onBlur={({target}) => set('heartRate', {...settings.heartRate, zones: list(target.value).map(Number).filter(Number.isFinite)})}
+            onBlur={({target}) =>
+              set('heartRate', {...settings.heartRate, zones: list(target.value).map(Number).filter(Number.isFinite)})
+            }
           />
           <Field.HelperText>Where zones 2, 3, 4 and 5 begin, in bpm.</Field.HelperText>
         </Field.Root>
       </Section>
 
-      <Section title="Club" description="Rides named after your club get their own stats: groups, finishes, speed and power.">
+      <Section
+        title="Club"
+        description="Rides named after your club get their own stats: groups, finishes, speed and power."
+      >
         <Toggle
           label="I ride with a club"
           checked={null !== settings.club}
@@ -558,7 +659,9 @@ const SettingsPage = () => {
                 value={settings.club.name}
                 onChange={({target}) => settings.club && set('club', {...settings.club, name: target.value})}
               />
-              <Field.HelperText>A ride named "{settings.club.name || 'Club'} #42 C1" is a club ride in group C1.</Field.HelperText>
+              <Field.HelperText>
+                A ride named "{settings.club.name || 'Club'} #42 C1" is a club ride in group C1.
+              </Field.HelperText>
             </Field.Root>
             <Field.Root>
               <Field.Label>Club website</Field.Label>
@@ -566,10 +669,13 @@ const SettingsPage = () => {
                 type="url"
                 defaultValue={settings.club.url ?? ''}
                 placeholder="https://"
-                onBlur={({target}) => settings.club && set('club', {...settings.club, url: target.value.trim() || undefined})}
+                onBlur={({target}) =>
+                  settings.club && set('club', {...settings.club, url: target.value.trim() || undefined})
+                }
               />
               <Field.HelperText>
-                Linked from the club's page. Its team page on pedalons.fr (https://www.pedalons.fr/equipes/…) also brings in the club's calendar.
+                Linked from the club's page. Its team page on pedalons.fr (https://www.pedalons.fr/equipes/…) also
+                brings in the club's calendar.
               </Field.HelperText>
             </Field.Root>
             <Field.Root>
@@ -577,7 +683,9 @@ const SettingsPage = () => {
               <Textarea
                 defaultValue={markersToText(settings.club.markers)}
                 placeholder={'Pirate: 🏴‍☠️, pirate'}
-                onBlur={({target}) => settings.club && set('club', {...settings.club, markers: textToMarkers(target.value)})}
+                onBlur={({target}) =>
+                  settings.club && set('club', {...settings.club, markers: textToMarkers(target.value)})
+                }
               />
               <Field.HelperText>One group per line, then the emojis or words that put a ride in it.</Field.HelperText>
             </Field.Root>
@@ -587,7 +695,9 @@ const SettingsPage = () => {
                 defaultValue={settings.club.groupWords.join(', ')}
                 onBlur={({target}) => settings.club && set('club', {...settings.club, groupWords: list(target.value)})}
               />
-              <Field.HelperText>Words in a ride name that make it a group ride, for the solo or group chart.</Field.HelperText>
+              <Field.HelperText>
+                Words in a ride name that make it a group ride, for the solo or group chart.
+              </Field.HelperText>
             </Field.Root>
           </>
         )}

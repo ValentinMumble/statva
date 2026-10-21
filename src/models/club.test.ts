@@ -1,5 +1,18 @@
 import {buildDetailedActivity} from '../../test/test-util';
-import {ClubRide, clubRecords, clubSessions, clubTotals, clubWeeks, finishCounts, gearStats, groupSize, groupStats, matchCalendar, sessionsHeld, startPoints} from './club';
+import {
+  ClubRide,
+  clubRecords,
+  clubSessions,
+  clubTotals,
+  clubWeeks,
+  finishCounts,
+  gearStats,
+  groupSize,
+  groupStats,
+  matchCalendar,
+  sessionsHeld,
+  startPoints,
+} from './club';
 import {ClubRules} from './activity-npeloton';
 import {Activity} from './strava';
 
@@ -27,10 +40,20 @@ const ride = (day: string, name: string, fields: Partial<Activity> = {}): Activi
 
 // Wednesdays: 2026-09-02, 09-09, 09-16, 09-23 (missed), 09-30, 10-07; today is Wednesday 10-14.
 const activities = [
-  ride('2026-09-02', 'N-Peloton #640 🏴‍☠️', {athlete_count: 8, average_temp: 22, device_watts: true, weighted_average_watts: 210}),
+  ride('2026-09-02', 'N-Peloton #640 🏴‍☠️', {
+    athlete_count: 8,
+    average_temp: 22,
+    device_watts: true,
+    weighted_average_watts: 210,
+  }),
   ride('2026-09-09', 'N-Peloton #641 G2', {athlete_count: 12, average_speed: 9, average_temp: 9}),
   ride('2026-09-16', 'N-Peloton #642 🏴‍☠️', {distance: 60000, start_latlng: [47.2005, -1.5502]}),
-  ride('2026-09-30', 'N-Peloton #644 G2', {device_watts: true, weighted_average_watts: 190, kudos_count: 7, gear_id: 'b2'}),
+  ride('2026-09-30', 'N-Peloton #644 G2', {
+    device_watts: true,
+    weighted_average_watts: 190,
+    kudos_count: 7,
+    gear_id: 'b2',
+  }),
   ride('2026-10-07', 'N-Peloton #645 🏴‍☠️', {start_latlng: [47.3, -1.4]}),
   ride('2026-10-10', 'Saturday ride', {distance: 100000}),
 ];
@@ -50,7 +73,13 @@ describe('clubSessions', () => {
 
 describe('clubTotals and sessionsHeld', () => {
   it('adds up the sessions and their share of all riding', () => {
-    expect(clubTotals(sessions, activities)).toEqual({sessions: 5, distance: 220000, elevation: 1000, time: 27000, share: 220000 / 320000});
+    expect(clubTotals(sessions, activities)).toEqual({
+      sessions: 5,
+      distance: 220000,
+      elevation: 1000,
+      time: 27000,
+      share: 220000 / 320000,
+    });
   });
 
   it('counts the sessions the club ran from the numbers', () => {
@@ -91,7 +120,16 @@ describe('groupStats and groupSize', () => {
 
 describe('gearStats', () => {
   it('sums the sessions on each bike, most used first', () => {
-    expect(gearStats(sessions).map(({gearId, sessions: count, distance, power, first, last}) => [gearId, count, distance, power, first, last])).toEqual([
+    expect(
+      gearStats(sessions).map(({gearId, sessions: count, distance, power, first, last}) => [
+        gearId,
+        count,
+        distance,
+        power,
+        first,
+        last,
+      ]),
+    ).toEqual([
       ['b1', 4, 180000, 210, '2026-09-02', '2026-10-07'],
       ['b2', 1, 40000, 190, '2026-09-30', '2026-09-30'],
     ]);
@@ -100,7 +138,9 @@ describe('gearStats', () => {
 
 describe('clubRecords and startPoints', () => {
   it('finds the best session for each record', () => {
-    const records = Object.fromEntries(clubRecords(sessions).map(({key, session, value}) => [key, [session.number, value]]));
+    const records = Object.fromEntries(
+      clubRecords(sessions).map(({key, session, value}) => [key, [session.number, value]]),
+    );
 
     expect(records.fastest).toEqual([641, 9]);
     expect(records.longest).toEqual([642, 60000]);
@@ -116,7 +156,14 @@ describe('clubRecords and startPoints', () => {
 });
 
 describe('with the club calendar', () => {
-  const held = (number: number, day: string, finish: string | null = null): ClubRide => ({title: `N-Peloton #${number}`, series: 'N-Peloton', number, day, groups: 9, finish});
+  const held = (number: number, day: string, finish: string | null = null): ClubRide => ({
+    title: `N-Peloton #${number}`,
+    series: 'N-Peloton',
+    number,
+    day,
+    groups: 9,
+    finish,
+  });
   // #643 on 09-23 was held and missed; no session in the week of 10-12; 09-02 #640 noted no finish.
   const calendar = [
     held(646, '2026-10-14'),

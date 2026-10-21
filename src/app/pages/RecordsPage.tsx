@@ -1,15 +1,5 @@
 import {Fragment, useMemo, useState} from 'react';
-import {
-  Box,
-  Grid,
-  Group,
-  HStack,
-  Image,
-  Link as ChakraLink,
-  Spinner,
-  Stack,
-  Text,
-} from '@chakra-ui/react';
+import {Box, Grid, Group, HStack, Image, Link as ChakraLink, Spinner, Stack, Text} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Link, useNavigate} from 'react-router';
 import {
@@ -54,8 +44,18 @@ import {
 
 const MONTH_INITIALS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const decodeRoutes = (
@@ -228,7 +228,12 @@ const YearProgress = ({progress}: {progress: DashboardData['yearProgress']}) => 
     series: progress.years.map((year, index) => ({name: String(year), color: getSeriesColor(index)})),
   });
 
-  if (0 === progress.years.length) return <Text fontSize="sm" color="fg.muted">Nothing recorded yet.</Text>;
+  if (0 === progress.years.length)
+    return (
+      <Text fontSize="sm" color="fg.muted">
+        Nothing recorded yet.
+      </Text>
+    );
 
   return (
     <Chart.Root width="100%" height="260px" chart={chart}>
@@ -294,7 +299,12 @@ const YearProgress = ({progress}: {progress: DashboardData['yearProgress']}) => 
 const EddingtonChart = ({eddington, number}: {eddington: DashboardData['eddington']; number: number}) => {
   const chart = useChart({data: eddington, series: [{name: 'days', color: 'orange.solid'}]});
 
-  if (0 === eddington.length) return <Text fontSize="sm" color="fg.muted">Nothing recorded yet.</Text>;
+  if (0 === eddington.length)
+    return (
+      <Text fontSize="sm" color="fg.muted">
+        Nothing recorded yet.
+      </Text>
+    );
 
   return (
     <Chart.Root width="100%" height="240px" chart={chart}>
@@ -361,7 +371,14 @@ const YearOverYear = ({comparison}: {comparison: DashboardData['yearOverYear']})
       const change = 0 === previous ? null : Math.round(((current - previous) / previous) * 100);
 
       return (
-        <HStack key={metric} justifyContent="space-between" gap="10px" paddingY="7px" borderBottomWidth="1px" borderColor="border.subtle">
+        <HStack
+          key={metric}
+          justifyContent="space-between"
+          gap="10px"
+          paddingY="7px"
+          borderBottomWidth="1px"
+          borderColor="border.subtle"
+        >
           <Text fontSize="sm" color="fg.muted" flex="1">
             {metric}
           </Text>
@@ -390,7 +407,12 @@ const YearOverYear = ({comparison}: {comparison: DashboardData['yearOverYear']})
 const FtpChart = ({ftp}: {ftp: DashboardData['ftp']}) => {
   const chart = useChart({data: ftp, series: [{name: 'power', color: 'orange.solid'}]});
 
-  if (0 === ftp.length) return <Text fontSize="sm" color="fg.muted">No FTP test recorded yet.</Text>;
+  if (0 === ftp.length)
+    return (
+      <Text fontSize="sm" color="fg.muted">
+        No FTP test recorded yet.
+      </Text>
+    );
 
   return (
     <Chart.Root width="100%" height="200px" chart={chart}>
@@ -519,7 +541,6 @@ const RecordsPage = () => {
 
   const {totals, spending, maintenance, conditions} = data;
 
-
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
       <Stack gap="2px">
@@ -581,8 +602,8 @@ const RecordsPage = () => {
         <Text fontSize="xs" color="fg.muted">
           Every road ridden, drawn faintly so the ones ridden often stand out. The grid is the explorer tiles, the
           squares a slippy map uses at zoom {explorer.zoom} (about 2.4 km wide here). The yellow outline is the biggest
-          square with no hole in it, and the green tint is the yard as Squadrats defines it: the biggest connected
-          group of tiles that each have all four neighbours explored.
+          square with no hole in it, and the green tint is the yard as Squadrats defines it: the biggest connected group
+          of tiles that each have all four neighbours explored.
         </Text>
       </Panel>
 
@@ -607,12 +628,12 @@ const RecordsPage = () => {
       )}
 
       <Grid templateColumns={{base: '1fr', lg: '2fr 1fr'}} gap="16px">
-      <Panel
-        title={`Eddington ${count(totals.eddington)}`}
-        note={`${count(totals.eddington)} days of ${count(totals.eddington)} km or more · ${count(data.eddingtonNext.needed)} more ${1 === data.eddingtonNext.needed ? 'day' : 'days'} of ${count(data.eddingtonNext.target)} km for E${count(data.eddingtonNext.target)}`}
-      >
-        <EddingtonChart eddington={data.eddington} number={totals.eddington} />
-      </Panel>
+        <Panel
+          title={`Eddington ${count(totals.eddington)}`}
+          note={`${count(totals.eddington)} days of ${count(totals.eddington)} km or more · ${count(data.eddingtonNext.needed)} more ${1 === data.eddingtonNext.needed ? 'day' : 'days'} of ${count(data.eddingtonNext.target)} km for E${count(data.eddingtonNext.target)}`}
+        >
+          <EddingtonChart eddington={data.eddington} number={totals.eddington} />
+        </Panel>
         <Panel title="Eddington by year" note="each season on its own">
           <Bars
             data={data.eddingtonByYear.map(({year, eddington}) => ({name: String(year), value: eddington}))}
@@ -644,13 +665,22 @@ const RecordsPage = () => {
         </Panel>
         <Panel title="Dark rides" note="before sunrise or after sunset, where they started">
           <Grid templateColumns="repeat(2, minmax(0, 1fr))" gap="16px">
-            <Figure value={count(dark.count)} caption="rides in the dark" detail={`${Math.round(dark.share * 100)}% of outdoor rides`} />
+            <Figure
+              value={count(dark.count)}
+              caption="rides in the dark"
+              detail={`${Math.round(dark.share * 100)}% of outdoor rides`}
+            />
             <Figure value={count(dark.thisYear)} caption={`in ${now.getFullYear()}`} />
           </Grid>
           {null !== dark.latest && (
             <Link to={`/activities/${dark.latest.id}`}>
               <Text fontSize="sm" color="fg.muted" _hover={{color: 'fg'}} truncate={true}>
-                Latest: {dark.latest.name}, {new Date(dark.latest.start_date).toLocaleDateString(locale, {day: 'numeric', month: 'short', year: 'numeric'})}
+                Latest: {dark.latest.name},{' '}
+                {new Date(dark.latest.start_date).toLocaleDateString(locale, {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
               </Text>
             </Link>
           )}
@@ -738,7 +768,13 @@ const RecordsPage = () => {
               ['Everests climbed', (totals.elevation / 8849).toFixed(1)],
               ['Times around the Earth', (totals.distance / 1000 / 40075).toFixed(2)],
             ].map(([key, value]) => (
-              <HStack key={key} justifyContent="space-between" paddingY="6px" borderBottomWidth="1px" borderColor="border.subtle">
+              <HStack
+                key={key}
+                justifyContent="space-between"
+                paddingY="6px"
+                borderBottomWidth="1px"
+                borderColor="border.subtle"
+              >
                 <Text fontSize="sm" color="fg.muted">
                   {key}
                 </Text>

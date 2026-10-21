@@ -11,7 +11,14 @@ type StravaActivity = {
 const DROPPED_FROM_DETAILS = ['splits_metric', 'splits_standard', 'laps', 'similar_activities', 'stats_visibility'];
 
 // What a summary keeps out: the long lists and the full-resolution track.
-const DROPPED_FROM_SUMMARY = [...DROPPED_FROM_DETAILS, 'segment_efforts', 'best_efforts', 'description', 'private_note', 'photos'];
+const DROPPED_FROM_SUMMARY = [
+  ...DROPPED_FROM_DETAILS,
+  'segment_efforts',
+  'best_efforts',
+  'description',
+  'private_note',
+  'photos',
+];
 
 const without = (activity: StravaActivity, fields: string[]): StravaActivity =>
   Object.fromEntries(Object.entries(activity).filter(([field]) => !fields.includes(field))) as StravaActivity;

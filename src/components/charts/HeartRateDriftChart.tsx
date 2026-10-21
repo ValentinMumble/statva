@@ -16,7 +16,12 @@ const HeartRateDriftChart = () => {
   const rides = useMemo(() => driftByRide(Object.values(activityMeta)), [activityMeta]);
   const chart = useChart({data: rides, series: [{name: 'drift', color: 'pink.solid'}]});
 
-  if (0 === rides.length) return <Text color="fg.muted">Needs rides of an hour or more with power and heart rate, worked out a few at a time.</Text>;
+  if (0 === rides.length)
+    return (
+      <Text color="fg.muted">
+        Needs rides of an hour or more with power and heart rate, worked out a few at a time.
+      </Text>
+    );
 
   return (
     <>
@@ -34,7 +39,14 @@ const HeartRateDriftChart = () => {
               tickLine={false}
               tickFormatter={date => new Date(date).toLocaleDateString(locale, {month: 'short', year: '2-digit'})}
             />
-            <YAxis dataKey="drift" stroke={chart.color('fg.muted')} width={48} tickLine={false} axisLine={false} tickFormatter={value => `${value}%`} />
+            <YAxis
+              dataKey="drift"
+              stroke={chart.color('fg.muted')}
+              width={48}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={value => `${value}%`}
+            />
             <ReferenceLine y={STEADY_DRIFT} stroke={chart.color('fg.muted')} strokeDasharray="5 4" />
             <Tooltip
               isAnimationActive={false}

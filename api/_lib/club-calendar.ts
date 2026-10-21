@@ -43,7 +43,9 @@ const USER_AGENT = 'Statva (https://statva.vumble.dev)';
 
 /** The local day of a moment where it happens, as 2026-10-14. */
 const localDayOf = (moment: string, timeZone = 'Europe/Paris'): string =>
-  new Intl.DateTimeFormat('en-CA', {timeZone, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date(moment));
+  new Intl.DateTimeFormat('en-CA', {timeZone, year: 'numeric', month: '2-digit', day: '2-digit'}).format(
+    new Date(moment),
+  );
 
 /** The published rides among a page of publications; posts, drafts and deleted rides are left out. */
 const ridesOf = (publications: Publication[]): ClubRide[] =>
@@ -95,15 +97,28 @@ const readAll = async (slug: string): Promise<ClubRide[]> => {
  * The club's rides, newest first: read from the site at most every few hours, and kept in
  * between. When the site cannot be read, what is kept is returned as it is.
  */
-const readClubCalendar = async (athleteId: number, website: string | undefined, now = Date.now()): Promise<ClubCalendar> => {
+const readClubCalendar = async (
+  athleteId: number,
+  website: string | undefined,
+  now = Date.now(),
+): Promise<ClubCalendar> => {
   const slug = teamSlug(website);
   if (null === slug) return {rides: [], complete: true};
 
   const key = athleteKey(athleteId, 'club');
-  const stored = await redis().hmget<{rides: ClubRide[]; state: {slug: string; checkedAt: number}}>(key, 'rides', 'state');
+  const stored = await redis().hmget<{rides: ClubRide[]; state: {slug: string; checkedAt: number}}>(
+    key,
+    'rides',
+    'state',
+  );
   let rides = stored?.rides ?? [];
 
-  if (null === stored?.state || undefined === stored?.state || stored.state.slug !== slug || now - stored.state.checkedAt > RECHECK_MS) {
+  if (
+    null === stored?.state ||
+    undefined === stored?.state ||
+    stored.state.slug !== slug ||
+    now - stored.state.checkedAt > RECHECK_MS
+  ) {
     try {
       rides = (await readAll(slug)).sort((first, second) => second.day.localeCompare(first.day));
       await redis().hset(key, {rides, state: {slug, checkedAt: now}});

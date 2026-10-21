@@ -105,7 +105,8 @@ const LogEvent = ({bike: chosenBike, date, type: presetType, onLogged, trigger}:
     });
   };
 
-  const chains = 'chain' === draft.type ? suggestChains(events, activities ?? [], draft.bike ?? bike, retiredChains) : [];
+  const chains =
+    'chain' === draft.type ? suggestChains(events, activities ?? [], draft.bike ?? bike, retiredChains) : [];
   const chosenChain = isChainEvent(draft) ? draft.chain : undefined;
   const fittings =
     undefined !== draft.type && REFITTED_PARTS.includes(draft.type)

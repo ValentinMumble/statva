@@ -17,7 +17,7 @@ const useLabels = () => {
   const all: Labels = {...DEFAULT_LABELS, ...gearNames, ...labels};
 
   const label: GetLabel = (key, emojiOnly = false) =>
-    null === key ? '🤷' : emojiOnly ? extractEmoji(all[key] ?? key) : all[key] ?? key;
+    null === key ? '🤷' : emojiOnly ? extractEmoji(all[key] ?? key) : (all[key] ?? key);
 
   return {label, labels, refetch};
 };

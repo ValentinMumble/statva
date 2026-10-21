@@ -28,14 +28,29 @@ type ClubWeeks = {
 
 type GroupStats = {name: string; sessions: number; speed: number; power: number | null; riders: number | null};
 
-type GearStats = {gearId: string | null; sessions: number; distance: number; speed: number; power: number | null; first: string; last: string};
+type GearStats = {
+  gearId: string | null;
+  sessions: number;
+  distance: number;
+  speed: number;
+  power: number | null;
+  first: string;
+  last: string;
+};
 
 type ClubRecord = {key: string; heading: string; session: ClubSession; value: number};
 
 type StartPoint = {point: [number, number]; sessions: number};
 
 /** A ride on the club's own calendar (its website), as the server reads it. */
-type ClubRide = {title: string; series: string; number: number | null; day: string; groups: number | null; finish: string | null};
+type ClubRide = {
+  title: string;
+  series: string;
+  number: number | null;
+  day: string;
+  groups: number | null;
+  finish: string | null;
+};
 
 type CalendarMatch = {
   // The series' rides held from the first one ridden to today, newest first.
@@ -53,10 +68,14 @@ const RECENT_WEEKS = 8;
 const SAME_START_M = 300;
 const METRES_PER_DEGREE = 111_320;
 
-const average = (values: number[]): number | null => (0 === values.length ? null : values.reduce((sum, value) => sum + value, 0) / values.length);
+const average = (values: number[]): number | null =>
+  0 === values.length ? null : values.reduce((sum, value) => sum + value, 0) / values.length;
 
 const metresBetween = ([latitudeA, longitudeA]: number[], [latitudeB, longitudeB]: number[]): number =>
-  Math.hypot((latitudeA - latitudeB) * METRES_PER_DEGREE, (longitudeA - longitudeB) * METRES_PER_DEGREE * Math.cos((latitudeA * Math.PI) / 180));
+  Math.hypot(
+    (latitudeA - latitudeB) * METRES_PER_DEGREE,
+    (longitudeA - longitudeB) * METRES_PER_DEGREE * Math.cos((latitudeA * Math.PI) / 180),
+  );
 
 // Strava counts the riders it matched on the same ride; 1 means it found nobody, not a solo ride.
 const ridersOf = ({athlete_count}: Activity): number | null => (1 < (athlete_count ?? 1) ? athlete_count : null);
@@ -64,7 +83,11 @@ const ridersOf = ({athlete_count}: Activity): number | null => (1 < (athlete_cou
 const mondayOf = (day: string): string => dayFromNumber(dayNumber(day) - weekdayOf(day));
 
 /** The club's rides, newest first. Notes come from the details when they have arrived. */
-const clubSessions = (activities: Activity[], details: Record<string, DetailedActivity>, club: ClubRules): ClubSession[] =>
+const clubSessions = (
+  activities: Activity[],
+  details: Record<string, DetailedActivity>,
+  club: ClubRules,
+): ClubSession[] =>
   activities
     .filter(({name}) => isClubRide(name, club))
     .sort((first, second) => new Date(second.start_date).getTime() - new Date(first.start_date).getTime())
@@ -82,7 +105,9 @@ const clubSessions = (activities: Activity[], details: Record<string, DetailedAc
 /** Sessions, km, climbing and time, and the share of all riding km done with the club. */
 const clubTotals = (sessions: ClubSession[], activities: Activity[]): ClubTotals => {
   const distance = sessions.reduce((sum, {activity}) => sum + activity.distance, 0);
-  const ridden = activities.filter(({sport_type}) => isPedalled(sport_type)).reduce((sum, activity) => sum + activity.distance, 0);
+  const ridden = activities
+    .filter(({sport_type}) => isPedalled(sport_type))
+    .reduce((sum, activity) => sum + activity.distance, 0);
 
   return {
     sessions: sessions.length,
@@ -95,7 +120,9 @@ const clubTotals = (sessions: ClubSession[], activities: Activity[]): ClubTotals
 
 /** How many sessions the club ran from the first one ridden to the last, by their numbers. */
 const sessionsHeld = (sessions: ClubSession[]): {attended: number; held: number} | null => {
-  const numbers = [...new Set(sessions.map(({number}) => number).filter((number): number is number => null !== number))];
+  const numbers = [
+    ...new Set(sessions.map(({number}) => number).filter((number): number is number => null !== number)),
+  ];
 
   if (0 === numbers.length) return null;
 
@@ -146,7 +173,12 @@ const clubWeeks = (sessions: ClubSession[], today: string, heldWeeks: Set<string
   }
   const heldPast = weeks.slice(0, -1).filter(({held}) => held);
 
-  return {weeks, longest, current, missedRecently: heldPast.slice(-RECENT_WEEKS).filter(({session}) => null === session).length};
+  return {
+    weeks,
+    longest,
+    current,
+    missedRecently: heldPast.slice(-RECENT_WEEKS).filter(({session}) => null === session).length,
+  };
 };
 
 /**
@@ -161,7 +193,9 @@ const matchCalendar = (sessions: ClubSession[], rides: ClubRide[], series: strin
   // One session under one number, even when the club lists it in parts (a road and a gravel
   // ride, or each day of a special week): its groups add up, its days all count.
   const merged = new Map<string, {ride: ClubRide; days: string[]}>();
-  for (const ride of rides.filter(candidate => candidate.series === series && first <= candidate.day && candidate.day <= today)) {
+  for (const ride of rides.filter(
+    candidate => candidate.series === series && first <= candidate.day && candidate.day <= today,
+  )) {
     const key = null === ride.number ? `${ride.day} ${ride.title}` : String(ride.number);
     const known = merged.get(key);
     merged.set(
@@ -172,7 +206,10 @@ const matchCalendar = (sessions: ClubSession[], rides: ClubRide[], series: strin
             ride: {
               ...known.ride,
               day: ride.day < known.ride.day ? ride.day : known.ride.day,
-              groups: null === known.ride.groups && null === ride.groups ? null : (known.ride.groups ?? 0) + (ride.groups ?? 0),
+              groups:
+                null === known.ride.groups && null === ride.groups
+                  ? null
+                  : (known.ride.groups ?? 0) + (ride.groups ?? 0),
               finish: known.ride.finish ?? ride.finish,
             },
             days: [...known.days, ride.day],
@@ -194,7 +231,13 @@ const matchCalendar = (sessions: ClubSession[], rides: ClubRide[], series: strin
   const held = entries.map(({ride}) => ride);
   const missed = entries.filter(entry => undefined === riddenAs(entry)).map(({ride}) => ride);
 
-  return {held, missed, attended: held.length - missed.length, finishes, heldWeeks: new Set(entries.flatMap(({days}) => days.map(mondayOf)))};
+  return {
+    held,
+    missed,
+    attended: held.length - missed.length,
+    finishes,
+    heldWeeks: new Set(entries.flatMap(({days}) => days.map(mondayOf))),
+  };
 };
 
 // "Caf'K", "CafK" and "Le CafK" are the same bar.
@@ -210,7 +253,10 @@ const placeKey = (place: string): string =>
  * Visits per finish place, most visited first: from the notes, or else the club's calendar.
  * Spellings of one place count together, under the one seen first in the notes.
  */
-const finishCounts = (sessions: ClubSession[], calendarFinishes: Map<number, string> = new Map()): [string, number][] => {
+const finishCounts = (
+  sessions: ClubSession[],
+  calendarFinishes: Map<number, string> = new Map(),
+): [string, number][] => {
   const places = new Map<string, {name: string; visits: number; fromNotes: boolean}>();
   for (const {activity, finish} of sessions) {
     const place = finish ?? calendarFinishes.get(activity.id) ?? null;
@@ -225,7 +271,9 @@ const finishCounts = (sessions: ClubSession[], calendarFinishes: Map<number, str
     });
   }
 
-  return [...places.values()].map(({name, visits}): [string, number] => [name, visits]).sort((first, second) => second[1] - first[1]);
+  return [...places.values()]
+    .map(({name, visits}): [string, number] => [name, visits])
+    .sort((first, second) => second[1] - first[1]);
 };
 
 /** Each group's sessions, average speed, power (rides with a power meter) and riders, most ridden first. */
@@ -238,8 +286,14 @@ const groupStats = (sessions: ClubSession[]): GroupStats[] => {
       name,
       sessions: rides.length,
       speed: average(rides.map(({activity}) => activity.average_speed)) ?? 0,
-      power: average(rides.map(({activity}) => (activity.device_watts ? activity.weighted_average_watts : 0)).filter((watts): watts is number => 0 < (watts ?? 0))),
-      riders: average(rides.map(({activity}) => ridersOf(activity)).filter((riders): riders is number => null !== riders)),
+      power: average(
+        rides
+          .map(({activity}) => (activity.device_watts ? activity.weighted_average_watts : 0))
+          .filter((watts): watts is number => 0 < (watts ?? 0)),
+      ),
+      riders: average(
+        rides.map(({activity}) => ridersOf(activity)).filter((riders): riders is number => null !== riders),
+      ),
     }))
     .sort((first, second) => second.sessions - first.sessions);
 };
@@ -247,7 +301,8 @@ const groupStats = (sessions: ClubSession[]): GroupStats[] => {
 /** Each bike's sessions, km, average speed and power, and the first and last day it came along, most used first. */
 const gearStats = (sessions: ClubSession[]): GearStats[] => {
   const bikes = new Map<string | null, ClubSession[]>();
-  for (const session of sessions) bikes.set(session.activity.gear_id, [...(bikes.get(session.activity.gear_id) ?? []), session]);
+  for (const session of sessions)
+    bikes.set(session.activity.gear_id, [...(bikes.get(session.activity.gear_id) ?? []), session]);
 
   return [...bikes.entries()]
     .map(([gearId, rides]) => {
@@ -258,7 +313,11 @@ const gearStats = (sessions: ClubSession[]): GearStats[] => {
         sessions: rides.length,
         distance: rides.reduce((sum, {activity}) => sum + activity.distance, 0),
         speed: average(rides.map(({activity}) => activity.average_speed)) ?? 0,
-        power: average(rides.map(({activity}) => (activity.device_watts ? activity.weighted_average_watts : 0)).filter((watts): watts is number => 0 < (watts ?? 0))),
+        power: average(
+          rides
+            .map(({activity}) => (activity.device_watts ? activity.weighted_average_watts : 0))
+            .filter((watts): watts is number => 0 < (watts ?? 0)),
+        ),
         first: days[0],
         last: days[days.length - 1],
       };
@@ -267,11 +326,20 @@ const gearStats = (sessions: ClubSession[]): GearStats[] => {
 };
 
 /** How many rode along, on average, at most, and month by month (0 is January) over the years. */
-const groupSize = (sessions: ClubSession[]): {average: number | null; biggest: ClubSession | null; byMonth: (number | null)[]} => {
+const groupSize = (
+  sessions: ClubSession[],
+): {average: number | null; biggest: ClubSession | null; byMonth: (number | null)[]} => {
   const counted = sessions.filter(({activity}) => null !== ridersOf(activity));
-  const biggest = counted.reduce<ClubSession | null>((best, session) => (null === best || session.activity.athlete_count > best.activity.athlete_count ? session : best), null);
+  const biggest = counted.reduce<ClubSession | null>(
+    (best, session) => (null === best || session.activity.athlete_count > best.activity.athlete_count ? session : best),
+    null,
+  );
   const byMonth = [...Array(12).keys()].map(month =>
-    average(counted.filter(({activity}) => Number(localDay(activity).slice(5, 7)) - 1 === month).map(({activity}) => activity.athlete_count)),
+    average(
+      counted
+        .filter(({activity}) => Number(localDay(activity).slice(5, 7)) - 1 === month)
+        .map(({activity}) => activity.athlete_count),
+    ),
   );
 
   return {average: average(counted.map(({activity}) => activity.athlete_count)), biggest, byMonth};
@@ -281,7 +349,12 @@ const RECORDS: {key: string; heading: string; value: (activity: Activity) => num
   {key: 'fastest', heading: 'Fastest', value: ({average_speed}) => average_speed},
   {key: 'longest', heading: 'Longest', value: ({distance}) => distance},
   {key: 'hilliest', heading: 'Hilliest', value: ({total_elevation_gain}) => total_elevation_gain},
-  {key: 'power', heading: 'Most power', value: ({device_watts, weighted_average_watts}) => (device_watts && weighted_average_watts ? weighted_average_watts : null)},
+  {
+    key: 'power',
+    heading: 'Most power',
+    value: ({device_watts, weighted_average_watts}) =>
+      device_watts && weighted_average_watts ? weighted_average_watts : null,
+  },
   {key: 'suffer', heading: 'Hardest', value: ({suffer_score}) => suffer_score ?? null},
   {key: 'kudos', heading: 'Most kudos', value: ({kudos_count}) => (0 < kudos_count ? kudos_count : null)},
   {key: 'coldest', heading: 'Coldest', value: ({average_temp}) => average_temp ?? null, lowest: true},
@@ -295,7 +368,9 @@ const clubRecords = (sessions: ClubSession[]): ClubRecord[] =>
       const candidate = value(session.activity);
       if (null === candidate || undefined === candidate) return found;
 
-      return null === found || (lowest ? candidate < found.value : candidate > found.value) ? {session, value: candidate} : found;
+      return null === found || (lowest ? candidate < found.value : candidate > found.value)
+        ? {session, value: candidate}
+        : found;
     }, null);
 
     return null === best ? [] : [{key, heading, ...best}];
@@ -314,5 +389,27 @@ const startPoints = (sessions: ClubSession[]): StartPoint[] => {
   return points.sort((first, second) => second.sessions - first.sessions);
 };
 
-export {clubRecords, clubSessions, clubTotals, clubWeeks, finishCounts, gearStats, groupSize, groupStats, matchCalendar, sessionsHeld, startPoints};
-export type {CalendarMatch, ClubRecord, ClubRide, ClubSession, ClubTotals, ClubWeeks, GearStats, GroupStats, StartPoint};
+export {
+  clubRecords,
+  clubSessions,
+  clubTotals,
+  clubWeeks,
+  finishCounts,
+  gearStats,
+  groupSize,
+  groupStats,
+  matchCalendar,
+  sessionsHeld,
+  startPoints,
+};
+export type {
+  CalendarMatch,
+  ClubRecord,
+  ClubRide,
+  ClubSession,
+  ClubTotals,
+  ClubWeeks,
+  GearStats,
+  GroupStats,
+  StartPoint,
+};

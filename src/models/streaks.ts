@@ -36,7 +36,10 @@ const findRuns = (numbers: number[], step: number): Span[] =>
 
 // On a tie the most recent run wins, as it is the one people remember.
 const longestOf = (runs: Span[]): Span | undefined =>
-  runs.reduce((best: Span | undefined, run) => (undefined === best || run.length >= best.length ? run : best), undefined);
+  runs.reduce(
+    (best: Span | undefined, run) => (undefined === best || run.length >= best.length ? run : best),
+    undefined,
+  );
 
 // `tail` stretches the end, so a run of weeks ends on the Sunday of its last week.
 const toRun = (span: Span | undefined, tail = 0): Run =>
@@ -69,9 +72,7 @@ const computeStreaks = (activities: DetailedActivity[], today: string): Streaks 
     const next = days[index + 1];
     const gap = undefined === next ? 0 : next - day - 1;
 
-    return 0 < gap && gap >= best.length
-      ? {length: gap, from: dayFromNumber(day), to: dayFromNumber(next)}
-      : best;
+    return 0 < gap && gap >= best.length ? {length: gap, from: dayFromNumber(day), to: dayFromNumber(next)} : best;
   }, EMPTY);
 
   return {

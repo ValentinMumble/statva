@@ -8,17 +8,11 @@ export const EventTimelineChart = lazy(() =>
   import('./EventTimelineChart').then(m => ({default: m.EventTimelineChart})),
 );
 export const TimeframeChart = lazy(() => import('./TimeframeChart').then(m => ({default: m.TimeframeChart})));
-export const ActivityTimeChart = lazy(() =>
-  import('./ActivityTimeChart').then(m => ({default: m.ActivityTimeChart})),
-);
-export const CommuteSpeedChart = lazy(() =>
-  import('./CommuteSpeedChart').then(m => ({default: m.CommuteSpeedChart})),
-);
+export const ActivityTimeChart = lazy(() => import('./ActivityTimeChart').then(m => ({default: m.ActivityTimeChart})));
+export const CommuteSpeedChart = lazy(() => import('./CommuteSpeedChart').then(m => ({default: m.CommuteSpeedChart})));
 export const FTPChart = lazy(() => import('./FTPChart').then(m => ({default: m.FTPChart})));
 export const EddingtonChart = lazy(() => import('./EddingtonChart').then(m => ({default: m.EddingtonChart})));
-export const EddingtonDayChart = lazy(() =>
-  import('./EddingtonDayChart').then(m => ({default: m.EddingtonDayChart})),
-);
+export const EddingtonDayChart = lazy(() => import('./EddingtonDayChart').then(m => ({default: m.EddingtonDayChart})));
 export const GearChart = lazy(() => import('./GearChart').then(m => ({default: m.GearChart})));
 export const AverageGearChart = lazy(() => import('./AverageGearChart').then(m => ({default: m.AverageGearChart})));
 export const ProgressChart = lazy(() => import('./ProgressChart').then(m => ({default: m.ProgressChart})));

@@ -5,7 +5,8 @@ import {cookie, readCookie} from './http.js';
 const SESSION_COOKIE = 'statva_session';
 const SESSION_DAYS = 30;
 
-const sign = (payload: string): string => createHmac('sha256', env('SESSION_SECRET')).update(payload).digest('base64url');
+const sign = (payload: string): string =>
+  createHmac('sha256', env('SESSION_SECRET')).update(payload).digest('base64url');
 
 /** A cookie that says which athlete this is, signed so it cannot be forged or edited. */
 const sessionCookie = (athleteId: number): string => {

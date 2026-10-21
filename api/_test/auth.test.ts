@@ -16,7 +16,9 @@ const cookiesOf = (response: Response) => response.headers.getSetCookie().map(li
 const logIn = async (): Promise<string> => {
   const start = login(request('/api/auth/login'));
   const state = new URL(String(start.headers.get('Location'))).searchParams.get('state');
-  const response = await callback(request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]));
+  const response = await callback(
+    request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]),
+  );
 
   return String(cookiesOf(response).find(line => line.startsWith('statva_session=')));
 };
@@ -50,7 +52,9 @@ describe('login', () => {
 
     const start = login(request('/api/auth/login'));
     const state = new URL(String(start.headers.get('Location'))).searchParams.get('state');
-    const response = await callback(request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]));
+    const response = await callback(
+      request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]),
+    );
 
     expect(response.headers.get('Location')).toBe('/?login=not-allowed');
     expect(fake.read('strava_tokens')['42']).toBeUndefined();
@@ -81,7 +85,9 @@ describe('Strava proxy', () => {
     const fake = install();
     const session = await logIn();
 
-    const response = await strava(request('/api/strava?path=athlete/activities&page=2&per_page=30&access_token=x', session));
+    const response = await strava(
+      request('/api/strava?path=athlete/activities&page=2&per_page=30&access_token=x', session),
+    );
 
     expect(response.status).toBe(200);
     expect(fake.strava.calls.at(-1)).toBe('/api/v3/athlete/activities?page=2&per_page=30');
@@ -100,9 +106,14 @@ describe('Strava proxy', () => {
     install();
     const session = await logIn();
 
-    for (const path of ['athletes/99/routes', 'activities/1/../../athlete', 'uploads', 'activities/1?x=1', 'push_subscriptions']) {
+    for (const path of [
+      'athletes/99/routes',
+      'activities/1/../../athlete',
+      'uploads',
+      'activities/1?x=1',
+      'push_subscriptions',
+    ]) {
       expect((await strava(request(`/api/strava?path=${encodeURIComponent(path)}`, session))).status).toBe(403);
     }
   });
 });
-

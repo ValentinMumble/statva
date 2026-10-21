@@ -14,7 +14,15 @@ const RideClock = ({clock}: {clock: RideClockData}) => (
   <Stack gap="8px">
     <Grid templateColumns="28px repeat(24, 1fr)" gap="2px" alignItems="center">
       {[...Array(24).keys()].map(hour => (
-        <Text key={hour} gridColumn={hour + 2} gridRow={1} fontSize="10px" color="fg.muted" whiteSpace="nowrap" width="0">
+        <Text
+          key={hour}
+          gridColumn={hour + 2}
+          gridRow={1}
+          fontSize="10px"
+          color="fg.muted"
+          whiteSpace="nowrap"
+          width="0"
+        >
           {0 === hour % HOUR_STEP ? `${hour}h` : ''}
         </Text>
       ))}

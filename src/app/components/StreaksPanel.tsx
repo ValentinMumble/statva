@@ -39,7 +39,9 @@ const StreaksPanel = ({streaks, locale}: StreaksPanelProps) => {
           value={String(currentWeeks.length)}
           unit={plural(currentWeeks.length, 'week')}
           caption="current week streak"
-          detail={null === currentWeeks.from ? 'none going' : `since the week of ${formatDay(currentWeeks.from, locale)}`}
+          detail={
+            null === currentWeeks.from ? 'none going' : `since the week of ${formatDay(currentWeeks.from, locale)}`
+          }
         />
         <Figure
           value={String(longestBreak.length)}

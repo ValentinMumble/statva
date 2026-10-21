@@ -26,7 +26,12 @@ const relativeDay = (date: Date, locale: string, now: Date = new Date()): string
   if (1 === days) return 'Yesterday';
   if (days < 7) return date.toLocaleDateString(locale, {weekday: 'long'});
 
-  return date.toLocaleDateString(locale, {weekday: 'short', day: 'numeric', month: 'short', ...(days > 300 ? {year: 'numeric'} : {})});
+  return date.toLocaleDateString(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    ...(days > 300 ? {year: 'numeric'} : {}),
+  });
 };
 
 /** The change from one figure to another, as a signed percentage, or null without a base. */

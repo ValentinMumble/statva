@@ -1,4 +1,4 @@
-import { SummaryAthlete } from '.';
+import {SummaryAthlete} from '.';
 
 export interface Comment {
   id: number;

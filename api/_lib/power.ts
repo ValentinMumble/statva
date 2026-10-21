@@ -61,9 +61,9 @@ const activePoints = ({time, watts, moving, cadence, distance}: PowerStreams, is
       (0 === index || gap < MAX_IMMOBILE_GAP) &&
       Boolean(
         watts[index] ||
-          (useMoving && moving?.[index]) ||
-          (isTrainer && cadence?.[index]) ||
-          (hasDistance && distance && (distance[index] - distance[index - 1]) / gap >= MIN_SPEED),
+        (useMoving && moving?.[index]) ||
+        (isTrainer && cadence?.[index]) ||
+        (hasDistance && distance && (distance[index] - distance[index - 1]) / gap >= MIN_SPEED),
       )
     );
   });
@@ -80,7 +80,8 @@ const resample = (streams: PowerStreams, isTrainer: boolean): {series: Point[]; 
     const gap = 0 < index ? seconds - time[index - 1] : 0;
     const point = {watts: watts[index] ?? 0, padding: false, heartRate: heartrate?.[index]};
 
-    for (let offset = step; offset < gap; offset += step) series.push(active[index] ? point : {watts: 0, padding: true});
+    for (let offset = step; offset < gap; offset += step)
+      series.push(active[index] ? point : {watts: 0, padding: true});
     series.push(point);
   });
 
@@ -149,7 +150,8 @@ const driftOf = (series: Point[], step: number): number | null => {
   if (moving.length * step < DRIFT_MIN_SECONDS) return null;
 
   const ratio = (points: Point[]) => {
-    const average = (pick: (point: Point) => number) => points.reduce((sum, point) => sum + pick(point), 0) / points.length;
+    const average = (pick: (point: Point) => number) =>
+      points.reduce((sum, point) => sum + pick(point), 0) / points.length;
 
     return average(({watts}) => watts) / average(({heartRate}) => heartRate ?? 0);
   };
@@ -175,7 +177,8 @@ const analysePower = (streams: PowerStreams, isTrainer = false): PowerAnalysis |
 };
 
 /** The normalized power alone, as Sauce shows it. */
-const normalizedPower = (streams: PowerStreams, isTrainer = false): number | null => analysePower(streams, isTrainer)?.normalizedPower ?? null;
+const normalizedPower = (streams: PowerStreams, isTrainer = false): number | null =>
+  analysePower(streams, isTrainer)?.normalizedPower ?? null;
 
 export {analysePower, normalizedPower, POWER_BAND};
 export type {PowerAnalysis, PowerStreams};

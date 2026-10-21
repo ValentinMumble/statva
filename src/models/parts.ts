@@ -16,7 +16,11 @@ type PartRules = {
   pricesEur: Partial<Record<Event['type'], number>>;
 };
 
-const DEFAULT_PART_RULES: PartRules = {limitsKm: {chain: 400, tire: 8000, cassette: 30000}, retiredChains: [], pricesEur: {}};
+const DEFAULT_PART_RULES: PartRules = {
+  limitsKm: {chain: 400, tire: 8000, cassette: 30000},
+  retiredChains: [],
+  pricesEur: {},
+};
 
 // A chain comes off the bike once it has done this much on its current stint.
 const rotationLimit = (rules: PartRules = DEFAULT_PART_RULES): number => (rules.limitsKm.chain ?? 400) * 1000;
@@ -96,7 +100,8 @@ const chainTotals = (events: Event[], activities: Activity[], bikeId: string): R
   const fittings = onBike(events, bikeId, 'chain').filter(isChainEvent);
 
   return fittings.reduce((totals: Record<string, number>, event, index) => {
-    totals[event.chain] = (totals[event.chain] ?? 0) + distanceBetween(activities, event.date, fittings[index + 1]?.date);
+    totals[event.chain] =
+      (totals[event.chain] ?? 0) + distanceBetween(activities, event.date, fittings[index + 1]?.date);
 
     return totals;
   }, {});
@@ -165,7 +170,10 @@ const partStatus = (
     ratio: null === expected || 0 >= expected ? 0 : distance / expected,
     state: stateOf(distance, expected),
     weeksLeft: weeksLeftOf(distance, expected, pace),
-    costPerKm: costPerKmOf(rules.pricesEur[type], 'chain' === type ? chainLife(events, activities, bikeId, rules.retiredChains) : expected),
+    costPerKm: costPerKmOf(
+      rules.pricesEur[type],
+      'chain' === type ? chainLife(events, activities, bikeId, rules.retiredChains) : expected,
+    ),
   };
 };
 
@@ -232,5 +240,14 @@ const recentFittings = (
     .slice(0, limit);
 };
 
-export {computeBikeParts, DEFAULT_PART_RULES, partsCostPerKm, recentFittings, REFITTED_PARTS, rotationLimit, suggestChains, WEARING_PARTS};
+export {
+  computeBikeParts,
+  DEFAULT_PART_RULES,
+  partsCostPerKm,
+  recentFittings,
+  REFITTED_PARTS,
+  rotationLimit,
+  suggestChains,
+  WEARING_PARTS,
+};
 export type {Fitting, PartRules, PartState, PartStatus};

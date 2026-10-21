@@ -34,7 +34,11 @@ export const POST = async (request: Request): Promise<Response> => {
   const event = (await request.json().catch(() => null)) as StravaEvent | null;
 
   // Only riders on the list who logged in have tokens; anything else is not ours.
-  if (null === event || !allowedAthletes().includes(event.owner_id) || null === (await redis().hget(TOKENS_KEY, String(event.owner_id)))) {
+  if (
+    null === event ||
+    !allowedAthletes().includes(event.owner_id) ||
+    null === (await redis().hget(TOKENS_KEY, String(event.owner_id)))
+  ) {
     return json({ok: true});
   }
 

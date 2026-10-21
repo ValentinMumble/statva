@@ -24,7 +24,7 @@ const getTypes = (...types: (ActivityType | string)[]): ActivityType[] => [
         default:
           return [...types, type as ActivityType];
       }
-    }, [])
+    }, []),
   ),
 ];
 

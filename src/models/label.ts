@@ -67,14 +67,14 @@ const extractEmoji = (text: string): string => text.match(EMOJI_REGEX)?.join('')
 
 // Unicode ranges for visually distinct, single-codepoint emojis
 const EMOJI_RANGES: [number, number][] = [
-  [0x1F300, 0x1F3CE], // weather, nature, food, objects, celebration, sports
-  [0x1F400, 0x1F4A9], // animals, symbols
-  [0x1F525, 0x1F53D], // fire, shapes
-  [0x1F600, 0x1F64F], // faces
-  [0x1F680, 0x1F6A2], // transport
-  [0x1F910, 0x1F93A], // more faces, sports
-  [0x1F950, 0x1F9FF], // food, animals, people
-  [0x1FA70, 0x1FAFF], // newer emojis (coral, lungs, beans, etc.)
+  [0x1f300, 0x1f3ce], // weather, nature, food, objects, celebration, sports
+  [0x1f400, 0x1f4a9], // animals, symbols
+  [0x1f525, 0x1f53d], // fire, shapes
+  [0x1f600, 0x1f64f], // faces
+  [0x1f680, 0x1f6a2], // transport
+  [0x1f910, 0x1f93a], // more faces, sports
+  [0x1f950, 0x1f9ff], // food, animals, people
+  [0x1fa70, 0x1faff], // newer emojis (coral, lungs, beans, etc.)
 ];
 
 const randomFromRange = (): string => {

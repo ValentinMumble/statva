@@ -255,7 +255,9 @@ describe('extractNPGroup', () => {
     ['N-Peloton #670 🍍', '🏴‍☠️', 'Pirate'],
     ['N-Peloton #575 G2', 'NP: 211', 'G2'],
   ])('extractNPGroup(%s) with a private note saying "%s" = %s', (name, privateNote, expected) => {
-    expect(extractNPGroup(name, buildDetailedActivity({private_note: privateNote, description: ''}), TEST_CLUB)).toBe(expected);
+    expect(extractNPGroup(name, buildDetailedActivity({private_note: privateNote, description: ''}), TEST_CLUB)).toBe(
+      expected,
+    );
   });
 
   test.each([
@@ -273,7 +275,9 @@ describe('extractNPGroup', () => {
     ['N-Peloton #575 G2 🍊', '🏴‍☠️', 'Pirate'],
   ])('extractNPGroup(%s) with "%s" in the notes = %s', (name, note, expected) => {
     expect(extractNPGroup(name, buildDetailedActivity({description: note}), TEST_CLUB)).toBe(expected);
-    expect(extractNPGroup(name, buildDetailedActivity({private_note: note, description: ''}), TEST_CLUB)).toBe(expected);
+    expect(extractNPGroup(name, buildDetailedActivity({private_note: note, description: ''}), TEST_CLUB)).toBe(
+      expected,
+    );
   });
 });
 
@@ -296,8 +300,10 @@ describe('extractFinish', () => {
       buildDetailedActivity({description: 'Finish à l’atomics'}),
       buildDetailedActivity({description: "Finish à l'Atomics"}),
       buildDetailedActivity({description: 'Finish Atomics'}),
-      buildDetailedActivity({description: `🥰
-Finish au Chemin de Traverse`}),
+      buildDetailedActivity({
+        description: `🥰
+Finish au Chemin de Traverse`,
+      }),
     ];
 
     expect(rides.map(ride => extractFinish(ride))).toEqual([

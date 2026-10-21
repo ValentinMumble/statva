@@ -5,7 +5,8 @@ import {ActivityType, Activity} from './strava';
 const getActivityUrl = ({id}: {id: number}): string => `https://www.strava.com/activities/${id}`;
 
 // Zone 1 below the first threshold, zone 5 from the last, with the rider's thresholds.
-const getHeartRateZone = (bpm: number): number => (0 === bpm ? 0 : 1 + riderProfile().heartRate.zones.filter(threshold => bpm >= threshold).length);
+const getHeartRateZone = (bpm: number): number =>
+  0 === bpm ? 0 : 1 + riderProfile().heartRate.zones.filter(threshold => bpm >= threshold).length;
 
 const getHeartZone = ({average_heartrate = 0}: Activity): number => getHeartRateZone(average_heartrate);
 
@@ -127,12 +128,22 @@ const guessCalories = (activity: Activity): string | null => {
   switch (activity.sport_type) {
     case ActivityType.Swim:
       return formatCalories(
-        calculateSwimCalories(riderProfile().weightKg, activity.moving_time, activity.distance, activity.average_heartrate ?? 0)
+        calculateSwimCalories(
+          riderProfile().weightKg,
+          activity.moving_time,
+          activity.distance,
+          activity.average_heartrate ?? 0,
+        ),
       );
     case ActivityType.Run:
     case ActivityType.TrailRun:
       return formatCalories(
-        calculateRunCalories(riderProfile().weightKg, activity.moving_time, activity.distance, activity.average_heartrate ?? 0)
+        calculateRunCalories(
+          riderProfile().weightKg,
+          activity.moving_time,
+          activity.distance,
+          activity.average_heartrate ?? 0,
+        ),
       );
     default:
       return null;

@@ -32,7 +32,7 @@ const DataLineChart = ({data, min, max}: DataLineChartProps) => {
   const chart = useChart({
     data: relevantActivities.map(activity => ({
       activity: extractEmoji(activity.name),
-      value: Number(isDataKey ? activity[data] ?? 0 : 0),
+      value: Number(isDataKey ? (activity[data] ?? 0) : 0),
     })),
     series: [{name: 'value', color: 'green.solid'}],
   });

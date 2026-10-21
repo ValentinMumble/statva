@@ -1,5 +1,20 @@
 import {useMemo, useState} from 'react';
-import {Badge, Box, Button, Grid, HStack, Icon, IconButton, Image, Input, NativeSelect, Skeleton, Stack, Text, Textarea} from '@chakra-ui/react';
+import {
+  Badge,
+  Box,
+  Button,
+  Grid,
+  HStack,
+  Icon,
+  IconButton,
+  Image,
+  Input,
+  NativeSelect,
+  Skeleton,
+  Stack,
+  Text,
+  Textarea,
+} from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocation, useParams} from 'react-router';
 import {LuArrowLeft, LuExternalLink, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
@@ -70,13 +85,23 @@ const NoteField = ({activity, detail, note}: {activity: Activity; detail: Detail
   };
 
   return (
-    <Box background={'private_note' === note ? 'bg.subtle' : undefined} borderRadius="10px" padding={'private_note' === note ? '12px' : undefined}>
+    <Box
+      background={'private_note' === note ? 'bg.subtle' : undefined}
+      borderRadius="10px"
+      padding={'private_note' === note ? '12px' : undefined}
+    >
       <HStack justifyContent="space-between" marginBottom="4px">
         <Text fontSize="xs" color="fg.muted">
           {NOTE_NAMES[note]}
         </Text>
         {null === draft && (
-          <IconButton aria-label={`Edit the ${NOTE_NAMES[note].toLowerCase()}`} size="xs" variant="ghost" color="fg.muted" onClick={() => setDraft(text)}>
+          <IconButton
+            aria-label={`Edit the ${NOTE_NAMES[note].toLowerCase()}`}
+            size="xs"
+            variant="ghost"
+            color="fg.muted"
+            onClick={() => setDraft(text)}
+          >
             <LuPencil />
           </IconButton>
         )}
@@ -138,7 +163,10 @@ const GearSelect = ({activity}: {activity: Activity}) => {
     } catch (error) {
       toaster.create({
         type: 'error',
-        title: error instanceof NoWriteAccessError ? 'Log out and in again to let Statva change it on Strava' : 'Strava did not take the change',
+        title:
+          error instanceof NoWriteAccessError
+            ? 'Log out and in again to let Statva change it on Strava'
+            : 'Strava did not take the change',
       });
     }
     setSaving(false);
@@ -173,7 +201,9 @@ const ActivityTitle = ({activity, history}: {activity: Activity; history: Activi
   const [draft, setDraft] = useState<string | null>(null);
   // A name without an emoji gets the one most given to the same route, or an emoji not used yet.
   const addEmoji = () => {
-    const usedEmojis = new Set(history.flatMap(({name}) => [...name.matchAll(/\p{Extended_Pictographic}/gu)].map(([match]) => match)));
+    const usedEmojis = new Set(
+      history.flatMap(({name}) => [...name.matchAll(/\p{Extended_Pictographic}/gu)].map(([match]) => match)),
+    );
     setDraft(suggestName(activity, history, usedEmojis));
   };
   const [saving, setSaving] = useState(false);
@@ -185,7 +215,9 @@ const ActivityTitle = ({activity, history}: {activity: Activity; history: Activi
     setSaving(true);
     try {
       await renameActivity(activity.id, name);
-      queryClient.setQueryData<Activity[]>(['activities'], list => list?.map(listed => (listed.id === activity.id ? {...listed, name} : listed)));
+      queryClient.setQueryData<Activity[]>(['activities'], list =>
+        list?.map(listed => (listed.id === activity.id ? {...listed, name} : listed)),
+      );
       queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
         loaded?.[activity.id] ? {...loaded, [activity.id]: {...loaded[activity.id], name}} : loaded,
       );
@@ -193,7 +225,10 @@ const ActivityTitle = ({activity, history}: {activity: Activity; history: Activi
     } catch (error) {
       toaster.create({
         type: 'error',
-        title: error instanceof NoWriteAccessError ? 'Log out and in again to let Statva rename on Strava' : 'Strava did not take the new name',
+        title:
+          error instanceof NoWriteAccessError
+            ? 'Log out and in again to let Statva rename on Strava'
+            : 'Strava did not take the new name',
       });
     }
     setSaving(false);
@@ -205,11 +240,24 @@ const ActivityTitle = ({activity, history}: {activity: Activity; history: Activi
         <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
           {activity.name}
         </Text>
-        <IconButton aria-label="Rename" size="sm" variant="ghost" color="fg.muted" onClick={() => setDraft(activity.name)}>
+        <IconButton
+          aria-label="Rename"
+          size="sm"
+          variant="ghost"
+          color="fg.muted"
+          onClick={() => setDraft(activity.name)}
+        >
           <LuPencil />
         </IconButton>
         {!hasEmoji(activity.name) && (
-          <IconButton aria-label="Add an emoji" title="Add an emoji" size="sm" variant="ghost" color="fg.muted" onClick={addEmoji}>
+          <IconButton
+            aria-label="Add an emoji"
+            title="Add an emoji"
+            size="sm"
+            variant="ghost"
+            color="fg.muted"
+            onClick={addEmoji}
+          >
             <LuSmilePlus />
           </IconButton>
         )}
@@ -250,7 +298,15 @@ const STRAVA_ORANGE = '#fc4c02';
  * The comments on the activity, and a box to answer. Strava lets apps read comments but not
  * post them, so the box copies the text and opens the activity on Strava to paste it there.
  */
-const Comments = ({activity, detail, locale}: {activity: Activity; detail: DetailedActivity | null; locale: string}) => {
+const Comments = ({
+  activity,
+  detail,
+  locale,
+}: {
+  activity: Activity;
+  detail: DetailedActivity | null;
+  locale: string;
+}) => {
   const count = detail?.comment_count ?? activity.comment_count;
   const [draft, setDraft] = useState('');
   const {data: comments} = useQuery({
@@ -282,10 +338,16 @@ const Comments = ({activity, detail, locale}: {activity: Activity; detail: Detai
           comments.map(({id, athlete, text, created_at, reaction_count: likes = 0, has_reacted: liked = false}) => (
             <Stack key={id} gap="2px">
               <HStack gap="8px" fontSize="sm">
-                <Text fontWeight="medium">{[athlete?.firstname, athlete?.lastname].filter(Boolean).join(' ') || 'Someone'}</Text>
+                <Text fontWeight="medium">
+                  {[athlete?.firstname, athlete?.lastname].filter(Boolean).join(' ') || 'Someone'}
+                </Text>
                 <Text color="fg.muted">{relativeDay(new Date(created_at), locale)}</Text>
                 {0 < likes && (
-                  <HStack gap="4px" color={liked ? STRAVA_ORANGE : 'fg.muted'} title={liked ? `${likes} likes, yours among them` : `${likes} likes`}>
+                  <HStack
+                    gap="4px"
+                    color={liked ? STRAVA_ORANGE : 'fg.muted'}
+                    title={liked ? `${likes} likes, yours among them` : `${likes} likes`}
+                  >
                     <Icon as={FaHeart} boxSize="12px" />
                     <Text>{likes}</Text>
                   </HStack>
@@ -354,7 +416,15 @@ const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivit
       <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))'}} gap="8px">
         {shown.map(({key, url, full}) => (
           <a key={key} href={full} target="_blank" rel="noreferrer">
-            <Image src={url} alt="" loading="lazy" width="100%" aspectRatio="4 / 3" objectFit="cover" borderRadius="10px" />
+            <Image
+              src={url}
+              alt=""
+              loading="lazy"
+              width="100%"
+              aspectRatio="4 / 3"
+              objectFit="cover"
+              borderRadius="10px"
+            />
           </a>
         ))}
       </Grid>
@@ -367,7 +437,12 @@ const ZONE_COLORS = ['gray.400', 'blue.400', 'green.400', 'yellow.400', 'orange.
 // zone: the power or heart rate zone of the figure, shown as a badge in its colour.
 // zone: the power or heart rate zone of the figure, shown as a badge in its colour; tag: any
 // other badge, with a line explaining it on hover.
-type FigureItem = {label: string; value: string | null; zone?: number; tag?: {label: string; colorPalette: string; title?: string}};
+type FigureItem = {
+  label: string;
+  value: string | null;
+  zone?: number;
+  tag?: {label: string; colorPalette: string; title?: string};
+};
 
 const Figures = ({items}: {items: FigureItem[]}) => (
   <Grid templateColumns={{base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)'}} gap="18px">
@@ -426,12 +501,20 @@ const HeartRateZones = ({activity}: {activity: Activity}) => {
             {buckets.map(({min, max, time}, index) => (
               <HStack key={index} justifyContent="space-between" fontSize="sm">
                 <HStack gap="8px">
-                  <Box width="10px" height="10px" borderRadius="3px" background={ZONE_COLORS[index + 1] ?? 'gray.400'} />
+                  <Box
+                    width="10px"
+                    height="10px"
+                    borderRadius="3px"
+                    background={ZONE_COLORS[index + 1] ?? 'gray.400'}
+                  />
                   <Text>Z{index + 1}</Text>
                   <Text color="fg.muted">{-1 === max ? `${min}+ bpm` : `${min}–${max} bpm`}</Text>
                 </HStack>
                 <Text fontFamily="figure">
-                  {duration(time)} <Text as="span" color="fg.muted">· {Math.round((time / total) * 100)}%</Text>
+                  {duration(time)}{' '}
+                  <Text as="span" color="fg.muted">
+                    · {Math.round((time / total) * 100)}%
+                  </Text>
                 </Text>
               </HStack>
             ))}
@@ -466,7 +549,10 @@ const ActivityPage = () => {
     if (undefined === activity || !activity.sport_type.includes('Ride')) return null;
     const rides = getTypes(ActivityType.Ride);
 
-    return terrainOf(activity, (activities ?? []).filter(({sport_type}) => rides.includes(sport_type)));
+    return terrainOf(
+      activity,
+      (activities ?? []).filter(({sport_type}) => rides.includes(sport_type)),
+    );
   }, [activity, activities]);
 
   if (undefined === activities) return <Skeleton height="400px" borderRadius="card" />;
@@ -541,7 +627,11 @@ const ActivityPage = () => {
 
       {0 < track.length && <TrackMap tracks={[track]} center={mapCenter} height={{base: '260px', md: '380px'}} />}
 
-      <Grid templateColumns={{base: 'minmax(0, 1fr)', lg: 'minmax(0, 1.6fr) minmax(0, 1fr)'}} gap={{base: '16px', md: '24px'}} alignItems="start">
+      <Grid
+        templateColumns={{base: 'minmax(0, 1fr)', lg: 'minmax(0, 1.6fr) minmax(0, 1fr)'}}
+        gap={{base: '16px', md: '24px'}}
+        alignItems="start"
+      >
         <Stack gap={{base: '16px', md: '24px'}}>
           <Card>
             <Figures
@@ -549,7 +639,10 @@ const ActivityPage = () => {
                 {label: 'Distance', value: 0 < activity.distance ? km(activity.distance, locale) : null},
                 {label: 'Moving time', value: duration(activity.moving_time)},
                 {label: 'Elapsed', value: duration(activity.elapsed_time)},
-                {label: 'Climbing', value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null},
+                {
+                  label: 'Climbing',
+                  value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null,
+                },
                 {
                   label: 'Elevation',
                   value: null === difficulty ? null : `${number(difficulty.percent, locale, 2)}%`,
@@ -566,7 +659,10 @@ const ActivityPage = () => {
                         },
                 },
                 {label: 'Average speed', value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null},
-                {label: 'Max speed', value: 0 < activity.max_speed ? `${number(activity.max_speed * 3.6, locale, 1)} km/h` : null},
+                {
+                  label: 'Max speed',
+                  value: 0 < activity.max_speed ? `${number(activity.max_speed * 3.6, locale, 1)} km/h` : null,
+                },
                 {
                   label: 'Average power',
                   value: activity.average_watts ? `${Math.round(activity.average_watts)} W` : null,
@@ -591,7 +687,10 @@ const ActivityPage = () => {
                 },
                 {label: 'Cadence', value: activity.average_cadence ? `${Math.round(activity.average_cadence)}` : null},
                 {label: 'Calories', value: detail?.calories ? `${number(detail.calories, locale)} kcal` : null},
-                {label: 'Temperature', value: undefined !== activity.average_temp ? `${activity.average_temp}°C` : null},
+                {
+                  label: 'Temperature',
+                  value: undefined !== activity.average_temp ? `${activity.average_temp}°C` : null,
+                },
                 {label: 'Suffer score', value: activity.suffer_score ? `${activity.suffer_score}` : null},
                 {label: 'Kudos', value: `${activity.kudos_count}`},
                 {label: 'Achievements', value: 0 < activity.achievement_count ? `${activity.achievement_count}` : null},
@@ -605,7 +704,12 @@ const ActivityPage = () => {
               <CardTitle>Notes</CardTitle>
               <Stack gap="12px">
                 <NoteField key={`${activity.id}-description`} activity={activity} detail={detail} note="description" />
-                <NoteField key={`${activity.id}-private_note`} activity={activity} detail={detail} note="private_note" />
+                <NoteField
+                  key={`${activity.id}-private_note`}
+                  activity={activity}
+                  detail={detail}
+                  note="private_note"
+                />
               </Stack>
             </Card>
           )}
@@ -627,7 +731,8 @@ const ActivityPage = () => {
           {null === detail && (
             <Card>
               <Text fontSize="sm" color="fg.muted">
-                Notes, calories and the full track arrive once Statva has fetched this activity's details. Refresh to fetch them now.
+                Notes, calories and the full track arrive once Statva has fetched this activity's details. Refresh to
+                fetch them now.
               </Text>
             </Card>
           )}

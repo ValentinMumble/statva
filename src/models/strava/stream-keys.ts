@@ -9,5 +9,5 @@ export enum StreamKeys {
   Watts = 'watts',
   Temp = 'temp',
   Moving = 'moving',
-  GradeSmooth = 'grade_smooth'
+  GradeSmooth = 'grade_smooth',
 }

@@ -22,7 +22,10 @@ const GradesChart = () => {
       }),
     );
   }, [data]);
-  const chart = useChart({data: rows, series: GRADES.map(([, {name, colorPalette}]) => ({name, color: `${colorPalette}.solid`}))});
+  const chart = useChart({
+    data: rows,
+    series: GRADES.map(([, {name, colorPalette}]) => ({name, color: `${colorPalette}.solid`})),
+  });
 
   if (0 === rows.length) return <Text color="fg.muted">No ride to grade yet.</Text>;
 
@@ -35,7 +38,16 @@ const GradesChart = () => {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chart.data}>
             <XAxis dataKey="year" stroke={chart.color('fg.muted')} tickLine={false} />
-            <YAxis stroke={chart.color('fg.muted')} width={44} tickLine={false} axisLine={false} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} allowDataOverflow={true} tickFormatter={value => `${value}%`} />
+            <YAxis
+              stroke={chart.color('fg.muted')}
+              width={44}
+              tickLine={false}
+              axisLine={false}
+              domain={[0, 100]}
+              ticks={[0, 25, 50, 75, 100]}
+              allowDataOverflow={true}
+              tickFormatter={value => `${value}%`}
+            />
             {/* In the order of the grades, not alphabetical as recharts sorts by default. */}
             <Legend content={<Chart.Legend />} itemSorter={null} />
             <Tooltip
@@ -55,7 +67,13 @@ const GradesChart = () => {
               }
             />
             {chart.series.map(({name, color}) => (
-              <Bar key={String(name)} dataKey={chart.key(name)} stackId="grades" fill={chart.color(color)} isAnimationActive={false} />
+              <Bar
+                key={String(name)}
+                dataKey={chart.key(name)}
+                stackId="grades"
+                fill={chart.color(color)}
+                isAnimationActive={false}
+              />
             ))}
           </BarChart>
         </ResponsiveContainer>

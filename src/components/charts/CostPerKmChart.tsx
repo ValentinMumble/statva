@@ -66,9 +66,7 @@ const CostPerKmChart = () => {
       return {data: [], lastPoint: undefined, yDomain: [0, 100]};
     }
 
-    const sortedExpenses = [...expenses].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
+    const sortedExpenses = [...expenses].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     // Build monthly aggregates
     const monthMap = new Map<string, {distance: number; time: number; spend: number}>();
@@ -192,24 +190,56 @@ const CostPerKmChart = () => {
               if (!active || !payload?.[0]?.payload) return null;
               const d = payload[0].payload as DataPoint;
               return (
-                <div style={{padding: '8px', background: 'rgba(0,0,0,0.85)', color: 'white', borderRadius: '4px', fontSize: '12px'}}>
+                <div
+                  style={{
+                    padding: '8px',
+                    background: 'rgba(0,0,0,0.85)',
+                    color: 'white',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                  }}
+                >
                   <div style={{marginBottom: '4px'}}>{d.month}</div>
                   <div style={{color: '#ca8c19'}}>{formatCurrency(d.costPerKm)}/km</div>
                   <div style={{color: '#ED9564'}}>{formatCurrency(d.costPerHour * 100)}/h</div>
                   {d.monthlySpend > 0 && <div style={{color: '#6495ED'}}>Monthly: €{d.monthlySpend}</div>}
-                  <div>Total: €{d.totalCost} • {d.cumulativeHours}h</div>
+                  <div>
+                    Total: €{d.totalCost} • {d.cumulativeHours}h
+                  </div>
                 </div>
               );
             }}
           />
           <Bar dataKey="monthlySpend" yAxisId="spend" fill="#6495ED30" radius={[2, 2, 0, 0]} />
-          <Line type="monotone" dataKey="costPerKm" yAxisId="costPerKm" stroke="#ca8c19" strokeWidth={2.5} dot={false} activeDot={{r: 5}} />
-          <Line type="monotone" dataKey="costPerHour" yAxisId="costPerHour" stroke="#ED9564" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+          <Line
+            type="monotone"
+            dataKey="costPerKm"
+            yAxisId="costPerKm"
+            stroke="#ca8c19"
+            strokeWidth={2.5}
+            dot={false}
+            activeDot={{r: 5}}
+          />
+          <Line
+            type="monotone"
+            dataKey="costPerHour"
+            yAxisId="costPerHour"
+            stroke="#ED9564"
+            strokeWidth={2}
+            dot={false}
+            strokeDasharray="4 2"
+          />
         </ComposedChart>
       </ResponsiveContainer>
       {/* Wraps on a phone, where the four fields do not fit on one line. */}
       <HStack gap="8px" flexWrap="wrap" marginBottom="20px" onKeyDown={({key}) => key === 'Enter' && handleAdd()}>
-        <Input type="date" size="sm" width={{base: '150px', md: '220px'}} value={date} onChange={({target}) => setDate(target.value)} />
+        <Input
+          type="date"
+          size="sm"
+          width={{base: '150px', md: '220px'}}
+          value={date}
+          onChange={({target}) => setDate(target.value)}
+        />
         <NumberInput.Root
           size="sm"
           width="110px"
@@ -257,7 +287,13 @@ const CostPerKmChart = () => {
                 >
                   {formatCurrency(expense.amount * 100)}
                 </Text>
-                <IconButton variant="ghost" title="Remove expense" size="xs" flexShrink={0} onClick={handleRemove(expense)}>
+                <IconButton
+                  variant="ghost"
+                  title="Remove expense"
+                  size="xs"
+                  flexShrink={0}
+                  onClick={handleRemove(expense)}
+                >
                   <LuMinus />
                 </IconButton>
               </Group>

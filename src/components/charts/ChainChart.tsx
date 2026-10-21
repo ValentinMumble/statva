@@ -47,7 +47,7 @@ const ChainChart = ({bike}: {bike?: string} = {}) => {
     const nextEventDate = currentBikeEvents[index + 1]?.date;
     const periodDistance = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
       (sum, ride) => ride.distance + sum,
-      0
+      0,
     );
 
     chainOdometer[event.chain] = [...(chainOdometer[event.chain] ?? []), periodDistance];
@@ -68,11 +68,13 @@ const ChainChart = ({bike}: {bike?: string} = {}) => {
     .filter(chain => chain !== currentChain && !retiredChains.includes(chain))
     .sort((chainA, chainB) => getTotal(chainOdometer[chainA]) - getTotal(chainOdometer[chainB]));
 
-  const retiredTotals = retiredChains.filter(chain => chain in chainOdometer).map(chain =>
-    getTotal(chainOdometer[chain])
-  );
+  const retiredTotals = retiredChains
+    .filter(chain => chain in chainOdometer)
+    .map(chain => getTotal(chainOdometer[chain]));
   const wearLimit =
-    0 === retiredTotals.length ? null : retiredTotals.reduce((total, current) => total + current, 0) / retiredTotals.length;
+    0 === retiredTotals.length
+      ? null
+      : retiredTotals.reduce((total, current) => total + current, 0) / retiredTotals.length;
 
   const maxPeriods = displayedChains.reduce((max, chain) => Math.max(max, chainOdometer[chain].length), 0);
   const periodKeys = [...Array(maxPeriods).keys()].map(index => `period${index}`);
@@ -102,7 +104,7 @@ const ChainChart = ({bike}: {bike?: string} = {}) => {
   });
 
   const relevantBikes = [...new Set(chainEvents.map(({bike}) => bike))].filter(
-    bike => withRetired || !retiredBikes.includes(bike)
+    bike => withRetired || !retiredBikes.includes(bike),
   );
   const bikeCollection = labelCollection(relevantBikes, key => label(key, true));
 
@@ -121,11 +123,7 @@ const ChainChart = ({bike}: {bike?: string} = {}) => {
         <Spacer />
         <Text fontSize="sm" whiteSpace="nowrap" color={isDue ? 'red.solid' : undefined}>
           <Span fontStyle="italic">rotation</Span> {currentChain} {formatDistance(currentRotation)}
-          {isDue ? (
-            ' · due'
-          ) : (
-            <Span color="fg.muted"> · {formatDistance(limit - currentRotation)} left</Span>
-          )}
+          {isDue ? ' · due' : <Span color="fg.muted"> · {formatDistance(limit - currentRotation)} left</Span>}
           {undefined !== suggestedChain && (
             <>
               {' · next '}

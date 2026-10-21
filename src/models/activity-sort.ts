@@ -54,8 +54,10 @@ const sortValueGetters: Record<SortType, (ctx: SortContext) => number | null> = 
   date: ({activity}) => new Date(activity.start_date).getTime(),
   distance: ({activity}) => activity.distance,
   elapsed_time: ({activity}) => activity.elapsed_time,
-  elevation_percent: ({activity}) => activity.distance === 0 ? null : activity.total_elevation_gain / activity.distance,
-  intensity: ({activity, detailed, getFtp}) => intensityOf(activity, detailed, getFtp(new Date(activity.start_date))) ?? 0,
+  elevation_percent: ({activity}) =>
+    activity.distance === 0 ? null : activity.total_elevation_gain / activity.distance,
+  intensity: ({activity, detailed, getFtp}) =>
+    intensityOf(activity, detailed, getFtp(new Date(activity.start_date))) ?? 0,
   kilojoules: ({activity}) => activity.kilojoules ?? 0,
   kudos_count: ({activity}) => activity.kudos_count,
   max_heartrate: ({activity}) => activity.max_heartrate ?? 0,
@@ -77,7 +79,7 @@ const sortActivities = (
   b: Activity,
   da: DetailedActivity | null,
   db: DetailedActivity | null,
-  getFtp: GetFtp
+  getFtp: GetFtp,
 ) => {
   const getValue = sortValueGetters[sortType];
   const valA = getValue({activity: a, detailed: da, getFtp});

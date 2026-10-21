@@ -48,13 +48,13 @@ const TIMEFRAMES: Record<Timeframe, TimeframeData> = {
     getDatePeriod: date => date.getUTCFullYear(),
     getPeriodKey: date => date.getUTCFullYear().toString(),
   },
-}; ;
+};
 
 const generatePeriodKeys = <Value = number | null>(
   firstDate: Date,
   lastDate: Date,
   timeframe: Timeframe,
-  emptyValue: Value = 0 as Value
+  emptyValue: Value = 0 as Value,
 ): Record<string, Value> => {
   const emptyValues: Record<string, Value> = {};
   const {maxValue, getDatePeriod, separator, getPeriodKey} = TIMEFRAMES[timeframe];
@@ -89,39 +89,53 @@ const aggregateTimeframeData = (
   activities: Activity[],
   timeframe: Timeframe,
   data: keyof Activity | number,
-  itemCount: number
+  itemCount: number,
 ) =>
   Object.fromEntries(
     Object.entries(
-      activities.reduce((periodMap: Record<string, number>, activity) => {
-        const date = new Date(activity.start_date);
-        const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
-        const valueToAdd = 'number' === typeof data ? data : Number(activity[data] ?? 0);
-        periodMap[periodKey] = (periodMap[periodKey] ?? 0) + valueToAdd;
+      activities.reduce(
+        (periodMap: Record<string, number>, activity) => {
+          const date = new Date(activity.start_date);
+          const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
+          const valueToAdd = 'number' === typeof data ? data : Number(activity[data] ?? 0);
+          periodMap[periodKey] = (periodMap[periodKey] ?? 0) + valueToAdd;
 
-        return periodMap;
-      }, generatePeriodKeys<number>(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
+          return periodMap;
+        },
+        generatePeriodKeys<number>(
+          new Date(activities.at(0)?.start_date ?? 0),
+          new Date(activities.at(-1)?.start_date ?? 0),
+          timeframe,
+        ),
+      ),
     )
       .sort()
-      .slice(-itemCount)
+      .slice(-itemCount),
   );
 
 //TODO unit test
 const aggregateActivityTypeCount = (activities: Activity[], timeframe: Timeframe, itemCount: number) =>
   Object.fromEntries(
     Object.entries(
-      activities.reduce((periodMap: Record<string, Record<string, number> | null>, activity) => {
-        const date = new Date(activity.start_date);
-        const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
-        const data = periodMap[periodKey] ?? {};
-        const key = activity.commute ? 'Commute' : activity.sport_type;
-        periodMap[periodKey] = {...data, [key]: (data[key] ?? 0) + 1};
+      activities.reduce(
+        (periodMap: Record<string, Record<string, number> | null>, activity) => {
+          const date = new Date(activity.start_date);
+          const periodKey = TIMEFRAMES[timeframe].getPeriodKey(date);
+          const data = periodMap[periodKey] ?? {};
+          const key = activity.commute ? 'Commute' : activity.sport_type;
+          periodMap[periodKey] = {...data, [key]: (data[key] ?? 0) + 1};
 
-        return periodMap;
-      }, generatePeriodKeys<Record<string, number> | null>(new Date(activities.at(0)?.start_date ?? 0), new Date(activities.at(-1)?.start_date ?? 0), timeframe))
+          return periodMap;
+        },
+        generatePeriodKeys<Record<string, number> | null>(
+          new Date(activities.at(0)?.start_date ?? 0),
+          new Date(activities.at(-1)?.start_date ?? 0),
+          timeframe,
+        ),
+      ),
     )
       .sort()
-      .slice(-itemCount)
+      .slice(-itemCount),
   );
 
 export {generatePeriodKeys, aggregateTimeframeData, aggregateActivityTypeCount, TIMEFRAMES};

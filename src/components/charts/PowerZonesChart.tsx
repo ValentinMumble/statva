@@ -16,11 +16,22 @@ const PowerZonesChart = () => {
   const {getFtp} = useFtp();
   // Read once, so the weeks do not shift while the page is open.
   const [now] = useState(() => new Date());
-  const rows = useMemo(() => zonesPerWeek(Object.values(activityMeta), getFtp, WEEKS, now), [activityMeta, getFtp, now]);
-  const chart = useChart({data: rows, series: ZONES.map(zone => ({name: `z${zone}`, label: `Z${zone}`, color: `${getZoneColor(zone)}.solid`}))});
+  const rows = useMemo(
+    () => zonesPerWeek(Object.values(activityMeta), getFtp, WEEKS, now),
+    [activityMeta, getFtp, now],
+  );
+  const chart = useChart({
+    data: rows,
+    series: ZONES.map(zone => ({name: `z${zone}`, label: `Z${zone}`, color: `${getZoneColor(zone)}.solid`})),
+  });
   const hasPower = rows.some(row => ZONES.some(zone => 0 < Number(row[`z${zone}`])));
 
-  if (!hasPower) return <Text color="fg.muted">Worked out from the power data of each ride, a few rides at a time. Nothing in the last weeks yet.</Text>;
+  if (!hasPower)
+    return (
+      <Text color="fg.muted">
+        Worked out from the power data of each ride, a few rides at a time. Nothing in the last weeks yet.
+      </Text>
+    );
 
   return (
     <Chart.Root width="100%" height="320px" chart={chart}>
@@ -32,7 +43,13 @@ const PowerZonesChart = () => {
             tickLine={false}
             tickFormatter={week => new Date(week).toLocaleDateString(locale, {day: 'numeric', month: 'short'})}
           />
-          <YAxis stroke={chart.color('fg.muted')} width={40} tickLine={false} axisLine={false} tickFormatter={value => `${value} h`} />
+          <YAxis
+            stroke={chart.color('fg.muted')}
+            width={40}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={value => `${value} h`}
+          />
           <Legend content={<Chart.Legend />} />
           <Tooltip
             cursor={{fill: chart.color('bg.muted')}}
@@ -53,7 +70,13 @@ const PowerZonesChart = () => {
             }
           />
           {chart.series.map(({name, color}) => (
-            <Bar key={String(name)} dataKey={chart.key(name)} stackId="zones" fill={chart.color(color)} isAnimationActive={false} />
+            <Bar
+              key={String(name)}
+              dataKey={chart.key(name)}
+              stackId="zones"
+              fill={chart.color(color)}
+              isAnimationActive={false}
+            />
           ))}
         </BarChart>
       </ResponsiveContainer>

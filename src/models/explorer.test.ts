@@ -5,7 +5,15 @@ import {computeExplorerTiles, tileBounds} from './explorer';
 const NANTES = [47.23, -1.55];
 
 test('it counts nothing for no tracks', () => {
-  expect(computeExplorerTiles([])).toEqual({zoom: 14, explored: 0, maxSquare: 0, tiles: [], square: null, core: [], yard: []});
+  expect(computeExplorerTiles([])).toEqual({
+    zoom: 14,
+    explored: 0,
+    maxSquare: 0,
+    tiles: [],
+    square: null,
+    core: [],
+    yard: [],
+  });
 });
 
 test('it counts one tile for a ride that stays put', () => {
@@ -117,7 +125,12 @@ test('the yard is the biggest connected group of core tiles, and a corridor does
 });
 
 test('two lone tiles have no core, so no yard', () => {
-  const {explored, core, yard} = computeExplorerTiles(fromTiles([[10, 10], [11, 11]]));
+  const {explored, core, yard} = computeExplorerTiles(
+    fromTiles([
+      [10, 10],
+      [11, 11],
+    ]),
+  );
 
   expect(explored).toBe(2);
   expect(core).toEqual([]);
@@ -126,7 +139,10 @@ test('two lone tiles have no core, so no yard', () => {
 
 test('it counts every tile along a segment, not just the ones the points land in', () => {
   // a single straight segment whose two points sit five tiles apart on the same row
-  const [[west], [east]] = fromTiles([[10, 10], [15, 10]]);
+  const [[west], [east]] = fromTiles([
+    [10, 10],
+    [15, 10],
+  ]);
   const {explored, tiles} = computeExplorerTiles([[west, east]]);
 
   expect(explored).toBe(6);

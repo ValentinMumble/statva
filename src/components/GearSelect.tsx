@@ -23,13 +23,9 @@ const GearSelect = ({
 
   const handleGearChange = ({value}: SelectValueChangeDetails) => onSelectedGearChange(value);
 
-  const relevantGearIds = gear
-    .filter(({type}) => !excludedGearTypes.includes(type))
-    .map(({id}) => id);
+  const relevantGearIds = gear.filter(({type}) => !excludedGearTypes.includes(type)).map(({id}) => id);
 
-  const gearCollection = labelCollection([...relevantGearIds, 'null'], key =>
-    key === 'null' ? '🤷' : label(key),
-  );
+  const gearCollection = labelCollection([...relevantGearIds, 'null'], key => (key === 'null' ? '🤷' : label(key)));
 
   return (
     <Select.Root

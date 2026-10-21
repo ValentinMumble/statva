@@ -21,7 +21,14 @@ const ride = (name: string, dateTime: string, fields: Record<string, unknown> = 
 
 // N weekly sessions, newest first, as the site pages them.
 const weekly = (count: number) =>
-  [...Array(count).keys()].map(index => ride(`N-Peloton #${600 + index}`, new Date(Date.UTC(2026, 0, 7, 17, 30) + index * 7 * 24 * HOUR_MS).toISOString())).reverse();
+  [...Array(count).keys()]
+    .map(index =>
+      ride(
+        `N-Peloton #${600 + index}`,
+        new Date(Date.UTC(2026, 0, 7, 17, 30) + index * 7 * 24 * HOUR_MS).toISOString(),
+      ),
+    )
+    .reverse();
 
 describe('ridesOf', () => {
   it('keeps published rides, with their local day, groups and finish place', () => {
@@ -60,7 +67,9 @@ describe('readClubCalendar', () => {
 
     const calendar = await readClubCalendar(42, WEBSITE);
 
-    expect(fake.site.requests).toEqual([0, 1, 2].map(page => `/api/teams/n-peloton/publications?page=${page}&size=200`));
+    expect(fake.site.requests).toEqual(
+      [0, 1, 2].map(page => `/api/teams/n-peloton/publications?page=${page}&size=200`),
+    );
     expect(calendar.complete).toBe(true);
     expect(calendar.rides).toHaveLength(450);
     expect(calendar.rides[0]).toMatchObject({number: 1049, groups: 8, finish: 'Zazou'});
@@ -94,12 +103,21 @@ describe('readClubCalendar', () => {
 
 describe('the club route', () => {
   const call = async (athleteId: number | null = 42) =>
-    await clubCalendar(new Request('https://statva.test/api/club', {headers: null === athleteId ? {} : {cookie: sessionCookie(athleteId).split(';')[0]}}));
+    await clubCalendar(
+      new Request('https://statva.test/api/club', {
+        headers: null === athleteId ? {} : {cookie: sessionCookie(athleteId).split(';')[0]},
+      }),
+    );
 
   it('reads the calendar of the club website in the settings', async () => {
     const fake = install();
     fake.site.publications = weekly(2);
-    await fake.run(['hset', 'athlete:42:settings', 'club', JSON.stringify({name: 'N-Peloton', markers: {}, url: WEBSITE})]);
+    await fake.run([
+      'hset',
+      'athlete:42:settings',
+      'club',
+      JSON.stringify({name: 'N-Peloton', markers: {}, url: WEBSITE}),
+    ]);
 
     const response = await call();
     expect(response.status).toBe(200);

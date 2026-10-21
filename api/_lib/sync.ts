@@ -72,9 +72,13 @@ const powerOf = async (athleteId: number, detail: StravaActivity): Promise<Power
   if (!response.ok) return null;
 
   const streams = (await response.json()) as Record<string, {data: unknown[]}>;
-  const data = Object.fromEntries(Object.entries(streams).map(([key, {data: values}]) => [key, values])) as Partial<PowerStreams>;
+  const data = Object.fromEntries(
+    Object.entries(streams).map(([key, {data: values}]) => [key, values]),
+  ) as Partial<PowerStreams>;
 
-  return undefined === data.time || undefined === data.watts ? null : analysePower(data as PowerStreams, Boolean(detail.trainer));
+  return undefined === data.time || undefined === data.watts
+    ? null
+    : analysePower(data as PowerStreams, Boolean(detail.trainer));
 };
 
 /** Stores an activity's details with what its power data says, and notes that it has been worked out. */
@@ -144,10 +148,12 @@ const backfillPower = async (athleteId: number): Promise<{ids: number[]; limited
 
   for (let start = 0; start < pending.length && fetched < POWER_PER_CALL; start += POWER_BATCH) {
     const ids = pending.slice(start, start + POWER_BATCH).map(String);
-    const details = (await redis().hmget<Record<string, StravaActivity | null>>(athleteKey(athleteId, 'details'), ...ids)) ?? {};
+    const details =
+      (await redis().hmget<Record<string, StravaActivity | null>>(athleteKey(athleteId, 'details'), ...ids)) ?? {};
     const withoutPower = ids.filter(id => !details[id]?.device_watts);
 
-    if (0 < withoutPower.length) await redis().hset(athleteKey(athleteId, 'power'), Object.fromEntries(withoutPower.map(id => [id, 0])));
+    if (0 < withoutPower.length)
+      await redis().hset(athleteKey(athleteId, 'power'), Object.fromEntries(withoutPower.map(id => [id, 0])));
 
     for (const id of ids.filter(id => details[id]?.device_watts)) {
       if (fetched >= POWER_PER_CALL || !canBackfill(await readUsage())) return {ids: filled, limited: false};
@@ -172,7 +178,12 @@ type ChangeResult = 'changed' | 'denied' | 'ignored';
 
 // Strava may tidy spaces and line breaks; only a text that comes back different was dropped.
 const sameText = (sent: unknown, received: unknown): boolean =>
-  String(sent ?? '').replace(/\s+/g, ' ').trim() === String(received ?? '').replace(/\s+/g, ' ').trim();
+  String(sent ?? '')
+    .replace(/\s+/g, ' ')
+    .trim() ===
+  String(received ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 /**
  * Changes an activity on Strava and in the stored copies, without reading it again.
@@ -181,7 +192,11 @@ const sameText = (sent: unknown, received: unknown): boolean =>
  * as it does for some apps cannot change (the commute flag): the fields it took are stored,
  * not that one.
  */
-const changeActivity = async (athleteId: number, activityId: number, update: Record<string, unknown>): Promise<ChangeResult> => {
+const changeActivity = async (
+  athleteId: number,
+  activityId: number,
+  update: Record<string, unknown>,
+): Promise<ChangeResult> => {
   const response = await stravaPut(athleteId, `activities/${activityId}`, update);
   if (!response.ok) return 'denied';
 
@@ -206,7 +221,8 @@ const changeActivity = async (athleteId: number, activityId: number, update: Rec
   if (0 < Object.keys(taken).length) {
     for (const name of ['activities', 'details']) {
       const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), String(activityId));
-      if (null !== stored) await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...storedUpdate}});
+      if (null !== stored)
+        await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...storedUpdate}});
     }
   }
 
@@ -326,5 +342,14 @@ const forgetAthlete = async (athleteId: number): Promise<void> => {
   await redis().del(...[...SERVER_NAMES, ...RIDER_NAMES, ...RETIRED_NAMES].map(name => athleteKey(athleteId, name)));
 };
 
-export {applyRideRules, backfillActivities, changeActivity, forgetAthlete, refreshActivity, RIDER_NAMES, SERVER_NAMES, syncActivities};
+export {
+  applyRideRules,
+  backfillActivities,
+  changeActivity,
+  forgetAthlete,
+  refreshActivity,
+  RIDER_NAMES,
+  SERVER_NAMES,
+  syncActivities,
+};
 export type {BackfillReport, SyncReport};

@@ -256,9 +256,13 @@ const TAGS: Tag[] = [
     },
     total: (activities, activityMeta, getFtp) => {
       const intensities = activities
-        .map(activity => intensityOf(activity, activityMeta[activity.id] ?? null, getFtp(new Date(activity.start_date))))
+        .map(activity =>
+          intensityOf(activity, activityMeta[activity.id] ?? null, getFtp(new Date(activity.start_date))),
+        )
         .filter((intensity): intensity is number => null !== intensity);
-      return 0 === intensities.length ? '' : formatPercent(intensities.reduce((total, intensity) => total + intensity, 0) / intensities.length);
+      return 0 === intensities.length
+        ? ''
+        : formatPercent(intensities.reduce((total, intensity) => total + intensity, 0) / intensities.length);
     },
   },
   optionalRoundedTag('Average heartrate', 'average_heartrate', 'average_heartrate', 'avg', {

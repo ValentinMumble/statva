@@ -187,10 +187,7 @@ const bucketed = (values: number[], size: number, unit: string): Named[] =>
 const localDate = (activity: DetailedActivity): Date => new Date(activity.start_date_local);
 const utcDate = (activity: DetailedActivity): Date => new Date(activity.start_date);
 
-const distanceBy = (
-  activities: DetailedActivity[],
-  getKey: (date: Date) => string,
-): Record<string, number> =>
+const distanceBy = (activities: DetailedActivity[], getKey: (date: Date) => string): Record<string, number> =>
   activities.reduce((map: Record<string, number>, activity) => {
     const key = getKey(utcDate(activity));
     map[key] = (map[key] ?? 0) + activity.distance / 1000;
@@ -317,9 +314,7 @@ const computeDashboard = (
       // Paused round trips leave hours of fake standing time, so the middle ride is the honest figure.
       medianStopMinutes: Math.round(
         median(
-          sorted
-            .map(({elapsed_time, moving_time}) => (elapsed_time ?? 0) - (moving_time ?? 0))
-            .filter(gap => 0 < gap),
+          sorted.map(({elapsed_time, moving_time}) => (elapsed_time ?? 0) - (moving_time ?? 0)).filter(gap => 0 < gap),
         ) / 60,
       ),
       withPowerMeter: sorted.filter(({device_watts}) => device_watts).length,
@@ -328,8 +323,14 @@ const computeDashboard = (
       solo: sorted.filter(({athlete_count}) => 2 > (athlete_count ?? 1)).length,
       maxHeartRate: Math.max(0, ...sorted.map(({max_heartrate}) => max_heartrate ?? 0)),
       activeDays: activeDays.length,
-      biggestWeek: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${weekOfYear(date)}`))),
-      biggestMonth: Math.max(0, ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${date.getUTCMonth()}`))),
+      biggestWeek: Math.max(
+        0,
+        ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${weekOfYear(date)}`)),
+      ),
+      biggestMonth: Math.max(
+        0,
+        ...Object.values(distanceBy(sorted, date => `${date.getUTCFullYear()}-${date.getUTCMonth()}`)),
+      ),
       eddington,
       firstDate: sorted.at(0) ? utcDate(sorted[0]).toLocaleDateString(locale) : null,
       lastDate: sorted.at(-1) ? utcDate(sorted[sorted.length - 1]).toLocaleDateString(locale) : null,
@@ -366,7 +367,10 @@ const computeDashboard = (
     yearOverYear: buildYearOverYear(sorted),
     photos: [...sorted]
       .reverse()
-      .map(activity => ({activity, url: activity.photos?.primary?.urls?.[600] ?? activity.photos?.primary?.urls?.[100]}))
+      .map(activity => ({
+        activity,
+        url: activity.photos?.primary?.urls?.[600] ?? activity.photos?.primary?.urls?.[100],
+      }))
       .filter((entry): entry is {activity: DetailedActivity; url: string} => 'string' === typeof entry.url)
       .slice(0, PHOTO_COUNT)
       .map(({activity, url}) => ({
@@ -413,13 +417,21 @@ const computeDashboard = (
         key: 'distance',
         heading: 'Longest',
         note: 'distance',
-        rides: ranked(onFoot, a => a.distance / 1000, v => `${figure(v)} km`),
+        rides: ranked(
+          onFoot,
+          a => a.distance / 1000,
+          v => `${figure(v)} km`,
+        ),
       },
       {
         key: 'elevation',
         heading: 'Most climbing',
         note: 'metres gained',
-        rides: ranked(onFoot, a => a.total_elevation_gain, v => `${figure(v)} m`),
+        rides: ranked(
+          onFoot,
+          a => a.total_elevation_gain,
+          v => `${figure(v)} m`,
+        ),
       },
       {
         key: 'hilliest',
@@ -457,25 +469,42 @@ const computeDashboard = (
         key: 'suffer',
         heading: 'Hardest',
         note: 'suffer score',
-        rides: ranked(onFoot, a => a.suffer_score || null, v => figure(v)),
+        rides: ranked(
+          onFoot,
+          a => a.suffer_score || null,
+          v => figure(v),
+        ),
       },
       {
         key: 'prs',
         heading: 'Most records',
         note: 'personal records in one ride',
-        rides: ranked(onFoot, a => a.pr_count || null, v => `${figure(v)} PRs`),
+        rides: ranked(
+          onFoot,
+          a => a.pr_count || null,
+          v => `${figure(v)} PRs`,
+        ),
       },
       {
         key: 'coldest',
         heading: 'Coldest',
         note: 'average temperature',
-        rides: ranked(outdoor, a => a.average_temp, v => `${figure(v)} °C`, {lowest: true}),
+        rides: ranked(
+          outdoor,
+          a => a.average_temp,
+          v => `${figure(v)} °C`,
+          {lowest: true},
+        ),
       },
       {
         key: 'hottest',
         heading: 'Hottest',
         note: 'average temperature',
-        rides: ranked(outdoor, a => a.average_temp, v => `${figure(v)} °C`),
+        rides: ranked(
+          outdoor,
+          a => a.average_temp,
+          v => `${figure(v)} °C`,
+        ),
       },
       {
         key: 'earliest',
@@ -487,13 +516,21 @@ const computeDashboard = (
         key: 'kudos',
         heading: 'Most kudos',
         note: 'from other riders',
-        rides: ranked(onFoot, a => a.kudos_count || null, v => figure(v)),
+        rides: ranked(
+          onFoot,
+          a => a.kudos_count || null,
+          v => figure(v),
+        ),
       },
       {
         key: 'company',
         heading: 'Biggest group',
         note: 'riders on the activity',
-        rides: ranked(onFoot, a => (1 < (a.athlete_count ?? 1) ? a.athlete_count : null), v => `${figure(v)} riders`),
+        rides: ranked(
+          onFoot,
+          a => (1 < (a.athlete_count ?? 1) ? a.athlete_count : null),
+          v => `${figure(v)} riders`,
+        ),
       },
     ],
     ftp: [...ftpTests]
@@ -513,9 +550,7 @@ const computeDashboard = (
       count: expenses.length,
       total: expenseTotal,
       centsPerKm:
-        undefined === mainBike || 0 === mainBike.distance
-          ? null
-          : (expenseTotal * 100) / (mainBike.distance / 1000),
+        undefined === mainBike || 0 === mainBike.distance ? null : (expenseTotal * 100) / (mainBike.distance / 1000),
     },
     conditions: {
       temperatures: Object.entries(
@@ -527,7 +562,10 @@ const computeDashboard = (
         .map(([bucket, value]) => ({name: `${bucket}°`, value, bucket: Number(bucket)}))
         .sort((a, b) => a.bucket - b.bucket)
         .map(({name, value}) => ({name, value})),
-      devices: toSorted(countBy(sorted, ({device_name}) => device_name ?? 'unknown'), 8),
+      devices: toSorted(
+        countBy(sorted, ({device_name}) => device_name ?? 'unknown'),
+        8,
+      ),
       heartRates: bucketed(
         sorted.map(({average_heartrate}) => average_heartrate ?? 0).filter(rate => 0 < rate),
         10,

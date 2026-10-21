@@ -1,4 +1,4 @@
-import { ZoneRange } from '.';
+import {ZoneRange} from '.';
 
 export interface PowerZoneRanges {
   zones: ZoneRange[];

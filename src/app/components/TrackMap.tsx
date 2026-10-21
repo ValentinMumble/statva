@@ -62,8 +62,16 @@ const TrackMap = ({tracks, center, showEnds = true, children, ...boxProps}: Trac
         ))}
         {showEnds && null !== single && 0 < single.length && (
           <>
-            <CircleMarker center={single[0] as LatLngExpression} radius={6} pathOptions={{color: 'white', weight: 2, fillColor: '#22c55e', fillOpacity: 1}} />
-            <CircleMarker center={single[single.length - 1] as LatLngExpression} radius={6} pathOptions={{color: 'white', weight: 2, fillColor: '#111', fillOpacity: 1}} />
+            <CircleMarker
+              center={single[0] as LatLngExpression}
+              radius={6}
+              pathOptions={{color: 'white', weight: 2, fillColor: '#22c55e', fillOpacity: 1}}
+            />
+            <CircleMarker
+              center={single[single.length - 1] as LatLngExpression}
+              radius={6}
+              pathOptions={{color: 'white', weight: 2, fillColor: '#111', fillOpacity: 1}}
+            />
           </>
         )}
         {children}

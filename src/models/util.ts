@@ -30,7 +30,6 @@ const formatDurationInDays = (durationInSeconds: number): string => {
   return `${Math.floor(hourCount)}${suffix} days`;
 };
 
-
 const getZoneColor = (zone: number): string => {
   switch (zone) {
     case 1:
@@ -70,7 +69,6 @@ const getMonday = (date: Date = new Date()): Date => {
   return new Date(d.setDate(diff));
 };
 
-
 const range = (start: number = 0, stop: number = 0, step = 1): number[] =>
   Array(Math.ceil((stop - start) / step) + 1)
     .fill(start)
@@ -84,7 +82,7 @@ const backup = (array: {id: string}[]): string =>
       map[item.id] = item;
 
       return map;
-    }, {})
+    }, {}),
   );
 
 const getDaysInMonth = (month: number, year: number) =>
@@ -160,11 +158,24 @@ const decodePolyline = (encoded: string): number[][] => {
 };
 
 const normalizeString = (value: string): string =>
-  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 
 const MONTHS_LONG = [
-  'january', 'february', 'march', 'april', 'may', 'june',
-  'july', 'august', 'september', 'october', 'november', 'december',
+  'january',
+  'february',
+  'march',
+  'april',
+  'may',
+  'june',
+  'july',
+  'august',
+  'september',
+  'october',
+  'november',
+  'december',
 ];
 const MONTHS_SHORT = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
@@ -194,7 +205,11 @@ const dateSearchHaystack = (date: Date): string => {
   ].join(' | ');
 };
 
-const countBy = <T>(items: T[], keyFn: (item: T) => string, valueFn: (item: T) => number = () => 1): Record<string, number> =>
+const countBy = <T>(
+  items: T[],
+  keyFn: (item: T) => string,
+  valueFn: (item: T) => number = () => 1,
+): Record<string, number> =>
   items.reduce((map: Record<string, number>, item) => {
     const key = keyFn(item);
     map[key] = (map[key] ?? 0) + valueFn(item);

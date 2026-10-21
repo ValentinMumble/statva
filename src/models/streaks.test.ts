@@ -28,11 +28,19 @@ describe('computeStreaks', () => {
   ];
 
   it('finds the longest run of days and its dates', () => {
-    expect(computeStreaks(activities, '2026-10-13').longestDays).toEqual({length: 3, from: '2026-09-01', to: '2026-09-03'});
+    expect(computeStreaks(activities, '2026-10-13').longestDays).toEqual({
+      length: 3,
+      from: '2026-09-01',
+      to: '2026-09-03',
+    });
   });
 
   it('keeps the current streak going when today has nothing yet', () => {
-    expect(computeStreaks(activities, '2026-10-13').currentDays).toEqual({length: 2, from: '2026-10-11', to: '2026-10-12'});
+    expect(computeStreaks(activities, '2026-10-13').currentDays).toEqual({
+      length: 2,
+      from: '2026-10-11',
+      to: '2026-10-12',
+    });
   });
 
   it('drops the current streak after a day off', () => {
@@ -53,13 +61,24 @@ describe('computeStreaks', () => {
   });
 
   it('finds the longest break between two activities', () => {
-    expect(computeStreaks(activities, '2026-10-13').longestBreak).toEqual({length: 20, from: '2026-09-20', to: '2026-10-11'});
+    expect(computeStreaks(activities, '2026-10-13').longestBreak).toEqual({
+      length: 20,
+      from: '2026-09-20',
+      to: '2026-10-11',
+    });
   });
 
   it('reads the local day, not the UTC one', () => {
-    const lateRide = buildDetailedActivity({start_date: '2026-10-12T22:30:00Z', start_date_local: '2026-10-13T00:30:00Z'});
+    const lateRide = buildDetailedActivity({
+      start_date: '2026-10-12T22:30:00Z',
+      start_date_local: '2026-10-13T00:30:00Z',
+    });
 
-    expect(computeStreaks([lateRide], '2026-10-13').currentDays).toEqual({length: 1, from: '2026-10-13', to: '2026-10-13'});
+    expect(computeStreaks([lateRide], '2026-10-13').currentDays).toEqual({
+      length: 1,
+      from: '2026-10-13',
+      to: '2026-10-13',
+    });
   });
 
   it('is empty without activities', () => {

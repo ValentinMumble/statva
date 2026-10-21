@@ -16,7 +16,12 @@ const FIRST_COUNT = 20;
 const useActivityMeta = ({enabled = true}: {enabled?: boolean} = {}) => {
   const queryClient = useQueryClient();
   // Pages show the details as they arrive, page by page, rather than after the last one.
-  const {data: activityMeta = {}, isPending, isError, refetch} = useQuery({
+  const {
+    data: activityMeta = {},
+    isPending,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['activityMeta'],
     queryFn: async () => {
       if (undefined !== queryClient.getQueryData(['activityMeta'])) return await fetchMeta();

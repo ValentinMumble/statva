@@ -36,7 +36,10 @@ const buildWeeks = (activities: Activity[], now: Date, count: number): Week[] =>
         return from <= time && time < from + DAY_MS;
       });
 
-      return ofDay.reduce<Activity | null>((longest, activity) => (null === longest || activity.moving_time > longest.moving_time ? activity : longest), null);
+      return ofDay.reduce<Activity | null>(
+        (longest, activity) => (null === longest || activity.moving_time > longest.moving_time ? activity : longest),
+        null,
+      );
     });
 
     return {
@@ -75,7 +78,15 @@ const WeekName = ({week, locale}: {week: Week; locale: string}) => {
   }
 
   return (
-    <Text as="button" fontSize="sm" textAlign="left" truncate={true} color={named ? 'fg' : 'fg.muted'} title="Rename this week" onClick={() => setEditing(true)}>
+    <Text
+      as="button"
+      fontSize="sm"
+      textAlign="left"
+      truncate={true}
+      color={named ? 'fg' : 'fg.muted'}
+      title="Rename this week"
+      onClick={() => setEditing(true)}
+    >
       {named ? label(week.key) : fallback}
     </Text>
   );
@@ -94,7 +105,13 @@ const WeeksCard = ({activities, now, locale}: {activities: Activity[]; now: Date
         <Grid templateColumns="minmax(0, 1.4fr) repeat(7, 26px) minmax(64px, 0.8fr)" gap="6px" alignItems="center">
           <Box />
           {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-            <Text key={index} fontSize="xs" textAlign="center" color={index === today ? 'fg' : 'fg.muted'} fontWeight={index === today ? 'semibold' : 'normal'}>
+            <Text
+              key={index}
+              fontSize="xs"
+              textAlign="center"
+              color={index === today ? 'fg' : 'fg.muted'}
+              fontWeight={index === today ? 'semibold' : 'normal'}
+            >
               {day}
             </Text>
           ))}
@@ -116,15 +133,29 @@ const WeeksCard = ({activities, now, locale}: {activities: Activity[]; now: Date
                   </Center>
                 ) : (
                   <Link key={day} to={`/activities/${activity.id}`} title={activity.name}>
-                    <Center height="26px" borderRadius="8px" background={activity.sport_type.includes('Ride') ? 'brand.muted' : 'bg.muted'} _hover={{background: 'brand.emphasized'}}>
-                      <Icon as={sportIcon(activity.sport_type)} boxSize="14px" color={activity.sport_type.includes('Ride') ? 'brand.fg' : 'fg'} />
+                    <Center
+                      height="26px"
+                      borderRadius="8px"
+                      background={activity.sport_type.includes('Ride') ? 'brand.muted' : 'bg.muted'}
+                      _hover={{background: 'brand.emphasized'}}
+                    >
+                      <Icon
+                        as={sportIcon(activity.sport_type)}
+                        boxSize="14px"
+                        color={activity.sport_type.includes('Ride') ? 'brand.fg' : 'fg'}
+                      />
                     </Center>
                   </Link>
                 ),
               )}
               <HStack gap="6px" justifyContent="flex-end">
                 <Box flex="1" maxWidth="48px" height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
-                  <Box height="full" width={`${(week.load / maxLoad) * 100}%`} background="brand.solid" borderRadius="full" />
+                  <Box
+                    height="full"
+                    width={`${(week.load / maxLoad) * 100}%`}
+                    background="brand.solid"
+                    borderRadius="full"
+                  />
                 </Box>
                 <Text fontSize="xs" fontFamily="figure" width="28px" textAlign="right">
                   {week.load}

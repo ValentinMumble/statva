@@ -77,9 +77,15 @@ const gradesByYear = (rides: Activity[]): {year: number; total: number; counts: 
   for (const ride of counted) {
     const percent = percentOf(ride);
     const terrain =
-      sorted.length - 1 < MIN_HISTORY ? gradeOf(FIXED, percent * 10) : gradeOf(GRADES, below(percent) / (sorted.length - 1));
+      sorted.length - 1 < MIN_HISTORY
+        ? gradeOf(FIXED, percent * 10)
+        : gradeOf(GRADES, below(percent) / (sorted.length - 1));
     const year = Number(ride.start_date_local.slice(0, 4));
-    const entry = (years[year] ??= {year, total: 0, counts: Object.fromEntries(TERRAIN_NAMES.map(name => [name, 0])) as Record<Terrain['name'], number>});
+    const entry = (years[year] ??= {
+      year,
+      total: 0,
+      counts: Object.fromEntries(TERRAIN_NAMES.map(name => [name, 0])) as Record<Terrain['name'], number>,
+    });
     entry.counts[terrain.name]++;
     entry.total++;
   }

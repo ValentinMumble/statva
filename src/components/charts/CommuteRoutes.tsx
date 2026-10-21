@@ -23,7 +23,8 @@ const CommuteRoutes = () => {
     series: [{name: 'kmh', color: 'teal.solid'}],
   });
 
-  if (undefined === route) return <Text color="fg.muted">Routes show up once a commute name comes back three times.</Text>;
+  if (undefined === route)
+    return <Text color="fg.muted">Routes show up once a commute name comes back three times.</Text>;
 
   return (
     <Stack gap="16px">
@@ -64,7 +65,11 @@ const CommuteRoutes = () => {
                     {speed(bestSpeed, locale)}
                   </Link>
                 </Table.Cell>
-                <Table.Cell textAlign="end" fontFamily="figure" color={lastSpeed >= medianSpeed ? 'green.fg' : 'fg.muted'}>
+                <Table.Cell
+                  textAlign="end"
+                  fontFamily="figure"
+                  color={lastSpeed >= medianSpeed ? 'green.fg' : 'fg.muted'}
+                >
                   {speed(lastSpeed, locale)}
                 </Table.Cell>
               </Table.Row>
@@ -84,8 +89,19 @@ const CommuteRoutes = () => {
               tickLine={false}
               tickFormatter={date => new Date(date).toLocaleDateString(locale, {month: 'short', year: '2-digit'})}
             />
-            <YAxis stroke={chart.color('fg.muted')} width={48} tickLine={false} axisLine={false} domain={['auto', 'auto']} tickFormatter={value => `${value}`} />
-            <ReferenceLine y={Math.round(route.medianSpeed * 36) / 10} stroke={chart.color('fg.muted')} strokeDasharray="5 4" />
+            <YAxis
+              stroke={chart.color('fg.muted')}
+              width={48}
+              tickLine={false}
+              axisLine={false}
+              domain={['auto', 'auto']}
+              tickFormatter={value => `${value}`}
+            />
+            <ReferenceLine
+              y={Math.round(route.medianSpeed * 36) / 10}
+              stroke={chart.color('fg.muted')}
+              strokeDasharray="5 4"
+            />
             <Tooltip
               isAnimationActive={false}
               content={({payload, active}) => {
@@ -97,7 +113,13 @@ const CommuteRoutes = () => {
                 );
               }}
             />
-            <Line dataKey={chart.key('kmh')} stroke={chart.color('teal.solid')} strokeWidth={2} dot={{r: 2}} isAnimationActive={false} />
+            <Line
+              dataKey={chart.key('kmh')}
+              stroke={chart.color('teal.solid')}
+              strokeWidth={2}
+              dot={{r: 2}}
+              isAnimationActive={false}
+            />
           </LineChart>
         </ResponsiveContainer>
       </Chart.Root>

@@ -35,7 +35,7 @@ const GroupChart = () => {
 
       return counts;
     },
-    {Solo: 0, Group: 0}
+    {Solo: 0, Group: 0},
   );
 
   const total = counts.Solo + counts.Group;

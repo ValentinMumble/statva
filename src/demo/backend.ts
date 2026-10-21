@@ -24,15 +24,27 @@ const DAY_MS = 86_400_000;
  */
 const demoCalendar = (): ClubRide[] => {
   const ridden = demo()
-    .activities.map(({name, start_date_local}) => ({number: Number(name.match(new RegExp(`${DEMO_CLUB} #(\\d+)`))?.[1]), day: String(start_date_local).slice(0, 10)}))
+    .activities.map(({name, start_date_local}) => ({
+      number: Number(name.match(new RegExp(`${DEMO_CLUB} #(\\d+)`))?.[1]),
+      day: String(start_date_local).slice(0, 10),
+    }))
     .filter(({number}) => !Number.isNaN(number))
     .sort((first, second) => first.number - second.number);
   const rides: ClubRide[] = [];
   ridden.forEach(({number, day}, index) => {
     const next = ridden[index + 1];
     for (let missing = number; missing < (next?.number ?? number + 1); missing++) {
-      const date = new Date(Date.parse(`${day}T00:00:00Z`) + (missing - number) * 7 * DAY_MS).toISOString().slice(0, 10);
-      rides.push({title: `${DEMO_CLUB} #${missing}`, series: DEMO_CLUB, number: missing, day: date, groups: 5 + (missing % 4), finish: DEMO_FINISHES[missing % DEMO_FINISHES.length]});
+      const date = new Date(Date.parse(`${day}T00:00:00Z`) + (missing - number) * 7 * DAY_MS)
+        .toISOString()
+        .slice(0, 10);
+      rides.push({
+        title: `${DEMO_CLUB} #${missing}`,
+        series: DEMO_CLUB,
+        number: missing,
+        day: date,
+        groups: 5 + (missing % 4),
+        finish: DEMO_FINISHES[missing % DEMO_FINISHES.length],
+      });
     }
   });
 
@@ -56,13 +68,22 @@ const demoBackend = {
   },
   setActivityGear: async (id: number, gearId: string) => {
     const newGearId = 'none' === gearId ? null : gearId;
-    demo().activities = demo().activities.map(activity => (activity.id === id ? {...activity, gear_id: newGearId} : activity));
+    demo().activities = demo().activities.map(activity =>
+      activity.id === id ? {...activity, gear_id: newGearId} : activity,
+    );
     if (demo().details[id]) demo().details[id] = {...demo().details[id], gear_id: newGearId};
   },
   getDetails: (): Promise<Record<string, DetailedActivity>> => answer(demo().details),
   getLatestSummaries: (count: number) => answer([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count)),
   getLatestDetails: (count: number) =>
-    answer(Object.fromEntries([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count).map(({id}) => [id, demo().details[id]]))),
+    answer(
+      Object.fromEntries(
+        [...demo().activities]
+          .sort((a, b) => b.id - a.id)
+          .slice(0, count)
+          .map(({id}) => [id, demo().details[id]]),
+      ),
+    ),
   getSomeDetails: (ids: number[]) => answer(Object.fromEntries(ids.map(id => [id, demo().details[id] ?? null]))),
   getEvents: () => answer(demo().events),
   setEvent: async (event: Event) => {

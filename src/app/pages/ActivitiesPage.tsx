@@ -18,7 +18,17 @@ import {useLocation, useNavigate, useSearchParams} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
 import {useWindowVirtualizer} from '@tanstack/react-virtual';
 import {useLocalStorage} from 'usehooks-ts';
-import {LuArrowDown, LuArrowUp, LuColumns3, LuFilterX, LuListFilter, LuLock, LuSearch, LuWatch, LuX} from 'react-icons/lu';
+import {
+  LuArrowDown,
+  LuArrowUp,
+  LuColumns3,
+  LuFilterX,
+  LuListFilter,
+  LuLock,
+  LuSearch,
+  LuWatch,
+  LuX,
+} from 'react-icons/lu';
 import {GearSelect} from '../../components/GearSelect';
 import {toaster} from '../../components/ui';
 import {NoWriteAccessError} from '../../api';
@@ -64,9 +74,21 @@ const isRun = (sport: string): boolean => sport.includes('Run');
 // The usual choices in one tap; the menu next to them picks any mix of sports.
 const SPORT_GROUPS: {value: string; label: string; pick: (sports: SportCount[]) => ActivityType[] | null}[] = [
   {value: 'all', label: 'All', pick: () => null},
-  {value: 'rides', label: 'Rides', pick: sports => sports.filter(({sport}) => isRide(sport)).map(({sport}) => sport as ActivityType)},
-  {value: 'runs', label: 'Runs', pick: sports => sports.filter(({sport}) => isRun(sport)).map(({sport}) => sport as ActivityType)},
-  {value: 'other', label: 'Other', pick: sports => sports.filter(({sport}) => !isRide(sport) && !isRun(sport)).map(({sport}) => sport as ActivityType)},
+  {
+    value: 'rides',
+    label: 'Rides',
+    pick: sports => sports.filter(({sport}) => isRide(sport)).map(({sport}) => sport as ActivityType),
+  },
+  {
+    value: 'runs',
+    label: 'Runs',
+    pick: sports => sports.filter(({sport}) => isRun(sport)).map(({sport}) => sport as ActivityType),
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    pick: sports => sports.filter(({sport}) => !isRide(sport) && !isRun(sport)).map(({sport}) => sport as ActivityType),
+  },
 ];
 
 /** Which group the current choice of sports matches, if any. */
@@ -133,11 +155,18 @@ const Toolbar = ({
   return (
     <Stack gap="12px">
       <HStack gap="8px" flexWrap="wrap">
-        <InputGroup flex="1" minWidth={{base: '0', md: '220px'}} startElement={<LuSearch />} endElement={'' === search ? undefined : (
-          <IconButton aria-label="Clear the search" size="xs" variant="ghost" onClick={() => onSearch('')}>
-            <LuX />
-          </IconButton>
-        )}>
+        <InputGroup
+          flex="1"
+          minWidth={{base: '0', md: '220px'}}
+          startElement={<LuSearch />}
+          endElement={
+            '' === search ? undefined : (
+              <IconButton aria-label="Clear the search" size="xs" variant="ghost" onClick={() => onSearch('')}>
+                <LuX />
+              </IconButton>
+            )
+          }
+        >
           <Input
             placeholder="Search by name or date, like 2 nov"
             value={search}
@@ -147,7 +176,12 @@ const Toolbar = ({
             background="bg.panel"
           />
         </InputGroup>
-        <GearSelect selectedGear={gearIds} onSelectedGearChange={onGear} clearable={true} width={{base: '120px', md: '180px'}} />
+        <GearSelect
+          selectedGear={gearIds}
+          onSelectedGearChange={onGear}
+          clearable={true}
+          width={{base: '120px', md: '180px'}}
+        />
         <SegmentGroup.Root
           size="sm"
           value={'only' === commute ? 'only' : commute ? 'all' : 'none'}
@@ -155,9 +189,20 @@ const Toolbar = ({
           hideBelow="md"
         >
           <SegmentGroup.Indicator />
-          <SegmentGroup.Items items={[{value: 'all', label: 'All'}, {value: 'none', label: 'No commutes'}, {value: 'only', label: 'Commutes'}]} />
+          <SegmentGroup.Items
+            items={[
+              {value: 'all', label: 'All'},
+              {value: 'none', label: 'No commutes'},
+              {value: 'only', label: 'Commutes'},
+            ]}
+          />
         </SegmentGroup.Root>
-        <IconButton aria-label="Show private activities" variant={withPrivate ? 'surface' : 'ghost'} onClick={onPrivate} size="sm">
+        <IconButton
+          aria-label="Show private activities"
+          variant={withPrivate ? 'surface' : 'ghost'}
+          onClick={onPrivate}
+          size="sm"
+        >
           <LuLock />
         </IconButton>
         <Menu.Root closeOnSelect={false}>
@@ -175,7 +220,9 @@ const Toolbar = ({
                     value={tag.sortType}
                     checked={columns.includes(tag.sortType)}
                     onCheckedChange={checked =>
-                      onColumns(checked ? [...columns, tag.sortType] : columns.filter(column => column !== tag.sortType))
+                      onColumns(
+                        checked ? [...columns, tag.sortType] : columns.filter(column => column !== tag.sortType),
+                      )
                     }
                   >
                     {label(tag.sortType)} {tag.help}
@@ -212,7 +259,8 @@ const Toolbar = ({
         <Menu.Root closeOnSelect={false}>
           <Menu.Trigger asChild={true}>
             <Button variant="ghost" size="sm">
-              <LuListFilter /> {null === types ? 'Sports' : `${types.length} ${1 === types.length ? 'sport' : 'sports'}`}
+              <LuListFilter />{' '}
+              {null === types ? 'Sports' : `${types.length} ${1 === types.length ? 'sport' : 'sports'}`}
             </Button>
           </Menu.Trigger>
           <Portal>
@@ -245,7 +293,10 @@ const Toolbar = ({
           <Portal>
             <Menu.Positioner>
               <Menu.Content maxHeight="380px" overflowY="auto" minWidth="240px">
-                <Menu.RadioItemGroup value={device ?? ''} onValueChange={({value}) => onDevice('' === value ? null : value)}>
+                <Menu.RadioItemGroup
+                  value={device ?? ''}
+                  onValueChange={({value}) => onDevice('' === value ? null : value)}
+                >
                   <Menu.RadioItem value="">
                     All devices
                     <Menu.ItemIndicator />
@@ -280,7 +331,15 @@ const renameActivity = getFetcher<void>('activity.rename');
 const RENAME_ROWS = 5;
 
 /** One activity to name, with a suggestion from its route or an emoji not used yet, saved on Strava. */
-const RenameRow = ({activity, history, usedEmojis}: {activity: Activity; history: Activity[]; usedEmojis: Set<string>}) => {
+const RenameRow = ({
+  activity,
+  history,
+  usedEmojis,
+}: {
+  activity: Activity;
+  history: Activity[];
+  usedEmojis: Set<string>;
+}) => {
   const queryClient = useQueryClient();
   const {locale} = useSettings();
   // Suggested once, so it does not change while the rider types.
@@ -291,12 +350,17 @@ const RenameRow = ({activity, history, usedEmojis}: {activity: Activity; history
     setSaving(true);
     try {
       await renameActivity(activity.id, name);
-      queryClient.setQueryData<Activity[]>(['activities'], list => list?.map(listed => (listed.id === activity.id ? {...listed, name} : listed)));
+      queryClient.setQueryData<Activity[]>(['activities'], list =>
+        list?.map(listed => (listed.id === activity.id ? {...listed, name} : listed)),
+      );
       toaster.create({title: `Renamed to ${name}`});
     } catch (error) {
       toaster.create({
         type: 'error',
-        title: error instanceof NoWriteAccessError ? 'Log out and in again to let Statva rename on Strava' : 'Strava did not take the new name',
+        title:
+          error instanceof NoWriteAccessError
+            ? 'Log out and in again to let Statva rename on Strava'
+            : 'Strava did not take the new name',
       });
       setSaving(false);
     }
@@ -323,7 +387,15 @@ const RenameRow = ({activity, history, usedEmojis}: {activity: Activity; history
 };
 
 /** Activities whose name has no emoji yet, named here and saved on Strava. */
-const Unprocessed = ({activities, history, usedEmojis}: {activities: Activity[]; history: Activity[]; usedEmojis: Set<string>}) => {
+const Unprocessed = ({
+  activities,
+  history,
+  usedEmojis,
+}: {
+  activities: Activity[];
+  history: Activity[];
+  usedEmojis: Set<string>;
+}) => {
   const rows = activities.slice(0, RENAME_ROWS);
 
   if (0 === activities.length) return null;
@@ -332,7 +404,8 @@ const Unprocessed = ({activities, history, usedEmojis}: {activities: Activity[];
     <Card padding="14px" background="brand.subtle" borderColor="brand.muted">
       <Stack gap="10px">
         <Text fontSize="sm">
-          <strong>{activities.length}</strong> {1 === activities.length ? 'activity has' : 'activities have'} no emoji yet
+          <strong>{activities.length}</strong> {1 === activities.length ? 'activity has' : 'activities have'} no emoji
+          yet
           {activities.length > RENAME_ROWS ? `, here are the ${RENAME_ROWS} newest` : ''}:
         </Text>
         {rows.map(activity => (
@@ -355,7 +428,9 @@ const ActivitiesPage = () => {
   const setParams = (changes: Record<string, string | null>) =>
     setSearchParams(
       params => {
-        Object.entries(changes).forEach(([name, value]) => (null === value ? params.delete(name) : params.set(name, value)));
+        Object.entries(changes).forEach(([name, value]) =>
+          null === value ? params.delete(name) : params.set(name, value),
+        );
 
         return params;
       },
@@ -413,7 +488,12 @@ const ActivitiesPage = () => {
     [allActivities],
   );
   const usedEmojis = useMemo(
-    () => new Set((allActivities ?? []).flatMap(({name}) => [...name.matchAll(/\p{Extended_Pictographic}/gu)].map(([match]) => match))),
+    () =>
+      new Set(
+        (allActivities ?? []).flatMap(({name}) =>
+          [...name.matchAll(/\p{Extended_Pictographic}/gu)].map(([match]) => match),
+        ),
+      ),
     [allActivities],
   );
   const shownColumns = TAGS.filter(({sortType}) => columns.includes(sortType));
@@ -462,7 +542,9 @@ const ActivitiesPage = () => {
     if (Math.abs(window.scrollY - target) < 2) scrollTarget.current = null;
   }, [rows.length, scrollMargin]);
 
-  const gridColumns = isWide ? `48px minmax(220px, 1fr) repeat(${shownColumns.length}, ${COLUMN_WIDTH}px)` : '52px 1fr auto';
+  const gridColumns = isWide
+    ? `48px minmax(220px, 1fr) repeat(${shownColumns.length}, ${COLUMN_WIDTH}px)`
+    : '52px 1fr auto';
   const minWidth = isWide ? 48 + 260 + shownColumns.length * COLUMN_WIDTH : undefined;
 
   return (
@@ -497,7 +579,9 @@ const ActivitiesPage = () => {
         label={label}
       />
 
-      {unprocessedEmoji && <Unprocessed activities={unprocessedActivities} history={allActivities ?? []} usedEmojis={usedEmojis} />}
+      {unprocessedEmoji && (
+        <Unprocessed activities={unprocessedActivities} history={allActivities ?? []} usedEmojis={usedEmojis} />
+      )}
 
       {/* Only when filtering, or when nothing shows: unfiltered, hidden private activities are expected. */}
       {0 < hiddenPrivate && (0 === rows.length || null !== types || 0 < gearIds.length || true !== commute) && (
@@ -506,8 +590,9 @@ const ActivitiesPage = () => {
             <HStack gap="8px" fontSize="sm">
               <LuLock />
               <Text>
-                {hiddenPrivate.toLocaleString(locale)} private {1 === hiddenPrivate ? 'activity matches' : 'activities match'} but{' '}
-                {1 === hiddenPrivate ? 'is' : 'are'} hidden.
+                {hiddenPrivate.toLocaleString(locale)} private{' '}
+                {1 === hiddenPrivate ? 'activity matches' : 'activities match'} but {1 === hiddenPrivate ? 'is' : 'are'}{' '}
+                hidden.
               </Text>
             </HStack>
             <Button size="sm" variant="surface" onClick={() => setWithPrivate(true)}>
@@ -603,7 +688,9 @@ const ActivitiesPage = () => {
                   </Stack>
                   {isWide ? (
                     shownColumns.map(tag => {
-                      const value = tag.excludedTypes?.includes(activity.sport_type) ? null : tag.value(activity, meta, ftp);
+                      const value = tag.excludedTypes?.includes(activity.sport_type)
+                        ? null
+                        : tag.value(activity, meta, ftp);
 
                       return (
                         <Text
@@ -611,7 +698,9 @@ const ActivitiesPage = () => {
                           textAlign="right"
                           fontFamily="figure"
                           fontSize="sm"
-                          title={null === value?.tooltip || undefined === value?.tooltip ? undefined : String(value.tooltip)}
+                          title={
+                            null === value?.tooltip || undefined === value?.tooltip ? undefined : String(value.tooltip)
+                          }
                           color={zoneTextColor(value?.colorPalette)}
                           opacity={value?.isRelevant ? 1 : 0.45}
                         >

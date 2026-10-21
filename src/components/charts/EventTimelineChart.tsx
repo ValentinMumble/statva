@@ -17,15 +17,7 @@ import {ChartTooltip} from './ChartTooltip';
 
 const DAY = 24 * 60 * 60 * 1000;
 // Types that stay fitted until the next one of the same type replaces them, in row order.
-const DURATION_TYPES: Event['type'][] = [
-  'chain',
-  'tire',
-  'cassette',
-  'brake_pad',
-  'brake_bleed',
-  'battery',
-  'saddle',
-];
+const DURATION_TYPES: Event['type'][] = ['chain', 'tire', 'cassette', 'brake_pad', 'brake_bleed', 'battery', 'saddle'];
 // Types that happen at a single point in time.
 const ONE_SHOT_TYPES: Event['type'][] = ['fall', 'puncture'];
 const CHARACTER_WIDTH = 6.4;
@@ -80,14 +72,11 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
         const nextStart = nextDate?.getTime();
         const ride = !isOneShot
           ? undefined
-          : activities?.find(
-              ({start_date}) =>
-                event.date.toDateString() === new Date(start_date).toDateString()
-            );
+          : activities?.find(({start_date}) => event.date.toDateString() === new Date(start_date).toDateString());
 
         return {
           start,
-          end: isOneShot ? start + markWidth : nextStart ?? now,
+          end: isOneShot ? start + markWidth : (nextStart ?? now),
           label: isOneShot && ride ? extractEmoji(ride.name) : getEventLabel(event, label, true),
           isOngoing: !isOneShot && undefined === nextStart,
           isOneShot,
@@ -99,7 +88,7 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
 
       return [...rows, {row: label(type), segments}];
     },
-    []
+    [],
   );
 
   const maxSegments = segmentsPerRow.reduce((max, {segments}) => Math.max(max, segments.length), 0);
@@ -119,8 +108,8 @@ const EventTimelineChart = ({bike}: {bike?: string} = {}) => {
           [`label${index}`]: segment.label,
         };
       },
-      {row}
-    )
+      {row},
+    ),
   );
 
   const chart = useChart({

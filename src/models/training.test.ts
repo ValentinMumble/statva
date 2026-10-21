@@ -3,7 +3,14 @@ import {aerobicEfficiency, commuteRoutes, driftByRide, powerCurveByYear, runBest
 import {ActivityType, DetailedActivity} from './strava';
 
 const ride = (id: number, date: string, fields: Partial<DetailedActivity> = {}) =>
-  buildDetailedActivity({id, name: `Ride ${id}`, sport_type: ActivityType.Ride, start_date: date, start_date_local: date, ...fields});
+  buildDetailedActivity({
+    id,
+    name: `Ride ${id}`,
+    sport_type: ActivityType.Ride,
+    start_date: date,
+    start_date_local: date,
+    ...fields,
+  });
 
 describe('power curve', () => {
   it('keeps the best power per duration, per year and over all of them', () => {
@@ -66,12 +73,26 @@ describe('heart rate drift', () => {
 describe('run best times', () => {
   it('finds the fastest time over each distance, per year and of all', () => {
     const run = (id: number, date: string, fiveK: number) =>
-      buildDetailedActivity({id, sport_type: ActivityType.Run, start_date: date, start_date_local: date, ...{best_efforts: [{name: '5K', elapsed_time: fiveK}]}});
-    const {years, rows} = runBestTimes([run(1, '2025-04-01T08:00:00Z', 1500), run(2, '2026-04-01T08:00:00Z', 1550), run(3, '2026-05-01T08:00:00Z', 1520)]);
+      buildDetailedActivity({
+        id,
+        sport_type: ActivityType.Run,
+        start_date: date,
+        start_date_local: date,
+        ...{best_efforts: [{name: '5K', elapsed_time: fiveK}]},
+      });
+    const {years, rows} = runBestTimes([
+      run(1, '2025-04-01T08:00:00Z', 1500),
+      run(2, '2026-04-01T08:00:00Z', 1550),
+      run(3, '2026-05-01T08:00:00Z', 1520),
+    ]);
 
     expect(years).toEqual([2026, 2025]);
     expect(rows).toEqual([
-      {distance: '5K', byYear: {2025: {seconds: 1500, id: 1}, 2026: {seconds: 1520, id: 3}}, best: {seconds: 1500, id: 1, year: 2025}},
+      {
+        distance: '5K',
+        byYear: {2025: {seconds: 1500, id: 1}, 2026: {seconds: 1520, id: 3}},
+        best: {seconds: 1500, id: 1, year: 2025},
+      },
     ]);
   });
 });
@@ -79,10 +100,31 @@ describe('run best times', () => {
 describe('commute routes', () => {
   it('groups commutes by name and keeps routes ridden a few times', () => {
     const commute = (id: number, name: string, speed: number) =>
-      buildActivity({id, name, commute: true, distance: 8000, moving_time: 1200, average_speed: speed, start_date: `2026-01-0${id}T08:00:00Z`});
-    const routes = commuteRoutes([commute(1, 'Home 🏠', 6), commute(2, 'Home 🏠 ', 7), commute(3, 'Home 🏠', 6.5), commute(4, 'Work 🧱', 6)]);
+      buildActivity({
+        id,
+        name,
+        commute: true,
+        distance: 8000,
+        moving_time: 1200,
+        average_speed: speed,
+        start_date: `2026-01-0${id}T08:00:00Z`,
+      });
+    const routes = commuteRoutes([
+      commute(1, 'Home 🏠', 6),
+      commute(2, 'Home 🏠 ', 7),
+      commute(3, 'Home 🏠', 6.5),
+      commute(4, 'Work 🧱', 6),
+    ]);
 
     expect(routes).toHaveLength(1);
-    expect(routes[0]).toMatchObject({name: 'Home 🏠', count: 3, distance: 24000, bestSpeed: 7, bestId: 2, medianSpeed: 6.5, lastSpeed: 6.5});
+    expect(routes[0]).toMatchObject({
+      name: 'Home 🏠',
+      count: 3,
+      distance: 24000,
+      bestSpeed: 7,
+      bestId: 2,
+      medianSpeed: 6.5,
+      lastSpeed: 6.5,
+    });
   });
 });

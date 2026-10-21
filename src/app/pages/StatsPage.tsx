@@ -2,7 +2,15 @@ import {Suspense, useMemo, useState} from 'react';
 import {Box, Button, Grid, HStack, SegmentGroup, Spinner, Stack, Tabs, Text} from '@chakra-ui/react';
 import {useLocalStorage} from 'usehooks-ts';
 import {useAllActivities, useLabels, useSettings} from '../../hooks';
-import {eddingtonNumber, formatCalories, formatDistance, formatDistanceMeters, formatDuration, getTypes, isClubRide} from '../../models';
+import {
+  eddingtonNumber,
+  formatCalories,
+  formatDistance,
+  formatDistanceMeters,
+  formatDuration,
+  getTypes,
+  isClubRide,
+} from '../../models';
 import {Activity, ActivityType} from '../../models/strava';
 import {
   ActivityTimeChart,
@@ -42,7 +50,11 @@ const DAY_MS = 86400000;
 const ALL = 'All';
 
 const startOf = (period: Period, now: Date): number =>
-  'year' === period ? new Date(now.getFullYear(), 0, 1).getTime() : 'twelve' === period ? now.getTime() - 365 * DAY_MS : 0;
+  'year' === period
+    ? new Date(now.getFullYear(), 0, 1).getTime()
+    : 'twelve' === period
+      ? now.getTime() - 365 * DAY_MS
+      : 0;
 
 const Figure = ({label, value, hint}: {label: string; value: string; hint?: string}) => (
   <Stack gap="0">
@@ -64,7 +76,10 @@ const Figure = ({label, value, hint}: {label: string; value: string; hint?: stri
 const YearGoal = ({rides, goalKm, now, locale}: {rides: Activity[]; goalKm: number; now: Date; locale: string}) => {
   const yearStart = new Date(now.getFullYear(), 0, 1).getTime();
   const yearEnd = new Date(now.getFullYear() + 1, 0, 1).getTime();
-  const done = rides.filter(({start_date}) => new Date(start_date).getTime() >= yearStart).reduce((sum, {distance}) => sum + distance, 0) / 1000;
+  const done =
+    rides
+      .filter(({start_date}) => new Date(start_date).getTime() >= yearStart)
+      .reduce((sum, {distance}) => sum + distance, 0) / 1000;
   const elapsed = (now.getTime() - yearStart) / (yearEnd - yearStart);
   const projected = 0 < elapsed ? done / elapsed : 0;
   const ratio = Math.min(1, done / goalKm);
@@ -81,7 +96,16 @@ const YearGoal = ({rides, goalKm, now, locale}: {rides: Activity[]; goalKm: numb
       </HStack>
       <Box position="relative" height="10px" borderRadius="full" background="bg.muted" overflow="hidden">
         <Box height="full" width={`${ratio * 100}%`} background="brand.solid" borderRadius="full" />
-        <Box position="absolute" top="0" bottom="0" left={`${elapsed * 100}%`} width="2px" background="fg" opacity={0.5} title="Today" />
+        <Box
+          position="absolute"
+          top="0"
+          bottom="0"
+          left={`${elapsed * 100}%`}
+          width="2px"
+          background="fg"
+          opacity={0.5}
+          title="Today"
+        />
       </Box>
     </Stack>
   );
@@ -116,7 +140,13 @@ const Totals = ({activities, now}: {activities: Activity[]; now: Date}) => {
         <HStack justifyContent="space-between" flexWrap="wrap" gap="12px">
           <HStack gap="6px" flexWrap="wrap">
             {[ALL, ...sports].map(name => (
-              <Button key={name} size="sm" borderRadius="full" variant={name === sport ? 'solid' : 'outline'} onClick={() => setSport(name)}>
+              <Button
+                key={name}
+                size="sm"
+                borderRadius="full"
+                variant={name === sport ? 'solid' : 'outline'}
+                onClick={() => setSport(name)}
+              >
                 {ALL === name ? name : `${label(name)} ${name}`}
               </Button>
             ))}
@@ -128,11 +158,21 @@ const Totals = ({activities, now}: {activities: Activity[]; now: Date}) => {
         </HStack>
         <Grid templateColumns={{base: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)'}} gap={{base: '16px', md: '24px'}}>
           <Figure label="Activities" value={number(shown.length, locale)} />
-          <Figure label="Distance" value={km(distance, locale)} hint={0 < shown.length ? `${km(distance / shown.length, locale)} on average` : undefined} />
+          <Figure
+            label="Distance"
+            value={km(distance, locale)}
+            hint={0 < shown.length ? `${km(distance / shown.length, locale)} on average` : undefined}
+          />
           <Figure label="Time" value={duration(time)} hint={`${number(time / 86400, locale, 1)} days`} />
-          <Figure label="Climbing" value={metres(climbing, locale)} hint={`${number(climbing / 8849, locale, 1)} × Everest`} />
+          <Figure
+            label="Climbing"
+            value={metres(climbing, locale)}
+            hint={`${number(climbing / 8849, locale, 1)} × Everest`}
+          />
           <Figure label="Longest" value={km(longest, locale)} />
-          {0 < time && 0 < distance && <Figure label="Average speed" value={`${number((distance / time) * 3.6, locale, 1)} km/h`} />}
+          {0 < time && 0 < distance && (
+            <Figure label="Average speed" value={`${number((distance / time) * 3.6, locale, 1)} km/h`} />
+          )}
           {isRide && (
             <Figure
               label="Eddington, all time"
@@ -144,7 +184,16 @@ const Totals = ({activities, now}: {activities: Activity[]; now: Date}) => {
               }
             />
           )}
-          {isRide && null !== club && <Figure label={club.name} value={number(clubRides.length, locale)} hint={km(clubRides.reduce((sum, {distance}) => sum + distance, 0), locale)} />}
+          {isRide && null !== club && (
+            <Figure
+              label={club.name}
+              value={number(clubRides.length, locale)}
+              hint={km(
+                clubRides.reduce((sum, {distance}) => sum + distance, 0),
+                locale,
+              )}
+            />
+          )}
         </Grid>
         {isRide && <YearGoal rides={ofSport} goalKm={yearGoalKm} now={now} locale={locale} />}
       </Stack>
@@ -175,7 +224,10 @@ const StatsPage = () => {
         ['Aerobic fitness', <AerobicFitnessChart />],
         ['Heart rate drift on long rides', <HeartRateDriftChart />],
         ['Heart rate and power, ride by ride', <HeartChart />],
-        ['Suffer score per period', <TimeframeChart data="suffer_score" formatter={value => value.toFixed(0)} displayTypes={false} />],
+        [
+          'Suffer score per period',
+          <TimeframeChart data="suffer_score" formatter={value => value.toFixed(0)} displayTypes={false} />,
+        ],
         ['Suffer score, ride by ride', <DataLineChart data="suffer_score" />],
         ['Cadence, ride by ride', <DataLineChart min={40} max={110} data="average_cadence" />],
       ],
@@ -184,12 +236,34 @@ const StatsPage = () => {
       value: 'volume',
       label: 'Volume',
       charts: [
-        ['Distance', <TimeframeChart data="distance" formatter={value => formatDistance(value, 1)} excludedTypes={[ActivityType.Tennis]} />],
+        [
+          'Distance',
+          <TimeframeChart
+            data="distance"
+            formatter={value => formatDistance(value, 1)}
+            excludedTypes={[ActivityType.Tennis]}
+          />,
+        ],
         ['Activities by sport', <ActivityTimeChart />],
         ['Moving time', <TimeframeChart data="moving_time" formatter={formatDuration} />],
         ['How hilly your rides are', <GradesChart />],
-        ['Climbing', <TimeframeChart data="total_elevation_gain" formatter={value => formatDistance(value, 1)} type="area" excludedTypes={[ActivityType.Tennis, ActivityType.Swim]} />],
-        ['Calories', <TimeframeChart data="kilojoules" formatter={formatCalories} excludedTypes={[ActivityType.Tennis, ActivityType.Swim]} />],
+        [
+          'Climbing',
+          <TimeframeChart
+            data="total_elevation_gain"
+            formatter={value => formatDistance(value, 1)}
+            type="area"
+            excludedTypes={[ActivityType.Tennis, ActivityType.Swim]}
+          />,
+        ],
+        [
+          'Calories',
+          <TimeframeChart
+            data="kilojoules"
+            formatter={formatCalories}
+            excludedTypes={[ActivityType.Tennis, ActivityType.Swim]}
+          />,
+        ],
       ],
     },
     {
@@ -197,7 +271,15 @@ const StatsPage = () => {
       label: 'Commutes',
       charts: [
         ['Routes', <CommuteRoutes />],
-        ['Commuting', <TimeframeChart data="distance" formatter={value => formatDistance(value, 1)} filter={{withCommute: 'only'}} displayTypes={false} />],
+        [
+          'Commuting',
+          <TimeframeChart
+            data="distance"
+            formatter={value => formatDistance(value, 1)}
+            filter={{withCommute: 'only'}}
+            displayTypes={false}
+          />,
+        ],
         ['Commute speed', <CommuteSpeedChart />],
       ],
     },
@@ -258,7 +340,10 @@ const StatsPage = () => {
             </Tabs.List>
             {tabs.map(({value, charts}) => (
               <Tabs.Content key={value} value={value}>
-                <Grid templateColumns={{base: 'minmax(0, 1fr)', xl: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}}>
+                <Grid
+                  templateColumns={{base: 'minmax(0, 1fr)', xl: 'repeat(2, minmax(0, 1fr))'}}
+                  gap={{base: '16px', md: '24px'}}
+                >
                   {charts.map(([title, chart]) => (
                     <ChartCard key={title} title={title}>
                       {chart}

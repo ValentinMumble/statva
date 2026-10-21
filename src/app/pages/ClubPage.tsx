@@ -117,7 +117,9 @@ const WeekStrip = ({weeks, locale}: {weeks: ReturnType<typeof clubWeeks>['weeks'
                   />
                 );
 
-                return null === session ? cell : (
+                return null === session ? (
+                  cell
+                ) : (
                   <Link key={start} to={`/activities/${session.activity.id}`}>
                     {cell}
                   </Link>
@@ -130,7 +132,17 @@ const WeekStrip = ({weeks, locale}: {weeks: ReturnType<typeof clubWeeks>['weeks'
   );
 };
 
-const SessionRow = ({session, finish, locale, now}: {session: ClubSession; finish: string | null; locale: string; now: Date}) => {
+const SessionRow = ({
+  session,
+  finish,
+  locale,
+  now,
+}: {
+  session: ClubSession;
+  finish: string | null;
+  locale: string;
+  now: Date;
+}) => {
   const {activity, group} = session;
 
   return (
@@ -194,11 +206,20 @@ const ClubPage = () => {
   const today = deviceDay(now);
 
   // The club's calendar, from its team on pedalons.fr.
-  const {data: calendar} = useQuery({queryKey: ['clubCalendar'], queryFn: () => fetchCalendar(), enabled: null !== club, retry: 2});
+  const {data: calendar} = useQuery({
+    queryKey: ['clubCalendar'],
+    queryFn: () => fetchCalendar(),
+    enabled: null !== club,
+    retry: 2,
+  });
   // One series under one name: the club writes some sessions under its initials ("NP #411" for
   // N-Peloton) or in capitals ("RAYMOND RIDE #42"); its most used spelling wins.
   const rides = useMemo(() => {
-    const initials = (club?.name ?? '').split(/[\s-]+/).map(part => part.charAt(0)).join('').toUpperCase();
+    const initials = (club?.name ?? '')
+      .split(/[\s-]+/)
+      .map(part => part.charAt(0))
+      .join('')
+      .toUpperCase();
     const spellings = new Map<string, Map<string, number>>();
     for (const {series: name} of calendar?.rides ?? []) {
       const seen = spellings.get(name.toLowerCase()) ?? new Map<string, number>();
@@ -218,7 +239,8 @@ const ClubPage = () => {
   const seriesNames = useMemo(() => {
     if (null === club) return [];
     const counts = new Map<string, number>();
-    for (const {series: name, number: rideNumber} of rides) if (null !== rideNumber) counts.set(name, (counts.get(name) ?? 0) + 1);
+    for (const {series: name, number: rideNumber} of rides)
+      if (null !== rideNumber) counts.set(name, (counts.get(name) ?? 0) + 1);
     const others = [...counts.entries()]
       .filter(([name, count]) => name !== club.name && SERIES_MIN_RIDES <= count)
       .map(([name]) => name)
@@ -228,12 +250,24 @@ const ClubPage = () => {
   }, [rides, club, activities]);
   const series = null !== savedSeries && seriesNames.includes(savedSeries) ? savedSeries : (club?.name ?? '');
 
-  const sessions = useMemo(() => (null === club ? [] : clubSessions(activities, activityMeta, {...club, name: series})), [activities, activityMeta, club, series]);
-  const match = useMemo(() => (0 === rides.length ? null : matchCalendar(sessions, rides, series, today)), [sessions, rides, series, today]);
+  const sessions = useMemo(
+    () => (null === club ? [] : clubSessions(activities, activityMeta, {...club, name: series})),
+    [activities, activityMeta, club, series],
+  );
+  const match = useMemo(
+    () => (0 === rides.length ? null : matchCalendar(sessions, rides, series, today)),
+    [sessions, rides, series, today],
+  );
   const year = String(now.getFullYear());
-  const thisYear = useMemo(() => sessions.filter(({activity}) => localDay(activity).startsWith(year)), [sessions, year]);
+  const thisYear = useMemo(
+    () => sessions.filter(({activity}) => localDay(activity).startsWith(year)),
+    [sessions, year],
+  );
   const totals = clubTotals(sessions, activities);
-  const yearTotals = clubTotals(thisYear, activities.filter(activity => localDay(activity).startsWith(year)));
+  const yearTotals = clubTotals(
+    thisYear,
+    activities.filter(activity => localDay(activity).startsWith(year)),
+  );
   const held = sessionsHeld(sessions);
   const weeks = useMemo(() => clubWeeks(sessions, today, match?.heldWeeks ?? null), [sessions, today, match]);
   const groups = useMemo(() => groupStats(sessions), [sessions]);
@@ -243,7 +277,10 @@ const ClubPage = () => {
   const records = useMemo(() => clubRecords(sessions), [sessions]);
   const starts = useMemo(() => startPoints(sessions).slice(0, 5), [sessions]);
   const tracks = useMemo(
-    () => sessions.map(({activity}) => decodePolyline(activity.map?.summary_polyline ?? '')).filter(track => 0 < track.length),
+    () =>
+      sessions
+        .map(({activity}) => decodePolyline(activity.map?.summary_polyline ?? ''))
+        .filter(track => 0 < track.length),
     [sessions],
   );
   const finishes = useMemo(() => finishCounts(sessions, match?.finishes).slice(0, 10), [sessions, match]);
@@ -264,9 +301,15 @@ const ClubPage = () => {
   const usualWeekday = 0 === sessions.length ? undefined : weekdayCounts.indexOf(Math.max(...weekdayCounts));
   // 2024-01-01 was a Monday.
   // In English, like the sentence around it, whatever the date setting.
-  const weekdayName = undefined === usualWeekday ? null : new Date(Date.UTC(2024, 0, 1 + usualWeekday)).toLocaleDateString('en-GB', {weekday: 'long', timeZone: 'UTC'});
+  const weekdayName =
+    undefined === usualWeekday
+      ? null
+      : new Date(Date.UTC(2024, 0, 1 + usualWeekday)).toLocaleDateString('en-GB', {weekday: 'long', timeZone: 'UTC'});
   const kudos = sessions.reduce((sum, {activity}) => sum + activity.kudos_count, 0);
-  const photos = sessions.reduce((sum, {activity}) => sum + (activity.total_photo_count ?? activity.photo_count ?? 0), 0);
+  const photos = sessions.reduce(
+    (sum, {activity}) => sum + (activity.total_photo_count ?? activity.photo_count ?? 0),
+    0,
+  );
   const prs = sessions.reduce((sum, {activity}) => sum + (activity.pr_count ?? 0), 0);
   const achievements = sessions.reduce((sum, {activity}) => sum + activity.achievement_count, 0);
   const shown = sessions.slice(0, LATEST_COUNT);
@@ -314,24 +357,67 @@ const ClubPage = () => {
         <Text color="fg.muted">No ride has "{series}" in its name yet.</Text>
       ) : (
         <>
-          <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))', xl: 'repeat(6, minmax(0, 1fr))'}} gap="12px">
+          <Grid
+            templateColumns={{
+              base: 'repeat(2, minmax(0, 1fr))',
+              md: 'repeat(3, minmax(0, 1fr))',
+              xl: 'repeat(6, minmax(0, 1fr))',
+            }}
+            gap="12px"
+          >
             {null !== match ? (
-              <Readout value={number(match.attended, locale)} caption={`of the ${number(match.held.length, locale)} sessions held since your first`} />
+              <Readout
+                value={number(match.attended, locale)}
+                caption={`of the ${number(match.held.length, locale)} sessions held since your first`}
+              />
             ) : (
-              <Readout value={number(totals.sessions, locale)} caption={null === held ? 'sessions' : `sessions, of ${number(held.held, locale)} the club ran`} />
+              <Readout
+                value={number(totals.sessions, locale)}
+                caption={null === held ? 'sessions' : `sessions, of ${number(held.held, locale)} the club ran`}
+              />
             )}
-            <Readout value={number(totals.distance / 1000, locale)} unit="km" caption={`${number(totals.share * 100, locale)}% of your riding`} />
+            <Readout
+              value={number(totals.distance / 1000, locale)}
+              unit="km"
+              caption={`${number(totals.share * 100, locale)}% of your riding`}
+            />
             <Readout value={number(totals.elevation, locale)} unit="m" caption="climbed" />
             <Readout value={duration(totals.time)} caption="in the saddle" />
             <Readout value={number(yearTotals.sessions, locale)} caption={`sessions in ${year}`} />
-            <Readout value={number(yearTotals.distance / 1000, locale)} unit="km" caption={`in ${year}, ${number(yearTotals.share * 100, locale)}% of your riding`} />
+            <Readout
+              value={number(yearTotals.distance / 1000, locale)}
+              unit="km"
+              caption={`in ${year}, ${number(yearTotals.share * 100, locale)}% of your riding`}
+            />
           </Grid>
 
-          <Panel title="Attendance" note={null === match ? 'weeks from Monday' : 'weeks from Monday, outlined when no session was held'}>
+          <Panel
+            title="Attendance"
+            note={null === match ? 'weeks from Monday' : 'weeks from Monday, outlined when no session was held'}
+          >
             <Grid templateColumns={{base: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))'}} gap="16px">
-              <Figure value={run(weeks.current.length)} caption="in a row now" detail={null === weeks.current.from ? 'none going' : `since the week of ${formatDay(weeks.current.from, locale)}`} />
-              <Figure value={run(weeks.longest.length)} caption="longest run" detail={null === weeks.longest.from || null === weeks.longest.to ? undefined : formatDayRange(weeks.longest.from, weeks.longest.to, locale)} />
-              <Figure value={`${weeks.missedRecently} of 8`} caption={null === match ? 'weeks missed lately' : 'sessions missed lately'} />
+              <Figure
+                value={run(weeks.current.length)}
+                caption="in a row now"
+                detail={
+                  null === weeks.current.from
+                    ? 'none going'
+                    : `since the week of ${formatDay(weeks.current.from, locale)}`
+                }
+              />
+              <Figure
+                value={run(weeks.longest.length)}
+                caption="longest run"
+                detail={
+                  null === weeks.longest.from || null === weeks.longest.to
+                    ? undefined
+                    : formatDayRange(weeks.longest.from, weeks.longest.to, locale)
+                }
+              />
+              <Figure
+                value={`${weeks.missedRecently} of 8`}
+                caption={null === match ? 'weeks missed lately' : 'sessions missed lately'}
+              />
             </Grid>
             <WeekStrip weeks={weeks.weeks} locale={locale} />
           </Panel>
@@ -385,7 +471,10 @@ const ClubPage = () => {
             </Card>
           )}
 
-          <Grid templateColumns={{base: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}}>
+          <Grid
+            templateColumns={{base: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))'}}
+            gap={{base: '16px', md: '24px'}}
+          >
             <Panel title="Groups" note="power from rides with a power meter">
               <Stack gap="10px">
                 {groups.map(group => (
@@ -421,7 +510,9 @@ const ClubPage = () => {
                         </Text>
                         <Text color="fg.muted">
                           {bike.sessions} {1 === bike.sessions ? 'session' : 'sessions'} · {km(bike.distance, locale)} ·{' '}
-                          {bike.first.slice(0, 4) === bike.last.slice(0, 4) ? bike.first.slice(0, 4) : `${bike.first.slice(0, 4)} to ${bike.last.slice(0, 4)}`}
+                          {bike.first.slice(0, 4) === bike.last.slice(0, 4)
+                            ? bike.first.slice(0, 4)
+                            : `${bike.first.slice(0, 4)} to ${bike.last.slice(0, 4)}`}
                         </Text>
                       </Stack>
                       <Stack gap="0" alignItems="flex-end" flexShrink={0}>
@@ -432,7 +523,12 @@ const ClubPage = () => {
                       </Stack>
                     </HStack>
                     <Box height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
-                      <Box height="full" width={`${(bike.sessions / sessions.length) * 100}%`} background="brand.solid" borderRadius="full" />
+                      <Box
+                        height="full"
+                        width={`${(bike.sessions / sessions.length) * 100}%`}
+                        background="brand.solid"
+                        borderRadius="full"
+                      />
                     </Box>
                   </Stack>
                 ))}
@@ -441,7 +537,10 @@ const ClubPage = () => {
 
             <Panel title="Group size" note="riders Strava matched on the same ride">
               <Grid templateColumns="repeat(2, minmax(0, 1fr))" gap="16px">
-                <Figure value={null === size.average ? '—' : number(size.average, locale, 1)} caption="riders on average" />
+                <Figure
+                  value={null === size.average ? '—' : number(size.average, locale, 1)}
+                  caption="riders on average"
+                />
                 <Figure
                   value={null === size.biggest ? '—' : String(size.biggest.activity.athlete_count)}
                   caption="biggest ride"
@@ -451,11 +550,28 @@ const ClubPage = () => {
               <HStack gap="4px" alignItems="flex-end" height="80px">
                 {size.byMonth.map((riders, month) => {
                   const top = Math.max(1, ...size.byMonth.map(value => value ?? 0));
-                  const name = new Date(Date.UTC(2024, month, 1)).toLocaleDateString(locale, {month: 'short', timeZone: 'UTC'});
+                  const name = new Date(Date.UTC(2024, month, 1)).toLocaleDateString(locale, {
+                    month: 'short',
+                    timeZone: 'UTC',
+                  });
 
                   return (
-                    <Stack key={month} gap="2px" flex="1" alignItems="center" height="full" justifyContent="flex-end" title={null === riders ? `${name}: no data` : `${name}: ${number(riders, locale, 1)} riders`}>
-                      <Box width="full" height={`${((riders ?? 0) / top) * 100}%`} minHeight={null === riders ? '0' : '2px'} background="brand.solid" borderRadius="3px 3px 0 0" />
+                    <Stack
+                      key={month}
+                      gap="2px"
+                      flex="1"
+                      alignItems="center"
+                      height="full"
+                      justifyContent="flex-end"
+                      title={null === riders ? `${name}: no data` : `${name}: ${number(riders, locale, 1)} riders`}
+                    >
+                      <Box
+                        width="full"
+                        height={`${((riders ?? 0) / top) * 100}%`}
+                        minHeight={null === riders ? '0' : '2px'}
+                        background="brand.solid"
+                        borderRadius="3px 3px 0 0"
+                      />
                       <Text fontSize="2xs" color="fg.muted">
                         {name.slice(0, 1).toUpperCase()}
                       </Text>
@@ -486,12 +602,19 @@ const ClubPage = () => {
               <Grid templateColumns="repeat(2, minmax(0, 1fr))" gap="16px" marginTop="8px">
                 <Figure value={number(prs, locale)} caption="personal records" />
                 <Figure value={number(achievements, locale)} caption="achievements" />
-                <Figure value={number(kudos, locale)} caption="kudos" detail={`${number(kudos / sessions.length, locale, 1)} per session`} />
+                <Figure
+                  value={number(kudos, locale)}
+                  caption="kudos"
+                  detail={`${number(kudos / sessions.length, locale, 1)} per session`}
+                />
                 <Figure value={number(photos, locale)} caption="photos" />
               </Grid>
             </Panel>
 
-            <Panel title="Where it finished" note={null === match ? 'from ride notes' : "from ride notes and the club's calendar"}>
+            <Panel
+              title="Where it finished"
+              note={null === match ? 'from ride notes' : "from ride notes and the club's calendar"}
+            >
               {0 === finishes.length ? (
                 <Text fontSize="sm" color="fg.muted">
                   Write "Finish au …" in a ride's notes to see where sessions end.
@@ -505,7 +628,12 @@ const ClubPage = () => {
           <Panel title="Routes" note={`${tracks.length} sessions, and where they start`}>
             <TrackMap tracks={tracks} center={mapCenter} showEnds={false} height={{base: '320px', md: '460px'}}>
               {starts.map(({point, sessions: count}) => (
-                <CircleMarker key={point.join(',')} center={point} radius={5 + Math.min(10, count / 4)} pathOptions={{color: 'white', weight: 2, fillColor: '#111', fillOpacity: 0.9}}>
+                <CircleMarker
+                  key={point.join(',')}
+                  center={point}
+                  radius={5 + Math.min(10, count / 4)}
+                  pathOptions={{color: 'white', weight: 2, fillColor: '#111', fillOpacity: 0.9}}
+                >
                   <Tooltip>
                     {count} {1 === count ? 'start' : 'starts'}
                   </Tooltip>
@@ -514,7 +642,10 @@ const ClubPage = () => {
             </TrackMap>
           </Panel>
 
-          <Grid templateColumns={{base: 'minmax(0, 1fr)', xl: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}}>
+          <Grid
+            templateColumns={{base: 'minmax(0, 1fr)', xl: 'repeat(2, minmax(0, 1fr))'}}
+            gap={{base: '16px', md: '24px'}}
+          >
             <ChartPanel title="Sessions per period">
               <TimeframeChart filter={{search: series}} data={1} displayTypes={false} />
             </ChartPanel>

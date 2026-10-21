@@ -46,7 +46,8 @@ const eddingtonOf = (values: number[]): Eddington => {
 
 const perDay = (activities: DetailedActivity[], value: (activity: DetailedActivity) => number): number[] => {
   const days = new Map<string, number>();
-  for (const activity of activities) days.set(localDay(activity), (days.get(localDay(activity)) ?? 0) + value(activity));
+  for (const activity of activities)
+    days.set(localDay(activity), (days.get(localDay(activity)) ?? 0) + value(activity));
 
   return [...days.values()];
 };
@@ -89,12 +90,19 @@ const sunTimes = (moment: number, [latitude, longitude]: number[]): {rise: numbe
   const declination = Math.asin(Math.sin(tilt) * Math.sin(eclipticLongitude));
   const noon = j2000 + transit + 0.0053 * Math.sin(anomaly) - 0.0069 * Math.sin(2 * eclipticLongitude);
   const hourAngle = Math.acos(
-    (Math.sin(rad * -0.833) - Math.sin(latitude * rad) * Math.sin(declination)) / (Math.cos(latitude * rad) * Math.cos(declination)),
+    (Math.sin(rad * -0.833) - Math.sin(latitude * rad) * Math.sin(declination)) /
+      (Math.cos(latitude * rad) * Math.cos(declination)),
   );
 
   if (Number.isNaN(hourAngle)) return null;
 
-  const set = j2000 + 0.0009 + (hourAngle + west) / (2 * Math.PI) + cycle + 0.0053 * Math.sin(anomaly) - 0.0069 * Math.sin(2 * eclipticLongitude);
+  const set =
+    j2000 +
+    0.0009 +
+    (hourAngle + west) / (2 * Math.PI) +
+    cycle +
+    0.0053 * Math.sin(anomaly) -
+    0.0069 * Math.sin(2 * eclipticLongitude);
   const toMs = (julian: number): number => (julian + 0.5 - j1970) * DAY_MS;
 
   return {rise: toMs(noon - (set - noon)), set: toMs(set)};
@@ -113,7 +121,9 @@ const isDark = ({start_date, elapsed_time, start_latlng, trainer}: DetailedActiv
 /** Rides out in the dark: how many, this year, their share, and the latest. */
 const darkRides = (activities: DetailedActivity[], year: number): DarkRides => {
   const outdoor = ridesOf(activities).filter(({trainer, start_latlng}) => !trainer && 2 === start_latlng?.length);
-  const dark = outdoor.filter(isDark).sort((first, second) => new Date(second.start_date).getTime() - new Date(first.start_date).getTime());
+  const dark = outdoor
+    .filter(isDark)
+    .sort((first, second) => new Date(second.start_date).getTime() - new Date(first.start_date).getTime());
 
   return {
     count: dark.length,

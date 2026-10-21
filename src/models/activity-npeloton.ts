@@ -11,11 +11,11 @@ type ClubRules = {
   renames?: [string, string][];
 };
 
-
 const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // A club without a name would match every ride.
-const isClubRide = (name: string, club: Pick<ClubRules, 'name'>): boolean => '' !== club.name && name.includes(club.name);
+const isClubRide = (name: string, club: Pick<ClubRules, 'name'>): boolean =>
+  '' !== club.name && name.includes(club.name);
 
 const REPLACEMENTS: [string, string][] = [
   ['\u2019', "'"],
@@ -24,7 +24,9 @@ const REPLACEMENTS: [string, string][] = [
 ];
 
 /** Where a club ride finished, from a "Finish au Zazou" line in its notes, or null. */
-const extractFinish = (meta: Pick<DetailedActivity, 'description' | 'private_note'> | null | undefined): string | null => {
+const extractFinish = (
+  meta: Pick<DetailedActivity, 'description' | 'private_note'> | null | undefined,
+): string | null => {
   const fullText = [meta?.private_note ?? '', meta?.description ?? ''].join('\n');
   const match = fullText.match(/(?:^|\n)Finish\s+(?:au\s+|à\s+)?([\w\u2018\u2019'\s\p{L}]+)/iu);
 
@@ -53,13 +55,17 @@ const getNotes = (meta?: DetailedActivity | null): string =>
  */
 const extractNPGroup = (activityName: string, meta: DetailedActivity | null | undefined, club: ClubRules): string => {
   const fullText = `${activityName}\n${getNotes(meta)}`;
-  const marked = Object.entries(club.markers).find(([, markers]) => markers.some(marker => hasMarker(fullText, marker)));
+  const marked = Object.entries(club.markers).find(([, markers]) =>
+    markers.some(marker => hasMarker(fullText, marker)),
+  );
 
   if (marked) return marked[0];
 
   const renamed = (club.renames ?? []).reduce((name, [from, to]) => name.replace(from, to), activityName);
 
-  return renamed.match(new RegExp(`${escapeRegExp(club.name)}\\s+#\\d+\\s+([A-Za-z0-9.-\\s]+)`))?.[1].trim() || 'Unknown';
+  return (
+    renamed.match(new RegExp(`${escapeRegExp(club.name)}\\s+#\\d+\\s+([A-Za-z0-9.-\\s]+)`))?.[1].trim() || 'Unknown'
+  );
 };
 
 export {extractFinish, extractNPGroup, isClubRide};

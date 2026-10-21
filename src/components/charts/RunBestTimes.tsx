@@ -13,7 +13,13 @@ const raceTime = (seconds: number): string => {
   return 0 < hours ? `${hours}:${String(minutes).padStart(2, '0')}:${rest}` : `${minutes}:${rest}`;
 };
 
-const DISTANCE_NAMES: Record<string, string> = {'1K': '1 km', '5K': '5 km', '10K': '10 km', 'Half-Marathon': 'Half marathon', Marathon: 'Marathon'};
+const DISTANCE_NAMES: Record<string, string> = {
+  '1K': '1 km',
+  '5K': '5 km',
+  '10K': '10 km',
+  'Half-Marathon': 'Half marathon',
+  Marathon: 'Marathon',
+};
 // The latest few years, so the table fits a phone.
 const YEAR_COUNT = 4;
 
@@ -56,8 +62,19 @@ const RunBestTimes = () => {
               {shown.map(year => {
                 const time = byYear[year];
                 return (
-                  <Table.Cell key={year} textAlign="end" fontFamily="figure" color={time && best && time.seconds === best.seconds ? 'brand.fg' : undefined}>
-                    {time ? <Link to={`/activities/${time.id}`}>{raceTime(time.seconds)}</Link> : <Text as="span" color="fg.subtle">·</Text>}
+                  <Table.Cell
+                    key={year}
+                    textAlign="end"
+                    fontFamily="figure"
+                    color={time && best && time.seconds === best.seconds ? 'brand.fg' : undefined}
+                  >
+                    {time ? (
+                      <Link to={`/activities/${time.id}`}>{raceTime(time.seconds)}</Link>
+                    ) : (
+                      <Text as="span" color="fg.subtle">
+                        ·
+                      </Text>
+                    )}
                   </Table.Cell>
                 );
               })}

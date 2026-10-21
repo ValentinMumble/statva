@@ -83,7 +83,9 @@ const writeAccessToken = async () => {
     approval_prompt: 'force',
     scope: 'read,activity:read_all,activity:write',
   });
-  console.log(`\nOpen this link and approve write access (for this run only):\n\nhttps://www.strava.com/oauth/authorize?${params}\n`);
+  console.log(
+    `\nOpen this link and approve write access (for this run only):\n\nhttps://www.strava.com/oauth/authorize?${params}\n`,
+  );
 
   const code = await new Promise((resolve, reject) => {
     const server = createServer((request, response) => {
@@ -91,7 +93,9 @@ const writeAccessToken = async () => {
       const given = url.searchParams.get('code');
       response.end(given ? 'Approved. You can close this tab and go back to the terminal.' : 'Not approved.');
       server.close();
-      given && url.searchParams.get('scope')?.includes('activity:write') ? resolve(given) : reject(new Error('Write access was not approved.'));
+      given && url.searchParams.get('scope')?.includes('activity:write')
+        ? resolve(given)
+        : reject(new Error('Write access was not approved.'));
     });
     server.listen(CALLBACK_PORT);
   });
@@ -168,7 +172,10 @@ const buildTcx = (activity, points, device) => {
   const distance = points.findLast(({distance}) => undefined !== distance)?.distance ?? 0;
   const trackpoints = points.map(({time, position, altitude, distance: covered, heartRate, cadence, power}) => {
     const parts = [`<Time>${time.toISOString()}</Time>`];
-    if (position) parts.push(`<Position><LatitudeDegrees>${position[0]}</LatitudeDegrees><LongitudeDegrees>${position[1]}</LongitudeDegrees></Position>`);
+    if (position)
+      parts.push(
+        `<Position><LatitudeDegrees>${position[0]}</LatitudeDegrees><LongitudeDegrees>${position[1]}</LongitudeDegrees></Position>`,
+      );
     if (undefined !== altitude) parts.push(`<AltitudeMeters>${altitude}</AltitudeMeters>`);
     if (undefined !== covered) parts.push(`<DistanceMeters>${covered}</DistanceMeters>`);
     if (undefined !== heartRate) parts.push(`<HeartRateBpm><Value>${heartRate}</Value></HeartRateBpm>`);
@@ -325,15 +332,28 @@ const finish = async (token, activity, id) =>
   await stravaJson(token, `activities/${id}`, {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({sport_type: activity.sport_type, gear_id: activity.gear_id ?? 'none', trainer: activity.trainer, hide_from_home: true}),
+    body: JSON.stringify({
+      sport_type: activity.sport_type,
+      gear_id: activity.gear_id ?? 'none',
+      trainer: activity.trainer,
+      hide_from_home: true,
+    }),
   });
 
 // As api/_lib/activities.ts stores an activity. Strava's webhook fetches a new activity
 // before its gear is set, and sends no event for a gear change, so Statva would keep the
 // default bike: the finished activity is stored here instead.
 const DROPPED_FROM_DETAILS = ['splits_metric', 'splits_standard', 'laps', 'similar_activities', 'stats_visibility'];
-const DROPPED_FROM_SUMMARY = [...DROPPED_FROM_DETAILS, 'segment_efforts', 'best_efforts', 'description', 'private_note', 'photos'];
-const without = (activity, fields) => Object.fromEntries(Object.entries(activity).filter(([field]) => !fields.includes(field)));
+const DROPPED_FROM_SUMMARY = [
+  ...DROPPED_FROM_DETAILS,
+  'segment_efforts',
+  'best_efforts',
+  'description',
+  'private_note',
+  'photos',
+];
+const without = (activity, fields) =>
+  Object.fromEntries(Object.entries(activity).filter(([field]) => !fields.includes(field)));
 
 const storeInStatva = async detail => {
   const owner = env.STRAVA_ATHLETE_IDS.split(',')[0].trim();
@@ -350,7 +370,8 @@ const storeInStatva = async detail => {
 
 /** Step 1: rebuild every matching activity into a folder, with its details and photos. Reads only. */
 const prepare = async () => {
-  if (!from || !to) throw new Error('Say which device to replace and with what: --from "Garmin Edge 1030 Plus" --to MyWhoosh');
+  if (!from || !to)
+    throw new Error('Say which device to replace and with what: --from "Garmin Edge 1030 Plus" --to MyWhoosh');
 
   const owner = env.STRAVA_ATHLETE_IDS.split(',')[0].trim();
   const details = Object.values((await redis.hgetall(`athlete:${owner}:details`)) ?? {});
@@ -364,7 +385,10 @@ const prepare = async () => {
   const readToken = await ownerAccessToken(redis);
 
   for (const activity of targets) {
-    const folder = join(OUT, `${activity.start_date.slice(0, 10)} ${activity.name.replace(/[/\\:]/g, '-')} (${activity.id})`);
+    const folder = join(
+      OUT,
+      `${activity.start_date.slice(0, 10)} ${activity.name.replace(/[/\\:]/g, '-')} (${activity.id})`,
+    );
     await mkdir(folder, {recursive: true});
     const streams = await stravaJson(
       readToken,
@@ -404,7 +428,9 @@ const prepare = async () => {
 
 /** Step 3: upload each prepared ride whose original is gone; skip the others. */
 const uploadPrepared = async () => {
-  const folders = existsSync(OUT) ? (await readdir(OUT, {withFileTypes: true})).filter(entry => entry.isDirectory()).map(({name}) => join(OUT, name)) : [];
+  const folders = existsSync(OUT)
+    ? (await readdir(OUT, {withFileTypes: true})).filter(entry => entry.isDirectory()).map(({name}) => join(OUT, name))
+    : [];
   const pending = [];
 
   for (const folder of folders) {
@@ -438,7 +464,10 @@ const uploadPrepared = async () => {
 
   for (const {folder, saved} of ready) {
     const {format} = deviceOf(saved.device);
-    const newId = await upload(writeToken, saved, {format, content: await readFile(join(folder, `activity.${format}`))});
+    const newId = await upload(writeToken, saved, {
+      format,
+      content: await readFile(join(folder, `activity.${format}`)),
+    });
     const result = {new: `https://www.strava.com/activities/${newId}`, device: null};
     // Recorded at once, so a run stopped by Strava's rate limit never uploads a ride twice.
     await writeFile(join(folder, 'uploaded.json'), JSON.stringify(result, null, 2));

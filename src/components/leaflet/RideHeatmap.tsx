@@ -7,7 +7,8 @@ import type {Feature, FeatureCollection, MultiPolygon, Polygon} from 'geojson';
 import {ExplorerTiles, Tile, tileBounds} from '../../models';
 
 // Esri's gray canvas needs no key; it asks for this credit line.
-const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+const TILE_URL =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
 const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ';
 const STRAVA_ORANGE = '#fc4c02';
 // Faint enough that a road ridden once barely shows and a daily one glows.

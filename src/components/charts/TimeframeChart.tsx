@@ -1,27 +1,10 @@
 import {useState} from 'react';
 import {Group, SegmentGroupValueChangeDetails, Text, Span} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import {Area, AreaChart, Bar, BarChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl, StepperInput} from '../ui';
 import {useActivities, useLabels} from '../../hooks';
-import {
-  aggregateTimeframeData,
-  ChartProps,
-  getTypes,
-  labelCollection,
-  Timeframe,
-  TIMEFRAMES,
-} from '../../models';
+import {aggregateTimeframeData, ChartProps, getTypes, labelCollection, Timeframe, TIMEFRAMES} from '../../models';
 import {ActivityType} from '../../models/strava';
 import {ChartTooltip} from './ChartTooltip';
 
@@ -62,7 +45,7 @@ const TimeframeChart = ({
   };
 
   const dataPerPeriod = aggregateTimeframeData(activities ?? [], timeframe, data, itemCount);
-  const serieLabel = 'number' === typeof data ? filter?.search ?? '' : label(data);
+  const serieLabel = 'number' === typeof data ? (filter?.search ?? '') : label(data);
 
   const chart = useChart({
     data: Object.entries(dataPerPeriod).map(([period, value]) => ({period: label(period), value})),
@@ -71,12 +54,14 @@ const TimeframeChart = ({
 
   const avg = Object.values(dataPerPeriod).reduce(
     (total, currentTotal, _index, entries) => total + currentTotal / entries.length,
-    0
+    0,
   );
 
   const renderTooltip = () => (
     <Tooltip
-      cursor={'area' === chartType ? {stroke: chart.color('orange.solid'), strokeWidth: 1} : {fill: chart.color('bg.muted')}}
+      cursor={
+        'area' === chartType ? {stroke: chart.color('orange.solid'), strokeWidth: 1} : {fill: chart.color('bg.muted')}
+      }
       isAnimationActive={false}
       content={({payload, label: period, active}) =>
         !active || !payload?.length ? null : (
@@ -116,7 +101,7 @@ const TimeframeChart = ({
             items={
               labelCollection(
                 TYPES.filter(type => !excludedTypes.includes(type)),
-                label
+                label,
               ).items
             }
           />

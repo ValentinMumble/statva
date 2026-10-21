@@ -1,4 +1,12 @@
-import {computeBikeParts, computeDashboard, computeExplorerTiles, decodePolyline, encodePolyline, hasEmoji, suggestChains} from '../models';
+import {
+  computeBikeParts,
+  computeDashboard,
+  computeExplorerTiles,
+  decodePolyline,
+  encodePolyline,
+  hasEmoji,
+  suggestChains,
+} from '../models';
 import {generateDemo} from './generate';
 
 const TODAY = new Date('2026-10-12T10:00:00Z');
@@ -10,7 +18,9 @@ describe('demo data', () => {
   it('is the same every time for the same day', () => {
     const again = generateDemo(TODAY);
 
-    expect(again.activities.map(({id, distance}) => [id, distance])).toEqual(demo.activities.map(({id, distance}) => [id, distance]));
+    expect(again.activities.map(({id, distance}) => [id, distance])).toEqual(
+      demo.activities.map(({id, distance}) => [id, distance]),
+    );
     expect(again.events.length).toBe(demo.events.length);
   });
 
@@ -43,7 +53,17 @@ describe('demo data', () => {
       expect(Math.abs(lat - 45.9)).toBeLessThan(1);
       expect(Math.abs(lng - 6.13)).toBeLessThan(1.5);
     }
-    expect(decodePolyline(encodePolyline([[45.89912, 6.12934], [45.9, 6.1301]]))).toEqual([[45.89912, 6.12934], [45.9, 6.1301]]);
+    expect(
+      decodePolyline(
+        encodePolyline([
+          [45.89912, 6.12934],
+          [45.9, 6.1301],
+        ]),
+      ),
+    ).toEqual([
+      [45.89912, 6.12934],
+      [45.9, 6.1301],
+    ]);
   });
 
   it('keeps one ride without an emoji, to show the unprocessed list', () => {
@@ -55,7 +75,9 @@ describe('demo data', () => {
     const parts = computeBikeParts(demo.events, roadRides, ROAD_BIKE, label);
     const chain = parts.find(({type}) => 'chain' === type)!;
 
-    expect(parts.map(({type}) => type)).toEqual(expect.arrayContaining(['chain', 'tire', 'cassette', 'brake_pad', 'battery']));
+    expect(parts.map(({type}) => type)).toEqual(
+      expect.arrayContaining(['chain', 'tire', 'cassette', 'brake_pad', 'battery']),
+    );
     expect(chain.distance).toBeLessThan(450 * 1000);
     expect(suggestChains(demo.events, roadRides, ROAD_BIKE).map(({chain}) => chain)).toHaveLength(2);
     expect(demo.events.filter(({type}) => 'fall' === type)).toHaveLength(1);

@@ -28,7 +28,16 @@ const CLUB = 'Les Copains';
 const CLUB_GROUPS = ['C1', 'C2', 'Chill'];
 const FINISHES = ['Café du Port', 'La Brasserie', 'Le Belvédère', 'Chez Jo'];
 
-const ROAD_NAMES = ['Lake loop 🌊', 'Col de la Forclaz ⛰️', 'Semnoz climb 🏔️', 'Bauges 🐐', 'Aravis 🧀', 'Leschaux 🌲', 'Easy spin 🧘', 'Intervals 🔥'];
+const ROAD_NAMES = [
+  'Lake loop 🌊',
+  'Col de la Forclaz ⛰️',
+  'Semnoz climb 🏔️',
+  'Bauges 🐐',
+  'Aravis 🧀',
+  'Leschaux 🌲',
+  'Easy spin 🧘',
+  'Intervals 🔥',
+];
 const LONG_NAMES = ['Grand tour 🗺️', 'Lake Geneva 🇨🇭', 'Three passes 🏔️', 'Chartreuse 🍸'];
 const GRAVEL_NAMES = ['Gravel in the woods 🌲', 'Dirt roads 🟫', 'Forest tracks 🍄'];
 
@@ -45,12 +54,47 @@ type Profile = {
 
 const PROFILES: Record<Kind, Profile> = {
   commute: {sport: 'Ride', gear: CITY_BIKE, speedKmh: [22, 26], climbPerKm: [4, 8], intensity: null, outdoor: true},
-  road: {sport: 'Ride', gear: ROAD_BIKE, speedKmh: [27, 31], climbPerKm: [8, 16], intensity: [0.72, 0.82], outdoor: true},
+  road: {
+    sport: 'Ride',
+    gear: ROAD_BIKE,
+    speedKmh: [27, 31],
+    climbPerKm: [8, 16],
+    intensity: [0.72, 0.82],
+    outdoor: true,
+  },
   club: {sport: 'Ride', gear: ROAD_BIKE, speedKmh: [30, 33], climbPerKm: [6, 11], intensity: [0.8, 0.9], outdoor: true},
-  long: {sport: 'Ride', gear: ROAD_BIKE, speedKmh: [26, 29], climbPerKm: [10, 18], intensity: [0.68, 0.75], outdoor: true},
-  race: {sport: 'Ride', gear: ROAD_BIKE, speedKmh: [31, 34], climbPerKm: [12, 16], intensity: [0.86, 0.92], outdoor: true},
-  gravel: {sport: 'GravelRide', gear: GRAVEL_BIKE, speedKmh: [19, 23], climbPerKm: [12, 20], intensity: [0.7, 0.8], outdoor: true},
-  zwift: {sport: 'VirtualRide', gear: TRAINER, speedKmh: [30, 34], climbPerKm: [5, 12], intensity: [0.8, 0.92], outdoor: false},
+  long: {
+    sport: 'Ride',
+    gear: ROAD_BIKE,
+    speedKmh: [26, 29],
+    climbPerKm: [10, 18],
+    intensity: [0.68, 0.75],
+    outdoor: true,
+  },
+  race: {
+    sport: 'Ride',
+    gear: ROAD_BIKE,
+    speedKmh: [31, 34],
+    climbPerKm: [12, 16],
+    intensity: [0.86, 0.92],
+    outdoor: true,
+  },
+  gravel: {
+    sport: 'GravelRide',
+    gear: GRAVEL_BIKE,
+    speedKmh: [19, 23],
+    climbPerKm: [12, 20],
+    intensity: [0.7, 0.8],
+    outdoor: true,
+  },
+  zwift: {
+    sport: 'VirtualRide',
+    gear: TRAINER,
+    speedKmh: [30, 34],
+    climbPerKm: [5, 12],
+    intensity: [0.8, 0.92],
+    outdoor: false,
+  },
   run: {sport: 'Run', gear: SHOES, speedKmh: [10, 12], climbPerKm: [5, 15], intensity: null, outdoor: true},
   swim: {sport: 'Swim', gear: null, speedKmh: [2.4, 3], climbPerKm: [0, 0], intensity: null, outdoor: false},
   tennis: {sport: 'Tennis', gear: null, speedKmh: [0, 0], climbPerKm: [0, 0], intensity: null, outdoor: false},
@@ -130,7 +174,13 @@ const CURVE_SHARES: [number, number, number][] = [
 ];
 
 /** What the server works out from a ride's power data, made up around its power and the FTP of the day. */
-const powerDetails = (id: number, ftp: number, weighted: number | undefined, average: number | undefined, movingTime: number) => {
+const powerDetails = (
+  id: number,
+  ftp: number,
+  weighted: number | undefined,
+  average: number | undefined,
+  movingTime: number,
+) => {
   if (undefined === weighted || undefined === average) return {};
 
   const spread = spreadOf(id);
@@ -142,9 +192,13 @@ const powerDetails = (id: number, ftp: number, weighted: number | undefined, ave
   );
   // Moving seconds per 25 W band: some coasting, the rest spread around the average power.
   const bands = Math.ceil((average * 2) / 25);
-  const weights = Array.from({length: bands}, (_, band) => Math.max(0, 1 - Math.abs(band * 25 + 12.5 - average) / average));
+  const weights = Array.from({length: bands}, (_, band) =>
+    Math.max(0, 1 - Math.abs(band * 25 + 12.5 - average) / average),
+  );
   const total = weights.reduce((sum, weight) => sum + weight, 0);
-  const power_histogram = weights.map((weight, band) => Math.round((0 === band ? 0.15 : 0) * movingTime + (weight / total) * movingTime * 0.85));
+  const power_histogram = weights.map((weight, band) =>
+    Math.round((0 === band ? 0.15 : 0) * movingTime + (weight / total) * movingTime * 0.85),
+  );
 
   return {
     normalized_power: Math.round(weighted * 1.04),
@@ -169,7 +223,11 @@ const runEfforts = (kind: Kind, distance: number, movingTime: number) => {
   return {
     best_efforts: efforts
       .filter(([, metres]) => metres <= distance)
-      .map(([name, metres]) => ({name, distance: metres, elapsed_time: Math.round(metres * pace * (1000 === metres ? 0.93 : 0.97))})),
+      .map(([name, metres]) => ({
+        name,
+        distance: metres,
+        elapsed_time: Math.round(metres * pace * (1000 === metres ? 0.93 : 0.97)),
+      })),
   };
 };
 
@@ -200,12 +258,16 @@ const generateDemo = (today: Date = new Date()): DemoData => {
     const startTime = new Date(date.getTime() + (hourLocal - 1) * 3600000 + random.integer(0, 50) * 60000);
     const distance = Math.round(km * 1000);
     const movingTime =
-      'tennis' === kind ? random.integer(3600, 5400) : Math.round(distance / (random.between(...profile.speedKmh) / 3.6));
+      'tennis' === kind
+        ? random.integer(3600, 5400)
+        : Math.round(distance / (random.between(...profile.speedKmh) / 3.6));
     const intensity = null === profile.intensity ? null : random.between(...profile.intensity);
     const weighted = null === intensity ? undefined : Math.round(ftpAt(date.getTime()) * intensity);
     const averageWatts = undefined === weighted ? undefined : Math.round(weighted * random.between(0.9, 0.95));
     const heartRate = Math.round(
-      null !== intensity ? 100 + intensity * 70 + random.between(-5, 5) : {run: 150, swim: 128, tennis: 138}[kind as string] ?? 132,
+      null !== intensity
+        ? 100 + intensity * 70 + random.between(-5, 5)
+        : ({run: 150, swim: 128, tennis: 138}[kind as string] ?? 132),
     );
     const hours = movingTime / 3600;
     const points = extra.points ?? [];
@@ -239,7 +301,8 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       suffer_score: Math.round(hours * (intensity ?? 0.65) ** 2 * 95),
       average_cadence: 'Swim' === profile.sport || 'Tennis' === profile.sport ? undefined : random.integer(82, 92),
       average_temp: temperature,
-      kudos_count: 'club' === kind ? random.integer(10, 30) : 'commute' === kind ? random.integer(0, 3) : random.integer(2, 15),
+      kudos_count:
+        'club' === kind ? random.integer(10, 30) : 'commute' === kind ? random.integer(0, 3) : random.integer(2, 15),
       pr_count: prs,
       achievement_count: prs + random.integer(0, 3),
       athlete_count: extra.athletes ?? (random.chance(0.1) ? random.integer(2, 3) : 1),
@@ -265,7 +328,12 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       description: extra.description ?? '',
       private_note: extra.privateNote,
       calories: undefined === summary.kilojoules ? Math.round(hours * 550) : Math.round(summary.kilojoules * 1.1),
-      device_name: 'zwift' === kind ? 'Zwift' : 'Ride' === profile.sport || 'GravelRide' === profile.sport ? 'Garmin Edge 840' : 'Apple Watch',
+      device_name:
+        'zwift' === kind
+          ? 'Zwift'
+          : 'Ride' === profile.sport || 'GravelRide' === profile.sport
+            ? 'Garmin Edge 840'
+            : 'Apple Watch',
       segment_efforts: Array.from({length: Math.floor(km / 6)}, () => ({kom_rank: random.chance(0.004) ? 1 : null})),
       photos: {count: 0, use_primary_photo: false},
       map: {...summary.map, polyline: encodePolyline(points)},
@@ -332,7 +400,8 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       }
     }
 
-    if (3 === weekday && random.chance(0.3)) add('swim', date, random.between(1.5, 2.5), `Natation ${random.pick(POOLS)} 🏊`, 12);
+    if (3 === weekday && random.chance(0.3))
+      add('swim', date, random.between(1.5, 2.5), `Natation ${random.pick(POOLS)} 🏊`, 12);
     if (5 === weekday && random.chance(0.2)) add('tennis', date, 0, `Tennis ${random.pick(COURTS)} 🎾`, 20);
 
     planned.sort((a, b) => a[4] - b[4]).forEach(activity => create(...activity));
@@ -352,11 +421,26 @@ const generateDemo = (today: Date = new Date()): DemoData => {
   const ftpTests = Array.from({length: Math.floor(DAYS / 120) + 1}, (_, index) => {
     const date = new Date(start + index * 120 * DAY_MS + 3 * DAY_MS);
 
-    return {id: `demo-ftp-${index}`, date, ftp: Math.round(ftpAt(date.getTime()) / 5) * 5, weight: Math.round((74 - index * 0.3) * 10) / 10};
+    return {
+      id: `demo-ftp-${index}`,
+      date,
+      ftp: Math.round(ftpAt(date.getTime()) / 5) * 5,
+      weight: Math.round((74 - index * 0.3) * 10) / 10,
+    };
   }).reverse();
 
-  const kmOn = (gear: string) => activities.filter(({gear_id}) => gear === gear_id).reduce((total, {distance}) => total + distance, 0);
-  const gear = (id: string, name: string, primary = false) => ({id, name, nickname: name, primary, retired: false, distance: kmOn(id), converted_distance: kmOn(id) / 1000, resource_state: 2});
+  const kmOn = (gear: string) =>
+    activities.filter(({gear_id}) => gear === gear_id).reduce((total, {distance}) => total + distance, 0);
+  const gear = (id: string, name: string, primary = false) => ({
+    id,
+    name,
+    nickname: name,
+    primary,
+    retired: false,
+    distance: kmOn(id),
+    converted_distance: kmOn(id) / 1000,
+    resource_state: 2,
+  });
   const latestFtp = ftpTests[0];
 
   const athlete = {
@@ -368,7 +452,12 @@ const generateDemo = (today: Date = new Date()): DemoData => {
     ftp: latestFtp.ftp,
     weight: latestFtp.weight,
     measurement_preference: 'meters',
-    bikes: [gear(ROAD_BIKE, 'Aero 🦈', true), gear(GRAVEL_BIKE, 'Gravel 🦊'), gear(CITY_BIKE, 'City bike 🧱'), gear(TRAINER, 'Home trainer 🤖')],
+    bikes: [
+      gear(ROAD_BIKE, 'Aero 🦈', true),
+      gear(GRAVEL_BIKE, 'Gravel 🦊'),
+      gear(CITY_BIKE, 'City bike 🧱'),
+      gear(TRAINER, 'Home trainer 🤖'),
+    ],
     shoes: [gear(SHOES, 'Running shoes 👟')],
   } as unknown as Athlete;
 
@@ -431,14 +520,30 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
 
   // What each bike starts with.
   add({type: 'chain', date: firstDate, bike: ROAD_BIKE, chain: CHAINS[0]} as Omit<Event, 'id'>);
-  add({type: 'tire', date: firstDate, bike: ROAD_BIKE, brand: 'Continental', model: 'GP5000', width: 28} as Omit<Event, 'id'>);
-  add({type: 'cassette', date: firstDate, bike: ROAD_BIKE, brand: 'Shimano', model: 'Ultegra', range: '11-30'} as Omit<Event, 'id'>);
-  add({type: 'saddle', date: firstDate, bike: ROAD_BIKE, brand: 'Fizik', model: 'Antares', width: 140} as Omit<Event, 'id'>);
-  for (const type of ['brake_pad', 'brake_bleed', 'battery'] as const) add({type, date: firstDate, bike: ROAD_BIKE} as Omit<Event, 'id'>);
+  add({type: 'tire', date: firstDate, bike: ROAD_BIKE, brand: 'Continental', model: 'GP5000', width: 28} as Omit<
+    Event,
+    'id'
+  >);
+  add({type: 'cassette', date: firstDate, bike: ROAD_BIKE, brand: 'Shimano', model: 'Ultegra', range: '11-30'} as Omit<
+    Event,
+    'id'
+  >);
+  add({type: 'saddle', date: firstDate, bike: ROAD_BIKE, brand: 'Fizik', model: 'Antares', width: 140} as Omit<
+    Event,
+    'id'
+  >);
+  for (const type of ['brake_pad', 'brake_bleed', 'battery'] as const)
+    add({type, date: firstDate, bike: ROAD_BIKE} as Omit<Event, 'id'>);
   add({type: 'chain', date: firstDate, bike: GRAVEL_BIKE, chain: '🟤'} as Omit<Event, 'id'>);
-  add({type: 'tire', date: firstDate, bike: GRAVEL_BIKE, brand: 'Specialized', model: 'Pathfinder', width: 42} as Omit<Event, 'id'>);
+  add({type: 'tire', date: firstDate, bike: GRAVEL_BIKE, brand: 'Specialized', model: 'Pathfinder', width: 42} as Omit<
+    Event,
+    'id'
+  >);
   add({type: 'chain', date: firstDate, bike: CITY_BIKE, chain: '⚫️'} as Omit<Event, 'id'>);
-  add({type: 'tire', date: firstDate, bike: CITY_BIKE, brand: 'Schwalbe', model: 'Marathon Plus', width: 35} as Omit<Event, 'id'>);
+  add({type: 'tire', date: firstDate, bike: CITY_BIKE, brand: 'Schwalbe', model: 'Marathon Plus', width: 35} as Omit<
+    Event,
+    'id'
+  >);
   add({type: 'brake_pad', date: firstDate, bike: CITY_BIKE} as Omit<Event, 'id'>);
 
   spend(firstDate, 2400, 'Road bike');
@@ -448,7 +553,12 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
   const chainTotals: Record<string, number> = {[CHAINS[0]]: 0, [CHAINS[1]]: 0, [CHAINS[2]]: 0};
   let currentChain = CHAINS[0];
   const odometers = {chain: 0, tire: 0, brakePad: 0, battery: 0, gravelTire: 0, cityTire: 0, cityChain: 0};
-  const limits = {chain: random.between(360, 420), tire: random.between(5500, 6500), brakePad: random.between(3000, 4000), battery: random.between(800, 1000)};
+  const limits = {
+    chain: random.between(360, 420),
+    tire: random.between(5500, 6500),
+    brakePad: random.between(3000, 4000),
+    battery: random.between(800, 1000),
+  };
   let cassette = '11-30';
   let bledThisYear = new Date(firstDate).getUTCFullYear();
   let gravelRides = 0;
@@ -458,7 +568,8 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
     const date = new Date(activity.start_date);
     const month = date.getUTCMonth();
 
-    if (random.chance(km / 2500)) add({type: 'puncture', date, bike: activity.gear_id ?? ROAD_BIKE} as Omit<Event, 'id'>);
+    if (random.chance(km / 2500))
+      add({type: 'puncture', date, bike: activity.gear_id ?? ROAD_BIKE} as Omit<Event, 'id'>);
 
     if (ROAD_BIKE === activity.gear_id) {
       chainTotals[currentChain] += km;
@@ -469,14 +580,19 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
 
       if (odometers.chain >= limits.chain) {
         // The least used of the other chains goes on next.
-        currentChain = CHAINS.filter(chain => chain !== currentChain).sort((a, b) => chainTotals[a] - chainTotals[b])[0];
+        currentChain = CHAINS.filter(chain => chain !== currentChain).sort(
+          (a, b) => chainTotals[a] - chainTotals[b],
+        )[0];
         add({type: 'chain', date: after(activity), bike: ROAD_BIKE, chain: currentChain} as Omit<Event, 'id'>);
         odometers.chain = 0;
         limits.chain = random.between(360, 420);
       }
       if (odometers.tire >= limits.tire) {
         const model = random.pick(['GP5000', 'GP5000 S TR']);
-        add({type: 'tire', date: after(activity), bike: ROAD_BIKE, brand: 'Continental', model, width: 28} as Omit<Event, 'id'>);
+        add({type: 'tire', date: after(activity), bike: ROAD_BIKE, brand: 'Continental', model, width: 28} as Omit<
+          Event,
+          'id'
+        >);
         spend(after(activity), 110, 'Tires');
         odometers.tire = 0;
         limits.tire = random.between(5500, 6500);
@@ -495,7 +611,14 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
       const wanted = 5 <= month && month <= 7 ? '11-34' : '11-30';
       if (wanted !== cassette) {
         cassette = wanted;
-        add({type: 'cassette', date: after(activity), bike: ROAD_BIKE, brand: 'Shimano', model: 'Ultegra', range: wanted} as Omit<Event, 'id'>);
+        add({
+          type: 'cassette',
+          date: after(activity),
+          bike: ROAD_BIKE,
+          brand: 'Shimano',
+          model: 'Ultegra',
+          range: wanted,
+        } as Omit<Event, 'id'>);
       }
       if (date.getUTCFullYear() > bledThisYear) {
         bledThisYear = date.getUTCFullYear();
@@ -507,7 +630,14 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
     if (GRAVEL_BIKE === activity.gear_id) {
       odometers.gravelTire += km;
       if (odometers.gravelTire >= 3000) {
-        add({type: 'tire', date: after(activity), bike: GRAVEL_BIKE, brand: 'Specialized', model: 'Pathfinder', width: 42} as Omit<Event, 'id'>);
+        add({
+          type: 'tire',
+          date: after(activity),
+          bike: GRAVEL_BIKE,
+          brand: 'Specialized',
+          model: 'Pathfinder',
+          width: 42,
+        } as Omit<Event, 'id'>);
         odometers.gravelTire = 0;
       }
       if (10 === ++gravelRides) {
@@ -519,7 +649,14 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
       odometers.cityTire += km;
       odometers.cityChain += km;
       if (odometers.cityTire >= 4000) {
-        add({type: 'tire', date: after(activity), bike: CITY_BIKE, brand: 'Schwalbe', model: 'Marathon Plus', width: 35} as Omit<Event, 'id'>);
+        add({
+          type: 'tire',
+          date: after(activity),
+          bike: CITY_BIKE,
+          brand: 'Schwalbe',
+          model: 'Marathon Plus',
+          width: 35,
+        } as Omit<Event, 'id'>);
         odometers.cityTire = 0;
       }
       if (odometers.cityChain >= 3000) {
@@ -529,7 +666,11 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
     }
   }
 
-  spend(new Date(new Date(chronological[Math.floor(chronological.length / 2)].start_date).getTime()), -300, 'Sold the old wheels');
+  spend(
+    new Date(new Date(chronological[Math.floor(chronological.length / 2)].start_date).getTime()),
+    -300,
+    'Sold the old wheels',
+  );
 
   return {events, expenses};
 };
@@ -537,7 +678,13 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
 /** Heart rate zones for an activity, spread around its average heart rate. */
 const demoZones = (activity: Activity): ActivityZone[] => {
   const random = seeded(activity.id);
-  const ranges = [[0, 120], [120, 145], [145, 160], [160, 175], [175, -1]];
+  const ranges = [
+    [0, 120],
+    [120, 145],
+    [145, 160],
+    [160, 175],
+    [175, -1],
+  ];
   const center = ranges.findIndex(([, max]) => -1 === max || (activity.average_heartrate ?? 0) < max);
   const weights = ranges.map((_, index) => Math.exp(-((index - center) ** 2)) * random.between(0.7, 1.3));
   const total = weights.reduce((sum, weight) => sum + weight, 0);
@@ -550,7 +697,11 @@ const demoZones = (activity: Activity): ActivityZone[] => {
       sensor_based: true,
       custom_zones: false,
       max: 0,
-      distribution_buckets: ranges.map(([min, max], index) => ({min, max, time: Math.round((activity.moving_time * weights[index]) / total)})),
+      distribution_buckets: ranges.map(([min, max], index) => ({
+        min,
+        max,
+        time: Math.round((activity.moving_time * weights[index]) / total),
+      })),
     },
   ];
 };

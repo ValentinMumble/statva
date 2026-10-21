@@ -4,14 +4,7 @@ import {Chart, useChart} from '@chakra-ui/charts';
 import {Bar, BarChart, Cell, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {SegmentedControl} from '../ui';
 import {useActivities, useEvents, useLabels, useSettings} from '../../hooks';
-import {
-  formatDistance,
-  getEventLabel,
-  getPeriodColor,
-  getRidesBetween,
-  labelCollection,
-  Event,
-} from '../../models';
+import {formatDistance, getEventLabel, getPeriodColor, getRidesBetween, labelCollection, Event} from '../../models';
 import {Activity} from '../../models/strava';
 import {ChartTooltip} from './ChartTooltip';
 
@@ -52,7 +45,7 @@ const EventOdometerChart = ({bike}: {bike?: string} = {}) => {
       const nextEventDate = relevantEvents[index + 1]?.date;
       const periodTotal = getRidesBetween(activities ?? [], event.date, nextEventDate).reduce(
         (sum, ride) => Number(ride[data]) + sum,
-        0
+        0,
       );
       const key = getEventKey(event);
 
@@ -62,7 +55,7 @@ const EventOdometerChart = ({bike}: {bike?: string} = {}) => {
 
       return odometer;
     },
-    {}
+    {},
   );
 
   const lastEvent = relevantEvents.at(-1);
@@ -188,7 +181,12 @@ const EventOdometerChart = ({bike}: {bike?: string} = {}) => {
               x={avg}
               stroke={chart.color('fg.muted')}
               strokeDasharray="5 4"
-              label={{value: `μ ${formatDistance(avg)}`, position: 'insideTop', fill: chart.color('fg.muted'), fontSize: 12}}
+              label={{
+                value: `μ ${formatDistance(avg)}`,
+                position: 'insideTop',
+                fill: chart.color('fg.muted'),
+                fontSize: 12,
+              }}
             />
             {chart.series.map(item => (
               <Bar

@@ -49,7 +49,9 @@ const powerCurveByYear = (details: DetailedActivity[]): {years: number[]; rows: 
 };
 
 /** Normalized power per heartbeat, ride by ride: it rises as the same effort costs less. */
-const aerobicEfficiency = (details: DetailedActivity[]): {date: number; id: number; name: string; efficiency: number}[] =>
+const aerobicEfficiency = (
+  details: DetailedActivity[],
+): {date: number; id: number; name: string; efficiency: number}[] =>
   details
     .map(activity => ({activity, power: extractNormalizedPower(activity), heartRate: activity.average_heartrate ?? 0}))
     .filter(({power, heartRate}) => null !== power && 0 < heartRate)
@@ -62,7 +64,12 @@ const aerobicEfficiency = (details: DetailedActivity[]): {date: number; id: numb
     .sort((first, second) => first.date - second.date);
 
 /** Hours in each power zone, week by week, for the last weeks (the FTP of the day sets the zones). */
-const zonesPerWeek = (details: DetailedActivity[], getFtp: GetFtp, weeks: number, now: Date): Record<string, number | string>[] => {
+const zonesPerWeek = (
+  details: DetailedActivity[],
+  getFtp: GetFtp,
+  weeks: number,
+  now: Date,
+): Record<string, number | string>[] => {
   // Weeks start on Monday, as everywhere else in Statva.
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
   const first = monday.getTime() - (weeks - 1) * WEEK_MS;
@@ -95,24 +102,41 @@ const zonesPerWeek = (details: DetailedActivity[], getFtp: GetFtp, weeks: number
 const driftByRide = (details: DetailedActivity[]): {date: number; id: number; name: string; drift: number}[] =>
   details
     .filter(({heart_rate_drift}) => null !== (heart_rate_drift ?? null))
-    .map(({start_date, id, name, heart_rate_drift}) => ({date: new Date(start_date).getTime(), id, name, drift: heart_rate_drift ?? 0}))
+    .map(({start_date, id, name, heart_rate_drift}) => ({
+      date: new Date(start_date).getTime(),
+      id,
+      name,
+      drift: heart_rate_drift ?? 0,
+    }))
     .sort((first, second) => first.date - second.date);
 
 type BestEffort = {name: string; elapsed_time: number};
-type RunBest = {distance: string; byYear: Record<number, {seconds: number; id: number} | null>; best: {seconds: number; id: number; year: number} | null};
+type RunBest = {
+  distance: string;
+  byYear: Record<number, {seconds: number; id: number} | null>;
+  best: {seconds: number; id: number; year: number} | null;
+};
 
 /** The fastest time over each distance in first year, from Strava's best efforts on every run. */
 const runBestTimes = (details: DetailedActivity[]): {years: number[]; rows: RunBest[]} => {
   const runs = details.filter(({sport_type}) => 'Run' === sport_type || 'TrailRun' === sport_type);
   const efforts = runs.flatMap(run =>
-    ((run as DetailedActivity & {best_efforts?: BestEffort[]}).best_efforts ?? []).map(effort => ({...effort, id: run.id, year: yearOf(run)})),
+    ((run as DetailedActivity & {best_efforts?: BestEffort[]}).best_efforts ?? []).map(effort => ({
+      ...effort,
+      id: run.id,
+      year: yearOf(run),
+    })),
   );
   const years = [...new Set(efforts.map(({year}) => year))].sort((first, second) => second - first);
 
   const rows = RUN_DISTANCES.map(distance => {
     const ofDistance = efforts.filter(({name}) => distance === name);
     const fastest = (list: typeof ofDistance) =>
-      list.reduce((best: (typeof ofDistance)[number] | null, effort) => (null === best || effort.elapsed_time < best.elapsed_time ? effort : best), null);
+      list.reduce(
+        (best: (typeof ofDistance)[number] | null, effort) =>
+          null === best || effort.elapsed_time < best.elapsed_time ? effort : best,
+        null,
+      );
     const byYear = Object.fromEntries(
       years.map(year => {
         const best = fastest(ofDistance.filter(effort => year === effort.year));

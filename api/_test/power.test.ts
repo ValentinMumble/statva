@@ -4,7 +4,9 @@ const seconds = (count: number, from = 0) => Array.from({length: count}, (_, ind
 
 // The textbook formula on a one-second series with no stops, to check against.
 const textbook = (watts: number[]) => {
-  const averages = watts.slice(29).map((_, index) => watts.slice(index, index + 30).reduce((sum, value) => sum + value, 0) / 30);
+  const averages = watts
+    .slice(29)
+    .map((_, index) => watts.slice(index, index + 30).reduce((sum, value) => sum + value, 0) / 30);
 
   return Math.round((averages.reduce((sum, average) => sum + average ** 4, 0) / averages.length) ** 0.25);
 };
@@ -27,7 +29,10 @@ describe('normalized power', () => {
     const watts = Array(1200).fill(200);
     const moving = time.map(() => true);
     const withStop = normalizedPower({time, watts, moving});
-    const stopAsZeros = normalizedPower({time: seconds(1800), watts: [...Array(600).fill(200), ...Array(600).fill(0), ...Array(600).fill(200)]});
+    const stopAsZeros = normalizedPower({
+      time: seconds(1800),
+      watts: [...Array(600).fill(200), ...Array(600).fill(0), ...Array(600).fill(200)],
+    });
 
     expect(withStop).toBeGreaterThan(195);
     expect(withStop).toBeGreaterThan(Number(stopAsZeros));
@@ -68,7 +73,10 @@ describe('normalized power', () => {
     const heartrate = time.map(second => (second < 2000 ? 140 : 150));
 
     expect(analysePower({time, watts, heartrate})?.heartRateDrift).toBe(6.7);
-    expect(analysePower({time: seconds(1800), watts: watts.slice(0, 1800), heartrate: heartrate.slice(0, 1800)})?.heartRateDrift).toBeNull();
+    expect(
+      analysePower({time: seconds(1800), watts: watts.slice(0, 1800), heartrate: heartrate.slice(0, 1800)})
+        ?.heartRateDrift,
+    ).toBeNull();
   });
 
   it('gives nothing under five minutes or without data', () => {

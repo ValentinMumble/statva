@@ -118,7 +118,9 @@ const buildYearReview = (activities: DetailedActivity[], year: number, label: Ge
 const countNewTiles = (routes: DatedRoute[], year: number): number => {
   const tracksOf = (keep: (routeYear: number) => boolean): number[][][] =>
     routes.filter(({day}) => keep(Number(day.slice(0, 4)))).map(({track}) => track);
-  const before = new Set(computeExplorerTiles(tracksOf(routeYear => routeYear < year)).tiles.map(tile => tile.join('/')));
+  const before = new Set(
+    computeExplorerTiles(tracksOf(routeYear => routeYear < year)).tiles.map(tile => tile.join('/')),
+  );
 
   return computeExplorerTiles(tracksOf(routeYear => routeYear === year)).tiles.filter(
     tile => !before.has(tile.join('/')),

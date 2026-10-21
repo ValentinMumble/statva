@@ -24,7 +24,7 @@ const getRidesBetween = (rides: Activity[], from: Date, to?: Date | undefined): 
   rides.filter(
     ride =>
       new Date(ride.start_date) >= new Date(from.toDateString()) &&
-      new Date(ride.start_date) < new Date(to?.toDateString() ?? new Date())
+      new Date(ride.start_date) < new Date(to?.toDateString() ?? new Date()),
   );
 
 // Only the date and the distance matter, so a cached detailed record fits too.
@@ -54,7 +54,7 @@ const eddingtonNumber = (rides: DatedDistance[]) => {
 
   const daysForNextLevel = Math.max(
     0,
-    eddingtonNumber + 1 - distancesKm.filter(distance => distance >= eddingtonNumber + 1).length
+    eddingtonNumber + 1 - distancesKm.filter(distance => distance >= eddingtonNumber + 1).length,
   );
 
   return [eddingtonNumber, daysForNextLevel];

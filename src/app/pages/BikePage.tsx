@@ -8,14 +8,30 @@ import {LogEvent} from '../../components/event';
 import {toaster} from '../../components/ui';
 import {useAllActivities, useEvents, useExpenses, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {computeBikeParts, Event, getEventLabel, isTireEvent, partsCostPerKm, PartState, shoeWear, tyrePressure, tyreWidths} from '../../models';
+import {
+  computeBikeParts,
+  Event,
+  getEventLabel,
+  isTireEvent,
+  partsCostPerKm,
+  PartState,
+  shoeWear,
+  tyrePressure,
+  tyreWidths,
+} from '../../models';
 import {Card, CardTitle} from '../components/Card';
 import {km, number, relativeDay} from '../format';
 
 const ChainChart = lazy(async () => ({default: (await import('../../components/charts/ChainChart')).ChainChart}));
-const EventOdometerChart = lazy(async () => ({default: (await import('../../components/charts/EventOdometerChart')).EventOdometerChart}));
-const EventTimelineChart = lazy(async () => ({default: (await import('../../components/charts/EventTimelineChart')).EventTimelineChart}));
-const CostPerKmChart = lazy(async () => ({default: (await import('../../components/charts/CostPerKmChart')).CostPerKmChart}));
+const EventOdometerChart = lazy(async () => ({
+  default: (await import('../../components/charts/EventOdometerChart')).EventOdometerChart,
+}));
+const EventTimelineChart = lazy(async () => ({
+  default: (await import('../../components/charts/EventTimelineChart')).EventTimelineChart,
+}));
+const CostPerKmChart = lazy(async () => ({
+  default: (await import('../../components/charts/CostPerKmChart')).CostPerKmChart,
+}));
 
 const upsertEvent = getFetcher<void>('events.set');
 const deleteEvent = getFetcher<void>('events.delete');
@@ -64,7 +80,9 @@ const TyrePressure = ({bike}: {bike: string}) => {
   const {events} = useEvents();
   const {weightKg, kitWeightKg, bikeWeightsKg, tubelessBikes, tyrePressures, locale} = useSettings();
   const bikeKg = bikeWeightsKg[bike];
-  const tyre = events.filter(event => bike === event.bike && isTireEvent(event)).sort((first, second) => second.date.getTime() - first.date.getTime())[0];
+  const tyre = events
+    .filter(event => bike === event.bike && isTireEvent(event))
+    .sort((first, second) => second.date.getTime() - first.date.getTime())[0];
   const widths = tyre && isTireEvent(tyre) ? tyreWidths(tyre.width) : null;
   const saved = tyrePressures[bike] ?? {front: null, rear: null};
   const totalKg = undefined === bikeKg ? null : weightKg + bikeKg + kitWeightKg;
@@ -79,10 +97,19 @@ const TyrePressure = ({bike}: {bike: string}) => {
   };
 
   const inputs: [string, string][] = [
-    ['Total weight', null === totalKg ? 'Set the bike\'s weight in Settings' : `${number(totalKg, locale, 1)} kg (${number(totalKg / KG_PER_LB, locale)} lb)`],
+    [
+      'Total weight',
+      null === totalKg
+        ? "Set the bike's weight in Settings"
+        : `${number(totalKg, locale, 1)} kg (${number(totalKg / KG_PER_LB, locale)} lb)`,
+    ],
     [
       'Tyre width',
-      null === widths ? 'Log a tyre change with its width' : widths.front === widths.rear ? `${widths.front} mm` : `${widths.front} mm front, ${widths.rear} mm rear`,
+      null === widths
+        ? 'Log a tyre change with its width'
+        : widths.front === widths.rear
+          ? `${widths.front} mm`
+          : `${widths.front} mm front, ${widths.rear} mm rear`,
     ],
     ['Wheel', '700C'],
     ['Setup', tubeless ? 'Tubeless' : 'Inner tubes'],
@@ -120,8 +147,9 @@ const TyrePressure = ({bike}: {bike: string}) => {
           ])}
         </Grid>
         <Text fontSize="xs" color="fg.muted">
-          You, the bike and {number(kitWeightKg, locale, 1)} kg of kit, 45% on the front wheel. The pressure that squashes each tyre by 15% of
-          its height (Frank Berto's rule), 8% lower when tubeless. Go a little lower on rough roads or in the wet.
+          You, the bike and {number(kitWeightKg, locale, 1)} kg of kit, 45% on the front wheel. The pressure that
+          squashes each tyre by 15% of its height (Frank Berto's rule), 8% lower when tubeless. Go a little lower on
+          rough roads or in the wet.
           {advised?.outOfRange && ' Below 23 mm the rule reads high, take it as a ceiling.'}
         </Text>
         <Button size="sm" variant="outline" asChild={true} alignSelf="flex-start">
@@ -222,10 +250,16 @@ const BikePage = () => {
   const bike = bikeId ?? defaultBike;
   // The main bike first, the others in Strava's order.
   const bikes = gear
-    .filter(({type, id, retired}) => 'bike' === type && (withRetired || id === bike || (!retired && !retiredBikes.includes(id))))
+    .filter(
+      ({type, id, retired}) =>
+        'bike' === type && (withRetired || id === bike || (!retired && !retiredBikes.includes(id))),
+    )
     .sort((first, second) => Number(second.id === defaultBike) - Number(first.id === defaultBike));
   const rides = useMemo(() => (activities ?? []).filter(({gear_id}) => bike === gear_id), [activities, bike]);
-  const parts = useMemo(() => computeBikeParts(events, rides, bike, label, partRules), [events, rides, bike, label, partRules]);
+  const parts = useMemo(
+    () => computeBikeParts(events, rides, bike, label, partRules),
+    [events, rides, bike, label, partRules],
+  );
   const wearCost = partsCostPerKm(parts);
   const history = useMemo(() => events.filter(event => bike === event.bike).reverse(), [events, bike]);
   const total = rides.reduce((sum, {distance}) => sum + distance, 0);
@@ -309,7 +343,11 @@ const BikePage = () => {
         ))}
       </Grid>
 
-      <Grid templateColumns={{base: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))'}} gap={{base: '16px', md: '24px'}} alignItems="start">
+      <Grid
+        templateColumns={{base: 'minmax(0, 1fr)', lg: 'repeat(2, minmax(0, 1fr))'}}
+        gap={{base: '16px', md: '24px'}}
+        alignItems="start"
+      >
         <Card>
           <CardTitle>Parts</CardTitle>
           {0 === parts.length && <Text color="fg.muted">Nothing logged for this bike yet.</Text>}
@@ -336,7 +374,11 @@ const BikePage = () => {
                     type={part.type}
                     onLogged={refetch}
                     trigger={
-                      <Button size="xs" variant={'ok' === part.state ? 'ghost' : 'surface'} colorPalette={'ok' === part.state ? undefined : 'brand'}>
+                      <Button
+                        size="xs"
+                        variant={'ok' === part.state ? 'ghost' : 'surface'}
+                        colorPalette={'ok' === part.state ? undefined : 'brand'}
+                      >
                         Replace
                       </Button>
                     }
@@ -381,7 +423,14 @@ const BikePage = () => {
                 {monthEvents.map(event => (
                   <HStack key={event.id} justifyContent="space-between" gap="8px" paddingY="2px">
                     <HStack gap="10px" minWidth="0">
-                      <Text fontFamily="figure" fontSize="sm" color="fg.muted" width="22px" textAlign="right" flexShrink={0}>
+                      <Text
+                        fontFamily="figure"
+                        fontSize="sm"
+                        color="fg.muted"
+                        width="22px"
+                        textAlign="right"
+                        flexShrink={0}
+                      >
                         {event.date.getDate()}
                       </Text>
                       <Text truncate={true}>

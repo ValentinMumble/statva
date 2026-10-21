@@ -34,7 +34,8 @@ const client = () => ({
   // The whole hash, in pages read side by side, for hashes too big for one response.
   // onPage gets what has arrived so far after each page, so a screen can show it at once.
   readAll: async <T>(key: Key, onPage?: (sofar: Record<string, T>) => void): Promise<Record<string, T>> => {
-    const readPage = (page: number) => send<{pages: number; entries: Record<string, T>}>({command: 'hpage', name: key, page});
+    const readPage = (page: number) =>
+      send<{pages: number; entries: Record<string, T>}>({command: 'hpage', name: key, page});
     const first = await readPage(0);
     const all: Record<string, T> = {...first.entries};
     const rest = [...Array(Math.max(0, first.pages - 1)).keys()].map(index => index + 1);
@@ -55,7 +56,9 @@ const client = () => ({
   hmget: <T>(key: Key, fields: string[]) => send<Record<string, T | null>>({command: 'hmget', name: key, fields}),
   hlatest: <T>(key: Key, count: number) => send<Record<string, T>>({command: 'hlatest', name: key, count}),
   hset: async (key: Key, entries: Record<string, unknown>) => {
-    await Promise.all(Object.entries(entries).map(([field, value]) => send({command: 'hset', name: key, field, value})));
+    await Promise.all(
+      Object.entries(entries).map(([field, value]) => send({command: 'hset', name: key, field, value})),
+    );
   },
   hdel: (key: Key, field: string) => send({command: 'hdel', name: key, field}),
 });
@@ -124,8 +127,8 @@ const getSomeDetails = async (ids: number[]): Promise<Record<string, DetailedAct
 const getActivitySummaries = async (onPage?: (sofar: Activity[]) => void): Promise<Activity[]> =>
   Object.values(await client().readAll<Activity>(Key.ACTIVITIES, sofar => onPage?.(Object.values(sofar))));
 
-
-const getSettings = async (): Promise<Partial<Settings> | null> => await client().hgetall<Partial<Settings>>(Key.SETTINGS);
+const getSettings = async (): Promise<Partial<Settings> | null> =>
+  await client().hgetall<Partial<Settings>>(Key.SETTINGS);
 
 const setSetting = async (field: keyof Settings, value: unknown) => {
   await client().hset(Key.SETTINGS, {[field]: value});

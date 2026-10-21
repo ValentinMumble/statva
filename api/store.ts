@@ -55,7 +55,10 @@ export const POST = async (request: Request): Promise<Response> => {
       const fields = (await redis().hkeys(key)).map(String).sort((a, b) => Number(b) - Number(a));
       const slice = fields.slice(page * size, (page + 1) * size);
 
-      return json({pages: Math.ceil(fields.length / size), entries: 0 === slice.length ? {} : ((await redis().hmget(key, ...slice)) ?? {})});
+      return json({
+        pages: Math.ceil(fields.length / size),
+        entries: 0 === slice.length ? {} : ((await redis().hmget(key, ...slice)) ?? {}),
+      });
     }
     case 'hget':
       return json(await redis().hget(key, String(body.field)));

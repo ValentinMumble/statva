@@ -34,7 +34,8 @@ type RuleUpdate = {name?: string; commute?: boolean; gear_id?: string};
 const EMOJI = /\p{Extended_Pictographic}|\p{Regional_Indicator}|[0-9#*]️?⃣/u;
 const METRES_PER_DEGREE = 111_320;
 
-const isPedalled = (sport: string): boolean => sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
+const isPedalled = (sport: string): boolean =>
+  sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
 
 /** The points of a Google encoded polyline, as Strava sends tracks. */
 const decodePolyline = (encoded: string): [number, number][] => {
@@ -64,7 +65,10 @@ const decodePolyline = (encoded: string): [number, number][] => {
 };
 
 const metresBetween = ([latitudeA, longitudeA]: [number, number], [latitudeB, longitudeB]: [number, number]): number =>
-  Math.hypot((latitudeA - latitudeB) * METRES_PER_DEGREE, (longitudeA - longitudeB) * METRES_PER_DEGREE * Math.cos((latitudeA * Math.PI) / 180));
+  Math.hypot(
+    (latitudeA - latitudeB) * METRES_PER_DEGREE,
+    (longitudeA - longitudeB) * METRES_PER_DEGREE * Math.cos((latitudeA * Math.PI) / 180),
+  );
 
 /** Whether the ride is one the rule is about: pedalled, short enough, on a weekday if asked, turning at the place. */
 const matchesRule = (activity: RuledActivity, rule: RideRule): boolean => {
@@ -74,7 +78,9 @@ const matchesRule = (activity: RuledActivity, rule: RideRule): boolean => {
   if (0 === track.length) return false;
 
   // The point farthest from the start: the far end of a round trip, or where a one-way ride ends.
-  const turn = track.reduce((farthest, point) => (metresBetween(point, track[0]) > metresBetween(farthest, track[0]) ? point : farthest));
+  const turn = track.reduce((farthest, point) =>
+    metresBetween(point, track[0]) > metresBetween(farthest, track[0]) ? point : farthest,
+  );
 
   return (
     isPedalled(activity.sport_type) &&

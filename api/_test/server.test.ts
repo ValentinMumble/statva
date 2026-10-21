@@ -45,7 +45,9 @@ describe('sync', () => {
     expect(fake.read('athlete:42:activities')['5000']).toBeDefined();
     // Only what is new counts as added, and only its details are fetched.
     expect(third).toMatchObject({added: 1, detailIds: [5000]});
-    expect(fake.strava.calls.filter(call => /^\/api\/v3\/activities\/\d+$/.test(call))).toEqual(['/api/v3/activities/5000']);
+    expect(fake.strava.calls.filter(call => /^\/api\/v3\/activities\/\d+$/.test(call))).toEqual([
+      '/api/v3/activities/5000',
+    ]);
   });
 
   it('stores light summaries and cleaned details', async () => {
@@ -74,7 +76,10 @@ describe('sync', () => {
     expect(sync).toMatchObject({added: 25, detailIds: Array.from({length: 10}, (_, index) => 1025 - index)});
 
     const backfill = await backfillActivities(42);
-    expect(backfill).toMatchObject({detailIds: Array.from({length: 10}, (_, index) => 1015 - index), detailsMissing: 5});
+    expect(backfill).toMatchObject({
+      detailIds: Array.from({length: 10}, (_, index) => 1015 - index),
+      detailsMissing: 5,
+    });
     expect(Object.keys(fake.read('athlete:42:details'))).toHaveLength(20);
   });
 
@@ -136,10 +141,12 @@ describe('normalized power', () => {
     expect(fake.read('athlete:42:details')['1001']).toMatchObject({normalized_power: null});
     expect(fake.read('athlete:42:power')).toEqual({1002: 230, 1001: 0});
     // No power meter, no streams asked for.
-    expect(fake.strava.calls.filter(call => call.includes('/streams'))).toEqual(['/api/v3/activities/1002/streams?keys=time%2Cwatts%2Cmoving%2Ccadence%2Cdistance%2Cheartrate&key_by_type=true']);
+    expect(fake.strava.calls.filter(call => call.includes('/streams'))).toEqual([
+      '/api/v3/activities/1002/streams?keys=time%2Cwatts%2Cmoving%2Ccadence%2Cdistance%2Cheartrate&key_by_type=true',
+    ]);
   });
 
-  it('leaves the power of a run alone, an Apple Watch\'s say', async () => {
+  it("leaves the power of a run alone, an Apple Watch's say", async () => {
     const fake = install();
     fake.login(42);
     fake.strava.activities = makeActivities(1).map(activity => ({...activity, sport_type: 'Run', device_watts: true}));
@@ -172,7 +179,15 @@ describe('normalized power', () => {
 describe('ride rules', () => {
   // A short weekday ride through the office, which a rule names and puts on the right bike.
   const OFFICE = [47.2112, -1.5757];
-  const rule = {name: 'Akeneo ⚙️', place: OFFICE, radiusM: 150, maxKm: 20, weekdaysOnly: true, commute: true, gearId: 'b1'};
+  const rule = {
+    name: 'Akeneo ⚙️',
+    place: OFFICE,
+    radiusM: 150,
+    maxKm: 20,
+    weekdaysOnly: true,
+    commute: true,
+    gearId: 'b1',
+  };
   // From home (47.2306, -1.5518) to the office, as a Google polyline.
   const track = 'gvg_HvanHfxBjtC';
 
@@ -180,7 +195,17 @@ describe('ride rules', () => {
     const fake = install();
     fake.login(42);
     fake.strava.activities = [
-      {id: 7001, name: 'Morning Ride', sport_type: 'Ride', distance: 9000, commute: false, gear_id: 'b2', start_date: '2026-10-13T07:00:00Z', start_date_local: '2026-10-13T09:00:00Z', map: {id: 'a7001', summary_polyline: track, polyline: track}},
+      {
+        id: 7001,
+        name: 'Morning Ride',
+        sport_type: 'Ride',
+        distance: 9000,
+        commute: false,
+        gear_id: 'b2',
+        start_date: '2026-10-13T07:00:00Z',
+        start_date_local: '2026-10-13T09:00:00Z',
+        map: {id: 'a7001', summary_polyline: track, polyline: track},
+      },
     ];
     fake.hashes['athlete:42:settings'] = {rideRules: JSON.stringify([rule])};
     return fake;
@@ -208,7 +233,11 @@ describe('ride rules', () => {
 describe('renaming an activity', () => {
   const rename = async (body: unknown, id = 1001) =>
     await renameActivity(
-      new Request(`${ORIGIN}/api/activity?id=${id}`, {method: 'PUT', headers: {cookie: sessionOf(42)}, body: JSON.stringify(body)}),
+      new Request(`${ORIGIN}/api/activity?id=${id}`, {
+        method: 'PUT',
+        headers: {cookie: sessionOf(42)},
+        body: JSON.stringify(body),
+      }),
     );
 
   it('changes the name on Strava and in the stored copies', async () => {
@@ -252,7 +281,10 @@ describe('renaming an activity', () => {
 
     expect((await rename({description: 'Finish au Zazou\n'})).status).toBe(200);
     expect((await rename({private_note: ''})).status).toBe(200);
-    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({description: 'Finish au Zazou', private_note: ''});
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({
+      description: 'Finish au Zazou',
+      private_note: '',
+    });
   });
 
   it('says so, and stores nothing, when Strava keeps a note as it was', async () => {
@@ -274,7 +306,11 @@ describe('renaming an activity', () => {
     await syncActivities(42);
 
     expect(await changeActivity(42, 1001, {name: 'Akeneo ⚙️', commute: true, gear_id: 'b7'})).toBe('ignored');
-    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({name: 'Akeneo ⚙️', gear_id: 'b7', commute: false});
+    expect(fake.read('athlete:42:activities')['1001']).toMatchObject({
+      name: 'Akeneo ⚙️',
+      gear_id: 'b7',
+      commute: false,
+    });
   });
 
   it('refuses gear that is not a Strava id', async () => {
@@ -332,19 +368,34 @@ describe('store', () => {
 
     const response = await storeCall(42, {command: 'hlatest', name: 'activities', count: 3});
 
-    expect(Object.keys((await response.json()) as object).map(Number).sort()).toEqual([1028, 1029, 1030]);
+    expect(
+      Object.keys((await response.json()) as object)
+        .map(Number)
+        .sort(),
+    ).toEqual([1028, 1029, 1030]);
   });
 
   it('reads a big hash in pages, newest first, saying how many there are', async () => {
     install().login(42);
-    for (let id = 1; id <= 160; id++) await storeCall(42, {command: 'hset', name: 'events', field: String(id), value: {id}});
+    for (let id = 1; id <= 160; id++)
+      await storeCall(42, {command: 'hset', name: 'events', field: String(id), value: {id}});
 
-    const first = (await (await storeCall(42, {command: 'hpage', name: 'events', page: 0})).json()) as {pages: number; entries: object};
-    const second = (await (await storeCall(42, {command: 'hpage', name: 'events', page: 1})).json()) as {pages: number; entries: object};
+    const first = (await (await storeCall(42, {command: 'hpage', name: 'events', page: 0})).json()) as {
+      pages: number;
+      entries: object;
+    };
+    const second = (await (await storeCall(42, {command: 'hpage', name: 'events', page: 1})).json()) as {
+      pages: number;
+      entries: object;
+    };
 
     expect(first.pages).toBe(2);
     expect(Object.keys(first.entries)).toHaveLength(150);
-    expect(Object.keys(second.entries).map(Number).sort((first, second) => first - second)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(
+      Object.keys(second.entries)
+        .map(Number)
+        .sort((first, second) => first - second),
+    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 
   it('lets riders read but not write what the server owns', async () => {
@@ -421,7 +472,13 @@ describe('webhook', () => {
     fake.login(42);
     fake.strava.activities = makeActivities(1);
     await syncActivities(42);
-    const disconnect = {object_type: 'athlete', object_id: 42, aspect_type: 'update', owner_id: 42, updates: {authorized: 'false'}};
+    const disconnect = {
+      object_type: 'athlete',
+      object_id: 42,
+      aspect_type: 'update',
+      owner_id: 42,
+      updates: {authorized: 'false'},
+    };
 
     await hook(disconnect);
     expect(fake.read('athlete:42:activities')['1001']).toBeDefined();

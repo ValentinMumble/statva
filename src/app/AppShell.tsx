@@ -52,7 +52,9 @@ const RefreshButton = ({compact = false}: {compact?: boolean}) => {
 
     try {
       await refreshLatest();
-      const added = (queryClient.getQueryData<Activity[]>(['activities']) ?? []).filter(({id}) => !before.has(id)).length;
+      const added = (queryClient.getQueryData<Activity[]>(['activities']) ?? []).filter(
+        ({id}) => !before.has(id),
+      ).length;
       toaster.create({title: 0 === added ? 'Up to date' : `${added} new ${1 === added ? 'activity' : 'activities'}`});
     } finally {
       setRefreshing(false);
@@ -60,11 +62,24 @@ const RefreshButton = ({compact = false}: {compact?: boolean}) => {
   };
 
   return compact ? (
-    <IconButton aria-label="Check Strava for new activities" size="sm" variant="ghost" onClick={handleRefresh} loading={refreshing}>
+    <IconButton
+      aria-label="Check Strava for new activities"
+      size="sm"
+      variant="ghost"
+      onClick={handleRefresh}
+      loading={refreshing}
+    >
       <LuRefreshCw />
     </IconButton>
   ) : (
-    <Button variant="outline" width="full" borderRadius="10px" onClick={handleRefresh} loading={refreshing} loadingText="Checking Strava">
+    <Button
+      variant="outline"
+      width="full"
+      borderRadius="10px"
+      onClick={handleRefresh}
+      loading={refreshing}
+      loadingText="Checking Strava"
+    >
       <LuRefreshCw /> Refresh
     </Button>
   );
@@ -129,7 +144,10 @@ const Sidebar = () => {
       background="bg.panel"
     >
       <Text fontFamily="heading" fontWeight="bold" fontSize="xl" paddingX="10px" letterSpacing="-0.02em">
-        Statva <Box as="span" color="brand.solid">🛹</Box>
+        Statva{' '}
+        <Box as="span" color="brand.solid">
+          🛹
+        </Box>
       </Text>
       <Stack gap="2px" flex="1">
         {nav.map(({to, label, icon}) => {
@@ -206,13 +224,15 @@ const PhoneHeader = () => {
         {current?.label ?? 'Statva'}
       </Text>
       <HStack gap="4px">
-        {nav.filter(({onPhone}) => !onPhone).map(({to, label, icon}) => (
-          <IconButton key={to} aria-label={label} size="sm" variant="ghost" asChild={true}>
-            <Link to={to}>
-              <Icon as={icon} />
-            </Link>
-          </IconButton>
-        ))}
+        {nav
+          .filter(({onPhone}) => !onPhone)
+          .map(({to, label, icon}) => (
+            <IconButton key={to} aria-label={label} size="sm" variant="ghost" asChild={true}>
+              <Link to={to}>
+                <Icon as={icon} />
+              </Link>
+            </IconButton>
+          ))}
         <RefreshButton compact={true} />
         <LogButton compact={true} />
       </HStack>
@@ -249,7 +269,8 @@ const TabBar = () => {
       backdropFilter="blur(24px) saturate(180%)"
       boxShadow={{
         base: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.14)',
-        _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5)',
+        _dark:
+          'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5)',
       }}
     >
       {0 <= current && (
@@ -337,9 +358,19 @@ const AppShell = () => {
   return (
     <Flex minHeight="100dvh">
       <Sidebar />
-      <Box flex="1" minWidth="0" paddingBottom={{base: `calc(${TAB_BAR_HEIGHT} + ${TAB_BAR_GAP} + env(safe-area-inset-bottom) + 16px)`, md: '0'}}>
+      <Box
+        flex="1"
+        minWidth="0"
+        paddingBottom={{base: `calc(${TAB_BAR_HEIGHT} + ${TAB_BAR_GAP} + env(safe-area-inset-bottom) + 16px)`, md: '0'}}
+      >
         <PhoneHeader />
-        <Box as="main" maxWidth="1600px" marginX="auto" paddingX={{base: '16px', md: '32px'}} paddingY={{base: '16px', md: '32px'}}>
+        <Box
+          as="main"
+          maxWidth="1600px"
+          marginX="auto"
+          paddingX={{base: '16px', md: '32px'}}
+          paddingY={{base: '16px', md: '32px'}}
+        >
           <Outlet key={profileKey} />
         </Box>
       </Box>

@@ -45,14 +45,13 @@ const ActivityTimeChart = ({filter, timeframe: initialTimeframe = 'month'}: Acti
   const distinctTypes: string[] = Object.values(dataPerPeriod).reduce(
     (types: string[], entry: Record<string, number> | null) =>
       null === entry ? types : [...new Set([...types, ...Object.keys(entry)])],
-    []
+    [],
   );
 
   const rows: Record<string, string | number>[] = Object.entries(dataPerPeriod).map(([period, counts]) =>
-    distinctTypes.reduce(
-      (row: Record<string, string | number>, type) => ({...row, [type]: counts?.[type] ?? 0}),
-      {period: label(period)}
-    )
+    distinctTypes.reduce((row: Record<string, string | number>, type) => ({...row, [type]: counts?.[type] ?? 0}), {
+      period: label(period),
+    }),
   );
 
   const chart = useChart({

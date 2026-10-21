@@ -8,6 +8,7 @@ const PALETTE_COLOR: Record<string, string> = {
   purple: 'purple.fg',
 };
 
-const zoneTextColor = (palette: string | undefined): string => (undefined === palette ? 'fg' : PALETTE_COLOR[palette] ?? 'fg');
+const zoneTextColor = (palette: string | undefined): string =>
+  undefined === palette ? 'fg' : (PALETTE_COLOR[palette] ?? 'fg');
 
 export {zoneTextColor};

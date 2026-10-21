@@ -1,8 +1,20 @@
 import {buildDetailedActivity} from '../../test/test-util';
-import {dayFromNumber, dayNumber, deviceDay, formatDay, formatDayRange, localDay, localHour, weekdayOf} from './local-day';
+import {
+  dayFromNumber,
+  dayNumber,
+  deviceDay,
+  formatDay,
+  formatDayRange,
+  localDay,
+  localHour,
+  weekdayOf,
+} from './local-day';
 
 test('it reads the local day and hour, not the UTC ones', () => {
-  const lateRide = buildDetailedActivity({start_date: '2026-10-12T22:30:00Z', start_date_local: '2026-10-13T00:30:00Z'});
+  const lateRide = buildDetailedActivity({
+    start_date: '2026-10-12T22:30:00Z',
+    start_date_local: '2026-10-13T00:30:00Z',
+  });
 
   expect(localDay(lateRide)).toBe('2026-10-13');
   expect(localHour(lateRide)).toBe(0);

@@ -3,7 +3,11 @@ import {shoeWear} from './shoes';
 
 const now = new Date('2026-10-14T12:00:00Z');
 const run = (gear: string, km: number, daysAgo: number) =>
-  buildActivity({gear_id: gear, distance: km * 1000, start_date: new Date(now.getTime() - daysAgo * 86400000).toISOString()});
+  buildActivity({
+    gear_id: gear,
+    distance: km * 1000,
+    start_date: new Date(now.getTime() - daysAgo * 86400000).toISOString(),
+  });
 
 describe('shoeWear', () => {
   it('measures each pair against its life, most worn first, with the weeks left at the recent pace', () => {

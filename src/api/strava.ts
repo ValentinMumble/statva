@@ -56,7 +56,11 @@ type ActivityNote = 'description' | 'private_note';
 type ActivityChange = {name: string} | {gear_id: string} | Partial<Record<ActivityNote, string>>;
 
 const changeActivity = async (id: number, change: ActivityChange): Promise<void> => {
-  const response = await fetch(`/api/activity?id=${id}`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(change)});
+  const response = await fetch(`/api/activity?id=${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(change),
+  });
 
   if (401 === response.status) throw new NotLoggedInError('Not logged in');
   if (403 === response.status) throw new NoWriteAccessError('No write access');
@@ -69,9 +73,9 @@ const renameActivity = (id: number, name: string): Promise<void> => changeActivi
 /** Moves an activity to other gear on Strava, or takes it off with "none". */
 const setActivityGear = (id: number, gearId: string): Promise<void> => changeActivity(id, {gear_id: gearId});
 
-
 /** Changes an activity's description or private note on Strava. */
-const setActivityNote = (id: number, note: ActivityNote, text: string): Promise<void> => changeActivity(id, {[note]: text});
+const setActivityNote = (id: number, note: ActivityNote, text: string): Promise<void> =>
+  changeActivity(id, {[note]: text});
 
 /** The club's calendar, from its team on pedalons.fr. */
 const fetchClubCalendar = (): Promise<{rides: ClubRide[]; complete: boolean}> => getJson('/api/club');
@@ -85,7 +89,8 @@ type ActivityPhoto = {unique_id: string; urls: Record<string, string>; caption?:
 
 /** Every photo of an activity (the details only hold the main one), at about 1000 px. */
 /** An activity's comments, oldest first. Strava lets apps read them, not write them. */
-const fetchActivityComments = (id: number): Promise<Comment[]> => strava<Comment[]>(`activities/${id}/comments`, {page_size: 100});
+const fetchActivityComments = (id: number): Promise<Comment[]> =>
+  strava<Comment[]>(`activities/${id}/comments`, {page_size: 100});
 
 const fetchActivityPhotos = (id: number): Promise<ActivityPhoto[]> =>
   strava<ActivityPhoto[]>(`activities/${id}/photos`, {size: 1000, photo_sources: 'true'});

@@ -2,7 +2,8 @@ import {riderProfile} from './rider';
 import {DetailedActivity} from './strava';
 
 /** Whether a sport is pedalled, so that its power is a cycling effort (all rides, velomobile, handcycle). */
-const isPedalled = (sport: string): boolean => sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
+const isPedalled = (sport: string): boolean =>
+  sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
 
 const hasKom = (activity: DetailedActivity | null): boolean =>
   activity?.segment_efforts.some(effort => effort.kom_rank === 1) ?? false;
@@ -18,7 +19,9 @@ const extractNormalizedPower = (activity: DetailedActivity | null | undefined): 
   if (!activity || !isPedalled(activity.sport_type)) return null;
   if (activity.normalized_power) return activity.normalized_power;
 
-  return riderProfile().normalizedPowerFromNote ? Number(activity.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null : null;
+  return riderProfile().normalizedPowerFromNote
+    ? Number(activity.private_note?.match(/NP:\s*(\d+)/)?.[1]) || null
+    : null;
 };
 
 export {extractNormalizedPower, hasKom, isPedalled};

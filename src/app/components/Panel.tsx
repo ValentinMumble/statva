@@ -5,7 +5,14 @@ type PanelProps = {title: string; note?: string; action?: ReactNode; children: R
 
 /** A titled card for one chart or list, with an optional control on the right of the title. */
 const Panel = ({title, note, action, children}: PanelProps) => (
-  <Stack gap="12px" background="bg.panel" borderWidth="1px" borderRadius="card" padding={{base: '16px', md: '20px'}} minWidth="0">
+  <Stack
+    gap="12px"
+    background="bg.panel"
+    borderWidth="1px"
+    borderRadius="card"
+    padding={{base: '16px', md: '20px'}}
+    minWidth="0"
+  >
     <HStack
       justifyContent="space-between"
       alignItems={undefined === action ? 'baseline' : 'center'}

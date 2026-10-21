@@ -7,7 +7,10 @@ const SAME_LENGTH = 0.2;
 const METRES_PER_DEGREE = 111_320;
 
 const metresBetween = ([latitudeA, longitudeA]: number[], [latitudeB, longitudeB]: number[]): number =>
-  Math.hypot((latitudeA - latitudeB) * METRES_PER_DEGREE, (longitudeA - longitudeB) * METRES_PER_DEGREE * Math.cos((latitudeA * Math.PI) / 180));
+  Math.hypot(
+    (latitudeA - latitudeB) * METRES_PER_DEGREE,
+    (longitudeA - longitudeB) * METRES_PER_DEGREE * Math.cos((latitudeA * Math.PI) / 180),
+  );
 
 const samePlace = (first: number[] | undefined, second: number[] | undefined): boolean =>
   2 === first?.length && 2 === second?.length && metresBetween(first, second) <= SAME_PLACE_M;
@@ -29,7 +32,10 @@ const sameRoute = (activity: Activity, history: Activity[]): Activity[] =>
  * route before ("Akeneo ⚙️"), or its own name with an emoji not used yet.
  */
 const suggestName = (activity: Activity, history: Activity[], usedEmojis: Set<string>): string => {
-  const counts = sameRoute(activity, history).reduce((names: Record<string, number>, {name}) => ({...names, [name]: (names[name] ?? 0) + 1}), {});
+  const counts = sameRoute(activity, history).reduce(
+    (names: Record<string, number>, {name}) => ({...names, [name]: (names[name] ?? 0) + 1}),
+    {},
+  );
   const [mostGiven] = Object.entries(counts).sort((first, second) => second[1] - first[1])[0] ?? [];
 
   return mostGiven ?? `${activity.name} ${getRandomUnusedEmoji(usedEmojis)}`;

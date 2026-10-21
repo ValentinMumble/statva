@@ -67,7 +67,9 @@ const useAllActivities = () => {
         const found = Object.fromEntries(
           Object.entries(fresh).filter((entry): entry is [string, DetailedActivity] => null !== entry[1]),
         );
-        queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded => (loaded ? {...loaded, ...found} : loaded));
+        queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
+          loaded ? {...loaded, ...found} : loaded,
+        );
       }
       await queryClient.invalidateQueries({queryKey: ['someDetails']});
     },
@@ -178,10 +180,7 @@ const useActivities = ({
     getFtp,
   ]);
 
-  const unprocessedActivities = useMemo(
-    () => activities?.filter(({name}) => !hasEmoji(name)) ?? [],
-    [activities],
-  );
+  const unprocessedActivities = useMemo(() => activities?.filter(({name}) => !hasEmoji(name)) ?? [], [activities]);
 
   return {
     activities: filteredAndSortedActivities,

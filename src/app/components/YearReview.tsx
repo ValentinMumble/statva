@@ -23,7 +23,14 @@ type HighlightProps = {heading: string; children: ReactNode; detail?: string};
 
 // One line of the review: what it is on the left, the answer on the right.
 const Highlight = ({heading, children, detail}: HighlightProps) => (
-  <HStack justifyContent="space-between" alignItems="baseline" gap="12px" paddingY="7px" borderBottomWidth="1px" borderColor="border.subtle">
+  <HStack
+    justifyContent="space-between"
+    alignItems="baseline"
+    gap="12px"
+    paddingY="7px"
+    borderBottomWidth="1px"
+    borderColor="border.subtle"
+  >
     <Text fontSize="sm" color="fg.muted" flexShrink="0">
       {heading}
     </Text>

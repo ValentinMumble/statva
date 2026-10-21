@@ -14,16 +14,28 @@ const PowerCurveChart = () => {
   const {activityMeta} = useActivityMeta();
   const {years, rows} = useMemo(() => powerCurveByYear(Object.values(activityMeta)), [activityMeta]);
   const shown = years.slice(0, YEAR_COUNT);
-  const chart = useChart({data: rows, series: shown.map((year, index) => ({name: String(year), color: getSeriesColor(index)}))});
+  const chart = useChart({
+    data: rows,
+    series: shown.map((year, index) => ({name: String(year), color: getSeriesColor(index)})),
+  });
 
-  if (0 === years.length) return <Text color="fg.muted">Worked out from the power data of each ride, a few rides at a time. Nothing yet.</Text>;
+  if (0 === years.length)
+    return (
+      <Text color="fg.muted">Worked out from the power data of each ride, a few rides at a time. Nothing yet.</Text>
+    );
 
   return (
     <Chart.Root width="100%" height="360px" chart={chart}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chart.data}>
           <XAxis dataKey="duration" stroke={chart.color('fg.muted')} tickLine={false} />
-          <YAxis stroke={chart.color('fg.muted')} width={56} tickLine={false} axisLine={false} tickFormatter={value => `${value} W`} />
+          <YAxis
+            stroke={chart.color('fg.muted')}
+            width={56}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={value => `${value} W`}
+          />
           <Legend content={<Chart.Legend />} />
           <Tooltip
             cursor={{stroke: chart.color('fg.muted'), strokeWidth: 1}}
@@ -42,7 +54,15 @@ const PowerCurveChart = () => {
             }
           />
           {chart.series.map(({name, color}) => (
-            <Line key={String(name)} dataKey={chart.key(name)} stroke={chart.color(color)} strokeWidth={2} dot={{r: 3}} connectNulls={true} isAnimationActive={false} />
+            <Line
+              key={String(name)}
+              dataKey={chart.key(name)}
+              stroke={chart.color(color)}
+              strokeWidth={2}
+              dot={{r: 3}}
+              connectNulls={true}
+              isAnimationActive={false}
+            />
           ))}
         </LineChart>
       </ResponsiveContainer>

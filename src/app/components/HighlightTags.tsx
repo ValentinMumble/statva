@@ -32,9 +32,7 @@ const HighlightTags = ({
           No emoji
         </Badge>
       )}
-      {isPrivate && (
-        <Icon as={LuLock} boxSize="13px" color="fg.muted" aria-label="Private" />
-      )}
+      {isPrivate && <Icon as={LuLock} boxSize="13px" color="fg.muted" aria-label="Private" />}
       {'race' === highlight && (
         <Badge size="sm" variant="solid" colorPalette="brand">
           Race

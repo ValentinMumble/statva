@@ -28,7 +28,6 @@ const LATEST_COUNT = 6;
 // Strava's own orange, for its kudos thumb.
 const STRAVA_ORANGE = '#fc4c02';
 
-
 // Before anything is done this week, last week's total says more than a fall of 100%.
 const Delta = ({current, previous, lastWeek}: {current: number; previous: number; lastWeek: string}) => {
   const percent = change(current, previous);
@@ -55,7 +54,13 @@ const Figure = ({label, value, children}: {label: string; value: string; childre
     <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
       {label}
     </Text>
-    <Text fontFamily="figure" fontSize={{base: '2xl', md: '3xl'}} fontWeight="semibold" letterSpacing="-0.02em" lineHeight="1.1">
+    <Text
+      fontFamily="figure"
+      fontSize={{base: '2xl', md: '3xl'}}
+      fontWeight="semibold"
+      letterSpacing="-0.02em"
+      lineHeight="1.1"
+    >
       {value}
     </Text>
     {children}
@@ -80,7 +85,11 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
           <Delta current={current.movingTime} previous={previous.movingTime} lastWeek={duration(lastWeek.movingTime)} />
         </Figure>
         <Figure label="Climbing" value={metres(current.elevation, locale)}>
-          <Delta current={current.elevation} previous={previous.elevation} lastWeek={metres(lastWeek.elevation, locale)} />
+          <Delta
+            current={current.elevation}
+            previous={previous.elevation}
+            lastWeek={metres(lastWeek.elevation, locale)}
+          />
         </Figure>
         <Figure label="Training load" value={number(current.load, locale)}>
           <Delta current={current.load} previous={previous.load} lastWeek={number(lastWeek.load, locale)} />
@@ -106,14 +115,27 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
           const isFuture = date.getTime() > now.getTime();
 
           return (
-            <Stack key={date.toISOString()} flex="1" gap="6px" alignItems="stretch" height="full" justifyContent="flex-end">
+            <Stack
+              key={date.toISOString()}
+              flex="1"
+              gap="6px"
+              alignItems="stretch"
+              height="full"
+              justifyContent="flex-end"
+            >
               <Box
                 height={0 === distance ? '3px' : `${Math.max(8, (distance / longest) * 44)}px`}
                 borderRadius="4px"
                 background={0 === distance ? 'bg.muted' : isToday ? 'brand.solid' : 'brand.emphasized'}
                 title={0 === distance ? undefined : km(distance, locale)}
               />
-              <Text fontSize="xs" textAlign="center" color={isToday ? 'fg' : 'fg.muted'} opacity={isFuture ? 0.5 : 1} fontWeight={isToday ? 'semibold' : 'normal'}>
+              <Text
+                fontSize="xs"
+                textAlign="center"
+                color={isToday ? 'fg' : 'fg.muted'}
+                opacity={isFuture ? 0.5 : 1}
+                fontWeight={isToday ? 'semibold' : 'normal'}
+              >
                 {date.toLocaleDateString(locale, {weekday: 'narrow'})}
               </Text>
             </Stack>
@@ -176,11 +198,23 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                   </HStack>
                 </Stack>
                 {undefined !== photo && (
-                  <Image src={photo} alt="" boxSize="44px" borderRadius="8px" objectFit="cover" flexShrink={0} hideBelow="sm" />
+                  <Image
+                    src={photo}
+                    alt=""
+                    boxSize="44px"
+                    borderRadius="8px"
+                    objectFit="cover"
+                    flexShrink={0}
+                    hideBelow="sm"
+                  />
                 )}
                 {null !== np && (
                   <Stack gap="0" alignItems="flex-end" flexShrink={0}>
-                    <Text fontFamily="figure" fontWeight="semibold" color={zoneTextColor(getZoneColor(getPowerZone(np, getFtp(new Date(activity.start_date)))))}>
+                    <Text
+                      fontFamily="figure"
+                      fontWeight="semibold"
+                      color={zoneTextColor(getZoneColor(getPowerZone(np, getFtp(new Date(activity.start_date)))))}
+                    >
                       {np} W
                     </Text>
                     <Text fontSize="sm" color="fg.muted">
@@ -227,7 +261,10 @@ const EddingtonCard = ({activities, locale, now}: {activities: Activity[]; local
     return activities.filter(({sport_type}) => types.includes(sport_type));
   }, [activities]);
   const [eddington, needed] = useMemo(() => eddingtonNumber(rides), [rides]);
-  const [thisYear] = useMemo(() => eddingtonNumber(rides.filter(({start_date}) => new Date(start_date).getFullYear() === now.getFullYear())), [rides, now]);
+  const [thisYear] = useMemo(
+    () => eddingtonNumber(rides.filter(({start_date}) => new Date(start_date).getFullYear() === now.getFullYear())),
+    [rides, now],
+  );
   const next = eddington + 1;
   const done = next - needed;
 
@@ -252,7 +289,12 @@ const EddingtonCard = ({activities, locale, now}: {activities: Activity[]; local
         {eddington} days of {eddington} km or more
       </Text>
       <Box height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
-        <Box height="full" borderRadius="full" background="brand.solid" width={`${Math.max(3, (done / next) * 100)}%`} />
+        <Box
+          height="full"
+          borderRadius="full"
+          background="brand.solid"
+          width={`${Math.max(3, (done / next) * 100)}%`}
+        />
       </Box>
       <Text fontSize="xs" color="fg.muted" marginTop="6px">
         {number(done, locale)} of {number(next, locale)} days of {next} km: {needed} more for the next
@@ -265,7 +307,10 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
   const {defaultBike, partRules} = useSettings();
   const {events, refetch} = useEvents();
   const {label} = useLabels();
-  const bikeActivities = useMemo(() => activities.filter(({gear_id}) => defaultBike === gear_id), [activities, defaultBike]);
+  const bikeActivities = useMemo(
+    () => activities.filter(({gear_id}) => defaultBike === gear_id),
+    [activities, defaultBike],
+  );
   // The most worn parts, and always the chain, the part looked after most often: when it is not
   // among them, it takes the last place.
   const parts = useMemo(() => {
@@ -302,7 +347,12 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
               )}
             </HStack>
             <Box height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
-              <Box height="full" borderRadius="full" background={STATE_COLOR[part.state]} width={`${Math.min(100, Math.max(3, part.ratio * 100))}%`} />
+              <Box
+                height="full"
+                borderRadius="full"
+                background={STATE_COLOR[part.state]}
+                width={`${Math.min(100, Math.max(3, part.ratio * 100))}%`}
+              />
             </Box>
             <Text fontSize="xs" color="fg.muted">
               {km(part.distance, locale)}
@@ -346,7 +396,11 @@ const HomePage = () => {
       ) : (
         <>
           <ThisWeek activities={activities} locale={locale} now={now} />
-          <Grid templateColumns={{base: 'minmax(0, 1fr)', lg: 'minmax(0, 1.6fr) minmax(0, 1fr)'}} gap={{base: '16px', md: '24px'}} alignItems="start">
+          <Grid
+            templateColumns={{base: 'minmax(0, 1fr)', lg: 'minmax(0, 1.6fr) minmax(0, 1fr)'}}
+            gap={{base: '16px', md: '24px'}}
+            alignItems="start"
+          >
             <Stack gap={{base: '16px', md: '24px'}}>
               <LatestActivities activities={activities} locale={locale} now={now} />
               <WeeksCard activities={activities} now={now} locale={locale} />

@@ -46,7 +46,11 @@ const install = () => {
   const hashes: Hashes = {};
   const strings: Record<string, string> = {};
   // The club site: its publications, newest first, and every page asked for.
-  const site: {publications: SitePublication[]; requests: string[]; down: boolean} = {publications: [], requests: [], down: false};
+  const site: {publications: SitePublication[]; requests: string[]; down: boolean} = {
+    publications: [],
+    requests: [],
+    down: false,
+  };
   const strava: FakeStrava = {
     activities: [],
     tokens: {},
@@ -101,7 +105,12 @@ const install = () => {
 
     if ('/oauth/token' === url.pathname) {
       const body = JSON.parse(String(init.body));
-      return respond({access_token: `access-${body.grant_type}`, refresh_token: 'refresh', expires_at: Date.now() / 1000 + 3600, athlete: {id: 42}});
+      return respond({
+        access_token: `access-${body.grant_type}`,
+        refresh_token: 'refresh',
+        expires_at: Date.now() / 1000 + 3600,
+        athlete: {id: 42},
+      });
     }
     if ('/oauth/deauthorize' === url.pathname) {
       strava.calls.push(url.pathname);
@@ -114,13 +123,18 @@ const install = () => {
     strava.usage.daily++;
 
     const athleteId = 42;
-    if ('/api/v3/athlete' === url.pathname) return strava.tokens[athleteId] === false ? respond({}, 401) : respond({id: athleteId});
+    if ('/api/v3/athlete' === url.pathname)
+      return strava.tokens[athleteId] === false ? respond({}, 401) : respond({id: athleteId});
 
     if ('/api/v3/athlete/activities' === url.pathname) {
       const perPage = Number(url.searchParams.get('per_page') ?? 30);
       const after = url.searchParams.get('after');
       if (null !== after) {
-        return respond(strava.activities.filter(({start_date}) => new Date(start_date).getTime() / 1000 > Number(after)).slice(0, perPage));
+        return respond(
+          strava.activities
+            .filter(({start_date}) => new Date(start_date).getTime() / 1000 > Number(after))
+            .slice(0, perPage),
+        );
       }
       const page = Number(url.searchParams.get('page') ?? 1);
       return respond(strava.activities.slice((page - 1) * perPage, page * perPage));
@@ -137,7 +151,10 @@ const install = () => {
       const activity = strava.activities.find(({id}) => id === Number(detail[1]));
       if (undefined === activity) return respond({message: 'Record Not Found'}, 404);
       const body = JSON.parse(String(init.body)) as Record<string, unknown>;
-      Object.assign(activity, Object.fromEntries(Object.entries(body).filter(([key]) => !strava.ignoredFields.includes(key))));
+      Object.assign(
+        activity,
+        Object.fromEntries(Object.entries(body).filter(([key]) => !strava.ignoredFields.includes(key))),
+      );
       strava.puts.push({id: activity.id, ...JSON.parse(String(init.body))});
       return respond(activity);
     }
@@ -182,7 +199,12 @@ const install = () => {
 
   /** Stores tokens for an athlete, as a login would. */
   const login = (athleteId: number) => {
-    run(['hset', 'strava_tokens', String(athleteId), JSON.stringify({access_token: 'access', refresh_token: 'refresh', expires_at: Date.now() / 1000 + 3600})]);
+    run([
+      'hset',
+      'strava_tokens',
+      String(athleteId),
+      JSON.stringify({access_token: 'access', refresh_token: 'refresh', expires_at: Date.now() / 1000 + 3600}),
+    ]);
   };
 
   const read = (key: string): Record<string, unknown> =>

@@ -32,9 +32,12 @@ const stravaIds = async () => {
   const ids = new Set();
 
   for (let page = 1; ; page++) {
-    const response = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=${PAGE_SIZE}&page=${page}`, {
-      headers: {Authorization: `Bearer ${token}`},
-    });
+    const response = await fetch(
+      `https://www.strava.com/api/v3/athlete/activities?per_page=${PAGE_SIZE}&page=${page}`,
+      {
+        headers: {Authorization: `Bearer ${token}`},
+      },
+    );
 
     if (!response.ok) throw new Error(`Could not list activities: ${response.status}`);
 

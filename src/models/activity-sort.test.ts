@@ -12,8 +12,8 @@ test('it can sort activities by date', async () => {
       buildActivity({start_date: '2023-02-02'}),
       null,
       null,
-      getFtp
-    )
+      getFtp,
+    ),
   ).toBeLessThan(0);
 
   expect(
@@ -24,8 +24,8 @@ test('it can sort activities by date', async () => {
       buildActivity({start_date: '2024-02-02'}),
       null,
       null,
-      getFtp
-    )
+      getFtp,
+    ),
   ).toBeGreaterThan(0);
 
   expect(
@@ -36,7 +36,7 @@ test('it can sort activities by date', async () => {
       buildActivity({start_date: '2024-02-02'}),
       null,
       null,
-      getFtp
-    )
+      getFtp,
+    ),
   ).toBeLessThan(0);
 });

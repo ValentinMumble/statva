@@ -12,8 +12,13 @@ const CourtPieChart = () => {
     includedActivityTypes: [ActivityType.Tennis],
   });
 
-  const data = countBy(activities ?? [], activity =>
-    activity.name.replace(/^Tennis\s+/, '').split(/\s+\p{Emoji}|[-–]/u)[0].trim() || 'Unknown'
+  const data = countBy(
+    activities ?? [],
+    activity =>
+      activity.name
+        .replace(/^Tennis\s+/, '')
+        .split(/\s+\p{Emoji}|[-–]/u)[0]
+        .trim() || 'Unknown',
   );
 
   const labels = Object.keys(data);

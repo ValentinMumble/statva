@@ -66,8 +66,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="club" element={<ClubPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
-
-
           </RouterRoutes>
           <Toaster />
         </BrowserRouter>
