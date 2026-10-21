@@ -106,7 +106,7 @@ in `.env.local`:
 npx vercel dev
 ```
 
-Checks:
+Checks (`lint` also checks the layout with Prettier; `npm run format` fixes it):
 
 ```bash
 npm test

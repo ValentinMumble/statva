@@ -498,6 +498,8 @@ development runs on it unless `VITE_REAL_DATA=1` (then `vercel dev` serves the A
   (`tag.ts`). The server has tests for login, the Strava proxy, sync, the store, the
   webhook and power.
 - Charts follow one palette (orange ramp for periods, a fixed series order).
+- Code is laid out by Prettier, with the same settings as the other personal projects
+  (chords, hk): `npm run lint` fails on a file it would change, `npm run format` fixes it.
 
 ---
 

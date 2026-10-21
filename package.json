@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && tsc -p api && vite build",
-    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0 && npm run format:check",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"api/**/*.ts\" \"scripts/**/*.mjs\" \"test/*.ts\" index.html vite.config.ts jest.config.ts eslint.config.js",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"api/**/*.ts\" \"scripts/**/*.mjs\" \"test/*.ts\" index.html vite.config.ts jest.config.ts eslint.config.js",
     "preview": "vite preview",
     "test": "jest"
   },
@@ -40,6 +42,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jest": "^30.4.2",
+    "prettier": "^3.9.10",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
