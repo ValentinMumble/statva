@@ -221,12 +221,16 @@ const PhoneHeader = () => {
 };
 
 /**
- * The phone tab bar, in the style of iOS's Liquid Glass: a floating capsule of frosted,
- * see-through glass with a light rim, and a glass pill behind the current tab.
+ * The phone tab bar, in the style of iOS's Liquid Glass, the same recipe as Chords' and Tillroll's:
+ * a floating capsule of frosted, see-through glass with a light top edge, a hairline outline and a
+ * soft shadow, and a glass lens that slides under the current tab.
  */
 const TabBar = () => {
   const {pathname} = useLocation();
   const unprocessed = useUnprocessedCount();
+  const tabs = NAV.filter(({onPhone}) => onPhone);
+  // A page with no tab of its own (an activity) has no lens.
+  const current = tabs.findIndex(({to}) => isActive(to, pathname));
 
   return (
     <HStack
@@ -241,16 +245,31 @@ const TabBar = () => {
       padding="5px"
       gap="2px"
       borderRadius="full"
-      background={{base: 'rgba(255, 255, 255, 0.55)', _dark: 'rgba(30, 30, 33, 0.5)'}}
-      backdropFilter="blur(22px) saturate(180%)"
-      borderWidth="1px"
-      borderColor={{base: 'rgba(255, 255, 255, 0.7)', _dark: 'rgba(255, 255, 255, 0.12)'}}
+      background={{base: 'rgba(242, 242, 247, 0.72)', _dark: 'rgba(22, 22, 24, 0.7)'}}
+      backdropFilter="blur(24px) saturate(180%)"
       boxShadow={{
-        base: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 30px rgba(0, 0, 0, 0.12)',
-        _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 10px 30px rgba(0, 0, 0, 0.5)',
+        base: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.14)',
+        _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5)',
       }}
     >
-      {NAV.filter(({onPhone}) => onPhone).map(({to, label, icon}) => {
+      {0 <= current && (
+        // One tab wide: the bar minus its padding and gaps, split by the number of tabs.
+        <Box
+          aria-hidden
+          position="absolute"
+          top="5px"
+          bottom="5px"
+          left="5px"
+          width={`calc((100% - 10px - ${(tabs.length - 1) * 2}px) / ${tabs.length})`}
+          borderRadius="full"
+          background={{base: 'rgba(118, 118, 128, 0.16)', _dark: 'rgba(118, 118, 128, 0.24)'}}
+          boxShadow={{base: 'inset 0 1px 0 rgba(255, 255, 255, 0.5)', _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.12)'}}
+          transform={`translateX(calc(${current} * (100% + 2px)))`}
+          transition="transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1)"
+          _motionReduce={{transition: 'none'}}
+        />
+      )}
+      {tabs.map(({to, label, icon}) => {
         const active = isActive(to, pathname);
 
         return (
@@ -259,7 +278,7 @@ const TabBar = () => {
             to={to}
             // Another tab opens at the top, rather than where the last page was scrolled to.
             state={{fromTab: true}}
-            style={{flex: 1, height: '100%'}}
+            style={{flex: 1, height: '100%', position: 'relative', zIndex: 1}}
             aria-current={active ? 'page' : undefined}
             // Tapping the tab of the page already open scrolls it back to the top, as on iOS,
             // and keeps its filters. From a page under it (an activity), it goes back as usual.
@@ -279,9 +298,8 @@ const TabBar = () => {
               justifyContent="center"
               borderRadius="full"
               color={active ? 'brand.solid' : 'fg'}
-              background={active ? {base: 'rgba(0, 0, 0, 0.06)', _dark: 'rgba(255, 255, 255, 0.12)'} : 'transparent'}
-              boxShadow={active ? {base: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)', _dark: 'inset 0 1px 0 rgba(255, 255, 255, 0.16)'} : 'none'}
-              transition="background 200ms ease, color 200ms ease"
+              transition="color 200ms ease, transform 200ms ease"
+              _active={{transform: 'scale(0.95)'}}
             >
               <Box position="relative">
                 <Icon as={icon} boxSize="21px" />
