@@ -44,8 +44,8 @@ Activities carries a count in the sidebar and a dot on the tab.
    anything is done), and one bar per day. "This week" is counted from when the activity
    list last changed, so a Refresh on a page left open since last week moves to this week.
 2. **Latest**: the 6 newest activities with route shape, marks (private, race, 100 km+,
-   no emoji), sport, day, kudos, first photo, normalized power coloured by zone, distance
-   and time.
+   KOM or Top 10 on a segment, no emoji), sport, day, kudos, first photo, normalized power
+   coloured by zone, distance and time.
 3. **Weeks**: the last 5 weeks (+4 on demand). Each day shows its longest activity, each
    week its distance and training load. A week can be renamed in place (stored as a label).
 4. **Bike**: the main bike's distance and its 4 most worn parts, the chain always among
@@ -61,8 +61,9 @@ Activities carries a count in the sidebar and a dot on the tab.
 ### 3.1 List
 - Every stored activity in a virtual list (only the visible rows are drawn, so thousands
   stay fast), newest first by default.
-- Each row: route shape (or sport icon), name, marks (race, 100 km+, KOM once the details
-  are in), sport, day, gear, commute. Private activities are drawn faded.
+- Each row: route shape (or sport icon), name, marks (race, 100 km+, KOM or Top 10 on a
+  segment once the details are in), sport, day, gear, commute. Private activities are drawn
+  faded.
 - On a computer each chosen metric gets a column; on a phone a row shows distance and
   moving time.
 - A row opens the Activity page. Coming back finds the same filters and scroll position.

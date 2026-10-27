@@ -111,6 +111,9 @@ type DemoData = {
   settings: Partial<Settings>;
 };
 
+// A segment effort's overall place from a roll of 1 to 1000: a KOM now and then, a top 10 a little more often.
+const komRank = (roll: number): number | null => (roll <= 4 ? 1 : roll <= 34 ? 2 + (roll % 9) : null);
+
 const KM_PER_DEGREE = 111.32;
 
 /** A point some kilometres away from another, in a direction (radians, 0 = north). */
@@ -334,7 +337,7 @@ const generateDemo = (today: Date = new Date()): DemoData => {
           : 'Ride' === profile.sport || 'GravelRide' === profile.sport
             ? 'Garmin Edge 840'
             : 'Apple Watch',
-      segment_efforts: Array.from({length: Math.floor(km / 6)}, () => ({kom_rank: random.chance(0.004) ? 1 : null})),
+      segment_efforts: Array.from({length: Math.floor(km / 6)}, () => ({kom_rank: komRank(random.integer(1, 1000))})),
       photos: {count: 0, use_primary_photo: false},
       map: {...summary.map, polyline: encodePolyline(points)},
       ...powerDetails(id, ftpAt(date.getTime()), weighted, averageWatts, movingTime),
@@ -410,11 +413,13 @@ const generateDemo = (today: Date = new Date()): DemoData => {
 
   activities.sort((a, b) => b.id - a.id);
 
-  // The newest ride keeps Strava's default name, as a ride not yet given its emoji would.
+  // The newest ride keeps Strava's default name, as a ride not yet given its emoji would, and
+  // took a KOM, so the latest rides show one.
   const newestRide = activities.find(({sport_type, commute}) => 'Ride' === sport_type && !commute);
   if (undefined !== newestRide) {
     newestRide.name = 'Afternoon Ride';
     details[newestRide.id].name = 'Afternoon Ride';
+    details[newestRide.id].segment_efforts[0].kom_rank = 1;
   }
 
   const {events, expenses} = generateParts(random, activities);

@@ -1,9 +1,26 @@
-import {Badge, HStack, Icon} from '@chakra-ui/react';
+import {Badge, HStack, Icon, Text} from '@chakra-ui/react';
+import {FaTrophy} from 'react-icons/fa6';
 import {LuLock} from 'react-icons/lu';
-import {activityHighlight, hasEmoji, hasKom} from '../../models';
+import {activityHighlight, bestKomRank, hasEmoji} from '../../models';
 import {Activity, DetailedActivity} from '../../models/strava';
 
-/** Small marks after an activity's name: private, a race, a 100 km day, a KOM (when its details are loaded). */
+// Strava's gold, for its top 10 trophies.
+const TROPHY_GOLD = '#e8b10c';
+
+/** Strava's top 10 mark: a gold cup, with the place beside it. */
+const TopTenTrophy = ({rank}: {rank: number}) => (
+  <HStack gap="2px" flexShrink={0} title={`Top ${rank} on a segment`} aria-label={`Top ${rank}`}>
+    <Icon as={FaTrophy} boxSize="15px" color={TROPHY_GOLD} aria-hidden={true} />
+    <Text fontSize="sm" fontWeight="semibold" lineHeight="1">
+      {rank}
+    </Text>
+  </HStack>
+);
+
+/**
+ * Small marks after an activity's name: private, a race, a 100 km day, a KOM or a top 10 on a
+ * segment (when its details are loaded).
+ */
 // The lock is for lists where private activities are mixed in (Home); the Activities list
 // already fades them and filters them on demand.
 const HighlightTags = ({
@@ -21,9 +38,9 @@ const HighlightTags = ({
   const isPrivate = showPrivate && activity.private;
   const isUnprocessed = showUnprocessed && !hasEmoji(activity.name);
   const highlight = activityHighlight(activity);
-  const kom = hasKom(detail);
+  const rank = bestKomRank(detail);
 
-  if (null === highlight && !kom && !isPrivate && !isUnprocessed) return null;
+  if (null === highlight && null === rank && !isPrivate && !isUnprocessed) return null;
 
   return (
     <HStack gap="4px" flexShrink={0}>
@@ -43,11 +60,12 @@ const HighlightTags = ({
           100 km+
         </Badge>
       )}
-      {kom && (
+      {1 === rank && (
         <Badge size="sm" variant="subtle" colorPalette="yellow">
           KOM 👑
         </Badge>
       )}
+      {null !== rank && 1 < rank && <TopTenTrophy rank={rank} />}
     </HStack>
   );
 };

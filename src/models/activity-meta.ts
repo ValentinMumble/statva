@@ -8,6 +8,13 @@ const isPedalled = (sport: string): boolean =>
 const hasKom = (activity: DetailedActivity | null): boolean =>
   activity?.segment_efforts.some(effort => effort.kom_rank === 1) ?? false;
 
+/** The best overall place on a segment (Strava only ranks the top 10), or null. */
+const bestKomRank = (activity: DetailedActivity | null): number | null => {
+  const ranks = (activity?.segment_efforts ?? []).flatMap(({kom_rank}) => (null === kom_rank ? [] : [kom_rank]));
+
+  return 0 === ranks.length ? null : Math.min(...ranks);
+};
+
 /**
  * The normalized power the server works out from the power data, as Sauce for Strava does.
  * Until it has (or without a power meter), riders who wrote "NP: 245" in the private note
@@ -24,4 +31,4 @@ const extractNormalizedPower = (activity: DetailedActivity | null | undefined): 
     : null;
 };
 
-export {extractNormalizedPower, hasKom, isPedalled};
+export {bestKomRank, extractNormalizedPower, hasKom, isPedalled};

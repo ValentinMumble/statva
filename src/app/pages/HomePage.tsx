@@ -179,7 +179,12 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                     <Text fontWeight="medium" truncate={true}>
                       {activity.name}
                     </Text>
-                    <HighlightTags activity={activity} showPrivate={true} showUnprocessed={unprocessedEmoji} />
+                    <HighlightTags
+                      activity={activity}
+                      detail={detail}
+                      showPrivate={true}
+                      showUnprocessed={unprocessedEmoji}
+                    />
                   </HStack>
                   <HStack gap="6px" fontSize="sm" color="fg.muted" minWidth="0">
                     <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />
