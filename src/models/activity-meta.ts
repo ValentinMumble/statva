@@ -5,9 +5,6 @@ import {DetailedActivity} from './strava';
 const isPedalled = (sport: string): boolean =>
   sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
 
-const hasKom = (activity: DetailedActivity | null): boolean =>
-  activity?.segment_efforts.some(effort => effort.kom_rank === 1) ?? false;
-
 /** The best overall place on a segment (Strava only ranks the top 10), or null. */
 const bestKomRank = (activity: DetailedActivity | null): number | null => {
   const ranks = (activity?.segment_efforts ?? []).flatMap(({kom_rank}) => (null === kom_rank ? [] : [kom_rank]));
@@ -31,4 +28,4 @@ const extractNormalizedPower = (activity: DetailedActivity | null | undefined): 
     : null;
 };
 
-export {bestKomRank, extractNormalizedPower, hasKom, isPedalled};
+export {bestKomRank, extractNormalizedPower, isPedalled};

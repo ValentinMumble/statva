@@ -22,6 +22,7 @@ import {FaHeart} from 'react-icons/fa6';
 import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
+  bestKomRank,
   decodePolyline,
   extractNormalizedPower,
   getActivityUrl,
@@ -30,7 +31,6 @@ import {
   getZoneColor,
   getTypes,
   hasEmoji,
-  hasKom,
   intensityOf,
   isPedalled,
   suggestName,
@@ -40,6 +40,7 @@ import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '.
 import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError} from '../../api';
 import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
+import {TopTenTrophy} from '../components/HighlightTags';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
 import {duration, km, metres, number, relativeDay} from '../format';
@@ -538,6 +539,7 @@ const ActivityPage = () => {
 
   const summary = activities?.find(({id}) => String(id) === activityId);
   const detail: DetailedActivity | null = activityMeta[activityId ?? ''] ?? null;
+  const komRank = bestKomRank(detail);
   // The summary has every figure; the details add notes, calories, devices and the full track.
   const activity: Activity | undefined = summary;
   const track = useMemo(
@@ -609,7 +611,8 @@ const ActivityPage = () => {
             <GearSelect activity={activity} />
             {activity.commute && <Badge variant="surface">Commute</Badge>}
             {activity.private && <Badge variant="surface">Private</Badge>}
-            {hasKom(detail) && <Badge colorPalette="yellow">KOM 👑</Badge>}
+            {1 === komRank && <Badge colorPalette="yellow">KOM 👑</Badge>}
+            {null !== komRank && 1 < komRank && <TopTenTrophy rank={komRank} />}
             {1 < activity.athlete_count && <Badge variant="surface">{activity.athlete_count} riders</Badge>}
           </HStack>
         </Stack>

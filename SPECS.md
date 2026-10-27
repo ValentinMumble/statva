@@ -119,7 +119,7 @@ again.
 ## 4. Activity page
 
 - Back link to the list as it was left; date, name, and badges (gear, commute, private,
-  KOM, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
+  KOM or top 10 trophy, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
 - The name has a pencil to rename it, and, when it has no emoji, a button that opens the
   editor with a suggested name (the name most given to the same route, or the name with an
   emoji not used yet). The gear badge is a menu to move a ride to

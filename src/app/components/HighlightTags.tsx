@@ -70,4 +70,4 @@ const HighlightTags = ({
   );
 };
 
-export {HighlightTags};
+export {HighlightTags, TopTenTrophy};
