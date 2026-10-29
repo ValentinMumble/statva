@@ -331,9 +331,10 @@ const StatsPage = () => {
         <>
           <Totals activities={activities} now={now} />
           <Tabs.Root defaultValue="training" lazyMount={true} unmountOnExit={true} variant="enclosed">
-            <Tabs.List overflowX="auto" maxWidth="full">
+            {/* On a phone the tabs keep their width and the bar scrolls sideways, rather than squeezing them. */}
+            <Tabs.List overflowX="auto" maxWidth="full" css={{scrollbarWidth: 'none'}}>
               {tabs.map(({value, label}) => (
-                <Tabs.Trigger key={value} value={value}>
+                <Tabs.Trigger key={value} value={value} flexShrink={0} whiteSpace="nowrap">
                   {label}
                 </Tabs.Trigger>
               ))}
