@@ -40,6 +40,19 @@ const useAllActivities = () => {
       ),
     [queryClient],
   );
+  // Puts the newest activities in what is on screen, and drops the ones in their span that the
+  // server no longer has: Strava's webhook removes an activity deleted on Strava from the store.
+  // Strava ids grow over time, so the newest are the highest ids.
+  const replaceLatest = useCallback(
+    (latest: Activity[]) =>
+      queryClient.setQueryData<Activity[]>(['activities'], current => {
+        const lowest = latest.length < FIRST_COUNT ? 0 : Math.min(...latest.map(({id}) => id));
+        const older = (current ?? []).filter(({id}) => id < lowest);
+
+        return Object.values(Object.assign(byId(older), byId(latest)));
+      }),
+    [queryClient],
+  );
 
   // On opening, the newest activities show at once, then the whole list arrives page by
   // page. Every step of a first load adds to the list rather than replacing it, so what a
@@ -87,10 +100,11 @@ const useAllActivities = () => {
       if (pagedHistory) await queryClient.invalidateQueries({queryKey: ['activities']});
     } while (!report.historyDone && !report.limited);
 
-    // The newest activities are fetched and added, not the whole list, even when this sync found
-    // none: Strava's webhook stores a new activity on the server as soon as it is uploaded, so
-    // the sync has nothing to add, but this screen has not seen it yet. One small call.
-    if (!pagedHistory) addToList(await fetchLatest(FIRST_COUNT));
+    // The newest activities are fetched again, not the whole list, even when this sync found none:
+    // Strava's webhook stores a new activity on the server as soon as it is uploaded (and removes
+    // a deleted one), so the sync has nothing to do, but this screen has not seen it yet. One
+    // small call.
+    if (!pagedHistory) replaceLatest(await fetchLatest(FIRST_COUNT));
 
     await addDetails(report.detailIds);
 
@@ -109,7 +123,7 @@ const useAllActivities = () => {
     }
 
     return report;
-  }, [queryClient, addToList, addDetails]);
+  }, [queryClient, replaceLatest, addDetails]);
 
   useQuery({queryKey: ['sync'], queryFn: sync, retry: false});
 

@@ -400,6 +400,8 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 - The app syncs on every visit and on Refresh. The first syncs page through the whole
   history, a few pages per call, and the list fills up after each. After that a sync
   fetches what started since the newest known activity, minus a month for late uploads.
+  The app then reloads the newest 20 stored activities, which also takes out of the list
+  the ones among them deleted on Strava (the webhook removes them from the store).
 - A sync also fetches the details of the activities that are new (up to 10), and answers.
   The app then puts just those details into what it has loaded, rather than reloading all,
   and reads the newest 20 stored activities, so one the webhook stored before the sync
