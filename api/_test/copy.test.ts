@@ -1,7 +1,7 @@
 import {install} from './fakes.js';
 import {copyForToday, todayAtSameTime} from '../_lib/copy.js';
 import {sessionCookie} from '../_lib/session.js';
-import {POST as copy} from '../copy.js';
+import {POST as copy} from '../activity.js';
 
 // A commute ridden on 12 Oct at 13:15:01 in Paris, 10 minutes long.
 const withCommute = (startLocal = '2026-10-12T13:15:01Z', start = '2026-10-12T11:15:01Z') => {
@@ -64,7 +64,7 @@ describe('copying a ride to today', () => {
     const fake = withCommute('2026-10-12T00:00:01Z', '2026-10-11T22:00:01Z');
     const call = async () =>
       await copy(
-        new Request('https://statva.test/api/copy?id=7001', {
+        new Request('https://statva.test/api/activity?action=copy&id=7001', {
           method: 'POST',
           headers: {cookie: sessionCookie(42).split(';')[0]},
         }),

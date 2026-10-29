@@ -394,7 +394,10 @@ Sunday "Raymond Ride"), a switch at the top shows the whole page for either seri
 ## 11. Server and data
 
 ### 11.1 Server routes
-Serverless functions in `api/`. All but login, callback and the webhook need a session.
+Serverless functions in `api/`: 7 of the 12 the Hobby plan takes per deployment (a test
+fails above 12), so related routes share one. `api/auth.ts` answers every `/api/auth/<step>`
+(vercel.json rewrites it to `?step=`), `api/sync.ts` also backfills, and `api/activity.ts`
+also merges and copies. All but login, callback and the webhook need a session.
 
 | Route | Does |
 |---|---|
@@ -404,12 +407,12 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `GET /api/strava` | Call Strava for the rider, on a short list of allowed paths |
 | `POST /api/store` | Read and write the rider's own data |
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
-| `POST /api/backfill` | Fill in the details and power data of a few older activities |
+| `POST /api/sync?step=backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
+| `POST /api/activity?action=copy&id=` | Copy a ride to today at the same time of day, on Strava and in Statva (4) |
+| `GET, POST, DELETE /api/activity?action=merge` | Merge activities into a new one on Strava (3.5); the merge Strava refused, uploaded again or forgotten |
 | `GET /api/club` | The club's calendar from its team on pedalons.fr, read again at most every 6 hours |
 | `PUT /api/activity?id=` | Rename an activity, move it to other gear, or change its description or private note, on Strava and in Statva (422 when Strava keeps a field as it was) |
-| `POST /api/copy?id=` | Copy a ride to today at the same time of day, on Strava and in Statva (4) |
-| `GET, POST, DELETE /api/merge` | Merge activities into a new one on Strava (3.5); the merge Strava refused, uploaded again or forgotten |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
 ### 11.2 What comes from Strava

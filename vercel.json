@@ -1,3 +1,6 @@
 {
-  "rewrites": [{"source": "/((?!api/|assets/).*)", "destination": "/"}]
+  "rewrites": [
+    {"source": "/api/auth/:step", "destination": "/api/auth?step=:step"},
+    {"source": "/((?!api/|assets/).*)", "destination": "/"}
+  ]
 }

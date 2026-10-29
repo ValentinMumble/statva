@@ -1,13 +1,13 @@
 import {install} from './fakes.js';
 import {joinParts} from '../_lib/merge.js';
 import {sessionCookie} from '../_lib/session.js';
-import {DELETE as discard, GET as pending, POST as merge} from '../merge.js';
+import {DELETE as discard, GET as pending, POST as merge} from '../activity.js';
 
 const ORIGIN = 'https://statva.test';
 
 const call = async (handler: (request: Request) => Promise<Response>, method: string, body?: unknown) =>
   await handler(
-    new Request(`${ORIGIN}/api/merge`, {
+    new Request(`${ORIGIN}/api/activity?action=merge`, {
       method,
       headers: {'Content-Type': 'application/json', cookie: sessionCookie(42).split(';')[0]},
       ...(undefined === body ? {} : {body: JSON.stringify(body)}),

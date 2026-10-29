@@ -44,7 +44,7 @@ const post = async <T>(url: string): Promise<T> => {
 const syncActivities = (): Promise<SyncReport> => post<SyncReport>('/api/sync');
 
 /** Asks the server to fill in the details and power data of a few older activities. Slow. */
-const backfillActivities = (): Promise<BackfillReport> => post<BackfillReport>('/api/backfill');
+const backfillActivities = (): Promise<BackfillReport> => post<BackfillReport>('/api/sync?step=backfill');
 
 /** Thrown when Strava refuses a change: the rider logged in before Statva asked for write access. */
 class NoWriteAccessError extends Error {}
@@ -96,10 +96,12 @@ const sendUpload = async <T>(url: string, body: unknown = {}, keptWhenRefused = 
   throw new UploadRefusedError(answer.error ?? `Uploading failed: ${response.status}`);
 };
 
-const sendMerge = (body: unknown): Promise<MergeResult> => sendUpload<MergeResult>('/api/merge', body, true);
+const sendMerge = (body: unknown): Promise<MergeResult> =>
+  sendUpload<MergeResult>('/api/activity?action=merge', body, true);
 
 /** Copies a ride to today, at the same time of day, on Strava and in Statva. */
-const copyActivityToday = (id: number): Promise<CopyResult> => sendUpload<CopyResult>(`/api/copy?id=${id}`);
+const copyActivityToday = (id: number): Promise<CopyResult> =>
+  sendUpload<CopyResult>(`/api/activity?action=copy&id=${id}`);
 
 /** Merges activities into a new one on Strava, with the name, gear and commute flag chosen. */
 const mergeActivities = ({ids, name, gearId, commute}: MergeChoice): Promise<MergeResult> =>
@@ -110,10 +112,10 @@ const retryMerge = (): Promise<MergeResult> => sendMerge({retry: true});
 
 /** The merge Strava refused, waiting for its parts to be deleted, or null. */
 const fetchPendingMerge = async (): Promise<PendingMerge | null> =>
-  (await getJson<{pending: PendingMerge | null}>('/api/merge')).pending;
+  (await getJson<{pending: PendingMerge | null}>('/api/activity?action=merge')).pending;
 
 const discardMerge = async (): Promise<void> => {
-  await fetch('/api/merge', {method: 'DELETE'});
+  await fetch('/api/activity?action=merge', {method: 'DELETE'});
 };
 
 /** The club's calendar, from its team on pedalons.fr. */

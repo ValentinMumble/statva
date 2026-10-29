@@ -1,7 +1,5 @@
 import {install} from './fakes.js';
-import {GET as login} from '../auth/login.js';
-import {GET as callback} from '../auth/callback.js';
-import {GET as me} from '../auth/me.js';
+import {GET as auth} from '../auth.js';
 import {GET as strava} from '../strava.js';
 
 const ORIGIN = 'https://statva.test';
@@ -14,19 +12,17 @@ const cookiesOf = (response: Response) => response.headers.getSetCookie().map(li
 
 /** Goes through the Strava login and returns the session cookie. */
 const logIn = async (): Promise<string> => {
-  const start = login(request('/api/auth/login'));
+  const start = await auth(request('/api/auth/login'));
   const state = new URL(String(start.headers.get('Location'))).searchParams.get('state');
-  const response = await callback(
-    request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]),
-  );
+  const response = await auth(request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]));
 
   return String(cookiesOf(response).find(line => line.startsWith('statva_session=')));
 };
 
 describe('login', () => {
-  it('sends the rider to Strava with a state and our callback', () => {
+  it('sends the rider to Strava with a state and our callback', async () => {
     install();
-    const location = new URL(String(login(request('/api/auth/login')).headers.get('Location')));
+    const location = new URL(String((await auth(request('/api/auth/login'))).headers.get('Location')));
 
     expect(location.origin + location.pathname).toBe('https://www.strava.com/oauth/authorize');
     expect(location.searchParams.get('redirect_uri')).toBe(`${ORIGIN}/api/auth/callback`);
@@ -35,12 +31,12 @@ describe('login', () => {
 
   it('refuses a forged state and missing permissions', async () => {
     install();
-    const start = login(request('/api/auth/login'));
+    const start = await auth(request('/api/auth/login'));
     const state = new URL(String(start.headers.get('Location'))).searchParams.get('state');
     const stateCookie = cookiesOf(start)[0];
 
-    const forged = await callback(request(`/api/auth/callback?state=forged&code=ok&scope=${SCOPE}`, stateCookie));
-    const narrow = await callback(request(`/api/auth/callback?state=${state}&code=ok&scope=read`, stateCookie));
+    const forged = await auth(request(`/api/auth/callback?state=forged&code=ok&scope=${SCOPE}`, stateCookie));
+    const narrow = await auth(request(`/api/auth/callback?state=${state}&code=ok&scope=read`, stateCookie));
 
     expect(forged.headers.get('Location')).toBe('/?login=expired');
     expect(narrow.headers.get('Location')).toBe('/?login=scope');
@@ -50,9 +46,9 @@ describe('login', () => {
     const fake = install();
     process.env.STRAVA_ATHLETE_IDS = '7';
 
-    const start = login(request('/api/auth/login'));
+    const start = await auth(request('/api/auth/login'));
     const state = new URL(String(start.headers.get('Location'))).searchParams.get('state');
-    const response = await callback(
+    const response = await auth(
       request(`/api/auth/callback?state=${state}&code=ok&scope=${SCOPE}`, cookiesOf(start)[0]),
     );
 
@@ -61,12 +57,20 @@ describe('login', () => {
     expect(fake.strava.calls).toContain('/oauth/deauthorize');
   });
 
+  it('answers through the rewrite vercel.json makes of /api/auth/<step>', async () => {
+    install();
+
+    expect((await auth(request('/api/auth?step=me'))).status).toBe(401);
+    expect((await auth(request('/api/auth?step=login'))).headers.get('Location')).toMatch(/^https:\/\/www.strava.com/);
+    expect((await auth(request('/api/auth?step=nothing'))).status).toBe(404);
+  });
+
   it('logs in an athlete on the list and stores their tokens', async () => {
     const fake = install();
     const session = await logIn();
 
     expect(fake.read('strava_tokens')['42']).toBeDefined();
-    expect((await me(request('/api/auth/me', session))).status).toBe(200);
+    expect((await auth(request('/api/auth/me', session))).status).toBe(200);
   });
 
   it('refuses a missing or edited session', async () => {
@@ -74,7 +78,7 @@ describe('login', () => {
     const session = await logIn();
 
     for (const cookie of [undefined, session.replace('statva_session=42', 'statva_session=43')]) {
-      expect(me(request('/api/auth/me', cookie)).status).toBe(401);
+      expect((await auth(request('/api/auth/me', cookie))).status).toBe(401);
       expect((await strava(request('/api/strava?path=athlete', cookie))).status).toBe(401);
     }
   });
