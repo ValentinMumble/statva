@@ -16,8 +16,8 @@ into a home page, stats, records and an explorer map.
 - **Home:** this week against last week, your latest activities drawn as route shapes,
   recent weeks day by day, and the parts closest to wearing out.
 - **Activities:** search by name or by date ("2 nov", "2024-11-02"), filter by sport, gear
-  and commute, choose and sort columns. Each activity has its own page with its map, power,
-  heart rate zones, photos and notes.
+  and commute, choose and sort columns, merge a ride recorded in parts into one on Strava.
+  Each activity has its own page with its map, power, heart rate zones, photos and notes.
 - **Bike:** every part with its wear (chains by stint, cassettes over all their stints,
   tires, pads, battery), chain rotation with the next chain to fit, the history of every
   change, and the running cost per km. Logging a change takes two taps.

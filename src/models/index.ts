@@ -15,6 +15,7 @@ export * from './event';
 export * from './ftp';
 export * from './gear';
 export * from './label';
+export * from './merge';
 export * from './naming';
 export * from './parts';
 export * from './rider';

@@ -19,6 +19,9 @@ type FakeStrava = {
   puts: Record<string, unknown>[];
   // Fields Strava answers for without changing them, as it may for what apps cannot write.
   ignoredFields: string[];
+  // Files uploaded, with their form fields; an error makes Strava refuse the next ones.
+  uploads: Record<string, string>[];
+  uploadError: string | null;
 };
 
 // A publication on the fake club site, as its API sends it (only what the calendar reads).
@@ -61,6 +64,8 @@ const install = () => {
     streams: {},
     puts: [],
     ignoredFields: [],
+    uploads: [],
+    uploadError: null,
   };
 
   Object.assign(process.env, ENV);
@@ -192,6 +197,30 @@ const install = () => {
       const size = Number(url.searchParams.get('size') ?? 20);
       const publications = site.publications.slice(page * size, (page + 1) * size);
       return new Response(JSON.stringify({publications, total: site.publications.length, page, size}));
+    }
+
+    // An upload becomes an activity at once, starting when its file says, or is refused.
+    if ('/api/v3/uploads' === url.pathname) {
+      strava.calls.push(url.pathname);
+      const form = init.body as FormData;
+      const fields: Record<string, string> = {};
+      for (const [key, value] of form.entries()) fields[key] = 'string' === typeof value ? value : await value.text();
+      strava.uploads.push(fields);
+      const id = 9000 + strava.uploads.length;
+      if (null !== strava.uploadError) return new Response(JSON.stringify({id, error: strava.uploadError}));
+
+      strava.activities.unshift({
+        id,
+        name: fields.name,
+        sport_type: fields.sport_type,
+        description: fields.description,
+        commute: '1' === fields.commute,
+        trainer: '1' === fields.trainer,
+        external_id: fields.external_id,
+        gear_id: null,
+        start_date: fields.file.match(/<Id>(.*?)<\/Id>/)?.[1] ?? '',
+      });
+      return new Response(JSON.stringify({id, activity_id: id}));
     }
 
     return stravaResponse(url, init);

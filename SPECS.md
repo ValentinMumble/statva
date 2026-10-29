@@ -114,12 +114,36 @@ the same length), or its own name with an emoji no name uses yet. Saving needs S
 write access, which riders who logged in before Statva asked for it grant by logging in
 again.
 
+### 3.5 Merging activities
+For a ride recorded in parts (a watch stopped and started again). **Merge** next to the
+count turns the rows into checkboxes: pick 2 to 10 activities, then **Merge**. A dialog
+lists the parts in time order with their total distance, moving time and the stops between
+them, and asks for the name (the first part's), the bike or shoes and the commute flag
+(the first part's too). Parts that overlap in time cannot be merged: they were recorded
+twice, not in parts.
+
+The server joins the parts' data streams (time, position, altitude, distance running on
+from part to part, heart rate, cadence, power) into a TCX file and uploads it to Strava as
+a new activity of the first part's sport, with the name, commute flag and the parts'
+descriptions, then sets the gear. Strava's API cannot delete activities: the dialog lists
+the parts with links to delete them on Strava. Kudos, comments and photos stay on the
+parts; Strava works the segments out again.
+
+Should Strava refuse the upload (as a duplicate of a part), Statva keeps the file and a
+card on the Activities page says so: delete the parts, then **Upload again** (or **Forget
+it**).
+
 ---
 
 ## 4. Activity page
 
 - Back link to the list as it was left; date, name, and badges (gear, commute, private,
   KOM or top 10 trophy, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
+- On a commute, **Duplicate for today** copies the ride to today at the same time of day where
+  it was ridden, for a commute ridden again the same way with nothing recorded: its data
+  streams move to the new start and it goes up to Strava with its name, description, gear
+  and commute flag, kept off followers' feeds, then opens. Not before that time has passed
+  today: it would end in the future.
 - The name has a pencil to rename it, and, when it has no emoji, a button that opens the
   editor with a suggested name (the name most given to the same route, or the name with an
   emoji not used yet). The gear badge is a menu to move a ride to
@@ -384,6 +408,8 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `POST /api/activity?id=` | Fetch one activity again and store it |
 | `GET /api/club` | The club's calendar from its team on pedalons.fr, read again at most every 6 hours |
 | `PUT /api/activity?id=` | Rename an activity, move it to other gear, or change its description or private note, on Strava and in Statva (422 when Strava keeps a field as it was) |
+| `POST /api/copy?id=` | Copy a ride to today at the same time of day, on Strava and in Statva (4) |
+| `GET, POST, DELETE /api/merge` | Merge activities into a new one on Strava (3.5); the merge Strava refused, uploaded again or forgotten |
 | `GET, POST /api/webhook` | Strava's subscription check, and its events |
 
 ### 11.2 What comes from Strava
@@ -393,7 +419,8 @@ Serverless functions in `api/`. All but login, callback and the webhook need a s
 | `GET /athlete` | Name, gear | 1 per visit |
 | `GET /athlete/activities` | The activity list | 1 per 200 activities for the history, then 1 per sync |
 | `GET /activities/{id}` | Details: notes, photo, calories, KOMs, device, full track | 1 per activity, again on a webhook event or Refresh |
-| `GET /activities/{id}/streams` | Power analysis | 1 per activity with a power meter |
+| `GET /activities/{id}/streams` | Power analysis, merges, copies | 1 per activity with a power meter, 1 per merged part or copy |
+| `POST /uploads`, `GET /uploads/{id}` | Merges, copies | 1 upload and a few status checks each |
 | `GET /activities/{id}/zones`, `/photos` | Activity page | 1 each per page open |
 
 ### 11.3 Sync
@@ -425,7 +452,8 @@ rules apply: a pedalled ride, short enough, on a weekday if asked, whose farthes
 from its start is by the rule's place, gets the rule's name (only if its own has no
 emoji), the commute flag and the bike, on Strava and in Statva. Only then, so a change
 made on Strava later is never undone. Strava does not let apps change the commute flag, so
-that part is left out where Strava keeps it; what it takes (name, bike) is stored.
+that part is left out where Strava keeps it; what it takes (name, bike) is stored. A merge
+Statva uploaded (a merge, 3.5, or a copy, 4) is left as the rider set it up.
 
 ### 11.5 What Statva stores
 Upstash Redis hashes. Each rider's data sits under `athlete:<id>:<name>`. The store route
@@ -439,8 +467,9 @@ adds that prefix itself, so no request can reach another rider's data or the tok
 | `power` | Activities whose power is worked out (0 without a power meter) | server |
 | `club` | The club's calendar read from its website, and when it was read | server |
 | `events`, `labels`, `ftp_tests`, `expenses`, `settings` | What the rider enters | rider |
+| `merge` | A merge Strava refused, with its file, until uploaded again or forgotten | server, never read by the browser |
 
-The rider can read every name but write only their own five. Shared keys:
+The rider can read every name but `merge`, and write only their own five. Shared keys:
 `strava_tokens` (every rider's tokens, never reachable from the browser) and
 `strava:usage` (the app's rate limit usage).
 

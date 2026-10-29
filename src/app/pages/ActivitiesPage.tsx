@@ -2,6 +2,7 @@ import {useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {
   Box,
   Button,
+  Checkbox,
   HStack,
   Icon,
   IconButton,
@@ -15,7 +16,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import {useLocation, useNavigate, useSearchParams} from 'react-router';
-import {useQueryClient} from '@tanstack/react-query';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {useWindowVirtualizer} from '@tanstack/react-virtual';
 import {useLocalStorage} from 'usehooks-ts';
 import {
@@ -25,6 +26,7 @@ import {
   LuFilterX,
   LuListFilter,
   LuLock,
+  LuMerge,
   LuSearch,
   LuWatch,
   LuX,
@@ -34,10 +36,21 @@ import {toaster} from '../../components/ui';
 import {NoWriteAccessError} from '../../api';
 import {getFetcher} from '../../hooks/useFetcher';
 import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, useSettings} from '../../hooks';
-import {countBy, DEFAULT_SORTS, isPedalled, SortDirection, SortType, suggestName, TAGS} from '../../models';
+import {
+  countBy,
+  DEFAULT_SORTS,
+  isPedalled,
+  MAX_MERGE_PARTS,
+  PendingMerge,
+  SortDirection,
+  SortType,
+  suggestName,
+  TAGS,
+} from '../../models';
 import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
+import {MergeDialog} from '../components/MergeDialog';
 import {RouteThumb} from '../components/RouteThumb';
 import {sportIcon, sportName} from '../components/sport';
 import {zoneTextColor} from '../components/zone';
@@ -327,6 +340,7 @@ const Toolbar = ({
 
 /** Activities whose name has no emoji yet, for riders who tag names with one. */
 const renameActivity = getFetcher<void>('activity.rename');
+const fetchPendingMerge = getFetcher<PendingMerge | null>('activities.merge.pending');
 // The card stays short: the rest show once these are named.
 const RENAME_ROWS = 5;
 
@@ -455,6 +469,23 @@ const ActivitiesPage = () => {
   const rowHeight = useBreakpointValue(ROW_HEIGHT) ?? ROW_HEIGHT.base;
   const isWide = useBreakpointValue({base: false, md: true}) ?? false;
   const listRef = useRef<HTMLDivElement>(null);
+  // Picking activities recorded in parts, to merge them into one.
+  const [picking, setPicking] = useState(false);
+  const [picked, setPicked] = useState<number[]>([]);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const {data: pendingMerge = null} = useQuery({queryKey: ['pendingMerge'], queryFn: fetchPendingMerge});
+  const togglePicked = (id: number) =>
+    setPicked(current =>
+      current.includes(id)
+        ? current.filter(pickedId => pickedId !== id)
+        : current.length < MAX_MERGE_PARTS
+          ? [...current, id]
+          : current,
+    );
+  const stopPicking = () => {
+    setPicking(false);
+    setPicked([]);
+  };
   // Where the list starts on the page, which the window scroll is measured from.
   const [scrollMargin, setScrollMargin] = useState(0);
 
@@ -553,10 +584,59 @@ const ActivitiesPage = () => {
         <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
           Activities
         </Text>
-        <Text color="fg.muted" fontSize="sm">
-          {null === activities ? ' ' : `${rows.length.toLocaleString(locale)} shown`}
-        </Text>
+        <HStack gap="12px">
+          <Text color="fg.muted" fontSize="sm">
+            {null === activities ? ' ' : `${rows.length.toLocaleString(locale)} shown`}
+          </Text>
+          <Button size="sm" variant="ghost" onClick={() => (picking ? stopPicking() : setPicking(true))}>
+            {picking ? (
+              'Cancel'
+            ) : (
+              <>
+                <LuMerge /> Merge
+              </>
+            )}
+          </Button>
+        </HStack>
       </HStack>
+
+      {picking && (
+        <Card padding="12px" position="sticky" top="8px" zIndex="2">
+          <HStack justifyContent="space-between" gap="12px">
+            <Text fontSize="sm">
+              {0 === picked.length
+                ? `Pick the parts of a ride to merge, up to ${MAX_MERGE_PARTS}.`
+                : `${picked.length} picked${MAX_MERGE_PARTS === picked.length ? ', the most a merge takes' : ''}.`}
+            </Text>
+            <Button size="sm" colorPalette="brand" disabled={picked.length < 2} onClick={() => setMergeOpen(true)}>
+              Merge {1 < picked.length ? picked.length : ''}
+            </Button>
+          </HStack>
+        </Card>
+      )}
+
+      {null !== pendingMerge && !mergeOpen && (
+        <Card padding="12px">
+          <HStack justifyContent="space-between" gap="12px">
+            <Text fontSize="sm">
+              Strava refused the merge <b>{pendingMerge.name}</b>: it waits for its parts to be deleted.
+            </Text>
+            <Button size="sm" variant="surface" onClick={() => setMergeOpen(true)}>
+              Open
+            </Button>
+          </HStack>
+        </Card>
+      )}
+
+      {mergeOpen && (
+        <MergeDialog
+          open={true}
+          onOpenChange={setMergeOpen}
+          activities={picking ? (allActivities ?? []).filter(({id}) => picked.includes(id)) : []}
+          pending={picking ? null : pendingMerge}
+          onDone={stopPicking}
+        />
+      )}
 
       <Toolbar
         search={search}
@@ -664,12 +744,28 @@ const ActivitiesPage = () => {
                   cursor="pointer"
                   opacity={activity.private ? 0.6 : 1}
                   _hover={{background: 'bg.subtle'}}
+                  background={picked.includes(activity.id) ? 'bg.subtle' : undefined}
                   onClick={() => {
+                    if (picking) return togglePicked(activity.id);
                     rememberScroll(searchParams.toString());
                     navigate(`/activities/${activity.id}`, {state: {list: `/activities?${searchParams}`}});
                   }}
                 >
-                  <RouteThumb activity={activity} size={isWide ? 36 : 44} />
+                  {picking ? (
+                    <Checkbox.Root
+                      checked={picked.includes(activity.id)}
+                      disabled={!picked.includes(activity.id) && MAX_MERGE_PARTS === picked.length}
+                      aria-label={`Pick ${activity.name}`}
+                      // The row handles the click, so a tick on the box does not count twice.
+                      pointerEvents="none"
+                      justifyContent="center"
+                    >
+                      <Checkbox.HiddenInput />
+                      <Checkbox.Control />
+                    </Checkbox.Root>
+                  ) : (
+                    <RouteThumb activity={activity} size={isWide ? 36 : 44} />
+                  )}
                   <Stack gap="0" minWidth="0" paddingLeft={isWide ? '12px' : '0'}>
                     <HStack gap="8px" minWidth="0">
                       <Text fontWeight="medium" truncate={true}>

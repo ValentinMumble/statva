@@ -1,4 +1,5 @@
 import type {ClubRide} from '../models/club';
+import type {CopyResult, MergeChoice, MergeResult, PendingMerge} from '../models/merge';
 import {ActivityZone, Athlete, Comment, DetailedActivity} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
@@ -77,6 +78,44 @@ const setActivityGear = (id: number, gearId: string): Promise<void> => changeAct
 const setActivityNote = (id: number, note: ActivityNote, text: string): Promise<void> =>
   changeActivity(id, {[note]: text});
 
+/** Thrown when a merge or a copy cannot be made (parts overlap, Strava refused it): the server says why. */
+class UploadRefusedError extends Error {}
+
+// A merge Strava refused answers 409 with what it keeps for a retry: an answer, not a failure.
+const sendUpload = async <T>(url: string, body: unknown = {}, keptWhenRefused = false): Promise<T> => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  const answer = await response.json().catch(() => ({}));
+
+  if (401 === response.status) throw new NotLoggedInError('Not logged in');
+  if (403 === response.status) throw new NoWriteAccessError('No write access');
+  if (response.ok || (keptWhenRefused && 409 === response.status)) return answer as T;
+  throw new UploadRefusedError(answer.error ?? `Uploading failed: ${response.status}`);
+};
+
+const sendMerge = (body: unknown): Promise<MergeResult> => sendUpload<MergeResult>('/api/merge', body, true);
+
+/** Copies a ride to today, at the same time of day, on Strava and in Statva. */
+const copyActivityToday = (id: number): Promise<CopyResult> => sendUpload<CopyResult>(`/api/copy?id=${id}`);
+
+/** Merges activities into a new one on Strava, with the name, gear and commute flag chosen. */
+const mergeActivities = ({ids, name, gearId, commute}: MergeChoice): Promise<MergeResult> =>
+  sendMerge({ids, name, gear_id: gearId, commute});
+
+/** Uploads the merge Strava refused again, once its parts are deleted. */
+const retryMerge = (): Promise<MergeResult> => sendMerge({retry: true});
+
+/** The merge Strava refused, waiting for its parts to be deleted, or null. */
+const fetchPendingMerge = async (): Promise<PendingMerge | null> =>
+  (await getJson<{pending: PendingMerge | null}>('/api/merge')).pending;
+
+const discardMerge = async (): Promise<void> => {
+  await fetch('/api/merge', {method: 'DELETE'});
+};
+
 /** The club's calendar, from its team on pedalons.fr. */
 const fetchClubCalendar = (): Promise<{rides: ClubRide[]; complete: boolean}> => getJson('/api/club');
 
@@ -97,6 +136,12 @@ const fetchActivityPhotos = (id: number): Promise<ActivityPhoto[]> =>
 
 export {
   backfillActivities,
+  copyActivityToday,
+  discardMerge,
+  fetchPendingMerge,
+  mergeActivities,
+  UploadRefusedError,
+  retryMerge,
   NoWriteAccessError,
   renameActivity,
   setActivityGear,

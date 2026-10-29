@@ -1,4 +1,4 @@
-import {json} from './_lib/http.js';
+import {GEAR_ID, json, MAX_NAME} from './_lib/http.js';
 import {readSession} from './_lib/session.js';
 import {changeActivity, refreshActivity} from './_lib/sync.js';
 
@@ -17,10 +17,6 @@ export const POST = async (request: Request): Promise<Response> => {
   return null === activity ? json({error: 'Not found'}, 404) : json(activity);
 };
 
-// Strava allows names up to 255 characters; anything longer is no name.
-const MAX_NAME = 255;
-// A Strava bike (b) or shoes (g) id, or "none" to take the gear off.
-const GEAR_ID = /^([bg]\d+|none)$/;
 // Notes are free text; this only keeps a request from being huge.
 const MAX_NOTE = 10_000;
 

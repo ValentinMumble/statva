@@ -16,13 +16,14 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
-import {Link, useLocation, useParams} from 'react-router';
-import {LuArrowLeft, LuExternalLink, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
+import {Link, useLocation, useNavigate, useParams} from 'react-router';
+import {LuArrowLeft, LuCopy, LuExternalLink, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
 import {FaHeart} from 'react-icons/fa6';
 import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
   bestKomRank,
+  CopyResult,
   decodePolyline,
   extractNormalizedPower,
   getActivityUrl,
@@ -37,7 +38,7 @@ import {
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '../../models/strava';
-import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError} from '../../api';
+import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, UploadRefusedError} from '../../api';
 import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
 import {TopTenTrophy} from '../components/HighlightTags';
@@ -50,6 +51,7 @@ const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
 const renameActivity = getFetcher<void>('activity.rename');
 const setActivityGear = getFetcher<void>('activity.gear');
 const setActivityNote = getFetcher<void>('activity.note');
+const copyActivityToday = getFetcher<CopyResult>('activity.copyToday');
 
 const NOTE_NAMES: Record<ActivityNote, string> = {description: 'Description', private_note: 'Private note'};
 
@@ -197,6 +199,48 @@ const GearSelect = ({activity}: {activity: Activity}) => {
 const MAX_NAME_LENGTH = 255;
 
 /** The activity's name, and a pencil to change it, saved on Strava. */
+/** Copies a commute ridden again the same way to today, at the same time of day, then opens the copy. */
+const DuplicateForToday = ({activity}: {activity: Activity}) => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [copying, setCopying] = useState(false);
+
+  const duplicate = async () => {
+    setCopying(true);
+    try {
+      const result = await copyActivityToday(activity.id);
+      if ('copied' === result.outcome) {
+        const copy = result.activity;
+        queryClient.setQueryData<Activity[]>(['activities'], list => (list ? [...list, copy] : list));
+        queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
+          loaded ? {...loaded, [copy.id]: copy as DetailedActivity} : loaded,
+        );
+        toaster.create({type: 'success', title: 'Copied to today'});
+        navigate(`/activities/${copy.id}`);
+      } else {
+        toaster.create({type: 'info', title: 'Strava is still making it: it shows up in a minute'});
+      }
+    } catch (error) {
+      toaster.create({
+        type: 'error',
+        title:
+          error instanceof NoWriteAccessError
+            ? 'Log out and in again to let Statva upload to Strava'
+            : error instanceof UploadRefusedError
+              ? error.message
+              : 'Strava could not be reached: try again',
+      });
+    }
+    setCopying(false);
+  };
+
+  return (
+    <Button size="sm" variant="ghost" onClick={duplicate} loading={copying}>
+      <LuCopy /> Duplicate for today
+    </Button>
+  );
+};
+
 const ActivityTitle = ({activity, history}: {activity: Activity; history: Activity[]}) => {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<string | null>(null);
@@ -616,7 +660,8 @@ const ActivityPage = () => {
             {1 < activity.athlete_count && <Badge variant="surface">{activity.athlete_count} riders</Badge>}
           </HStack>
         </Stack>
-        <HStack gap="8px">
+        <HStack gap="8px" flexWrap="wrap">
+          {activity.commute && <DuplicateForToday activity={activity} />}
           <Button size="sm" variant="ghost" onClick={handleRefresh} loading={refreshing}>
             <LuRefreshCw /> Refresh
           </Button>

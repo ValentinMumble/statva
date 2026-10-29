@@ -228,6 +228,15 @@ describe('ride rules', () => {
 
     expect(fake.strava.puts).toEqual([]);
   });
+
+  it('leaves a merge Statva uploaded as the rider set it up', async () => {
+    const fake = withRule();
+    fake.strava.activities[0].external_id = 'statva-merge-1.tcx';
+
+    await hook({object_type: 'activity', object_id: 7001, aspect_type: 'create', owner_id: 42});
+
+    expect(fake.strava.puts).toEqual([]);
+  });
 });
 
 describe('renaming an activity', () => {

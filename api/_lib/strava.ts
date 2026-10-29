@@ -70,6 +70,14 @@ const stravaPut = async (athleteId: number, path: string, body: Record<string, u
     body: JSON.stringify(body),
   });
 
+/** Sends Strava a file to make an activity of (form fields as its uploads take them): needs activity:write. */
+const stravaUpload = async (athleteId: number, form: FormData): Promise<Response> =>
+  await fetch(`${API}/uploads`, {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${await accessToken(athleteId)}`},
+    body: form,
+  });
+
 const stravaGet = async (athleteId: number, path: string, query = new URLSearchParams()): Promise<Response> => {
   const url = `${API}/${path}${0 < [...query].length ? `?${query}` : ''}`;
   const response = await fetch(url, {headers: {Authorization: `Bearer ${await accessToken(athleteId)}`}});
@@ -100,4 +108,4 @@ const hasAccess = async (athleteId: number): Promise<boolean> => {
   }
 };
 
-export {deauthorize, exchangeCode, forgetTokens, hasAccess, stravaGet, stravaPut};
+export {deauthorize, exchangeCode, forgetTokens, hasAccess, stravaGet, stravaPut, stravaUpload};

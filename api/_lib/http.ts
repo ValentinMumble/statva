@@ -23,4 +23,9 @@ const readCookie = (request: Request, name: string): string | null => {
 const cookie = (name: string, value: string, maxAgeSeconds: number): string =>
   `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSeconds}; HttpOnly; Secure; SameSite=Lax`;
 
-export {cookie, json, readCookie, redirect};
+// Strava allows names up to 255 characters; anything longer is no name.
+const MAX_NAME = 255;
+// A Strava bike (b) or shoes (g) id, or "none" to take the gear off.
+const GEAR_ID = /^([bg]\d+|none)$/;
+
+export {cookie, GEAR_ID, json, MAX_NAME, readCookie, redirect};

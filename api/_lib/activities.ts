@@ -38,5 +38,12 @@ const summaryOf = (activity: StravaActivity): StravaActivity => {
     : {...summary, map: {id: activity.map.id, summary_polyline: activity.map.summary_polyline}};
 };
 
-export {cleanDetail, summaryOf};
+// Activities Statva uploaded (a merge, a copy): the ride rules leave them alone, their name, gear
+// and commute flag are chosen already.
+const UPLOAD_EXTERNAL_ID_PREFIX = 'statva-';
+
+const isStatvaUpload = (activity: StravaActivity): boolean =>
+  String(activity.external_id ?? '').startsWith(UPLOAD_EXTERNAL_ID_PREFIX);
+
+export {cleanDetail, isStatvaUpload, summaryOf, UPLOAD_EXTERNAL_ID_PREFIX};
 export type {StravaActivity};

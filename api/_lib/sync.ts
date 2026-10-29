@@ -1,4 +1,4 @@
-import {cleanDetail, StravaActivity, summaryOf} from './activities.js';
+import {cleanDetail, isStatvaUpload, StravaActivity, summaryOf} from './activities.js';
 import {canBackfill, readUsage} from './budget.js';
 import {athleteKey} from './keys.js';
 import {analysePower, PowerAnalysis, PowerStreams} from './power.js';
@@ -24,6 +24,8 @@ const SERVER_NAMES = ['activities', 'details', 'sync', 'power', 'club'];
 const RIDER_NAMES = ['events', 'labels', 'ftp_tests', 'expenses', 'settings'];
 // Data from features that are gone, still removed when a rider disconnects.
 const RETIRED_NAMES = ['check_ins'];
+// Server data the browser never reads: a merge waiting for its parts to be deleted, with its file.
+const PRIVATE_NAMES = ['merge'];
 
 type SyncState = {nextPage: number; historyDone: boolean; newestStart: number};
 // What a sync brought in, quickly: new activities and their details (detailIds).
@@ -233,10 +235,11 @@ const changeActivity = async (
  * Applies the rider's ride rules to an activity that has just landed (the webhook's create
  * event, or a sync bringing it in): names it, flags it as a commute, puts it on the bike.
  * Only then, so a change the rider makes on Strava later is never undone. Without write
- * access (logged in before Statva asked for it), nothing changes.
+ * access (logged in before Statva asked for it), nothing changes. What Statva uploaded (a merge,
+ * a copy) is left as the rider set it up.
  */
 const applyRideRules = async (athleteId: number, detail: StravaActivity | null): Promise<void> => {
-  if (null === detail) return;
+  if (null === detail || isStatvaUpload(detail)) return;
 
   const rules = (await redis().hget<RideRule[]>(athleteKey(athleteId, 'settings'), 'rideRules')) ?? [];
   const update = ruleUpdate(detail as unknown as RuledActivity, rules);
@@ -339,7 +342,9 @@ const backfillActivities = async (athleteId: number): Promise<BackfillReport> =>
 
 /** Removes everything Statva holds for a rider, as Strava requires once they disconnect. */
 const forgetAthlete = async (athleteId: number): Promise<void> => {
-  await redis().del(...[...SERVER_NAMES, ...RIDER_NAMES, ...RETIRED_NAMES].map(name => athleteKey(athleteId, name)));
+  await redis().del(
+    ...[...SERVER_NAMES, ...RIDER_NAMES, ...RETIRED_NAMES, ...PRIVATE_NAMES].map(name => athleteKey(athleteId, name)),
+  );
 };
 
 export {
