@@ -1,5 +1,5 @@
 import type {ClubRide} from '../models/club';
-import type {CopyResult, CopyStart, MergeChoice, MergeResult, PendingMerge} from '../models/merge';
+import type {CopyChoice, CopyResult, MergeChoice, MergeResult, PendingMerge} from '../models/merge';
 import {ActivityZone, Athlete, Comment, DetailedActivity} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
@@ -99,9 +99,12 @@ const sendUpload = async <T>(url: string, body: unknown = {}, keptWhenRefused = 
 const sendMerge = (body: unknown): Promise<MergeResult> =>
   sendUpload<MergeResult>('/api/activity?action=merge', body, true);
 
-/** Copies a ride to another day and time (today at its own time by default), on Strava and in Statva. */
-const copyActivity = (id: number, start: CopyStart = {}): Promise<CopyResult> =>
-  sendUpload<CopyResult>(`/api/activity?action=copy&id=${id}`, start);
+/**
+ * Copies a ride to another day and time, with the gear and commute flag chosen (today at its own
+ * time, with its own gear and flag, by default), on Strava and in Statva.
+ */
+const copyActivity = (id: number, {date, time, gearId, commute}: CopyChoice = {}): Promise<CopyResult> =>
+  sendUpload<CopyResult>(`/api/activity?action=copy&id=${id}`, {date, time, gear_id: gearId, commute});
 
 /** Merges activities into a new one on Strava, with the name, gear and commute flag chosen. */
 const mergeActivities = ({ids, name, gearId, commute}: MergeChoice): Promise<MergeResult> =>

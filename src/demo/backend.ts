@@ -1,8 +1,8 @@
 import {
   BikeExpense,
   ClubRide,
+  CopyChoice,
   CopyResult,
-  CopyStart,
   decodePolyline,
   encodePolyline,
   Event,
@@ -114,7 +114,7 @@ const demoBackend = {
   },
   // The day and time asked for (today at the ride's own time by default) in the browser's time
   // zone, near enough for the demo, once the copy would be over.
-  copyActivity: (id: number, {date, time}: CopyStart = {}): Promise<CopyResult> => {
+  copyActivity: (id: number, {date, time, gearId, commute}: CopyChoice = {}): Promise<CopyResult> => {
     const original = demo().activities.find(activity => activity.id === id);
     if (undefined === original) return Promise.reject(new UploadRefusedError('The activity is not on Strava any more'));
     const day = date ?? new Date().toLocaleDateString('en-CA');
@@ -136,6 +136,8 @@ const demoBackend = {
       id: copyId,
       start_date: start.toISOString(),
       start_date_local: `${day}T${time ?? String(original.start_date_local).slice(11, 16)}:00Z`,
+      gear_id: undefined === gearId ? original.gear_id : 'none' === gearId ? null : gearId,
+      commute: commute ?? original.commute,
       kudos_count: 0,
     };
     demo().activities = [...demo().activities, activity];

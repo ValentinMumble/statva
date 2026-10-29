@@ -3,6 +3,7 @@ import {
   Badge,
   Box,
   Button,
+  Checkbox,
   Dialog,
   Field,
   Grid,
@@ -44,6 +45,7 @@ import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '.
 import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, UploadRefusedError} from '../../api';
 import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
+import {GearField} from '../components/GearField';
 import {TopTenTrophy} from '../components/HighlightTags';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
@@ -213,12 +215,14 @@ const DuplicateActivity = ({activity}: {activity: Activity}) => {
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-CA'));
   // Strava writes the local time with a Z, though it is not UTC.
   const [time, setTime] = useState(activity.start_date_local.slice(11, 16));
+  const [gearId, setGearId] = useState(activity.gear_id ?? '');
+  const [commute, setCommute] = useState(activity.commute);
   const [copying, setCopying] = useState(false);
 
   const duplicate = async () => {
     setCopying(true);
     try {
-      const result = await copyActivity(activity.id, {date, time});
+      const result = await copyActivity(activity.id, {date, time, gearId: gearId || 'none', commute});
       if ('copied' === result.outcome) {
         const copy = result.activity;
         queryClient.setQueryData<Activity[]>(['activities'], list => (list ? [...list, copy] : list));
@@ -262,8 +266,7 @@ const DuplicateActivity = ({activity}: {activity: Activity}) => {
             <Dialog.Body>
               <Stack gap="12px">
                 <Text fontSize="sm" color="fg.muted">
-                  The same ride, starting then, with its name, gear and commute flag. It stays off your followers'
-                  feeds.
+                  The same ride with its name, starting then. It stays off your followers' feeds.
                 </Text>
                 <HStack gap="12px">
                   <Field.Root>
@@ -275,6 +278,12 @@ const DuplicateActivity = ({activity}: {activity: Activity}) => {
                     <Input type="time" value={time} onChange={({target}) => setTime(target.value)} />
                   </Field.Root>
                 </HStack>
+                <GearField sport={activity.sport_type} value={gearId} onChange={setGearId} />
+                <Checkbox.Root checked={commute} onCheckedChange={({checked}) => setCommute(true === checked)}>
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control />
+                  <Checkbox.Label>Commute</Checkbox.Label>
+                </Checkbox.Root>
               </Stack>
             </Dialog.Body>
             <Dialog.Footer>

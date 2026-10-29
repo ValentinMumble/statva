@@ -4,15 +4,17 @@ import {buildTcx, finish, pointsOf, readPart, upload, UploadError} from './merge
 /**
  * Copies a ride to another day and time (today at the same time of day by default), where it
  * was ridden: for a commute ridden again the same way, with nothing recorded. Its data streams
- * move to the new start, and it goes up with the same name, description, gear and commute
- * flag. It stays off followers' feeds: it is a copy, not news.
+ * move to the new start, and it goes up with the same name and description, and the gear and
+ * commute flag chosen (the ride's own by default). It stays off followers' feeds: it is a
+ * copy, not news.
  */
 
 type CopyResult = {outcome: 'copied'; activity: StravaActivity} | {outcome: 'processing'};
 
-// When the copy starts, where the ride was: a day (2026-10-29) and a time (08:05). Either can
-// be left out: today, and the time of day the ride started.
-type CopyStart = {date?: string; time?: string};
+// When the copy starts, where the ride was: a day (2026-10-29) and a time (08:05), and its gear
+// ("none" for no gear) and commute flag. Each can be left out: today, the time of day the ride
+// started, and the ride's own gear and flag.
+type CopyChoice = {date?: string; time?: string; gearId?: string; commute?: boolean};
 
 // The time zone of a Strava activity, from its "(GMT+01:00) Europe/Paris".
 const timeZoneOf = (timezone: unknown): string => String(timezone ?? '').replace(/^\(.*?\)\s*/, '') || 'UTC';
@@ -39,7 +41,7 @@ const offsetAt = (timeZone: string, moment: number): number => {
  * The moment the copy starts: the day and time asked for, where the ride was, or today and the
  * wall-clock time the ride started.
  */
-const copyStart = (startLocal: string, timeZone: string, now: number, {date, time}: CopyStart = {}): number => {
+const copyStart = (startLocal: string, timeZone: string, now: number, {date, time}: CopyChoice = {}): number => {
   const [year, month, day] = (
     date ??
     new Intl.DateTimeFormat('en-CA', {
@@ -63,7 +65,7 @@ const copyStart = (startLocal: string, timeZone: string, now: number, {date, tim
 const copyActivity = async (
   athleteId: number,
   activityId: number,
-  start: CopyStart = {},
+  choice: CopyChoice = {},
   now = Date.now(),
 ): Promise<CopyResult> => {
   const part = await readPart(athleteId, activityId);
@@ -72,7 +74,7 @@ const copyActivity = async (
   const points = pointsOf(part);
   if (0 === points.length) throw new UploadError(`"${activity.name}" has no recorded data`, 422);
 
-  const shift = copyStart(String(activity.start_date_local), timeZone, now, start) - points[0].time;
+  const shift = copyStart(String(activity.start_date_local), timeZone, now, choice) - points[0].time;
   const moved = points.map(point => ({...point, time: point.time + shift}));
   const end = moved[moved.length - 1].time;
   if (end > now) {
@@ -94,7 +96,7 @@ const copyActivity = async (
       description: String(activity.description ?? ''),
       sportType: String(activity.sport_type),
       trainer: Boolean(activity.trainer),
-      commute: Boolean(activity.commute),
+      commute: choice.commute ?? Boolean(activity.commute),
     },
     'copy',
   );
@@ -103,9 +105,12 @@ const copyActivity = async (
 
   return {
     outcome: 'copied',
-    activity: await finish(athleteId, uploaded, {gear_id: activity.gear_id ?? 'none', hide_from_home: true}),
+    activity: await finish(athleteId, uploaded, {
+      gear_id: choice.gearId ?? activity.gear_id ?? 'none',
+      hide_from_home: true,
+    }),
   };
 };
 
 export {copyActivity, copyStart};
-export type {CopyResult, CopyStart};
+export type {CopyChoice, CopyResult};

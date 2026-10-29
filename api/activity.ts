@@ -74,21 +74,36 @@ const merge = async (request: Request, athleteId: number): Promise<Response> => 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME = /^\d{2}:\d{2}$/;
 
-/** Copies a ride to another day and time ({date, time}, today at its own time by default), on Strava and in Statva. */
+/**
+ * Copies a ride to another day and time ({date, time, gear_id, commute}: today at its own time,
+ * with its own gear and commute flag by default), on Strava and in Statva.
+ */
 const copy = async (request: Request, athleteId: number, activityId: number): Promise<Response> => {
-  const body = (await request.json().catch(() => null)) as {date?: unknown; time?: unknown} | null;
+  const body = (await request.json().catch(() => null)) as {
+    date?: unknown;
+    time?: unknown;
+    gear_id?: unknown;
+    commute?: unknown;
+  } | null;
   const date = body?.date ?? undefined;
   const time = body?.time ?? undefined;
+  const gearId = body?.gear_id ?? undefined;
+  const commute = body?.commute ?? undefined;
   if (
     (undefined !== date && ('string' !== typeof date || !DATE.test(date))) ||
     (undefined !== time && ('string' !== typeof time || !TIME.test(time)))
   )
     return json({error: 'A day as 2026-10-29 and a time as 08:05'}, 400);
+  if (undefined !== gearId && ('string' !== typeof gearId || !GEAR_ID.test(gearId)))
+    return json({error: 'Unknown gear'}, 400);
+  if (undefined !== commute && 'boolean' !== typeof commute) return json({error: 'Commute is yes or no'}, 400);
 
   try {
     const result = await copyActivity(athleteId, activityId, {
       date: date as string | undefined,
       time: time as string | undefined,
+      gearId: gearId as string | undefined,
+      commute: commute as boolean | undefined,
     });
 
     return json(result, 'processing' === result.outcome ? 202 : 200);

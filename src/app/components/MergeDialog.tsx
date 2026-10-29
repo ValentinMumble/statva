@@ -7,7 +7,6 @@ import {
   HStack,
   Input,
   Link as ChakraLink,
-  NativeSelect,
   Portal,
   Spinner,
   Stack,
@@ -17,11 +16,12 @@ import {useQueryClient} from '@tanstack/react-query';
 import {Link} from 'react-router';
 import {LuExternalLink} from 'react-icons/lu';
 import {UploadRefusedError, NoWriteAccessError} from '../../api';
-import {useGear, useLabels, useSettings} from '../../hooks';
+import {useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {isPedalled, MergeChoice, MergePart, mergePlan, MergeResult, PendingMerge} from '../../models';
+import {MergeChoice, MergePart, mergePlan, MergeResult, PendingMerge} from '../../models';
 import {Activity} from '../../models/strava';
 import {duration, km} from '../format';
+import {GearField} from './GearField';
 
 const mergeActivities = getFetcher<MergeResult>('activities.merge');
 const retryMerge = getFetcher<MergeResult>('activities.merge.retry');
@@ -71,8 +71,6 @@ type MergeDialogProps = {
 const MergeDialog = ({open, onOpenChange, activities = [], pending = null, onDone}: MergeDialogProps) => {
   const queryClient = useQueryClient();
   const {locale} = useSettings();
-  const {label} = useLabels();
-  const gear = useGear();
   const plan = mergePlan(activities);
   const [first] = plan.parts;
   const [step, setStep] = useState<Step>(null === pending ? {kind: 'form'} : {kind: 'refused', pending});
@@ -81,8 +79,6 @@ const MergeDialog = ({open, onOpenChange, activities = [], pending = null, onDon
   const [commute, setCommute] = useState(first?.commute ?? false);
   const [error, setError] = useState<string | null>(null);
   const sport = first?.sport_type ?? '';
-  const gearType = isPedalled(sport) ? 'bike' : /Run|Walk|Hike/.test(sport) ? 'shoes' : null;
-  const options = gear.filter(item => item.type === gearType && (!item.retired || item.id === gearId));
 
   const handle = async (send: () => Promise<MergeResult>, parts: MergePart[]) => {
     setStep({kind: 'working'});
@@ -193,22 +189,7 @@ const MergeDialog = ({open, onOpenChange, activities = [], pending = null, onDon
                     <Field.Label>Name</Field.Label>
                     <Input value={name} maxLength={MAX_NAME_LENGTH} onChange={({target}) => setName(target.value)} />
                   </Field.Root>
-                  {null !== gearType && (
-                    <Field.Root>
-                      <Field.Label>{'bike' === gearType ? 'Bike' : 'Shoes'}</Field.Label>
-                      <NativeSelect.Root>
-                        <NativeSelect.Field value={gearId} onChange={({target}) => setGearId(target.value)}>
-                          <option value="">{'bike' === gearType ? 'No bike' : 'No shoes'}</option>
-                          {options.map(item => (
-                            <option key={item.id} value={item.id}>
-                              {label(item.id) === item.id ? item.name : label(item.id)}
-                            </option>
-                          ))}
-                        </NativeSelect.Field>
-                        <NativeSelect.Indicator />
-                      </NativeSelect.Root>
-                    </Field.Root>
-                  )}
+                  <GearField sport={sport} value={gearId} onChange={setGearId} />
                   <Checkbox.Root checked={commute} onCheckedChange={({checked}) => setCommute(true === checked)}>
                     <Checkbox.HiddenInput />
                     <Checkbox.Control />

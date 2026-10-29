@@ -58,6 +58,15 @@ describe('copying a ride', () => {
     expect(fake.strava.uploads[0].file).toContain('<Id>2026-10-27T07:05:00.000Z</Id>');
   });
 
+  it('takes the gear and commute flag chosen', async () => {
+    const fake = withCommute();
+
+    await copyActivity(42, 7001, {gearId: 'b2', commute: false}, Date.parse('2026-10-29T14:00:00Z'));
+
+    expect(fake.strava.uploads[0]).toMatchObject({commute: '0'});
+    expect(fake.strava.puts).toEqual([{id: 9001, gear_id: 'b2', hide_from_home: true}]);
+  });
+
   it('waits until that time has passed today', async () => {
     const fake = withCommute();
 
@@ -80,6 +89,8 @@ describe('copying a ride', () => {
       );
 
     expect((await call({date: '29/10', time: '8h'})).status).toBe(400);
+    expect((await call({gear_id: 'bike'})).status).toBe(400);
+    expect((await call({commute: 'yes'})).status).toBe(400);
     expect((await call()).status).toBe(200);
 
     fake.strava.uploadError = 'copy.tcx duplicate of activity 9001';
