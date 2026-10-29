@@ -1,4 +1,4 @@
-import {copyForToday} from './_lib/copy.js';
+import {copyActivity} from './_lib/copy.js';
 import {GEAR_ID, json, MAX_NAME} from './_lib/http.js';
 import {
   discardMerge,
@@ -14,7 +14,7 @@ import {changeActivity, refreshActivity} from './_lib/sync.js';
 
 /**
  * One activity, and what Statva uploads from activities: a merge (?action=merge) and a copy to
- * today (?action=copy). One function for all, as the Hobby plan allows 12 per deployment.
+ * another day (?action=copy). One function for all, as the Hobby plan allows 12 per deployment.
  */
 
 // Reading up to 10 activities, uploading and waiting for Strava takes longer than the default.
@@ -70,10 +70,26 @@ const merge = async (request: Request, athleteId: number): Promise<Response> => 
   }
 };
 
-/** Copies a ride to today, at the same time of day, on Strava and in Statva. */
-const copy = async (athleteId: number, activityId: number): Promise<Response> => {
+// A day and a time of day, as the date and time inputs give them.
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME = /^\d{2}:\d{2}$/;
+
+/** Copies a ride to another day and time ({date, time}, today at its own time by default), on Strava and in Statva. */
+const copy = async (request: Request, athleteId: number, activityId: number): Promise<Response> => {
+  const body = (await request.json().catch(() => null)) as {date?: unknown; time?: unknown} | null;
+  const date = body?.date ?? undefined;
+  const time = body?.time ?? undefined;
+  if (
+    (undefined !== date && ('string' !== typeof date || !DATE.test(date))) ||
+    (undefined !== time && ('string' !== typeof time || !TIME.test(time)))
+  )
+    return json({error: 'A day as 2026-10-29 and a time as 08:05'}, 400);
+
   try {
-    const result = await copyForToday(athleteId, activityId);
+    const result = await copyActivity(athleteId, activityId, {
+      date: date as string | undefined,
+      time: time as string | undefined,
+    });
 
     return json(result, 'processing' === result.outcome ? 202 : 200);
   } catch (error) {
@@ -93,7 +109,7 @@ export const GET = async (request: Request): Promise<Response> => {
 
 /**
  * Fetches one activity from Strava again and stores it, for when the stored copy is out of date;
- * merges activities (?action=merge), or copies one to today (?action=copy).
+ * merges activities (?action=merge), or copies one to another day (?action=copy).
  */
 export const POST = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
@@ -104,7 +120,7 @@ export const POST = async (request: Request): Promise<Response> => {
   const activityId = activityIdOf(request);
 
   if (null === activityId) return json({error: 'Not found'}, 404);
-  if ('copy' === actionOf(request)) return await copy(athleteId, activityId);
+  if ('copy' === actionOf(request)) return await copy(request, athleteId, activityId);
 
   const activity = await refreshActivity(athleteId, activityId);
 

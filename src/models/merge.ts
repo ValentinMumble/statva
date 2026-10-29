@@ -28,8 +28,12 @@ type MergeResult =
 
 type MergeChoice = {ids: number[]; name: string; gearId: string; commute: boolean};
 
-// A ride copied to today, at the same time of day (or still being made on Strava).
+// A ride copied to another day and time (or still being made on Strava).
 type CopyResult = {outcome: 'copied'; activity: Activity} | {outcome: 'processing'};
+
+// When a copy starts, where the ride was: a day (2026-10-29) and a time (08:05). Left out:
+// today, and the time of day the ride started.
+type CopyStart = {date?: string; time?: string};
 
 type MergePlan = {
   parts: Activity[];
@@ -64,4 +68,4 @@ const mergePlan = (activities: Activity[]): MergePlan => {
 };
 
 export {MAX_MERGE_PARTS, mergePlan};
-export type {CopyResult, MergeChoice, MergePart, MergePlan, MergeResult, PendingMerge};
+export type {CopyResult, CopyStart, MergeChoice, MergePart, MergePlan, MergeResult, PendingMerge};

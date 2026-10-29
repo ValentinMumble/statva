@@ -3,6 +3,8 @@ import {
   Badge,
   Box,
   Button,
+  Dialog,
+  Field,
   Grid,
   HStack,
   Icon,
@@ -10,6 +12,7 @@ import {
   Image,
   Input,
   NativeSelect,
+  Portal,
   Skeleton,
   Stack,
   Text,
@@ -51,7 +54,7 @@ const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
 const renameActivity = getFetcher<void>('activity.rename');
 const setActivityGear = getFetcher<void>('activity.gear');
 const setActivityNote = getFetcher<void>('activity.note');
-const copyActivityToday = getFetcher<CopyResult>('activity.copyToday');
+const copyActivity = getFetcher<CopyResult>('activity.copy');
 
 const NOTE_NAMES: Record<ActivityNote, string> = {description: 'Description', private_note: 'Private note'};
 
@@ -199,23 +202,31 @@ const GearSelect = ({activity}: {activity: Activity}) => {
 const MAX_NAME_LENGTH = 255;
 
 /** The activity's name, and a pencil to change it, saved on Strava. */
-/** Copies a commute ridden again the same way to today, at the same time of day, then opens the copy. */
-const DuplicateForToday = ({activity}: {activity: Activity}) => {
+/**
+ * Copies a ride ridden again the same way (a commute, say) with nothing recorded, to the day and
+ * time chosen: today at the ride's own time by default. Then opens the copy.
+ */
+const DuplicateActivity = ({activity}: {activity: Activity}) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState(() => new Date().toLocaleDateString('en-CA'));
+  // Strava writes the local time with a Z, though it is not UTC.
+  const [time, setTime] = useState(activity.start_date_local.slice(11, 16));
   const [copying, setCopying] = useState(false);
 
   const duplicate = async () => {
     setCopying(true);
     try {
-      const result = await copyActivityToday(activity.id);
+      const result = await copyActivity(activity.id, {date, time});
       if ('copied' === result.outcome) {
         const copy = result.activity;
         queryClient.setQueryData<Activity[]>(['activities'], list => (list ? [...list, copy] : list));
         queryClient.setQueryData<Record<string, DetailedActivity>>(['activityMeta'], loaded =>
           loaded ? {...loaded, [copy.id]: copy as DetailedActivity} : loaded,
         );
-        toaster.create({type: 'success', title: 'Copied to today'});
+        toaster.create({type: 'success', title: 'Duplicated'});
+        setOpen(false);
         navigate(`/activities/${copy.id}`);
       } else {
         toaster.create({type: 'info', title: 'Strava is still making it: it shows up in a minute'});
@@ -235,9 +246,49 @@ const DuplicateForToday = ({activity}: {activity: Activity}) => {
   };
 
   return (
-    <Button size="sm" variant="ghost" onClick={duplicate} loading={copying}>
-      <LuCopy /> Duplicate for today
-    </Button>
+    <Dialog.Root open={open} onOpenChange={({open: isOpen}) => setOpen(isOpen)} size="xs" placement="center">
+      <Dialog.Trigger asChild={true}>
+        <Button size="sm" variant="ghost">
+          <LuCopy /> Duplicate
+        </Button>
+      </Dialog.Trigger>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>Duplicate {activity.name}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <Stack gap="12px">
+                <Text fontSize="sm" color="fg.muted">
+                  The same ride, starting then, with its name, gear and commute flag. It stays off your followers'
+                  feeds.
+                </Text>
+                <HStack gap="12px">
+                  <Field.Root>
+                    <Field.Label>Day</Field.Label>
+                    <Input type="date" value={date} onChange={({target}) => setDate(target.value)} />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Start</Field.Label>
+                    <Input type="time" value={time} onChange={({target}) => setTime(target.value)} />
+                  </Field.Root>
+                </HStack>
+              </Stack>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button colorPalette="brand" onClick={duplicate} loading={copying} disabled={'' === date || '' === time}>
+                Duplicate
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 
@@ -661,7 +712,8 @@ const ActivityPage = () => {
           </HStack>
         </Stack>
         <HStack gap="8px" flexWrap="wrap">
-          {activity.commute && <DuplicateForToday activity={activity} />}
+          {/* A manual entry has no recorded data to copy. */}
+          {!activity.manual && <DuplicateActivity activity={activity} />}
           <Button size="sm" variant="ghost" onClick={handleRefresh} loading={refreshing}>
             <LuRefreshCw /> Refresh
           </Button>

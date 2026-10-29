@@ -2,6 +2,7 @@ import {
   BikeExpense,
   ClubRide,
   CopyResult,
+  CopyStart,
   decodePolyline,
   encodePolyline,
   Event,
@@ -111,16 +112,22 @@ const demoBackend = {
 
     return answer({outcome: 'merged', activity, parts: plan.parts.map(part => part.id)});
   },
-  // Today at the same time of day (UTC is near enough for the demo), once that time is past.
-  copyActivityToday: (id: number): Promise<CopyResult> => {
+  // The day and time asked for (today at the ride's own time by default) in the browser's time
+  // zone, near enough for the demo, once the copy would be over.
+  copyActivity: (id: number, {date, time}: CopyStart = {}): Promise<CopyResult> => {
     const original = demo().activities.find(activity => activity.id === id);
     if (undefined === original) return Promise.reject(new UploadRefusedError('The activity is not on Strava any more'));
-    const time = original.start_date.slice(11);
-    const start = new Date(`${new Date().toISOString().slice(0, 10)}T${time}`);
+    const day = date ?? new Date().toLocaleDateString('en-CA');
+    const start = new Date(`${day}T${time ?? String(original.start_date_local).slice(11, 16)}`);
     const end = start.getTime() + original.elapsed_time * 1000;
     if (end > Date.now()) {
-      const at = new Date(end).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
-      return Promise.reject(new UploadRefusedError(`Today's ride would end at ${at}: copy it after that`));
+      const at = new Date(end).toLocaleString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      return Promise.reject(new UploadRefusedError(`The copy would end on ${at}, still to come: pick an earlier time`));
     }
 
     const copyId = Math.max(...demo().activities.map(activity => activity.id)) + 1;
@@ -128,7 +135,7 @@ const demoBackend = {
       ...original,
       id: copyId,
       start_date: start.toISOString(),
-      start_date_local: `${start.toISOString().slice(0, 10)}T${String(original.start_date_local).slice(11)}`,
+      start_date_local: `${day}T${time ?? String(original.start_date_local).slice(11, 16)}:00Z`,
       kudos_count: 0,
     };
     demo().activities = [...demo().activities, activity];

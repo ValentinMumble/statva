@@ -139,11 +139,11 @@ it**).
 
 - Back link to the list as it was left; date, name, and badges (gear, commute, private,
   KOM or top 10 trophy, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
-- On a commute, **Duplicate for today** copies the ride to today at the same time of day where
-  it was ridden, for a commute ridden again the same way with nothing recorded: its data
-  streams move to the new start and it goes up to Strava with its name, description, gear
-  and commute flag, kept off followers' feeds, then opens. Not before that time has passed
-  today: it would end in the future.
+- **Duplicate** (any activity with recorded data, not a manual entry) copies the ride to the
+  day and start time chosen, where it was ridden (today at its own time by default), for a
+  ride done again the same way with nothing recorded, a commute say: its data streams move
+  to the new start and it goes up to Strava with its name, description, gear and commute
+  flag, kept off followers' feeds, then opens. Not when the copy would end in the future.
 - The name has a pencil to rename it, and, when it has no emoji, a button that opens the
   editor with a suggested name (the name most given to the same route, or the name with an
   emoji not used yet). The gear badge is a menu to move a ride to
@@ -409,7 +409,7 @@ also merges and copies. All but login, callback and the webhook need a session.
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
 | `POST /api/sync?step=backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
-| `POST /api/activity?action=copy&id=` | Copy a ride to today at the same time of day, on Strava and in Statva (4) |
+| `POST /api/activity?action=copy&id=` | Copy a ride to the day and time given (`{date, time}`, today at its own time by default), on Strava and in Statva (4) |
 | `GET, POST, DELETE /api/activity?action=merge` | Merge activities into a new one on Strava (3.5); the merge Strava refused, uploaded again or forgotten |
 | `GET /api/club` | The club's calendar from its team on pedalons.fr, read again at most every 6 hours |
 | `PUT /api/activity?id=` | Rename an activity, move it to other gear, or change its description or private note, on Strava and in Statva (422 when Strava keeps a field as it was) |

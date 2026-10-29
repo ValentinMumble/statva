@@ -1,6 +1,6 @@
 import {
   backfillActivities,
-  copyActivityToday,
+  copyActivity,
   discardMerge,
   fetchPendingMerge,
   mergeActivities,
@@ -52,7 +52,7 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'activity.gear': setActivityGear,
   'activity.note': setActivityNote,
   'activities.merge': mergeActivities,
-  'activity.copyToday': copyActivityToday,
+  'activity.copy': copyActivity,
   'activities.merge.retry': retryMerge,
   'activities.merge.pending': fetchPendingMerge,
   'activities.merge.discard': discardMerge,
@@ -89,7 +89,7 @@ const DEMO: typeof REAL = {
   'activity.gear': demoBackend.setActivityGear,
   'activity.note': demoBackend.setActivityNote,
   'activities.merge': demoBackend.mergeActivities,
-  'activity.copyToday': demoBackend.copyActivityToday,
+  'activity.copy': demoBackend.copyActivity,
   // The demo's merges always go through, so none waits.
   'activities.merge.retry': () => Promise.reject(new Error('No merge is waiting')),
   'activities.merge.pending': () => Promise.resolve(null),
