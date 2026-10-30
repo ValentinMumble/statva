@@ -477,6 +477,12 @@ The rider can read every name but `merge`, and write only their own five. Shared
 `strava_tokens` (every rider's tokens, never reachable from the browser) and
 `strava:usage` (the app's rate limit usage).
 
+The browser also keeps the rider's activities and their details as last loaded (IndexedDB
+`statva`, one entry per athlete, saved once the whole list has arrived and again after each
+change). A visit shows them at once, then the first sync reloads the list whole and the
+details reload when a page needs them. Logging out or disconnecting deletes them from the
+browser. In a private window or with storage blocked, the app loads from the server as before.
+
 ### 11.6 Scripts
 Run with `node` from the repo root, reading `.env.local`, for the first athlete in
 `STRAVA_ATHLETE_IDS` (log in once first).

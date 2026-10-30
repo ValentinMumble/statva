@@ -25,6 +25,16 @@ const DETAILS_PER_READ = 50;
 let backfilling = false;
 // Whether the whole list has arrived once: until then what is on screen is only its first pages.
 let wholeListLoaded = false;
+// Whether the list on screen came from this browser's cache: the first sync then reloads it whole.
+let listFromCache = false;
+
+/** The list is the whole one this browser kept from an earlier visit. */
+const markListFromCache = () => {
+  wholeListLoaded = true;
+  listFromCache = true;
+};
+
+const isWholeListLoaded = () => wholeListLoaded;
 
 /**
  * The stored activities, shown at once, and a sync with Strava on every visit. A first
@@ -103,8 +113,11 @@ const useAllActivities = () => {
     // The newest activities are fetched again, not the whole list, even when this sync found none:
     // Strava's webhook stores a new activity on the server as soon as it is uploaded (and removes
     // a deleted one), so the sync has nothing to do, but this screen has not seen it yet. One
-    // small call.
-    if (!pagedHistory) replaceLatest(await fetchLatest(FIRST_COUNT));
+    // small call. A list from this browser's cache is reloaded whole instead, once the sync has
+    // stored what it found: older activities may have changed since it was kept.
+    if (listFromCache && !pagedHistory) await queryClient.invalidateQueries({queryKey: ['activities']});
+    else if (!pagedHistory) replaceLatest(await fetchLatest(FIRST_COUNT));
+    listFromCache = false;
 
     await addDetails(report.detailIds);
 
@@ -204,4 +217,4 @@ const useActivities = ({
   };
 };
 
-export {useActivities, useAllActivities};
+export {isWholeListLoaded, useActivities, useAllActivities, markListFromCache};

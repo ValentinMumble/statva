@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {FormEvent, useMemo, useState} from 'react';
 import {
   Box,
   Button,
@@ -16,6 +16,7 @@ import {
 } from '@chakra-ui/react';
 import {useQueryClient} from '@tanstack/react-query';
 import {LuTrash2} from 'react-icons/lu';
+import {forgetCachedData} from '../../api';
 import {toaster} from '../../components/ui';
 import {leaveDemo} from '../../demo/mode';
 import {
@@ -36,6 +37,14 @@ import {sportName} from '../components/sport';
 const saveSetting = getFetcher<void>('settings.set');
 const upsertLabel = getFetcher<void>('labels.set');
 const deleteLabel = getFetcher<void>('labels.delete');
+
+// The activities this browser keeps go too, before the server deletes the rest.
+const disconnect = async (event: FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  await forgetCachedData();
+  form.submit();
+};
 
 const LOCALES = [
   ['en-GB', 'English (UK)'],
@@ -365,7 +374,7 @@ const AccountSection = () => {
             Leave the demo
           </Button>
         ) : confirming ? (
-          <form method="post" action="/api/auth/disconnect">
+          <form method="post" action="/api/auth/disconnect" onSubmit={disconnect}>
             <HStack gap="8px">
               <Text fontSize="sm">This deletes everything Statva holds for you.</Text>
               <Button type="submit" colorPalette="red">

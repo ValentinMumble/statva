@@ -1,8 +1,9 @@
-import {useState} from 'react';
+import {MouseEvent, useState} from 'react';
 import {Box, Button, Flex, HStack, Icon, IconButton, Stack, Text} from '@chakra-ui/react';
 import {Link, Outlet, useLocation} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
 import {LuLogOut, LuPlus, LuRefreshCw, LuX} from 'react-icons/lu';
+import {forgetCachedData} from '../api';
 import {toaster} from '../components/ui';
 import {LogEvent} from '../components/event';
 import {leaveDemo} from '../demo/mode';
@@ -18,6 +19,14 @@ const TAB_BAR_HEIGHT = '62px';
 const TAB_BAR_GAP = '8px';
 // Its sides, kept clear of the rounded corners and of the notch in landscape.
 const TAB_BAR_SIDE = '14px';
+
+// The activities this browser keeps go first, so the next person on it does not see them.
+const logOut = async (event: MouseEvent<HTMLAnchorElement>) => {
+  event.preventDefault();
+  const {href} = event.currentTarget;
+  await forgetCachedData();
+  window.location.assign(href);
+};
 
 const LogButton = ({compact = false}: {compact?: boolean}) => {
   const {refetch} = useEvents();
@@ -105,7 +114,7 @@ const AccountRow = () => {
         </IconButton>
       ) : (
         <IconButton aria-label="Log out" size="sm" variant="ghost" asChild={true}>
-          <a href="/api/auth/logout">
+          <a href="/api/auth/logout" onClick={logOut}>
             <LuLogOut />
           </a>
         </IconButton>

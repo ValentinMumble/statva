@@ -1,7 +1,7 @@
 import {ReactNode} from 'react';
 import {Button, Center, Heading, Spinner, Stack, Text} from '@chakra-ui/react';
 import {enterDemo} from '../demo/mode';
-import {useSession} from '../hooks';
+import {useBrowserCache, useSession} from '../hooks';
 
 const STRAVA_ORANGE = '#FC4C02';
 
@@ -15,10 +15,12 @@ const REASONS: Record<string, string> = {
 
 /** Shows the page only to a logged-in rider, and a Connect with Strava screen to anyone else. */
 const AuthGate = ({children}: {children: ReactNode}) => {
-  const {isLoggedIn, isLoading} = useSession();
+  const {isLoggedIn, isLoading, athleteId} = useSession();
+  // The data kept from the last visit is put in place before any page asks for it.
+  const cacheReady = useBrowserCache(athleteId);
   const reason = REASONS[new URLSearchParams(window.location.search).get('login') ?? ''];
 
-  if (isLoading) {
+  if (isLoading || !cacheReady) {
     return (
       <Center height="100dvh">
         <Spinner />
