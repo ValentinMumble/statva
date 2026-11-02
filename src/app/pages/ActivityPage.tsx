@@ -38,6 +38,7 @@ import {
   hasEmoji,
   intensityOf,
   isPedalled,
+  messagePieces,
   suggestName,
   terrainOf,
 } from '../../models';
@@ -242,7 +243,9 @@ const DuplicateActivity = ({activity}: {activity: Activity}) => {
           error instanceof NoWriteAccessError
             ? 'Log out and in again to let Statva upload to Strava'
             : error instanceof UploadRefusedError
-              ? error.message
+              ? messagePieces(error.message)
+                  .map(piece => ('text' in piece ? piece.text : piece.name))
+                  .join('')
               : 'Strava could not be reached: try again',
       });
     }

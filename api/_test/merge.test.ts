@@ -105,7 +105,8 @@ describe('merging activities', () => {
     });
     expect(upload.external_id).toMatch(/^statva-merge-/);
     expect(upload.file.match(/<Trackpoint>/g)).toHaveLength(4);
-    expect(upload.file).toContain('<Id>2026-10-28T14:00:00.000Z</Id>');
+    // A second after the first part: Strava refuses an upload starting with one of the rider's activities.
+    expect(upload.file).toContain('<Id>2026-10-28T14:00:01.000Z</Id>');
     expect(upload.file).toContain('<DistanceMeters>4500</DistanceMeters>');
     expect(fake.strava.puts).toEqual([{id: 9001, gear_id: 'b1'}]);
     expect(fake.read('athlete:42:activities')['9001']).toMatchObject({gear_id: 'b1', commute: true});

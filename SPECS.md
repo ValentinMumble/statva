@@ -127,11 +127,13 @@ from part to part, heart rate, cadence, power) into a TCX file and uploads it to
 a new activity of the first part's sport, with the name, commute flag and the parts'
 descriptions, then sets the gear. Strava's API cannot delete activities: the dialog lists
 the parts with links to delete them on Strava. Kudos, comments and photos stay on the
-parts; Strava works the segments out again.
+parts; Strava works the segments out again. The merge starts a second after its first part:
+Strava refuses an upload starting at the same moment as one of the rider's activities, as a
+duplicate, so this lets it go up while the parts are still there.
 
-Should Strava refuse the upload (as a duplicate of a part), Statva keeps the file and a
-card on the Activities page says so: delete the parts, then **Upload again** (or **Forget
-it**).
+Should Strava refuse the upload anyway, Statva keeps the file and a card on the Activities
+page says so: delete the parts, then **Upload again** (or **Forget it**). The activities
+Strava's message names are links to them on Strava, next to the list of parts.
 
 ---
 

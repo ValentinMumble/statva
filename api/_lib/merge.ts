@@ -11,8 +11,10 @@ import {refreshActivity} from './sync.js';
  * activity with the name, bike and commute flag the rider chose. Strava's API cannot delete
  * activities, so the rider deletes the parts on Strava afterwards.
  *
- * Strava may refuse the upload as a duplicate of a part. The file is then kept, so it can go
- * up again once the parts are deleted: by then their data is gone from Strava.
+ * Strava refuses an upload that starts at the same moment as one of the rider's activities, as a
+ * duplicate: the merge starts a second after its first part, so it goes up while the parts are
+ * still there. Should Strava refuse it anyway, the file is kept, so it can go up again once the
+ * parts are deleted: by then their data is gone from Strava.
  */
 
 type Point = {
@@ -65,6 +67,8 @@ const STREAM_KEYS = 'time,latlng,altitude,distance,heartrate,cadence,watts';
 // Strava asks for its upload status no more than once a second; a merge settles in a few.
 const POLL_MS = 2000;
 const POLLS = 20;
+// How far the merge moves from its first part's start, for Strava not to take it for that part.
+const SHIFT_MS = 1000;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 /** How far the points go: the last distance among them, or the fallback without any. */
@@ -251,7 +255,10 @@ const mergeActivities = async (athleteId: number, ids: number[], choice: MergeCh
   const ordered = [...parts].sort((first, second) =>
     first.activity.start_date.localeCompare(second.activity.start_date),
   );
-  const file = buildTcx(String(ordered[0].activity.sport_type), joinParts(parts));
+  const file = buildTcx(
+    String(ordered[0].activity.sport_type),
+    joinParts(parts).map(point => ({...point, time: point.time + SHIFT_MS})),
+  );
   const descriptions = [...new Set(ordered.map(({activity}) => String(activity.description ?? '').trim()))];
 
   return await uploadAndFinish(athleteId, file, {

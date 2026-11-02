@@ -18,7 +18,7 @@ import {LuExternalLink} from 'react-icons/lu';
 import {UploadRefusedError, NoWriteAccessError} from '../../api';
 import {useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
-import {MergeChoice, MergePart, mergePlan, MergeResult, PendingMerge} from '../../models';
+import {MergeChoice, MergePart, mergePlan, MergeResult, messagePieces, PendingMerge} from '../../models';
 import {Activity} from '../../models/strava';
 import {duration, km} from '../format';
 import {GearField} from './GearField';
@@ -52,6 +52,21 @@ const PartsToDelete = ({parts, locale}: {parts: MergePart[]; locale: string}) =>
       </ChakraLink>
     ))}
   </Stack>
+);
+
+/** Strava's message about the upload, the activities it names as links to them on Strava. */
+const StravaMessage = ({message}: {message: string}) => (
+  <>
+    {messagePieces(message).map((piece, index) =>
+      'text' in piece ? (
+        <span key={index}>{piece.text}</span>
+      ) : (
+        <ChakraLink key={index} href={stravaUrl(piece.id)} target="_blank" rel="noreferrer" color="brand.fg">
+          {piece.name} <LuExternalLink />
+        </ChakraLink>
+      ),
+    )}
+  </>
 );
 
 type MergeDialogProps = {
@@ -229,8 +244,8 @@ const MergeDialog = ({open, onOpenChange, activities = [], pending = null, onDon
               {'refused' === step.kind && (
                 <Stack gap="16px">
                   <Text fontSize="sm">
-                    Strava refused <b>{step.pending.name}</b>: “{step.pending.error}”. Statva kept it: delete the parts,
-                    then upload it again.
+                    Strava refused <b>{step.pending.name}</b>: “<StravaMessage message={step.pending.error} />
+                    ”. Statva kept it: delete the parts, then upload it again.
                   </Text>
                   <PartsToDelete parts={step.pending.parts} locale={locale} />
                   {null !== error && (

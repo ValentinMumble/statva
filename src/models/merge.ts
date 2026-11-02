@@ -68,5 +68,27 @@ const mergePlan = (activities: Activity[]): MergePlan => {
   };
 };
 
-export {MAX_MERGE_PARTS, mergePlan};
-export type {CopyChoice, CopyResult, MergeChoice, MergePart, MergePlan, MergeResult, PendingMerge};
+// A piece of Strava's message about an upload: text, or one of the rider's activities.
+type MessagePiece = {text: string} | {id: number; name: string};
+
+// Strava names the activity an upload duplicates as a link (<a href='/activities/123'>Name</a>),
+// or as "activity 123".
+const ACTIVITY_IN_MESSAGE = /<a [^>]*href=['"][^'"]*\/activities\/(\d+)[^'"]*['"][^>]*>(.*?)<\/a>|activity (\d+)/g;
+
+/** Strava's message about an upload, cut where it names an activity, for those to be links. */
+const messagePieces = (message: string): MessagePiece[] => {
+  const pieces: MessagePiece[] = [];
+  let from = 0;
+  for (const match of message.matchAll(ACTIVITY_IN_MESSAGE)) {
+    if (from < match.index) pieces.push({text: message.slice(from, match.index)});
+    const id = Number(match[1] ?? match[3]);
+    pieces.push({id, name: match[2]?.replace(/<[^>]*>/g, '') || `activity ${id}`});
+    from = match.index + match[0].length;
+  }
+  if (from < message.length) pieces.push({text: message.slice(from)});
+
+  return pieces;
+};
+
+export {MAX_MERGE_PARTS, mergePlan, messagePieces};
+export type {CopyChoice, CopyResult, MergeChoice, MergePart, MergePlan, MergeResult, MessagePiece, PendingMerge};

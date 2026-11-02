@@ -1,5 +1,5 @@
 import {buildActivity} from '../../test/test-util';
-import {mergePlan} from './merge';
+import {mergePlan, messagePieces} from './merge';
 import {ActivityType} from './strava';
 
 const part = (id: number, start: string, minutes: number, km: number, sport = ActivityType.Ride) =>
@@ -31,5 +31,19 @@ describe('merge plan', () => {
     ]);
 
     expect(plan).toMatchObject({overlaps: true, mixedSports: true});
+  });
+});
+
+describe('Strava message about an upload', () => {
+  it('cuts out the activities it names, as a link or as an id', () => {
+    expect(messagePieces("merge.tcx duplicate of <a href='/activities/1234' target='_blank'>Morning Ride</a>")).toEqual(
+      [{text: 'merge.tcx duplicate of '}, {id: 1234, name: 'Morning Ride'}],
+    );
+    expect(messagePieces('merge.tcx duplicate of activity 1001.')).toEqual([
+      {text: 'merge.tcx duplicate of '},
+      {id: 1001, name: 'activity 1001'},
+      {text: '.'},
+    ]);
+    expect(messagePieces('Bad file')).toEqual([{text: 'Bad file'}]);
   });
 });
