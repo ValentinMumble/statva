@@ -8,7 +8,7 @@ import {AuthGate, PageTitle} from './components';
 import {AppShell} from './app/AppShell';
 import {ActivitiesPage} from './app/pages/ActivitiesPage';
 import {ActivityPage} from './app/pages/ActivityPage';
-import {BikePage} from './app/pages/BikePage';
+import {BikePage, OldBikeLink} from './app/pages/BikePage';
 import {ClubPage} from './app/pages/ClubPage';
 import {HomePage} from './app/pages/HomePage';
 import {RecordsPage} from './app/pages/RecordsPage';
@@ -60,7 +60,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route index={true} element={<HomePage />} />
               <Route path="activities" element={<ActivitiesPage />} />
               <Route path="activities/:activityId" element={<ActivityPage />} />
-              <Route path="bike/:bikeId?" element={<BikePage />} />
+              <Route path="gear/:bikeId?" element={<BikePage />} />
+              <Route path="bike/:bikeId?" element={<OldBikeLink />} />
               <Route path="stats" element={<StatsPage />} />
               <Route path="records" element={<RecordsPage />} />
               <Route path="club" element={<ClubPage />} />

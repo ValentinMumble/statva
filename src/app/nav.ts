@@ -7,7 +7,7 @@ type NavItem = {to: string; label: string; icon: IconType; onPhone: boolean; clu
 const NAV: NavItem[] = [
   {to: '/', label: 'Home', icon: LuHouse, onPhone: true},
   {to: '/activities', label: 'Activities', icon: LuList, onPhone: true},
-  {to: '/bike', label: 'Bike', icon: LuBike, onPhone: true},
+  {to: '/gear', label: 'Gear', icon: LuBike, onPhone: true},
   {to: '/stats', label: 'Stats', icon: LuChartLine, onPhone: true},
   {to: '/records', label: 'Records', icon: LuTrophy, onPhone: true},
   {to: '/club', label: 'Club', icon: LuUsers, onPhone: false, club: true},

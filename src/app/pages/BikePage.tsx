@@ -1,6 +1,6 @@
 import {lazy, Suspense, useMemo, useState} from 'react';
 import {Badge, Box, Button, Grid, HStack, IconButton, Input, Spinner, Stack, Switch, Text} from '@chakra-ui/react';
-import {useNavigate, useParams} from 'react-router';
+import {Navigate, useNavigate, useParams} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
 import {useLocalStorage} from 'usehooks-ts';
 import {LuExternalLink, LuTrash2} from 'react-icons/lu';
@@ -189,8 +189,8 @@ const TyrePressure = ({bike}: {bike: string}) => {
   );
 };
 
-/** Running shoes in service, each against how far a pair lasts (Settings). */
-const Shoes = () => {
+/** Running shoes in service, each against how far a pair lasts (Settings), and retired pairs on demand. */
+const Shoes = ({withRetired}: {withRetired: boolean}) => {
   const gear = useGear();
   const {label} = useLabels();
   const {locale, shoeLifeKm} = useSettings();
@@ -200,13 +200,16 @@ const Shoes = () => {
   const shoes = useMemo(
     () =>
       shoeWear(
-        gear.filter(({type, retired}) => 'shoes' === type && !retired).map(({id}) => id),
+        gear.filter(({type, retired}) => 'shoes' === type && (withRetired || !retired)).map(({id}) => id),
         activities ?? [],
         shoeLifeKm,
         now,
       ),
-    [gear, activities, shoeLifeKm, now],
+    [gear, activities, shoeLifeKm, now, withRetired],
   );
+  const retired = new Set(gear.filter(item => item.retired).map(({id}) => id));
+  // Pairs in service first, the most worn first in each group.
+  const sorted = [...shoes].sort((first, second) => Number(retired.has(first.id)) - Number(retired.has(second.id)));
 
   if (0 === shoes.length) return null;
 
@@ -214,12 +217,12 @@ const Shoes = () => {
     <Card>
       <CardTitle>Running shoes</CardTitle>
       <Stack gap="16px">
-        {shoes.map(shoe => (
-          <Stack key={shoe.id} gap="6px">
+        {sorted.map(shoe => (
+          <Stack key={shoe.id} gap="6px" opacity={retired.has(shoe.id) ? 0.6 : 1}>
             <Text fontWeight="medium">{label(shoe.id)}</Text>
             <Text fontSize="xs" color="fg.muted">
               {km(shoe.distance, locale)} of {km(shoe.life, locale)}
-              {null !== shoe.weeksLeft && ` · ${weeksLeftText(shoe.weeksLeft)}`}
+              {retired.has(shoe.id) ? ' · retired' : null !== shoe.weeksLeft && ` · ${weeksLeftText(shoe.weeksLeft)}`}
             </Text>
             <Box height="6px" borderRadius="full" background="bg.muted" overflow="hidden">
               <Box
@@ -245,7 +248,7 @@ const BikePage = () => {
   const {events, refetch} = useEvents();
   const {data: activities} = useAllActivities();
   // Remembered on this device, like the other list toggles.
-  const [withRetired, setWithRetired] = useLocalStorage('bikes-with-retired', false);
+  const [withRetired, setWithRetired] = useLocalStorage('gear-with-retired', false);
 
   const bike = bikeId ?? defaultBike;
   // The main bike first, the others in Strava's order.
@@ -312,7 +315,7 @@ const BikePage = () => {
         <Switch.Root size="sm" checked={withRetired} onCheckedChange={({checked}) => setWithRetired(checked)}>
           <Switch.HiddenInput />
           <Switch.Control />
-          <Switch.Label color="fg.muted">Retired bikes</Switch.Label>
+          <Switch.Label color="fg.muted">Retired gear</Switch.Label>
         </Switch.Root>
       </HStack>
 
@@ -323,7 +326,7 @@ const BikePage = () => {
             size="sm"
             borderRadius="full"
             variant={id === bike ? 'solid' : 'outline'}
-            onClick={() => navigate(`/bike/${id}`)}
+            onClick={() => navigate(`/gear/${id}`)}
           >
             {label(id)}
           </Button>
@@ -471,9 +474,16 @@ const BikePage = () => {
         </ChartCard>
       )}
       <TyrePressure key={bike} bike={bike} />
-      <Shoes />
+      <Shoes withRetired={withRetired} />
     </Stack>
   );
 };
 
-export {BikePage};
+// The Gear page was the Bike page: links kept from then still land on it.
+const OldBikeLink = () => {
+  const {bikeId} = useParams();
+
+  return <Navigate to={undefined === bikeId ? '/gear' : `/gear/${bikeId}`} replace={true} />;
+};
+
+export {BikePage, OldBikeLink};

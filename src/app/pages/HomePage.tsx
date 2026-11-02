@@ -329,7 +329,7 @@ const BikeCard = ({activities, locale}: {activities: Activity[]; locale: string}
 
   return (
     <Card>
-      <CardTitle to="/bike" linkLabel="Workshop">
+      <CardTitle to="/gear" linkLabel="Workshop">
         {label(defaultBike)}
       </CardTitle>
       <Text fontSize="sm" color="fg.muted" marginTop="-8px" marginBottom="16px">

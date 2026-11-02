@@ -16,7 +16,7 @@ personal (bikes, goals, heart rate, club) is a setting, not part of the code.
 | Home | `/` | This week, the latest activities, recent weeks, the most worn parts |
 | Activities | `/activities` | Every activity in a searchable, sortable list |
 | Activity | `/activities/:id` | One activity: map, figures, zones, photos, notes |
-| Bike | `/bike/:bikeId?` | One bike's parts, history, charts and running costs |
+| Gear | `/gear/:bikeId?` | One bike's parts, history, charts and running costs, and running shoes (old `/bike` links redirect) |
 | Stats | `/stats` | Totals per sport and period, and charts in tabs |
 | Records | `/records` | All-time numbers, year in review, streaks, explorer map, hall of fame |
 | Club | `/club` | Everything about the club rides (only with a club set, named after the club) |
@@ -198,8 +198,8 @@ An event is something that happened to a bike on a date.
 
 On a phone the dialog opens from the bottom, with thumb-sized buttons.
 
-### 5.3 Bike page
-- A chip per bike, the main bike first (retired ones behind a toggle); figures for distance, this year, rides,
+### 5.3 Gear page
+- A chip per bike, the main bike first (retired bikes and shoes behind a **Retired gear** toggle); figures for distance, this year, rides,
   events.
 - **Parts**: every wearing part's distance since fitted against its expected life, as a
   bar (green, amber from 80 %, red from 100 %), most worn first, with the fitting date,
@@ -217,7 +217,8 @@ On a phone the dialog opens from the bottom, with thumb-sized buttons.
 - **Running costs**, on the bike set for costs: cost per km and per hour month by month,
   monthly spend as bars, an option to skip the oldest months, and the expenses list.
 - **Running shoes**: each pair in service, its km against how far a pair lasts (Settings,
-  700 km by default), with weeks left at the pace of the last 8 weeks.
+  700 km by default), with weeks left at the pace of the last 8 weeks. With the toggle, retired
+  pairs follow, dimmed and marked retired.
 - **Tyre pressure**: front and rear in bar (psi underneath) from Frank Berto's 15 % tyre
   drop (fit: psi = 600 × wheel load in lb / width² + 0.75 × width − 25), on the total weight
   (rider, the bike's weight from Settings, kit) split 45 % front and 55 % rear, the width of
