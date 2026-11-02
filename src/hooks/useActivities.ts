@@ -80,11 +80,11 @@ const useAllActivities = () => {
     },
   });
 
-  // Puts freshly stored details into what is loaded, rather than reloading them all (MBs).
+  // Puts freshly stored details into what is loaded, rather than reloading them all (MBs). Home's
+  // latest few are read again even when nothing is new: one already stored can have changed on
+  // Strava since (renamed, its segments ranked), and the webhook stored that.
   const addDetails = useCallback(
     async (ids: number[]) => {
-      if (0 === ids.length) return;
-
       for (let start = 0; start < ids.length; start += DETAILS_PER_READ) {
         const fresh = await fetchSomeDetails(ids.slice(start, start + DETAILS_PER_READ));
         const found = Object.fromEntries(
