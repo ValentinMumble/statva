@@ -39,6 +39,7 @@ import {useActivities, useActivityMeta, useAllActivities, useFtp, useLabels, use
 import {
   countBy,
   DEFAULT_SORTS,
+  getActivityUrl,
   isPedalled,
   MAX_MERGE_PARTS,
   PendingMerge,
@@ -745,8 +746,11 @@ const ActivitiesPage = () => {
                   opacity={activity.private ? 0.6 : 1}
                   _hover={{background: 'bg.subtle'}}
                   background={picked.includes(activity.id) ? 'bg.subtle' : undefined}
-                  onClick={() => {
+                  onClick={event => {
                     if (picking) return togglePicked(activity.id);
+                    // As for links to an activity, Cmd+click opens it on Strava.
+                    if (event.metaKey || event.ctrlKey)
+                      return window.open(getActivityUrl(activity), '_blank', 'noreferrer');
                     rememberScroll(searchParams.toString());
                     navigate(`/activities/${activity.id}`, {state: {list: `/activities?${searchParams}`}});
                   }}

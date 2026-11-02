@@ -8,7 +8,7 @@ import {toaster} from '../components/ui';
 import {LogEvent} from '../components/event';
 import {leaveDemo} from '../demo/mode';
 import {useAllActivities, useAthlete, useEvents, useSession, useSettings} from '../hooks';
-import {hasEmoji} from '../models';
+import {getActivityUrl, hasEmoji} from '../models';
 import {Activity} from '../models/strava';
 import {isActive, NAV, navFor} from './nav';
 
@@ -26,6 +26,18 @@ const logOut = async (event: MouseEvent<HTMLAnchorElement>) => {
   const {href} = event.currentTarget;
   await forgetCachedData();
   window.location.assign(href);
+};
+
+// Cmd+click (Ctrl+click off a Mac) on any link to an activity opens it on Strava, not in a new Statva tab.
+const openOnStrava = (event: MouseEvent) => {
+  if (!event.metaKey && !event.ctrlKey) return;
+  const link = (event.target as Element).closest<HTMLAnchorElement>('a[href]');
+  const id = null === link ? undefined : new URL(link.href).pathname.match(/^\/activities\/(\d+)$/)?.[1];
+  if (undefined === id) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  window.open(getActivityUrl({id: Number(id)}), '_blank', 'noreferrer');
 };
 
 const LogButton = ({compact = false}: {compact?: boolean}) => {
@@ -365,7 +377,7 @@ const AppShell = () => {
   const profileKey = JSON.stringify([heartRate, weightKg, normalizedPowerFromNote]);
 
   return (
-    <Flex minHeight="100dvh">
+    <Flex minHeight="100dvh" onClickCapture={openOnStrava}>
       <Sidebar />
       <Box
         flex="1"
