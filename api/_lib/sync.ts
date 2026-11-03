@@ -35,6 +35,12 @@ type BackfillReport = {detailIds: number[]; detailsMissing: number; powerFetched
 
 class RateLimitedError extends Error {}
 
+/** Removes activities from what Statva stores: gone from Strava, or parts of a merge the rider deletes there next. */
+const forgetActivities = async (athleteId: number, ids: number[]): Promise<void> => {
+  for (const name of ['activities', 'details', 'power'])
+    await redis().hdel(athleteKey(athleteId, name), ...ids.map(String));
+};
+
 const startOf = ({start_date}: StravaActivity): number => Math.floor(new Date(start_date).getTime() / 1000);
 
 const listPage = async (athleteId: number, params: Record<string, number>): Promise<StravaActivity[]> => {
@@ -106,9 +112,7 @@ const refreshActivity = async (athleteId: number, activityId: number): Promise<S
   const response = await stravaGet(athleteId, `activities/${activityId}`);
 
   if (404 === response.status) {
-    await redis().hdel(athleteKey(athleteId, 'activities'), String(activityId));
-    await redis().hdel(athleteKey(athleteId, 'details'), String(activityId));
-    await redis().hdel(athleteKey(athleteId, 'power'), String(activityId));
+    await forgetActivities(athleteId, [activityId]);
 
     return null;
   }
@@ -351,6 +355,7 @@ export {
   applyRideRules,
   backfillActivities,
   changeActivity,
+  forgetActivities,
   forgetAthlete,
   refreshActivity,
   RIDER_NAMES,

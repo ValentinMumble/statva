@@ -3,13 +3,13 @@ import {StravaActivity, UPLOAD_EXTERNAL_ID_PREFIX} from './activities.js';
 import {athleteKey} from './keys.js';
 import {redis} from './redis.js';
 import {stravaGet, stravaPut, stravaUpload} from './strava.js';
-import {refreshActivity} from './sync.js';
+import {forgetActivities, refreshActivity} from './sync.js';
 
 /**
  * Merges activities recorded in several parts (a watch stopped and started again) into one:
  * their data streams are joined in time order into a TCX file, uploaded to Strava as a new
  * activity with the name, bike and commute flag the rider chose. Strava's API cannot delete
- * activities, so the rider deletes the parts on Strava afterwards.
+ * activities, so the rider deletes the parts on Strava afterwards; Statva drops them at once.
  *
  * Strava refuses an upload that starts at the same moment as one of the rider's activities, as a
  * duplicate: the merge starts a second after its first part, so it goes up while the parts are
@@ -227,6 +227,7 @@ const uploadAndFinish = async (athleteId: number, file: string, pending: Pending
 
   if (null === uploaded) {
     await redis().del(mergeKey(athleteId));
+    await forgetActivities(athleteId, parts);
     return {outcome: 'processing', parts};
   }
   if ('number' !== typeof uploaded) {
@@ -240,6 +241,7 @@ const uploadAndFinish = async (athleteId: number, file: string, pending: Pending
   }
 
   await redis().del(mergeKey(athleteId));
+  await forgetActivities(athleteId, parts);
   return {outcome: 'merged', activity: await finish(athleteId, uploaded, {gear_id: pending.gearId}), parts};
 };
 

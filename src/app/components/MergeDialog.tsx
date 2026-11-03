@@ -104,12 +104,19 @@ const MergeDialog = ({open, onOpenChange, activities = [], pending = null, onDon
         setStep({kind: 'refused', pending: result.pending});
       } else {
         const merged = 'merged' === result.outcome ? result.activity : null;
-        if (null !== merged) {
-          queryClient.setQueryData<Activity[]>(['activities'], list => (list ? [...list, merged] : list));
-          queryClient.setQueryData<Record<string, Activity>>(['activityMeta'], loaded =>
-            loaded ? {...loaded, [merged.id]: merged} : loaded,
-          );
-        }
+        // The parts leave at once: the rider deletes them on Strava next.
+        const isPart = ({id}: Activity) => result.parts.includes(id);
+        queryClient.setQueryData<Activity[]>(['activities'], list =>
+          list ? [...list.filter(activity => !isPart(activity)), ...(null === merged ? [] : [merged])] : list,
+        );
+        queryClient.setQueryData<Record<string, Activity>>(['activityMeta'], loaded =>
+          loaded
+            ? Object.fromEntries([
+                ...Object.entries(loaded).filter(([, activity]) => !isPart(activity)),
+                ...(null === merged ? [] : [[merged.id, merged]]),
+              ])
+            : loaded,
+        );
         setStep({kind: 'merged', activity: merged, parts});
       }
     } catch (failure) {

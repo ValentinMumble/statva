@@ -1,6 +1,7 @@
 import {install} from './fakes.js';
 import {joinParts} from '../_lib/merge.js';
 import {sessionCookie} from '../_lib/session.js';
+import {syncActivities} from '../_lib/sync.js';
 import {DELETE as discard, GET as pending, POST as merge} from '../activity.js';
 
 const ORIGIN = 'https://statva.test';
@@ -137,6 +138,18 @@ describe('merging activities', () => {
     expect(retried.status).toBe(200);
     expect(fake.strava.uploads[1].file).toBe(fake.strava.uploads[0].file);
     expect(await (await call(pending, 'GET')).json()).toEqual({pending: null});
+  });
+
+  it('drops the parts from what Statva stores, as the rider deletes them on Strava next', async () => {
+    const fake = withParts();
+    await syncActivities(42);
+    expect(Object.keys(fake.read('athlete:42:activities'))).toEqual(expect.arrayContaining(['1001', '1002']));
+
+    await call(merge, 'POST', choice);
+
+    expect(Object.keys(fake.read('athlete:42:activities'))).not.toContain('1001');
+    expect(Object.keys(fake.read('athlete:42:activities'))).not.toContain('1002');
+    expect(Object.keys(fake.read('athlete:42:details'))).not.toContain('1001');
   });
 
   it('forgets a waiting merge on request', async () => {
