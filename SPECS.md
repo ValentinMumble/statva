@@ -533,9 +533,9 @@ development runs on it unless `VITE_REAL_DATA=1` (then `vercel dev` serves the A
 - Only athletes in `STRAVA_ATHLETE_IDS` may log in. A refused athlete has their access
   handed back to Strava at once and nothing is stored.
 - The session cookie holds the athlete id and an expiry, signed with `SESSION_SECRET`.
-  It lasts 30 days and is HttpOnly, Secure, SameSite=Lax.
+  It lasts 400 days (the most browsers keep) from the latest visit, and is HttpOnly, Secure, SameSite=Lax.
 - Tokens are refreshed on the server before they expire.
-- Disconnecting, from Settings or on Strava's side, deletes the rider's tokens and data.
+- Disconnecting from Settings deletes the rider's tokens and data; on Strava's side, the tokens only (11.4).
 
 ### 13.3 Self-hosting
 - Anyone can run a copy with their own Strava app: a README with the steps, a

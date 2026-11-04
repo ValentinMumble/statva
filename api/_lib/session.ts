@@ -3,7 +3,8 @@ import {env} from './env.js';
 import {cookie, readCookie} from './http.js';
 
 const SESSION_COOKIE = 'statva_session';
-const SESSION_DAYS = 30;
+// The longest browsers keep a cookie (Chrome caps it at 400 days); each visit starts it over.
+const SESSION_DAYS = 400;
 
 const sign = (payload: string): string =>
   createHmac('sha256', env('SESSION_SECRET')).update(payload).digest('base64url');
