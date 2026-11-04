@@ -16,11 +16,13 @@ into a home page, stats, records and an explorer map.
 - **Home:** this week against last week, your latest activities drawn as route shapes,
   recent weeks day by day, and the parts closest to wearing out.
 - **Activities:** search by name or by date ("2 nov", "2024-11-02"), filter by sport, gear
-  and commute, choose and sort columns, merge a ride recorded in parts into one on Strava.
-  Each activity has its own page with its map, power, heart rate zones, photos and notes.
-- **Bike:** every part with its wear (chains by stint, cassettes over all their stints,
+  and commute, choose and sort columns, merge a ride recorded in parts into one on Strava,
+  or duplicate one to another day. Each activity has its own page with its map, power, heart
+  rate zones, photos and notes; ⌘-click opens it on Strava.
+- **Gear:** every bike part with its wear (chains by stint, cassettes over all their stints,
   tires, pads, battery), chain rotation with the next chain to fit, the history of every
-  change, and the running cost per km. Logging a change takes two taps.
+  change, and the running cost per km; running shoes and their km too. Logging a change
+  takes two taps.
 - **Stats:** totals per sport and period, the yearly goal and your pace, Eddington, and
   charts for training load, volume and gear.
 - **Records:** all-time totals, the hall of fame, Eddington by year, and the explorer tiles
@@ -40,7 +42,7 @@ All taken on the demo's made-up rides.
 |---|---|
 | ![The activities list with its filters and columns](docs/screenshots/activities.png) | ![An activity with its map, power and heart rate zones](docs/screenshots/activity.png) |
 
-| Bike | Stats |
+| Gear | Stats |
 |---|---|
 | ![A bike's parts, their wear and the history of changes](docs/screenshots/bike.png) | ![Totals, the yearly goal, Eddington and training charts](docs/screenshots/stats.png) |
 
