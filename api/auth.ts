@@ -69,7 +69,13 @@ export const GET = async (request: Request): Promise<Response> => {
       return await callback(request, url);
     case 'me': {
       const athleteId = readSession(request);
-      return null === athleteId ? json({error: 'Not logged in'}, 401) : json({athleteId});
+      if (null === athleteId) return json({error: 'Not logged in'}, 401);
+
+      // Each visit starts the session over, so a browser in use stays logged in even once
+      // logging in through Strava is no longer possible (an API access that lapsed).
+      const response = json({athleteId});
+      response.headers.append('Set-Cookie', sessionCookie(athleteId));
+      return response;
     }
     case 'logout':
       return redirect('/', {'Set-Cookie': clearSessionCookie()});

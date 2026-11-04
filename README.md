@@ -57,7 +57,8 @@ database. Both have free plans that are enough for a few riders.
 
 1. **Create a Strava API app** at <https://www.strava.com/settings/api>. Note its client id
    and client secret, and set "Authorization Callback Domain" to the domain your copy will
-   use. Strava now asks API developers for a paid Strava subscription.
+   use. Strava now asks API developers for a paid Strava subscription. Without it, Statva
+   keeps showing what it has stored, but stops syncing and can't log in a new browser.
 
 2. **Deploy to Vercel:**
 

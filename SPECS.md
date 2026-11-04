@@ -406,9 +406,9 @@ also merges and copies. All but login, callback and the webhook need a session.
 | Route | Does |
 |---|---|
 | `GET /api/auth/login`, `/callback` | Strava OAuth: consent page, then code for tokens and session cookie |
-| `GET /api/auth/me`, `/logout` | Logged in or not; clear the cookie |
+| `GET /api/auth/me`, `/logout` | Logged in or not (and the session starts over, so it never runs out on a browser in use); clear the cookie |
 | `POST /api/auth/disconnect` | Revoke access on Strava, delete the rider's data and tokens |
-| `GET /api/strava` | Call Strava for the rider, on a short list of allowed paths |
+| `GET /api/strava` | Call Strava for the rider, on a short list of allowed paths; the profile is kept and served when Strava does not answer |
 | `POST /api/store` | Read and write the rider's own data |
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
 | `POST /api/sync?step=backfill` | Fill in the details and power data of a few older activities |
@@ -452,7 +452,8 @@ also merges and copies. All but login, callback and the webhook need a session.
 Strava calls it when an activity is created, changed or deleted, and when a rider
 disconnects. These calls are not signed, so nothing trusts the event: other athletes are
 ignored, an activity event fetches the activity again (removed if Strava answers 404),
-and a disconnect is checked with Strava before anything is deleted.
+and a disconnect is checked with Strava before the tokens are dropped. The data stays
+(Disconnect in Settings deletes it): once the API access lapses, the check fails for anyone.
 
 On a new activity (and on one a sync brings in after the history is in), the rider's ride
 rules apply: a pedalled ride, short enough, on a weekday if asked, whose farthest point
@@ -475,6 +476,7 @@ adds that prefix itself, so no request can reach another rider's data or the tok
 | `club` | The club's calendar read from its website, and when it was read | server |
 | `events`, `labels`, `ftp_tests`, `expenses`, `settings` | What the rider enters | rider |
 | `merge` | A merge Strava refused, with its file, until uploaded again or forgotten | server, never read by the browser |
+| `profile` | The rider's Strava profile (name, gear, FTP), as last read | server, served by `/api/strava` |
 
 The rider can read every name but `merge`, and write only their own five. Shared keys:
 `strava_tokens` (every rider's tokens, never reachable from the browser) and
@@ -486,7 +488,14 @@ change). A visit shows them at once, then the first sync reloads the list whole 
 details reload when a page needs them. Logging out or disconnecting deletes them from the
 browser. In a private window or with storage blocked, the app loads from the server as before.
 
-### 11.6 Scripts
+### 11.6 Without Strava
+Strava's API needs a paid subscription on the account that owns the app. Once it lapses,
+Statva keeps working on what it has stored: the activities, their details, the profile and
+everything the rider entered. A browser already logged in stays so (each visit starts the
+session over), Refresh says Strava could not be reached, and what writes to Strava (rename,
+gear, rules, merge, copy) fails. Logging in on a new browser needs Strava again.
+
+### 11.7 Scripts
 Run with `node` from the repo root, reading `.env.local`, for the first athlete in
 `STRAVA_ATHLETE_IDS` (log in once first).
 

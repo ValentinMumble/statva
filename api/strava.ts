@@ -1,4 +1,6 @@
 import {json} from './_lib/http.js';
+import {athleteKey} from './_lib/keys.js';
+import {redis} from './_lib/redis.js';
 import {readSession} from './_lib/session.js';
 import {stravaGet} from './_lib/strava.js';
 
@@ -29,6 +31,19 @@ export const GET = async (request: Request): Promise<Response> => {
   const query = new URLSearchParams(
     ALLOWED_PARAMS.filter(name => params.has(name)).map(name => [name, params.get(name) ?? '']),
   );
+  // The profile (name, gear, FTP) is kept, so the app still has it when Strava does not answer.
+  if ('athlete' === path) {
+    const profileKey = athleteKey(athleteId, 'profile');
+    const response = await stravaGet(athleteId, path, query).catch(() => null);
+    if (response?.ok) {
+      const profile = await response.json();
+      await redis().set(profileKey, profile);
+      return json(profile);
+    }
+    const kept = await redis().get(profileKey);
+    return null === kept ? json({error: 'Strava did not answer'}, 502) : json(kept);
+  }
+
   const response = await stravaGet(athleteId, path, query);
 
   return new Response(response.body, {status: response.status, headers: {'Content-Type': 'application/json'}});

@@ -3,7 +3,7 @@ import {json} from './_lib/http.js';
 import {TOKENS_KEY} from './_lib/keys.js';
 import {redis} from './_lib/redis.js';
 import {forgetTokens, hasAccess} from './_lib/strava.js';
-import {applyRideRules, forgetAthlete, refreshActivity} from './_lib/sync.js';
+import {applyRideRules, refreshActivity} from './_lib/sync.js';
 
 type StravaEvent = {
   object_type: 'activity' | 'athlete';
@@ -27,8 +27,9 @@ export const GET = (request: Request): Response => {
 /**
  * Strava tells us when an activity is created, changed or deleted, and when a rider
  * disconnects. Strava does not sign these calls, so nothing here trusts the event:
- * activities are fetched again from Strava, and a disconnect is checked with Strava
- * before any data is removed.
+ * activities are fetched again from Strava, and a disconnect is checked with Strava before
+ * the tokens are dropped. The rider's data stays: once Statva's API access lapses, that
+ * check fails for anyone's forged call, and Disconnect in Settings deletes the data.
  */
 export const POST = async (request: Request): Promise<Response> => {
   const event = (await request.json().catch(() => null)) as StravaEvent | null;
@@ -48,7 +49,6 @@ export const POST = async (request: Request): Promise<Response> => {
   }
 
   if ('athlete' === event.object_type && 'false' === event.updates?.authorized && !(await hasAccess(event.owner_id))) {
-    await forgetAthlete(event.owner_id);
     await forgetTokens(event.owner_id);
   }
 

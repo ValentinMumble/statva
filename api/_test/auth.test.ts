@@ -70,7 +70,22 @@ describe('login', () => {
     const session = await logIn();
 
     expect(fake.read('strava_tokens')['42']).toBeDefined();
-    expect((await auth(request('/api/auth/me', session))).status).toBe(200);
+    const me = await auth(request('/api/auth/me', session));
+    expect(me.status).toBe(200);
+    // Every visit starts the session over, so it lasts without logging in through Strava again.
+    expect(me.headers.get('Set-Cookie')).toMatch(/^statva_session=42\./);
+  });
+
+  it('keeps the profile, and serves it when Strava does not answer', async () => {
+    const fake = install();
+    const session = await logIn();
+
+    expect(await (await strava(request('/api/strava?path=athlete', session))).json()).toEqual({id: 42});
+
+    fake.strava.tokens[42] = false;
+    const kept = await strava(request('/api/strava?path=athlete', session));
+    expect(kept.status).toBe(200);
+    expect(await kept.json()).toEqual({id: 42});
   });
 
   it('refuses a missing or edited session', async () => {

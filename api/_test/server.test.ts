@@ -476,7 +476,7 @@ describe('webhook', () => {
     expect(fake.strava.calls).toEqual([]);
   });
 
-  it('forgets a rider only once Strava confirms the access is gone', async () => {
+  it('forgets the tokens, never the data, once Strava confirms the access is gone', async () => {
     const fake = install();
     fake.login(42);
     fake.strava.activities = makeActivities(1);
@@ -494,7 +494,7 @@ describe('webhook', () => {
 
     fake.strava.tokens[42] = false;
     await hook(disconnect);
-    expect(fake.read('athlete:42:activities')).toEqual({});
     expect(fake.read('strava_tokens')['42']).toBeUndefined();
+    expect(fake.read('athlete:42:activities')['1001']).toBeDefined();
   });
 });

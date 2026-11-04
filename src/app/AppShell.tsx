@@ -73,6 +73,11 @@ const RefreshButton = ({compact = false}: {compact?: boolean}) => {
 
     try {
       await refreshLatest();
+      // Strava no longer answering (an API access that lapsed, say) leaves what is stored on screen.
+      if ('error' === queryClient.getQueryState(['sync'])?.status) {
+        toaster.create({title: 'Strava could not be reached', description: 'Showing what Statva has stored.'});
+        return;
+      }
       const added = (queryClient.getQueryData<Activity[]>(['activities']) ?? []).filter(
         ({id}) => !before.has(id),
       ).length;
