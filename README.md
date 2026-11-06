@@ -27,11 +27,13 @@ into a home page, stats, records and an explorer map.
   charts for training load, volume and gear.
 - **Records:** all-time totals, the hall of fame, Eddington by year, and the explorer tiles
   you have ridden, with the biggest square and the yard as Squadrats defines them.
-- **Ride weather:** a Strava route or a Komoot tour, ridden at your own pace from a start
-  time, with the forecast at each part of the route when you get there and the wind as head
-  or tail wind, like Epic Ride Weather. Share it by link: a friend opens it without an
-  account. Log in again once to list your private routes; set `KOMOOT_EMAIL` and
-  `KOMOOT_PASSWORD` to pick your planned Komoot tours instead of pasting links.
+- **Ride weather:** a Strava route or a Komoot tour, ridden at your own pace (or a speed you
+  pick) from a day and time, either way round, with the forecast at each part of the route
+  when you get there and the wind as head or tail wind, like Epic Ride Weather. Advice on
+  the best start, the wind's cost, rain and what to wear. Share it by link: a friend opens
+  it without an account and can change the day, time, speed and direction. Log in again
+  once to list your private routes; set `KOMOOT_EMAIL` and `KOMOOT_PASSWORD` to pick your
+  planned Komoot tours instead of pasting links.
 - **Club:** for riders in a club, its own page: attendance week by week, groups and their
   pace, session records, finish places, every route on one map.
 - **Settings:** bikes, part limits, goal, heart rate, weight, club rules, language, labels.
@@ -88,6 +90,10 @@ database. Both have free plans that are enough for a few riders.
    node scripts/webhook-subscribe.mjs https://your-domain
    ```
 
+6. **Optional:** add a second domain to the project and set `VITE_SHARE_ORIGIN` to it, so
+   share links open in the browser rather than in Statva installed as an app. See
+   [.env.example](.env.example) for this and the Komoot settings.
+
 ### Riding with friends
 
 A new Strava API app can only be used by its owner. From its settings page you can raise
@@ -128,16 +134,17 @@ npm run build
 - `src/models/`: every calculation (parts wear, Eddington, training load, explorer tiles,
   the dashboard), each with tests.
 - `src/demo/`: the made-up rides behind the demo.
-- `api/`: the server functions: Strava login, the Strava and database proxies, sync and
-  the webhook. Secrets never reach the browser.
+- `api/`: the server functions: Strava login, the Strava and database proxies, sync, the
+  webhook, shared rides and Komoot. Secrets never reach the browser.
 - `scripts/`: one-off jobs (backfill details, find deleted activities, register the webhook).
 
 ## Your data
 
 Statva stores your activities (as Strava sends them), your parts history, labels, FTP
 tests, expenses and settings, in your copy's database, under your athlete id. The Strava
-tokens stay on the server. Disconnecting from Settings, or removing Statva from
-<https://www.strava.com/settings/apps>, deletes all of it.
+tokens stay on the server. Disconnecting from Settings deletes all of it. Removing Statva
+from <https://www.strava.com/settings/apps> only deletes the tokens, so what is stored stays
+readable.
 
 ## Licence
 
