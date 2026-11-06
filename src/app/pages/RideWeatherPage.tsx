@@ -26,6 +26,9 @@ type Source = 'strava' | 'komoot';
 // The two services' own colours, for their logos.
 const STRAVA_ORANGE = '#fc4c02';
 const KOMOOT_GREEN = '#6aa127';
+// Where share links point: another host than the app's, so a link opens in the browser rather
+// than in the app installed from the app's own host (a web app in the Dock claims all of it).
+const SHARE_ORIGIN = import.meta.env.VITE_SHARE_ORIGIN || window.location.origin;
 // The Komoot choice meaning "the tour from the link pasted" rather than a saved one.
 const KOMOOT_LINK = 'link';
 
@@ -131,7 +134,7 @@ const RideWeatherPage = () => {
     setSharing(true);
     try {
       const id = await shareRide({route: ridden, start, pace} satisfies SharedRide);
-      setShared({url: `${window.location.origin}/w/${id}`, ride: rideKey});
+      setShared({url: `${SHARE_ORIGIN}/w/${id}`, ride: rideKey});
     } catch {
       toaster.create({title: 'The link could not be made', description: 'Try again in a moment.'});
     } finally {

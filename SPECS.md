@@ -394,7 +394,9 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   show the same moment together.
 - The heading is taken over the next kilometre, so a hairpin does not swap head and tail
   wind. The choices of source, route and link are kept on the device.
-- **Share** makes a link (`/w/<id>`) to copy or send through the phone's share sheet. It
+- **Share** makes a link (`/w/<id>`) to copy or send through the phone's share sheet, on
+  `VITE_SHARE_ORIGIN` when set: another host of the same deployment, so the link opens in the
+  browser rather than in the app installed in the Dock or on a home screen. It
   keeps the route (at most 800 points), its name, start and pace on the server for 30 days;
   anyone with the link sees the same page without logging in, with the forecast fetched
   fresh when they open it. They can change the day, start and speed there (starting from the
