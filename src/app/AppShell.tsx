@@ -2,7 +2,7 @@ import {MouseEvent, useState} from 'react';
 import {Box, Button, Flex, HStack, Icon, IconButton, Stack, Text} from '@chakra-ui/react';
 import {Link, Outlet, useLocation} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
-import {LuLogOut, LuPlus, LuRefreshCw, LuX} from 'react-icons/lu';
+import {LuLogOut, LuRefreshCw, LuWrench, LuX} from 'react-icons/lu';
 import {forgetCachedData} from '../api';
 import {toaster} from '../components/ui';
 import {LogEvent} from '../components/event';
@@ -49,11 +49,11 @@ const LogButton = ({compact = false}: {compact?: boolean}) => {
       trigger={
         compact ? (
           <IconButton aria-label="Log an event" size="sm" colorPalette="brand" borderRadius="full">
-            <LuPlus />
+            <LuWrench />
           </IconButton>
         ) : (
           <Button colorPalette="brand" width="full" borderRadius="10px">
-            <LuPlus /> Log an event
+            <LuWrench /> Log an event
           </Button>
         )
       }

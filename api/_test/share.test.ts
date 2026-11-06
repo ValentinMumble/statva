@@ -1,0 +1,65 @@
+import {install} from './fakes.js';
+import {sessionCookie} from '../_lib/session.js';
+import {GET as read, POST as save} from '../activity.js';
+
+const ORIGIN = 'https://statva.test';
+
+const call = async (
+  handler: (request: Request) => Promise<Response>,
+  method: string,
+  query: string,
+  body?: unknown,
+  loggedIn = true,
+) =>
+  await handler(
+    new Request(`${ORIGIN}/api/activity?${query}`, {
+      method,
+      headers: {'Content-Type': 'application/json', ...(loggedIn ? {cookie: sessionCookie(42).split(';')[0]} : {})},
+      ...(undefined === body ? {} : {body: JSON.stringify(body)}),
+    }),
+  );
+
+const ride = {
+  name: 'Samedi aller',
+  points: [
+    [47.2, -1.5, 10, 0],
+    [47.21, -1.51, 30, 1300],
+  ],
+  start: Date.parse('2026-11-08T12:00:00Z'),
+  pace: {secondsPerMetre: 0.12, secondsPerMetreClimbed: 2.7},
+};
+
+describe('sharing a planned ride by link', () => {
+  it('keeps it under a short id, for anyone with the link to read without a login', async () => {
+    install().login(42);
+
+    const saved = await call(save, 'POST', 'action=share', ride);
+    const {id} = (await saved.json()) as {id: string};
+
+    expect(saved.status).toBe(200);
+    expect(id).toMatch(/^[A-Za-z0-9_-]{8}$/);
+
+    const opened = await call(read, 'GET', `action=share&id=${id}`, undefined, false);
+    expect(opened.status).toBe(200);
+    expect(await opened.json()).toEqual(ride);
+  });
+
+  it('needs a login to share, and a route that is only a route', async () => {
+    install().login(42);
+
+    expect((await call(save, 'POST', 'action=share', ride, false)).status).toBe(401);
+    expect((await call(save, 'POST', 'action=share', {...ride, points: [[47.2, -1.5]]})).status).toBe(400);
+    expect((await call(save, 'POST', 'action=share', {...ride, points: [...ride.points, ['x', 1, 2, 3]]})).status).toBe(
+      400,
+    );
+    expect((await call(save, 'POST', 'action=share', {...ride, name: ' '})).status).toBe(400);
+    expect((await call(save, 'POST', 'action=share', {...ride, pace: {secondsPerMetre: 0}})).status).toBe(400);
+  });
+
+  it('says when a link leads nowhere', async () => {
+    install();
+
+    expect((await call(read, 'GET', 'action=share&id=nothing1', undefined, false)).status).toBe(404);
+    expect((await call(read, 'GET', 'action=share&id=../../x', undefined, false)).status).toBe(404);
+  });
+});

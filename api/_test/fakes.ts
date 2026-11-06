@@ -54,6 +54,8 @@ const install = () => {
     requests: [],
     down: false,
   };
+  // Komoot's unofficial API: a login gives a session key, which stops working when revoked.
+  const komoot = {logins: 0, session: 1, password: 'komoot-password'};
   const strava: FakeStrava = {
     activities: [],
     tokens: {},
@@ -190,6 +192,48 @@ const install = () => {
       return new Response(JSON.stringify(result));
     }
 
+    if ('api.komoot.de' === url.host) {
+      const given = Buffer.from(
+        new Headers(init.headers).get('Authorization')?.split(' ')[1] ?? '',
+        'base64',
+      ).toString();
+      const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), {status});
+      if (url.pathname.startsWith('/v006/account/email/')) {
+        if (`${decodeURIComponent(url.pathname.split('/')[4])}:${komoot.password}` !== given) return reply({}, 403);
+        komoot.logins++;
+        return reply({username: '7777', password: `key-${komoot.session}`, user: {displayname: 'Rider'}});
+      }
+      if (`7777:key-${komoot.session}` !== given) return reply({}, 401);
+      if ('/v007/users/7777/tours/' === url.pathname)
+        return reply({
+          _embedded: {
+            tours: [
+              {
+                id: 55,
+                name: 'Samedi aller',
+                distance: 118000,
+                elevation_up: 1003,
+                sport: 'racebike',
+                date: '2026-11-01',
+              },
+            ],
+          },
+        });
+      if ('/v007/tours/55' === url.pathname)
+        return reply({
+          name: 'Samedi aller',
+          _embedded: {
+            coordinates: {
+              items: [
+                {lat: 47.2, lng: -1.5, alt: 10, t: 0},
+                {lat: 47.3, lng: -1.6, alt: 40, t: 9},
+              ],
+            },
+          },
+        });
+      return reply({}, 404);
+    }
+
     if ('www.pedalons.fr' === url.host) {
       site.requests.push(`${url.pathname}?page=${url.searchParams.get('page')}&size=${url.searchParams.get('size')}`);
       if (site.down) return new Response('Down', {status: 503});
@@ -239,7 +283,7 @@ const install = () => {
   const read = (key: string): Record<string, unknown> =>
     Object.fromEntries(Object.entries(hashes[key] ?? {}).map(([field, value]) => [field, JSON.parse(value)]));
 
-  return {hashes, strings, strava, site, login, read, run};
+  return {hashes, strings, strava, site, komoot, login, read, run};
 };
 
 /** Activities as Strava lists them: newest first, ids growing with time. */

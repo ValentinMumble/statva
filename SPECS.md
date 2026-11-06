@@ -19,6 +19,8 @@ personal (bikes, goals, heart rate, club) is a setting, not part of the code.
 | Gear | `/gear/:bikeId?` | One bike's parts, history, charts and running costs, and running shoes (old `/bike` links redirect) |
 | Stats | `/stats` | Totals per sport and period, and charts in tabs |
 | Records | `/records` | All-time numbers, year in review, streaks, explorer map, hall of fame |
+| Ride weather | `/weather` | The forecast along a planned route, at your pace, with head and tail wind |
+| Shared ride | `/w/:id` | A ride shared from Ride weather, for anyone with the link, no login |
 | Club | `/club` | Everything about the club rides (only with a club set, named after the club) |
 | Settings | `/settings` | Settings, labels, export and disconnect |
 
@@ -26,9 +28,9 @@ Anyone not logged in sees a **Connect with Strava** screen with a way into the d
 a login fails, it says why (not on the allowed list, a scope unticked, access denied,
 took too long).
 
-On a computer, a sidebar holds the pages, **Refresh**, **Log an event** and the account
-row (log out, or leave the demo). On a phone, a header shows the page title with Club,
-Settings, Refresh and Log icons, and a floating tab bar in the style of iOS Liquid Glass (a frosted,
+On a computer, a sidebar holds the pages, **Refresh**, **Log an event** (a wrench) and the
+account row (log out, or leave the demo). On a phone, a header shows the page title with
+Ride weather, Club, Settings, Refresh and Log icons, and a floating tab bar in the style of iOS Liquid Glass (a frosted,
 see-through capsule) holds Home, Activities, Bike, Stats and Records.
 
 **Refresh** syncs with Strava now (11.3) and says "Up to date" or how many activities
@@ -338,6 +340,58 @@ Changes are kept as a draft until **Save**.
 types, sports, periods, weeks, pools. The rider's labels win over gear names from Strava,
 which win over built-in defaults (emojis for columns, parts, sports and periods).
 
+## 9.5 Ride weather
+
+The weather on a ride still to come, as Epic Ride Weather shows it.
+- **Route**: one of the rider's saved routes on Strava (private ones need the `read_all`
+  scope, so a rider who logged in before it logs in again), or a Komoot tour. With
+  `KOMOOT_EMAIL` and `KOMOOT_PASSWORD` set, the owner (the first athlete allowed) picks one
+  of their planned tours: the server logs in the way Komoot's apps and community tools do
+  (Komoot has no open API) and keeps only the session key Komoot gives, logging in again
+  when it runs out. Otherwise, or with "Paste a link…", a tour link: a public tour, or a
+  private one through the link its Share button gives, read straight from the browser.
+- **Start**: a day up to 15 days ahead and a time (the next full hour by default).
+- **Pace**: fitted on the rider's outdoor rides of the last two years, half to twice the
+  route's length (all of them under 5 such rides): moving time = a × distance + b ×
+  climbing, by least squares. So each part of the route takes its length at the flat
+  speed, plus the rider's own cost per metre climbed. A slider (10 to 45 km/h) shows the
+  average speed this gives on the route; another average picked there scales the whole ride
+  to it, still slower on the climbs, until "Back to yours" (25 km/h without enough rides).
+- **Forecast**: Open-Meteo (no key), hourly, at a point about every 4 km (40 at most),
+  read between the two hours around the time the rider gets there.
+- **Shows**: the route's name, day, start and finish; then distance and climbing, moving
+  time and average speed, temperature and feels like (lowest to highest), rain (highest
+  chance and mm per hour, average cloud cover), wind (average speed, its usual direction,
+  strongest gust), and the share of the route into a headwind and with a tailwind (over
+  5 km/h along the way). The map has the route coloured by the wind, red against, green
+  behind, gray across or light, the distance and the time the rider gets there every 5 to
+  100 km (about 10 marks, plain text), and about 10 slim arrows pointing where the wind goes,
+  in paler shades of the same colours, bigger when stronger, its speed under each.
+  Then charts
+  against the time of day: temperature and feels like, chance of rain and cloud cover,
+  wind, gusts and the part against the rider, and altitude.
+- **For this ride**, once the forecast is in:
+  - **Wind**: the minutes it costs (or saves) at the same effort. Each stretch between
+    forecast points is ridden at its speed without wind, then at the speed the same power
+    gives into the wind along it (a typical rider: 85 kg with the bike, CdA 0.32, Crr 0.005).
+  - **Best start**: the start 3 hours either side (by the hour) with the least rain and wind,
+    when it beats the chosen one by 3 minutes of wind or 20 points of rain chance.
+  - **The other way round** (loops only, start and finish within 2 km): the wind cost
+    ridden the other way, at the same forecast points.
+  - **Daylight**: sunset where the ride starts, and whether it ends in the dark or starts
+    before sunrise.
+  - **Rain on the way**: from the first km to the last where rain is likely (40 % chance
+    or 0.3 mm per hour), with the times, or dry.
+  - **What to wear**: from the coldest feels like on the way, plus a rain jacket when rain
+    is likely and a word on gusts over 45 km/h.
+- The heading is taken over the next kilometre, so a hairpin does not swap head and tail
+  wind. The choices of source, route and link are kept on the device.
+- **Share** makes a link (`/w/<id>`) to copy or send through the phone's share sheet. It
+  keeps the route (at most 800 points), its name, start and pace on the server for 30 days;
+  anyone with the link sees the same page, read-only and without logging in, with the
+  forecast fetched fresh when they open it. A change to the route, start or speed hides
+  the link, as it no longer matches. The demo has no Share button.
+
 ---
 
 ## 10. Club detection
@@ -401,7 +455,8 @@ Sunday "Raymond Ride"), a switch at the top shows the whole page for either seri
 Serverless functions in `api/`: 7 of the 12 the Hobby plan takes per deployment (a test
 fails above 12), so related routes share one. `api/auth.ts` answers every `/api/auth/<step>`
 (vercel.json rewrites it to `?step=`), `api/sync.ts` also backfills, and `api/activity.ts`
-also merges and copies. All but login, callback and the webhook need a session.
+also merges, copies and shares rides. All but login, callback, the webhook and reading a
+shared ride need a session.
 
 | Route | Does |
 |---|---|
@@ -413,6 +468,8 @@ also merges and copies. All but login, callback and the webhook need a session.
 | `POST /api/sync` | Bring the rider's stored activities up to date, quickly |
 | `POST /api/sync?step=backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
+| `GET /api/activity?action=komoot`, `&id=` | The owner's planned Komoot tours, or one with its points (9.5) |
+| `POST /api/activity?action=share`, `GET ?action=share&id=` | Keep a planned ride for a share link (30 days); read it, with no login (9.5) |
 | `POST /api/activity?action=copy&id=` | Copy a ride to the day and time given (`{date, time}`, today at its own time by default), on Strava and in Statva (4) |
 | `GET, POST, DELETE /api/activity?action=merge` | Merge activities into a new one on Strava (3.5); the merge Strava refused, uploaded again or forgotten |
 | `GET /api/club` | The club's calendar from its team on pedalons.fr, read again at most every 6 hours |
@@ -429,6 +486,7 @@ also merges and copies. All but login, callback and the webhook need a session.
 | `GET /activities/{id}/streams` | Power analysis, merges, copies | 1 per activity with a power meter, 1 per merged part or copy |
 | `POST /uploads`, `GET /uploads/{id}` | Merges, copies | 1 upload and a few status checks each |
 | `GET /activities/{id}/zones`, `/photos` | Activity page | 1 each per page open |
+| `GET /athletes/{id}/routes`, `/routes/{id}/streams` | Ride weather (the rider's own routes only) | 1 per page open, 1 per route picked |
 
 ### 11.3 Sync
 - The app syncs on every visit and on Refresh. The first syncs page through the whole
@@ -479,8 +537,10 @@ adds that prefix itself, so no request can reach another rider's data or the tok
 | `profile` | The rider's Strava profile (name, gear, FTP), as last read | server, served by `/api/strava` |
 
 The rider can read every name but `merge`, and write only their own five. Shared keys:
-`strava_tokens` (every rider's tokens, never reachable from the browser) and
-`strava:usage` (the app's rate limit usage).
+`strava_tokens` (every rider's tokens, never reachable from the browser),
+`strava:usage` (the app's rate limit usage), `ride-share:<id>` (a ride shared by link,
+gone after 30 days; anyone with the id reads it) and `komoot_session` (the owner's Komoot
+session key, never the password, never reachable from the browser).
 
 The browser also keeps the rider's activities and their details as last loaded (IndexedDB
 `statva`, one entry per athlete, saved once the whole list has arrived and again after each
@@ -528,8 +588,8 @@ development runs on it unless `VITE_REAL_DATA=1` (then `vercel dev` serves the A
 
 ### 13.2 Login
 - Sign in with Strava, asking for `activity:read_all` (private activities) and
-  `profile:read_all` (gear). A state cookie ties the answer to the browser, and every
-  scope must be granted.
+  `profile:read_all` (gear), which must be granted, and `read_all` (private routes, for
+  Ride weather), which may not be. A state cookie ties the answer to the browser.
 - Only athletes in `STRAVA_ATHLETE_IDS` may log in. A refused athlete has their access
   handed back to Strava at once and nothing is stored.
 - The session cookie holds the athlete id and an expiry, signed with `SESSION_SECRET`.

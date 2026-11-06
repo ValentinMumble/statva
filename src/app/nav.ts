@@ -1,5 +1,5 @@
 import {IconType} from 'react-icons';
-import {LuBike, LuChartLine, LuHouse, LuList, LuSettings, LuTrophy, LuUsers} from 'react-icons/lu';
+import {LuBike, LuChartLine, LuCloudSun, LuHouse, LuList, LuSettings, LuTrophy, LuUsers} from 'react-icons/lu';
 
 type NavItem = {to: string; label: string; icon: IconType; onPhone: boolean; club?: boolean};
 
@@ -10,6 +10,7 @@ const NAV: NavItem[] = [
   {to: '/gear', label: 'Gear', icon: LuBike, onPhone: true},
   {to: '/stats', label: 'Stats', icon: LuChartLine, onPhone: true},
   {to: '/records', label: 'Records', icon: LuTrophy, onPhone: true},
+  {to: '/weather', label: 'Ride weather', icon: LuCloudSun, onPhone: false},
   {to: '/club', label: 'Club', icon: LuUsers, onPhone: false, club: true},
   {to: '/settings', label: 'Settings', icon: LuSettings, onPhone: false},
 ];

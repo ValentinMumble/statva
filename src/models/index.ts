@@ -27,6 +27,7 @@ export * from './tyre-pressure';
 export * from './tag';
 export * from './training';
 export * from './route-shape';
+export * from './ride-weather';
 export * from './timeframe';
 export * from './util';
 export * from './week';

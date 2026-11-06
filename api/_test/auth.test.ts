@@ -121,6 +121,16 @@ describe('Strava proxy', () => {
     expect(fake.strava.calls.at(-1)).toBe('/api/v3/activities/12/photos?size=1000&photo_sources=true');
   });
 
+  it('lets the rider’s own saved routes through, never another athlete’s', async () => {
+    const fake = install();
+    const session = await logIn();
+
+    await strava(request('/api/strava?path=athletes/42/routes&per_page=100', session));
+    expect(fake.strava.calls.at(-1)).toBe('/api/v3/athletes/42/routes?per_page=100');
+    await strava(request('/api/strava?path=routes/3412345678901234567/streams', session));
+    expect(fake.strava.calls.at(-1)).toBe('/api/v3/routes/3412345678901234567/streams');
+  });
+
   it('refuses every other path', async () => {
     install();
     const session = await logIn();

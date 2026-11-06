@@ -9,12 +9,16 @@ import {
   retryMerge,
   UploadError,
 } from './_lib/merge.js';
+import {canUseKomoot, komootTour, komootTours, KomootUnavailableError} from './_lib/komoot.js';
 import {readSession} from './_lib/session.js';
+import {readSharedRide, saveSharedRide, ShareError} from './_lib/share.js';
 import {changeActivity, refreshActivity} from './_lib/sync.js';
 
 /**
  * One activity, and what Statva uploads from activities: a merge (?action=merge) and a copy to
- * another day (?action=copy). One function for all, as the Hobby plan allows 12 per deployment.
+ * another day (?action=copy); a planned ride shared by link (?action=share), and the owner's
+ * Komoot tours for it (?action=komoot). One function for all, as the Hobby plan allows 12 per
+ * deployment.
  */
 
 // Reading up to 10 activities, uploading and waiting for Strava takes longer than the default.
@@ -112,11 +116,33 @@ const copy = async (request: Request, athleteId: number, activityId: number): Pr
   }
 };
 
-/** The merge Strava refused, waiting for its parts to be deleted, or null (?action=merge). */
+/** The owner's planned Komoot tours, or one of them with its points (?action=komoot&id=). */
+const komoot = async (request: Request, athleteId: number): Promise<Response> => {
+  if (!canUseKomoot(athleteId)) return json({error: 'Komoot is not set up'}, 404);
+
+  try {
+    const id = activityIdOf(request);
+    return json(null === id ? await komootTours() : await komootTour(id));
+  } catch (error) {
+    if (error instanceof KomootUnavailableError) return json({error: error.message}, 502);
+    throw error;
+  }
+};
+
+/**
+ * The merge Strava refused, waiting for its parts to be deleted, or null (?action=merge); a
+ * shared ride (?action=share&id=), for anyone with its link.
+ */
 export const GET = async (request: Request): Promise<Response> => {
+  if ('share' === actionOf(request)) {
+    const ride = await readSharedRide(new URL(request.url).searchParams.get('id') ?? '');
+    return null === ride ? json({error: 'No such ride, or its link has expired'}, 404) : json(ride);
+  }
+
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
+  if ('komoot' === actionOf(request)) return await komoot(request, athleteId);
   if ('merge' !== actionOf(request)) return json({error: 'Not found'}, 404);
 
   return json({pending: await pendingMerge(athleteId)});
@@ -124,13 +150,22 @@ export const GET = async (request: Request): Promise<Response> => {
 
 /**
  * Fetches one activity from Strava again and stores it, for when the stored copy is out of date;
- * merges activities (?action=merge), or copies one to another day (?action=copy).
+ * merges activities (?action=merge), copies one to another day (?action=copy), or shares a
+ * planned ride by link (?action=share).
  */
 export const POST = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
   if ('merge' === actionOf(request)) return await merge(request, athleteId);
+  if ('share' === actionOf(request)) {
+    try {
+      return json({id: await saveSharedRide(await request.json().catch(() => null))});
+    } catch (error) {
+      if (error instanceof ShareError) return json({error: `A shared ride needs ${error.message}`}, 400);
+      throw error;
+    }
+  }
 
   const activityId = activityIdOf(request);
 

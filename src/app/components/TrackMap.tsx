@@ -50,7 +50,13 @@ const TrackMap = ({tracks, center, showEnds = true, children, ...boxProps}: Trac
 
   return (
     <Box borderRadius="card" overflow="hidden" borderWidth="1px" {...boxProps}>
-      <MapContainer center={center} zoom={11} scrollWheelZoom={false} style={{height: '100%', width: '100%'}}>
+      <MapContainer
+        center={center}
+        zoom={11}
+        zoomSnap={0.25}
+        scrollWheelZoom={false}
+        style={{height: '100%', width: '100%'}}
+      >
         <TileLayer key={String(dark)} url={tileUrl(dark)} attribution={ATTRIBUTION} />
         <FitToTracks tracks={tracks} center={center} />
         {tracks.map((track, index) => (

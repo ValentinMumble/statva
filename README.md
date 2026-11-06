@@ -27,6 +27,11 @@ into a home page, stats, records and an explorer map.
   charts for training load, volume and gear.
 - **Records:** all-time totals, the hall of fame, Eddington by year, and the explorer tiles
   you have ridden, with the biggest square and the yard as Squadrats defines them.
+- **Ride weather:** a Strava route or a Komoot tour, ridden at your own pace from a start
+  time, with the forecast at each part of the route when you get there and the wind as head
+  or tail wind, like Epic Ride Weather. Share it by link: a friend opens it without an
+  account. Log in again once to list your private routes; set `KOMOOT_EMAIL` and
+  `KOMOOT_PASSWORD` to pick your planned Komoot tours instead of pasting links.
 - **Club:** for riders in a club, its own page: attendance week by week, groups and their
   pace, session records, finish places, every route on one map.
 - **Settings:** bikes, part limits, goal, heart rate, weight, club rules, language, labels.

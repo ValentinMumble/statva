@@ -16,6 +16,14 @@ import {
   fetchActivityPhotos,
   fetchActivityZones,
   fetchAthlete,
+  fetchForecasts,
+  fetchKomootSavedTour,
+  fetchKomootTour,
+  fetchKomootTours,
+  fetchStravaRoute,
+  fetchStravaRoutes,
+  fetchSharedRide,
+  shareRide,
   getActivities,
   getActivitySummaries,
   getEvents,
@@ -78,6 +86,14 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'settings.set': setSetting,
   'ftp_tests.get': getFTPTests,
   'ftp_tests.set': upsertFTPTest,
+  'routes.strava': fetchStravaRoutes,
+  'route.strava': fetchStravaRoute,
+  'route.komoot': fetchKomootTour,
+  'komoot.tours': fetchKomootTours,
+  'komoot.tour': fetchKomootSavedTour,
+  'weather.forecast': fetchForecasts,
+  'ride.share': shareRide,
+  'ride.shared': fetchSharedRide,
 };
 
 const DEMO: typeof REAL = {
@@ -117,6 +133,16 @@ const DEMO: typeof REAL = {
   'settings.set': demoBackend.setSetting,
   'ftp_tests.get': demoBackend.getFtpTests,
   'ftp_tests.set': demoBackend.setFtpTest,
+  // The demo has no Strava routes; Komoot links and forecasts are real.
+  'routes.strava': () => Promise.resolve([]),
+  'route.strava': () => Promise.reject(new Error('The demo has no Strava routes')),
+  'route.komoot': fetchKomootTour,
+  // The demo has no Komoot login: links only.
+  'komoot.tours': () => Promise.resolve([]),
+  'komoot.tour': () => Promise.reject(new Error('The demo has no Komoot login')),
+  'weather.forecast': fetchForecasts,
+  'ride.share': () => Promise.reject(new Error('The demo cannot share')),
+  'ride.shared': fetchSharedRide,
 };
 
 const REGISTRY = isDemo() ? DEMO : REAL;

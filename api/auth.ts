@@ -13,8 +13,9 @@ import {forgetAthlete} from './_lib/sync.js';
 
 const AUTHORIZE_URL = 'https://www.strava.com/oauth/authorize';
 // activity:read_all: private activities. profile:read_all: gear and FTP.
-// activity:write lets ride rules and renaming change activities on Strava.
-const SCOPE = 'read,activity:read_all,activity:write,profile:read_all';
+// activity:write lets ride rules and renaming change activities on Strava. read_all: private
+// routes, for Ride weather (not required, so a login from before it still works).
+const SCOPE = 'read,read_all,activity:read_all,activity:write,profile:read_all';
 const REQUIRED_SCOPES = ['activity:read_all', 'profile:read_all'];
 
 // The step from the rewrite's query, or from the path when the request comes as it was sent.

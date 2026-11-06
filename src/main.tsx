@@ -12,6 +12,8 @@ import {BikePage, OldBikeLink} from './app/pages/BikePage';
 import {ClubPage} from './app/pages/ClubPage';
 import {HomePage} from './app/pages/HomePage';
 import {RecordsPage} from './app/pages/RecordsPage';
+import {RideWeatherPage} from './app/pages/RideWeatherPage';
+import {SharedRidePage} from './app/pages/SharedRidePage';
 import {SettingsPage} from './app/pages/SettingsPage';
 import {StatsPage} from './app/pages/StatsPage';
 import {system} from './app/theme';
@@ -49,6 +51,16 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <RouterRoutes>
+            {/* A ride shared from Ride weather opens for anyone with the link, without a login. */}
+            <Route
+              path="w/:shareId"
+              element={
+                <>
+                  <PageTitle title="Ride weather 🛹" />
+                  <SharedRidePage />
+                </>
+              }
+            />
             <Route
               element={
                 <AuthGate>
@@ -64,6 +76,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="bike/:bikeId?" element={<OldBikeLink />} />
               <Route path="stats" element={<StatsPage />} />
               <Route path="records" element={<RecordsPage />} />
+              <Route path="weather" element={<RideWeatherPage />} />
               <Route path="club" element={<ClubPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>

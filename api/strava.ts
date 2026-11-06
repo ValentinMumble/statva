@@ -12,6 +12,8 @@ const ALLOWED_PATHS = [
   /^activities\/\d+\/zones$/,
   /^activities\/\d+\/photos$/,
   /^activities\/\d+\/comments$/,
+  /^athletes\/\d+\/routes$/,
+  /^routes\/\d+\/streams$/,
 ];
 const ALLOWED_PARAMS = ['page', 'per_page', 'page_size', 'size', 'photo_sources'];
 
@@ -24,7 +26,9 @@ export const GET = async (request: Request): Promise<Response> => {
   const params = new URL(request.url).searchParams;
   const path = params.get('path') ?? '';
 
-  if (!ALLOWED_PATHS.some(pattern => pattern.test(path))) {
+  // Routes only of the rider logged in.
+  const athlete = path.match(/^athletes\/(\d+)\//)?.[1];
+  if (!ALLOWED_PATHS.some(pattern => pattern.test(path)) || (undefined !== athlete && Number(athlete) !== athleteId)) {
     return json({error: 'Not allowed'}, 403);
   }
 
