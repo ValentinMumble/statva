@@ -3,9 +3,31 @@ import {useQuery} from '@tanstack/react-query';
 import {useParams} from 'react-router';
 import {SharedRide} from '../../api';
 import {getFetcher} from '../../hooks/useFetcher';
+import {useRideTiming} from '../../hooks/useRideTiming';
+import {Card} from '../components/Card';
+import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
 
 const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
+
+/**
+ * The shared ride, with its day, start and speed to change here: they start as shared, and
+ * a change stays on this page, never in the link.
+ */
+const SharedRideWeather = ({shared, locale}: {shared: SharedRide; locale: string}) => {
+  const timing = useRideTiming(shared.route.points, shared.pace, shared.start);
+
+  return (
+    <>
+      <Card>
+        <RideTimingFields timing={timing} locale={locale} ownLabel="the shared speed" />
+      </Card>
+      {!Number.isNaN(timing.start) && (
+        <RideWeatherResults route={shared.route} start={timing.start} pace={timing.pace} locale={locale} />
+      )}
+    </>
+  );
+};
 
 /**
  * A ride shared from Ride weather, for anyone with its link, with no login: the route, start
@@ -34,14 +56,7 @@ const SharedRidePage = () => {
         {shared.isError && (
           <Text color="fg.muted">This ride is not shared any more: links last 30 days. Ask for a new one.</Text>
         )}
-        {undefined !== shared.data && (
-          <RideWeatherResults
-            route={shared.data.route}
-            start={shared.data.start}
-            pace={shared.data.pace}
-            locale={navigator.language}
-          />
-        )}
+        {undefined !== shared.data && <SharedRideWeather shared={shared.data} locale={navigator.language} />}
       </Stack>
     </Box>
   );

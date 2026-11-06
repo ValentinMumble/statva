@@ -1,4 +1,4 @@
-import {HourForecast, Pace, PlannedRoute, routeFromPoints} from '../models/ride-weather';
+import {HourForecast, Pace, PlannedRoute, routeFromPoints, RouteSource} from '../models/ride-weather';
 import {getJson} from './strava';
 
 /**
@@ -23,6 +23,7 @@ const fetchStravaRoute = async (route: StravaRoute): Promise<PlannedRoute> => {
 
   return {
     name: route.name,
+    source: {service: 'strava', url: `https://www.strava.com/routes/${route.id_str}`},
     points: routeFromPoints(
       data('latlng') as [number, number][],
       data('altitude') as number[],
@@ -55,6 +56,8 @@ const fetchKomootTour = async (link: string): Promise<PlannedRoute> => {
 
   return {
     name: tour.name,
+    // The tour's own page, without the share token: the rider's link stays theirs.
+    source: {service: 'komoot', url: `https://www.komoot.com/tour/${id}`},
     points: routeFromPoints(
       items.map(({lat, lng}) => [lat, lng]),
       items.map(({alt}) => alt ?? 0),
@@ -134,6 +137,7 @@ const fetchKomootSavedTour = async (id: number): Promise<PlannedRoute> => {
 
   return {
     name: tour.name,
+    source: {service: 'komoot', url: `https://www.komoot.com/tour/${id}`},
     points: routeFromPoints(
       tour.points.map(({lat, lng}) => [lat, lng]),
       tour.points.map(({alt}) => alt ?? 0),
@@ -163,6 +167,7 @@ const shareRide = async ({route, start, pace}: SharedRide): Promise<string> => {
       ]),
       start,
       pace,
+      source: route.source,
     }),
   });
   if (!response.ok) throw new Error(`Sharing failed: ${response.status}`);
@@ -172,13 +177,18 @@ const shareRide = async ({route, start, pace}: SharedRide): Promise<string> => {
 
 /** A ride shared by link, for anyone who has it: no login needed. */
 const fetchSharedRide = async (id: string): Promise<SharedRide> => {
-  const shared = await getJson<{name: string; points: [number, number, number, number][]; start: number; pace: Pace}>(
-    `/api/activity?${new URLSearchParams({action: 'share', id})}`,
-  );
+  const shared = await getJson<{
+    name: string;
+    points: [number, number, number, number][];
+    start: number;
+    pace: Pace;
+    source?: RouteSource;
+  }>(`/api/activity?${new URLSearchParams({action: 'share', id})}`);
 
   return {
     route: {
       name: shared.name,
+      source: shared.source,
       points: shared.points.map(([lat, lng, altitude, distance]) => ({lat, lng, altitude, distance})),
     },
     start: shared.start,

@@ -27,6 +27,7 @@ const ride = {
   ],
   start: Date.parse('2026-11-08T12:00:00Z'),
   pace: {secondsPerMetre: 0.12, secondsPerMetreClimbed: 2.7},
+  source: {service: 'komoot', url: 'https://www.komoot.com/tour/3377870893'},
 };
 
 describe('sharing a planned ride by link', () => {
@@ -54,6 +55,10 @@ describe('sharing a planned ride by link', () => {
     );
     expect((await call(save, 'POST', 'action=share', {...ride, name: ' '})).status).toBe(400);
     expect((await call(save, 'POST', 'action=share', {...ride, pace: {secondsPerMetre: 0}})).status).toBe(400);
+    // A source is a route's own page, never another address or a private share token.
+    for (const url of ['https://evil.example/tour/1', 'https://www.komoot.com/tour/1?share_token=secret']) {
+      expect((await call(save, 'POST', 'action=share', {...ride, source: {service: 'komoot', url}})).status).toBe(400);
+    }
   });
 
   it('says when a link leads nowhere', async () => {

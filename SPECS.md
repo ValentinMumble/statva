@@ -350,7 +350,9 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   (Komoot has no open API) and keeps only the session key Komoot gives, logging in again
   when it runs out. Otherwise, or with "Paste a link…", a tour link: a public tour, or a
   private one through the link its Share button gives, read straight from the browser.
-- **Start**: a day up to 15 days ahead and a time (the next full hour by default).
+- **Start**: a day from a list of the next 15, written in Statva's language (a date input
+  would show the device's own format), and a time (the next full hour by default). The
+  Strava and Komoot choices carry their logos.
 - **Pace**: fitted on the rider's outdoor rides of the last two years, half to twice the
   route's length (all of them under 5 such rides): moving time = a × distance + b ×
   climbing, by least squares. So each part of the route takes its length at the flat
@@ -359,8 +361,10 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   to it, still slower on the climbs, until "Back to yours" (25 km/h without enough rides).
 - **Forecast**: Open-Meteo (no key), hourly, at a point about every 4 km (40 at most),
   read between the two hours around the time the rider gets there.
-- **Shows**: the route's name, day, start and finish; then distance and climbing, moving
-  time and average speed, temperature and feels like (lowest to highest), rain (highest
+- **Shows**: the route's name, day, start and finish, and where it comes from (its page on
+  Strava or Komoot, with the logo; never a private share token); then distance (a loop, or
+  how far from the start it ends), elevation (climbing, metres per km, highest point), moving
+  time (and the time back), average speed, temperature and feels like (lowest to highest), rain (highest
   chance and mm per hour, average cloud cover), wind (average speed, its usual direction,
   strongest gust), and the share of the route into a headwind and with a tailwind (over
   5 km/h along the way). The map has the route coloured by the wind, red against, green
@@ -384,12 +388,15 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
     or 0.3 mm per hour), with the times, or dry.
   - **What to wear**: from the coldest feels like on the way, plus a rain jacket when rain
     is likely and a word on gusts over 45 km/h.
+- Pointing at a chart marks that moment on the map with an orange dot, and the four charts
+  show the same moment together.
 - The heading is taken over the next kilometre, so a hairpin does not swap head and tail
   wind. The choices of source, route and link are kept on the device.
 - **Share** makes a link (`/w/<id>`) to copy or send through the phone's share sheet. It
   keeps the route (at most 800 points), its name, start and pace on the server for 30 days;
-  anyone with the link sees the same page, read-only and without logging in, with the
-  forecast fetched fresh when they open it. A change to the route, start or speed hides
+  anyone with the link sees the same page without logging in, with the forecast fetched
+  fresh when they open it. They can change the day, start and speed there (starting from the
+  shared ones, with "Back to the shared speed"); that stays on their page, never in the link. A change to the route, start or speed hides
   the link, as it no longer matches. The demo has no Share button.
 
 ---

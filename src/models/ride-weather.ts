@@ -8,7 +8,9 @@ import {Activity} from './strava';
  */
 
 type RoutePoint = {lat: number; lng: number; altitude: number; distance: number};
-type PlannedRoute = {name: string; points: RoutePoint[]};
+// Where the route comes from: the route or tour on Strava or Komoot.
+type RouteSource = {service: 'strava' | 'komoot'; url: string};
+type PlannedRoute = {name: string; points: RoutePoint[]; source?: RouteSource};
 
 // The rider's pace: seconds per metre on the flat, and seconds more per metre climbed.
 type Pace = {secondsPerMetre: number; secondsPerMetreClimbed: number};
@@ -384,6 +386,7 @@ export {
   climbing,
   FORECAST_DAYS,
   forecastAt,
+  haversine,
   heading,
   headwindOf,
   isLoop,
@@ -402,4 +405,4 @@ export {
   windCost,
   windShares,
 };
-export type {HourForecast, Pace, PlannedRoute, RoutePoint, StartOption, WeatherPoint};
+export type {HourForecast, Pace, PlannedRoute, RoutePoint, RouteSource, StartOption, WeatherPoint};

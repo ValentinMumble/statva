@@ -1,15 +1,18 @@
 import {useMemo, useState} from 'react';
-import {Grid, Spinner, Stack, Text} from '@chakra-ui/react';
+import {Grid, HStack, Link as ChakraLink, Spinner, Stack, Text} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {useQuery} from '@tanstack/react-query';
 import {divIcon} from 'leaflet';
-import {Marker, Polyline, Tooltip as MapTooltip} from 'react-leaflet';
+import {CircleMarker, Marker, Polyline, Tooltip as MapTooltip} from 'react-leaflet';
+import {LuExternalLink} from 'react-icons/lu';
+import {SiKomoot, SiStrava} from 'react-icons/si';
 import {Area, ComposedChart, Legend, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
   betterStart,
   climbing,
   FORECAST_DAYS,
+  haversine,
   HourForecast,
   isLoop,
   NOTICEABLE_WIND,
@@ -129,12 +132,15 @@ const WeatherChart = ({
   unit,
   locale,
   zeroLine = false,
+  onHover,
 }: {
   weather: WeatherPoint[];
   series: Series[];
   unit: string;
   locale: string;
   zeroLine?: boolean;
+  // The forecast point under the pointer, or null once it leaves, for the map's marker.
+  onHover: (sample: number | null) => void;
 }) => {
   const chart = useChart({
     data: weather,
@@ -144,7 +150,15 @@ const WeatherChart = ({
   return (
     <Chart.Root width="100%" height="220px" chart={chart}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={chart.data}>
+        {/* The charts share a syncId, so the pointer over one shows the same moment on all. */}
+        <ComposedChart
+          data={chart.data}
+          syncId="ride-weather"
+          onMouseMove={({activeTooltipIndex}) =>
+            onHover(undefined === activeTooltipIndex ? null : Number(activeTooltipIndex))
+          }
+          onMouseLeave={() => onHover(null)}
+        >
           <XAxis
             dataKey="time"
             type="number"
@@ -267,6 +281,8 @@ const RideWeatherResults = ({route, start, pace, locale}: RideWeatherResultsProp
     [forecasts.data, points, times, start, indexes],
   );
   const shares = windShares(weather);
+  // The forecast point the pointer is on in a chart, marked on the map.
+  const [hovered, setHovered] = useState<number | null>(null);
   const advice = useMemo(() => {
     if (!forecasts.data || 0 === weather.length) return null;
     const cost = windCost(weather);
@@ -298,18 +314,38 @@ const RideWeatherResults = ({route, start, pace, locale}: RideWeatherResultsProp
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
       <Card>
-        <Text fontFamily="heading" fontWeight="semibold" fontSize="lg">
-          {route.name}
-        </Text>
+        <HStack justifyContent="space-between" alignItems="baseline" gap="12px" flexWrap="wrap">
+          <Text fontFamily="heading" fontWeight="semibold" fontSize="lg">
+            {route.name}
+          </Text>
+          {undefined !== route.source && (
+            <ChakraLink href={route.source.url} target="_blank" rel="noreferrer" fontSize="sm" color="fg.muted">
+              {'strava' === route.source.service ? <SiStrava color="#fc4c02" /> : <SiKomoot color="#6aa127" />}
+              From {'strava' === route.source.service ? 'Strava' : 'Komoot'} <LuExternalLink />
+            </ChakraLink>
+          )}
+        </HStack>
         <Text color="fg.muted" marginBottom="16px">
           {when}, {clock(start, locale)} to {clock(finish, locale)}
         </Text>
-        <Grid templateColumns={{base: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)'}} gap="16px">
-          <Field label="Distance" value={km(distance, locale)} detail={`${metres(climb, locale)} climbing`} />
+        <Grid templateColumns={{base: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)', xl: 'repeat(8, 1fr)'}} gap="16px">
           <Field
-            label="Moving time"
-            value={duration(moving)}
-            detail={`${number((distance / moving) * 3.6, locale, 1)} km/h on average`}
+            label="Distance"
+            value={km(distance, locale)}
+            detail={
+              isLoop(points) ? 'a loop' : `ends ${km(haversine(points[0], points[points.length - 1]), locale)} away`
+            }
+          />
+          <Field
+            label="Elevation"
+            value={`${metres(climb, locale)} ↑`}
+            detail={`${number(climb / (distance / 1000), locale)} m per km · top ${metres(Math.max(...points.map(({altitude}) => altitude)), locale)}`}
+          />
+          <Field label="Moving time" value={duration(moving)} detail={`back at ${clock(finish, locale)}`} />
+          <Field
+            label="Average speed"
+            value={`${number((distance / moving) * 3.6, locale, 1)} km/h`}
+            detail="slower on the climbs"
           />
           <Field
             label="Temperature"
@@ -445,6 +481,13 @@ const RideWeatherResults = ({route, start, pace, locale}: RideWeatherResultsProp
               pathOptions={{color: windColor(point.headwind), weight: 6, opacity: 0.9}}
             />
           ))}
+          {null !== hovered && undefined !== weather[hovered] && (
+            <CircleMarker
+              center={[weather[hovered].lat, weather[hovered].lng]}
+              radius={8}
+              pathOptions={{color: 'white', weight: 3, fillColor: '#f25c14', fillOpacity: 1}}
+            />
+          )}
           {marks.map(mark => (
             <DistanceMark key={mark.distance} {...mark} locale={locale} />
           ))}
@@ -462,6 +505,7 @@ const RideWeatherResults = ({route, start, pace, locale}: RideWeatherResultsProp
             <CardTitle>Temperature</CardTitle>
             <WeatherChart
               weather={weather}
+              onHover={setHovered}
               unit="°"
               locale={locale}
               series={[
@@ -474,6 +518,7 @@ const RideWeatherResults = ({route, start, pace, locale}: RideWeatherResultsProp
             <CardTitle>Rain and clouds</CardTitle>
             <WeatherChart
               weather={weather}
+              onHover={setHovered}
               unit="%"
               locale={locale}
               series={[
@@ -486,6 +531,7 @@ const RideWeatherResults = ({route, start, pace, locale}: RideWeatherResultsProp
             <CardTitle>Wind</CardTitle>
             <WeatherChart
               weather={weather}
+              onHover={setHovered}
               unit=" km/h"
               locale={locale}
               zeroLine={true}
@@ -500,6 +546,7 @@ const RideWeatherResults = ({route, start, pace, locale}: RideWeatherResultsProp
             <CardTitle>Elevation</CardTitle>
             <WeatherChart
               weather={weather}
+              onHover={setHovered}
               unit=" m"
               locale={locale}
               series={[{name: 'altitude', label: 'Altitude', color: 'gray.solid', kind: 'area'}]}
