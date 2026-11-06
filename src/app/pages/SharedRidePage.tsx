@@ -15,7 +15,7 @@ const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
  * a change stays on this page, never in the link.
  */
 const SharedRideWeather = ({shared, locale}: {shared: SharedRide; locale: string}) => {
-  const timing = useRideTiming(shared.route.points, shared.pace, shared.start);
+  const timing = useRideTiming(shared.route, shared.pace, shared.start);
 
   return (
     <>
@@ -23,7 +23,12 @@ const SharedRideWeather = ({shared, locale}: {shared: SharedRide; locale: string
         <RideTimingFields timing={timing} locale={locale} ownLabel="the shared speed" />
       </Card>
       {!Number.isNaN(timing.start) && (
-        <RideWeatherResults route={shared.route} start={timing.start} pace={timing.pace} locale={locale} />
+        <RideWeatherResults
+          route={timing.route ?? shared.route}
+          start={timing.start}
+          pace={timing.pace}
+          locale={locale}
+        />
       )}
     </>
   );

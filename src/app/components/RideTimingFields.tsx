@@ -1,6 +1,6 @@
 import {useState} from 'react';
-import {Button, Field, Grid, Input, NativeSelect} from '@chakra-ui/react';
-import {Slider} from '../../components/ui';
+import {Button, Field, Grid, NativeSelect} from '@chakra-ui/react';
+import {Slider, Switch} from '../../components/ui';
 import {RideTiming} from '../../hooks/useRideTiming';
 import {FORECAST_DAYS} from '../../models';
 import {deviceDay} from '../../models/local-day';
@@ -9,6 +9,11 @@ import {number} from '../format';
 // The speeds the slider offers (km/h).
 const SPEEDS = {min: 10, max: 45, step: 0.5};
 const DAY_MS = 86400000;
+// The start times offered, every quarter of an hour, as "HH:MM".
+const TIMES = Array.from(
+  {length: 96},
+  (_, quarter) => `${String(Math.floor(quarter / 4)).padStart(2, '0')}:${String((quarter % 4) * 15).padStart(2, '0')}`,
+);
 
 type RideTimingFieldsProps = {
   timing: RideTiming;
@@ -20,14 +25,15 @@ type RideTimingFieldsProps = {
 
 /** The day, start time and average speed of a planned ride. */
 const RideTimingFields = ({timing, locale, ownLabel, note}: RideTimingFieldsProps) => {
-  const {startDay, setStartDay, startTime, setStartTime, speed, setSpeed, ownSpeed, average} = timing;
+  const {startDay, setStartDay, startTime, setStartTime, speed, setSpeed, ownSpeed, average, reversed, setReversed} =
+    timing;
   const [now] = useState(() => Date.now());
   const days = Array.from({length: FORECAST_DAYS - 1}, (_, offset) => new Date(now + offset * DAY_MS));
   // A shared ride opened later may start on a day already gone: it stays in the list.
   const listed = days.some(date => deviceDay(date) === startDay) ? days : [new Date(`${startDay}T12:00`), ...days];
 
   return (
-    <Grid templateColumns={{base: '1fr 1fr', md: 'repeat(3, 1fr)'}} gap="12px">
+    <Grid templateColumns={{base: '1fr 1fr', md: 'repeat(4, 1fr)'}} gap="12px">
       <Field.Root>
         <Field.Label>Day</Field.Label>
         {/* A list rather than a date input, which shows the device's format whatever the page's. */}
@@ -44,7 +50,17 @@ const RideTimingFields = ({timing, locale, ownLabel, note}: RideTimingFieldsProp
       </Field.Root>
       <Field.Root>
         <Field.Label>Start</Field.Label>
-        <Input type="time" value={startTime} onChange={({target}) => setStartTime(target.value)} />
+        {/* A list too, as a time input shows the device's format (AM and PM) whatever the page's. */}
+        <NativeSelect.Root>
+          <NativeSelect.Field value={startTime} onChange={({target}) => setStartTime(target.value)}>
+            {(TIMES.includes(startTime) ? TIMES : [startTime, ...TIMES]).map(time => (
+              <option key={time} value={time}>
+                {new Date(`2000-01-01T${time}`).toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit'})}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
       </Field.Root>
       <Field.Root gridColumn={{base: 'span 2', md: 'auto'}}>
         <Field.Label>Average speed: {number(average, locale, 1)} km/h</Field.Label>
@@ -66,6 +82,12 @@ const RideTimingFields = ({timing, locale, ownLabel, note}: RideTimingFieldsProp
             </Button>
           )}
         </Field.HelperText>
+      </Field.Root>
+      <Field.Root>
+        <Field.Label>Direction</Field.Label>
+        <Switch checked={reversed} onCheckedChange={({checked}) => setReversed(checked)} marginTop="8px">
+          The other way round
+        </Switch>
       </Field.Root>
     </Grid>
   );

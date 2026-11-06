@@ -1,5 +1,5 @@
 import {useMemo, useState} from 'react';
-import {climbing, Pace, RoutePoint} from '../models';
+import {climbing, Pace, PlannedRoute, reversePoints} from '../models';
 import {deviceDay} from '../models/local-day';
 
 /** The next full hour, as the start offered first. */
@@ -10,17 +10,27 @@ const nextHour = (): Date => {
 };
 
 /**
- * When a planned ride starts and how fast it goes: a day, a time and an average speed, on top
- * of a pace (the rider's own, or the one a shared ride came with). The speed scales the whole
- * pace, so the ride stays slower on the climbs; null keeps the pace's own speed.
+ * When a planned ride starts, how fast it goes and which way: a day, a time, an average speed
+ * on top of a pace (the rider's own, or the one a shared ride came with), and the route as
+ * planned or the other way round. The speed scales the whole pace, so the ride stays slower on
+ * the climbs; null keeps the pace's own speed.
  */
-const useRideTiming = (points: RoutePoint[], basePace: Pace, firstStart: number | null = null) => {
+const useRideTiming = (planned: PlannedRoute | undefined, basePace: Pace, firstStart: number | null = null) => {
   const [first] = useState(() => (null === firstStart ? nextHour() : new Date(firstStart)));
   const [startDay, setStartDay] = useState(deviceDay(first));
   const [startTime, setStartTime] = useState(
     `${String(first.getHours()).padStart(2, '0')}:${String(first.getMinutes()).padStart(2, '0')}`,
   );
   const [speed, setSpeed] = useState<number | null>(null);
+  const [reversed, setReversed] = useState(false);
+  const route = useMemo(
+    () =>
+      undefined === planned || !reversed
+        ? planned
+        : {...planned, name: `${planned.name}, the other way`, points: reversePoints(planned.points)},
+    [planned, reversed],
+  );
+  const points = useMemo(() => route?.points ?? [], [route]);
 
   const distance = points.at(-1)?.distance ?? 0;
   const climb = useMemo(() => climbing(points), [points]);
@@ -43,6 +53,9 @@ const useRideTiming = (points: RoutePoint[], basePace: Pace, firstStart: number 
     setStartTime,
     speed,
     setSpeed,
+    reversed,
+    setReversed,
+    route,
     ownSpeed,
     average,
     pace,

@@ -80,6 +80,13 @@ const routeFromPoints = (
   });
 };
 
+/** The route the other way round: its finish first, distances counted from there. */
+const reversePoints = (points: RoutePoint[]): RoutePoint[] => {
+  const total = points.at(-1)?.distance ?? 0;
+
+  return [...points].reverse().map(point => ({...point, distance: total - point.distance}));
+};
+
 const climbing = (points: RoutePoint[]): number =>
   points.reduce(
     (sum, point, index) => sum + (0 < index ? Math.max(0, point.altitude - points[index - 1].altitude) : 0),
@@ -336,8 +343,7 @@ const weatherReversed = (
   indexes: number[],
   forecasts: HourForecast[][],
 ): WeatherPoint[] => {
-  const total = points.at(-1)?.distance ?? 0;
-  const reversed = [...points].reverse().map(point => ({...point, distance: total - point.distance}));
+  const reversed = reversePoints(points);
   const last = points.length - 1;
 
   return weatherAlong(
@@ -393,6 +399,7 @@ export {
   NOTICEABLE_WIND,
   outfit,
   rainSpell,
+  reversePoints,
   routeFromPoints,
   sampleIndexes,
   speedInWind,

@@ -9,6 +9,7 @@ import {
   isLoop,
   outfit,
   rainSpell,
+  reversePoints,
   routeFromPoints,
   sampleIndexes,
   speedInWind,
@@ -51,6 +52,25 @@ describe('routeFromPoints', () => {
 
     expect(route.map(({distance}) => Math.round(distance))).toEqual([0, 111, 222]);
     expect(route[1]).toMatchObject({lat: 45.001, altitude: 110});
+  });
+});
+
+describe('reversePoints', () => {
+  it('starts from the finish, counting the distance from there', () => {
+    const route = routeFromPoints(
+      [
+        [45, 5],
+        [45.001, 5],
+        [45.003, 5],
+      ],
+      [100, 110, 150],
+    );
+
+    expect(reversePoints(route).map(({distance, altitude}) => [Math.round(distance), altitude])).toEqual([
+      [0, 150],
+      [222, 110],
+      [334, 100],
+    ]);
   });
 });
 

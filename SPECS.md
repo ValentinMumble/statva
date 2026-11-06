@@ -351,7 +351,9 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   when it runs out. Otherwise, or with "Paste a link…", a tour link: a public tour, or a
   private one through the link its Share button gives, read straight from the browser.
 - **Start**: a day from a list of the next 15, written in Statva's language (a date input
-  would show the device's own format), and a time (the next full hour by default). The
+  would show the device's own format), and a time from a list every 15 minutes, for the same
+  reason (the next full hour by default), and **The other way round**, which rides the
+  route from its finish (timing, climbs, wind and forecast follow; shared too). The
   Strava and Komoot choices carry their logos.
 - **Pace**: fitted on the rider's outdoor rides of the last two years, half to twice the
   route's length (all of them under 5 such rides): moving time = a × distance + b ×

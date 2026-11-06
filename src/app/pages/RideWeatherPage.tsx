@@ -121,15 +121,16 @@ const RideWeatherPage = () => {
   const [now] = useState(() => new Date());
   const usual = useMemo(() => usualPace(activities ?? [], distance, now), [activities, distance, now]);
   // The rider's own pace, 25 km/h without enough rides; the day, start and speed on top of it.
-  const timing = useRideTiming(points, usual ?? {secondsPerMetre: 3.6 / 25, secondsPerMetreClimbed: 0});
-  const {pace, start} = timing;
-  const rideKey = JSON.stringify([route.data?.name, distance, start, pace]);
+  const timing = useRideTiming(route.data, usual ?? {secondsPerMetre: 3.6 / 25, secondsPerMetreClimbed: 0});
+  // The route as shown: the way it was planned, or the other way round.
+  const {pace, start, route: ridden} = timing;
+  const rideKey = JSON.stringify([ridden?.name, distance, start, pace]);
 
   const share = async () => {
-    if (undefined === route.data) return;
+    if (undefined === ridden) return;
     setSharing(true);
     try {
-      const id = await shareRide({route: route.data, start, pace} satisfies SharedRide);
+      const id = await shareRide({route: ridden, start, pace} satisfies SharedRide);
       setShared({url: `${window.location.origin}/w/${id}`, ride: rideKey});
     } catch {
       toaster.create({title: 'The link could not be made', description: 'Try again in a moment.'});
@@ -153,7 +154,7 @@ const RideWeatherPage = () => {
       </HStack>
 
       {null !== shared && rideKey === shared.ride && (
-        <ShareLink url={shared.url} title={`${route.data?.name}: the ride weather`} />
+        <ShareLink url={shared.url} title={`${ridden?.name}: the ride weather`} />
       )}
 
       <Card>
@@ -274,8 +275,8 @@ const RideWeatherPage = () => {
         </Text>
       )}
 
-      {undefined !== route.data && 1 < points.length && !Number.isNaN(start) && (
-        <RideWeatherResults route={route.data} start={start} pace={pace} locale={locale} />
+      {undefined !== ridden && 1 < points.length && !Number.isNaN(start) && (
+        <RideWeatherResults route={ridden} start={start} pace={pace} locale={locale} />
       )}
     </Stack>
   );
