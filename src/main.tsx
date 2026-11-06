@@ -52,15 +52,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <RouterRoutes>
             {/* A ride shared from Ride weather opens for anyone with the link, without a login. */}
-            <Route
-              path="w/:shareId"
-              element={
-                <>
-                  <PageTitle title="Ride weather 🛹" />
-                  <SharedRidePage />
-                </>
-              }
-            />
+            <Route path="w/:shareId" element={<SharedRidePage />} />
             <Route
               element={
                 <AuthGate>

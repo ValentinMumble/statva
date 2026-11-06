@@ -11,6 +11,9 @@ export default defineConfig({
   },
   server: {
     host: true,
+    // The dev server has no server functions: shared rides are read from the live site, so a
+    // share link opens here too (/w/<id>). Reading one needs no login.
+    proxy: {'/api/activity': {target: 'https://statva.vumble.dev', changeOrigin: true}},
   },
   plugins: [react()],
   build: {

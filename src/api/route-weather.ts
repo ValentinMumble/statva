@@ -145,13 +145,14 @@ const fetchKomootSavedTour = async (id: number): Promise<PlannedRoute> => {
   };
 };
 
-type SharedRide = {route: PlannedRoute; start: number; pace: Pace};
+// Stops (s): left out of links made before they existed, which then take the default.
+type SharedRide = {route: PlannedRoute; start: number; pace: Pace; stops?: number};
 
 // A shared route keeps at most this many points: plenty for the map and the forecast.
 const SHARED_POINTS = 800;
 
 /** Keeps the ride on the server under a short id, for a link anyone can open; gives the id. */
-const shareRide = async ({route, start, pace}: SharedRide): Promise<string> => {
+const shareRide = async ({route, start, pace, stops}: SharedRide): Promise<string> => {
   const step = Math.ceil(route.points.length / SHARED_POINTS);
   const kept = route.points.filter((_, index) => 0 === index % step || index === route.points.length - 1);
   const response = await fetch('/api/activity?action=share', {
@@ -167,6 +168,7 @@ const shareRide = async ({route, start, pace}: SharedRide): Promise<string> => {
       ]),
       start,
       pace,
+      stops: undefined === stops ? undefined : Math.round(stops),
       source: route.source,
     }),
   });
@@ -182,6 +184,7 @@ const fetchSharedRide = async (id: string): Promise<SharedRide> => {
     points: [number, number, number, number][];
     start: number;
     pace: Pace;
+    stops?: number;
     source?: RouteSource;
   }>(`/api/activity?${new URLSearchParams({action: 'share', id})}`);
 
@@ -193,7 +196,35 @@ const fetchSharedRide = async (id: string): Promise<SharedRide> => {
     },
     start: shared.start,
     pace: shared.pace,
+    stops: shared.stops,
   };
+};
+
+type NominatimPlace = {address?: Record<string, string>};
+// From the town down to the hamlet: the first one OpenStreetMap knows names the place.
+const PLACE_LEVELS = ['city', 'town', 'village', 'hamlet', 'suburb', 'municipality'];
+
+/**
+ * The names of the towns where a ride starts and ends, from OpenStreetMap (Nominatim, no
+ * key), in the page's language; null where it knows none. One after the other, as Nominatim
+ * asks for at most one request a second.
+ */
+const fetchPlaceNames = async (places: {lat: number; lng: number}[], locale: string): Promise<(string | null)[]> => {
+  const names: (string | null)[] = [];
+  for (const {lat, lng} of places) {
+    const query = new URLSearchParams({
+      format: 'jsonv2',
+      lat: lat.toFixed(4),
+      lon: lng.toFixed(4),
+      zoom: '14',
+      'accept-language': locale,
+    });
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${query}`);
+    const {address = {}} = response.ok ? ((await response.json()) as NominatimPlace) : {};
+    names.push(PLACE_LEVELS.map(level => address[level]).find(Boolean) ?? null);
+  }
+
+  return names;
 };
 
 export {
@@ -201,6 +232,7 @@ export {
   fetchKomootSavedTour,
   fetchKomootTour,
   fetchKomootTours,
+  fetchPlaceNames,
   fetchSharedRide,
   fetchStravaRoute,
   fetchStravaRoutes,

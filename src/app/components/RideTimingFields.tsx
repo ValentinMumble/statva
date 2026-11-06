@@ -4,10 +4,13 @@ import {Slider, Switch} from '../../components/ui';
 import {RideTiming} from '../../hooks/useRideTiming';
 import {FORECAST_DAYS} from '../../models';
 import {deviceDay} from '../../models/local-day';
-import {number} from '../format';
+import {duration, number} from '../format';
 
 // The speeds the slider offers (km/h).
 const SPEEDS = {min: 10, max: 45, step: 0.5};
+// The stops the slider offers (min): up to 3 hours, or twice the default on a very long ride.
+const STOP_STEP = 5;
+const STOPS_MAX = 180;
 const DAY_MS = 86400000;
 // The start times offered, every quarter of an hour, as "HH:MM".
 const TIMES = Array.from(
@@ -23,17 +26,35 @@ type RideTimingFieldsProps = {
   note?: string;
 };
 
-/** The day, start time and average speed of a planned ride. */
+/** The day, start time, average speed, direction and stops of a planned ride. */
 const RideTimingFields = ({timing, locale, ownLabel, note}: RideTimingFieldsProps) => {
-  const {startDay, setStartDay, startTime, setStartTime, speed, setSpeed, ownSpeed, average, reversed, setReversed} =
-    timing;
+  const {
+    startDay,
+    setStartDay,
+    startTime,
+    setStartTime,
+    speed,
+    setSpeed,
+    ownSpeed,
+    average,
+    reversed,
+    setReversed,
+    stops,
+    setStops,
+    defaultStops,
+    stopSeconds,
+  } = timing;
   const [now] = useState(() => Date.now());
   const days = Array.from({length: FORECAST_DAYS - 1}, (_, offset) => new Date(now + offset * DAY_MS));
   // A shared ride opened later may start on a day already gone: it stays in the list.
   const listed = days.some(date => deviceDay(date) === startDay) ? days : [new Date(`${startDay}T12:00`), ...days];
 
+  // All five on one row on a wide screen; the sliders take a whole row on a phone.
   return (
-    <Grid templateColumns={{base: '1fr 1fr', md: 'repeat(4, 1fr)'}} gap="12px">
+    <Grid
+      templateColumns={{base: '1fr 1fr', md: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(5, minmax(0, 1fr))'}}
+      gap="12px"
+    >
       <Field.Root>
         <Field.Label>Day</Field.Label>
         {/* A list rather than a date input, which shows the device's format whatever the page's. */}
@@ -79,6 +100,27 @@ const RideTimingFields = ({timing, locale, ownLabel, note}: RideTimingFieldsProp
           {null !== speed && (
             <Button variant="plain" size="xs" height="auto" padding="0" onClick={() => setSpeed(null)}>
               Back to {ownLabel} ({number(ownSpeed, locale, 1)} km/h)
+            </Button>
+          )}
+        </Field.HelperText>
+      </Field.Root>
+      <Field.Root gridColumn={{base: 'span 2', md: 'auto'}}>
+        <Field.Label>Stops: {0 === stopSeconds ? 'none' : duration(stopSeconds)}</Field.Label>
+        <Slider
+          width="full"
+          size="sm"
+          min={0}
+          max={Math.max(STOPS_MAX, Math.ceil((2 * defaultStops) / 60 / 30) * 30)}
+          step={STOP_STEP}
+          value={[Math.round(stopSeconds / 60)]}
+          onValueChange={({value: [picked]}) => setStops(picked * 60)}
+        />
+        <Field.HelperText>
+          {null === stops ? (
+            'An eighth of the riding time, spread along the way.'
+          ) : (
+            <Button variant="plain" size="xs" height="auto" padding="0" onClick={() => setStops(null)}>
+              Back to {Math.round(defaultStops / 60)} min
             </Button>
           )}
         </Field.HelperText>

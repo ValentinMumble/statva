@@ -1,5 +1,5 @@
 import {useMemo, useState} from 'react';
-import {climbing, Pace, PlannedRoute, reversePoints} from '../models';
+import {climbing, Pace, PlannedRoute, reversePoints, STOP_SHARE} from '../models';
 import {deviceDay} from '../models/local-day';
 
 /** The next full hour, as the start offered first. */
@@ -13,9 +13,15 @@ const nextHour = (): Date => {
  * When a planned ride starts, how fast it goes and which way: a day, a time, an average speed
  * on top of a pace (the rider's own, or the one a shared ride came with), and the route as
  * planned or the other way round. The speed scales the whole pace, so the ride stays slower on
- * the climbs; null keeps the pace's own speed.
+ * the climbs; null keeps the pace's own speed. Stops (s) default to an eighth of the riding
+ * time until the rider sets them.
  */
-const useRideTiming = (planned: PlannedRoute | undefined, basePace: Pace, firstStart: number | null = null) => {
+const useRideTiming = (
+  planned: PlannedRoute | undefined,
+  basePace: Pace,
+  firstStart: number | null = null,
+  firstStops: number | null = null,
+) => {
   const [first] = useState(() => (null === firstStart ? nextHour() : new Date(firstStart)));
   const [startDay, setStartDay] = useState(deviceDay(first));
   const [startTime, setStartTime] = useState(
@@ -23,6 +29,7 @@ const useRideTiming = (planned: PlannedRoute | undefined, basePace: Pace, firstS
   );
   const [speed, setSpeed] = useState<number | null>(null);
   const [reversed, setReversed] = useState(false);
+  const [stops, setStops] = useState<number | null>(firstStops);
   const route = useMemo(
     () =>
       undefined === planned || !reversed
@@ -45,6 +52,7 @@ const useRideTiming = (planned: PlannedRoute | undefined, basePace: Pace, firstS
     }),
     [basePace.secondsPerMetre, basePace.secondsPerMetreClimbed, scale],
   );
+  const defaultStops = Math.round((baseTime * scale * STOP_SHARE) / 60) * 60;
 
   return {
     startDay,
@@ -59,6 +67,10 @@ const useRideTiming = (planned: PlannedRoute | undefined, basePace: Pace, firstS
     ownSpeed,
     average,
     pace,
+    stops,
+    setStops,
+    defaultStops,
+    stopSeconds: stops ?? defaultStops,
     start: new Date(`${startDay}T${startTime}`).getTime(),
   };
 };

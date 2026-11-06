@@ -361,22 +361,46 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   speed, plus the rider's own cost per metre climbed. A slider (10 to 45 km/h) shows the
   average speed this gives on the route; another average picked there scales the whole ride
   to it, still slower on the climbs, until "Back to yours" (25 km/h without enough rides).
+- **Stops**: time off the bike on a slider (5 minutes a step, up to 3 hours), an eighth of
+  the riding time by default (30 minutes in 4 hours) until moved ("Back to <default> min"). They
+  are spread evenly along the way, so the rider gets to each point later and the forecast
+  is read then; the wind's cost still comes from the riding speed. The finish shows them
+  ("+ 39 min of stops · finish at 16:48").
 - **Forecast**: Open-Meteo (no key), hourly, at a point about every 4 km (40 at most),
   read between the two hours around the time the rider gets there.
-- **Shows**: the route's name, day, start and finish, and where it comes from (its page on
+- **Shows**: the route's name, the towns it starts and ends in ("Nantes → Clisson", or "From
+  and back to Nantes"; from OpenStreetMap's Nominatim, no key, in the page's language, left
+  out when it knows none), day, start and finish, and where it comes from (its page on
   Strava or Komoot, with the logo; never a private share token); then distance (a loop, or
   how far from the start it ends), elevation (climbing, metres per km, highest point), moving
   time (and the time back), average speed, temperature and feels like (lowest to highest), rain (highest
-  chance and mm per hour, average cloud cover), wind (average speed, its usual direction,
-  strongest gust), and the share of the route into a headwind and with a tailwind (over
+  chance and mm per hour, average cloud cover), wind (average speed, its usual direction
+  with an arrow the way it blows, strongest gust), and the share of the route into a
+  headwind and with a tailwind (over
   5 km/h along the way). The map has the route coloured by the wind, red against, green
   behind, gray across or light, the distance and the time the rider gets there every 5 to
   100 km (about 10 marks, plain text), and about 10 slim arrows pointing where the wind goes,
-  in paler shades of the same colours, bigger when stronger, its speed under each.
-  Then charts
-  against the time of day: temperature and feels like, chance of rain and cloud cover,
-  wind, gusts and the part against the rider, and altitude.
+  in paler shades of the same colours, their length in proportion to the wind (2.4 px per
+  km/h, 16 to 96 px), its speed under each.
+  Under the figures, the ride at a glance like a weather app: the start, every full hour
+  (every two past 10 hours) and the finish, each with the sky where the rider is then (rain,
+  rain likely, cloudy, some clouds, sun or moon), the temperature and the wind, its arrow
+  pointing where it blows (as long as the wind is strong), red against, green behind.
+  The name, places and times head the advice (below), which comes first; then the map, on a
+  wide screen beside the figures and that row; then charts
+  against the time of day: temperature and feels like; chance of rain and cloud cover in %,
+  with how hard it rains as bars on the same height, read in words on the right (very light,
+  light, moderate, heavy, very heavy, from 0.5, 2, 5, 10 and 20 mm per hour; the mm per
+  hour in the tooltip); wind, gusts and the part
+  against the rider; and altitude. The altitude comes from the route itself, not the forecast
+  points: every point, or the lowest and highest of each of 300 stretches on a long route, on
+  a scale fitted to the route's own heights, coloured by the slope uphill over 100 m either
+  side (grey under 3 %, then yellow, orange, red and dark red from 3, 6, 9 and 12 %), with a
+  key under it and the slope in the tooltip.
 - **For this ride**, once the forecast is in:
+  - **Weather** (first): the ride's weather as one big emoji and a word (Rain, Showers
+    likely, Windy, Overcast, Mostly cloudy, Partly cloudy, Mostly sunny, Sunny), by the same
+    rules as the shared page's heading.
   - **Wind**: the minutes it costs (or saves) at the same effort. Each stretch between
     forecast points is ridden at its speed without wind, then at the speed the same power
     gives into the wind along it (a typical rider: 85 kg with the bike, CdA 0.32, Crr 0.005).
@@ -385,22 +409,29 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   - **The other way round** (loops only, start and finish within 2 km): the wind cost
     ridden the other way, at the same forecast points.
   - **Daylight**: sunset where the ride starts, and whether it ends in the dark or starts
-    before sunrise.
+    before sunrise. Under it, the day as a sky from night to night (dawn, day, the warm hour
+    before sunset, dusk), the ride framed on it, and the sunrise and sunset times.
   - **Rain on the way**: from the first km to the last where rain is likely (40 % chance
     or 0.3 mm per hour), with the times, or dry.
   - **What to wear**: from the coldest feels like on the way, plus a rain jacket when rain
     is likely and a word on gusts over 45 km/h.
 - Pointing at a chart marks that moment on the map with an orange dot, and the four charts
-  show the same moment together.
+  show the same moment together (each its point closest in time).
 - The heading is taken over the next kilometre, so a hairpin does not swap head and tail
   wind. The choices of source, route and link are kept on the device.
 - **Share** makes a link (`/w/<id>`) to copy or send through the phone's share sheet, on
   `VITE_SHARE_ORIGIN` when set: another host of the same deployment, so the link opens in the
   browser rather than in the app installed in the Dock or on a home screen. It
-  keeps the route (at most 800 points), its name, start and pace on the server for 30 days;
+  keeps the route (at most 800 points), its name, start, pace and stops on the server for
+  30 days;
   anyone with the link sees the same page without logging in, with the forecast fetched
-  fresh when they open it. They can change the day, start and speed there (starting from the
-  shared ones, with "Back to the shared speed"); that stays on their page, never in the link. A change to the route, start or speed hides
+  fresh when they open it. Its heading and tab show the ride's name after one emoji for its
+  weather, once the forecast is in: 🌧️ when rain is likely at 30 % of the forecast points,
+  🌦️ when likely somewhere, 💨 for wind of 30 km/h on average or gusts of 55, else the
+  average cloud cover (☁️ from 80 %, 🌥️ 55, ⛅ 30, 🌤️ 10, ☀️). They can change the day,
+  start, speed, direction and stops there (starting from the shared ones, with "Back to the
+  shared speed"); that stays on their page, never in the link. A change to the route,
+  start, speed or stops hides
   the link, as it no longer matches. The demo has no Share button.
 
 ---

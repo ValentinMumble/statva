@@ -2,6 +2,8 @@ import {buildActivity} from '../../test/test-util';
 import {ActivityType} from './strava';
 import {
   betterStart,
+  elevationProfile,
+  gradeAlong,
   forecastAt,
   heading,
   headwindOf,
@@ -10,6 +12,7 @@ import {
   outfit,
   rainSpell,
   reversePoints,
+  rideSky,
   routeFromPoints,
   sampleIndexes,
   speedInWind,
@@ -124,6 +127,55 @@ describe('usualPace', () => {
   });
 });
 
+describe('gradeAlong', () => {
+  it('reads the slope over 100 m either side', () => {
+    // Flat for 300 m, then 10 % up for 300 m, every 50 m.
+    const points = Array.from({length: 13}, (_, step) => ({
+      distance: step * 50,
+      altitude: step <= 6 ? 0 : (step - 6) * 5,
+    }));
+    const grades = gradeAlong(points);
+
+    expect(grades[0]).toBe(0);
+    expect(grades[12]).toBeCloseTo(0.1);
+    expect(grades[6]).toBeGreaterThan(0);
+    expect(grades[6]).toBeLessThan(0.1);
+  });
+});
+
+describe('elevationProfile', () => {
+  it('keeps every point of a short route, with the time the rider gets there', () => {
+    const points = [0, 100, 200].map(distance => ({lat: 47, lng: -1, altitude: distance / 10, distance}));
+
+    expect(elevationProfile(points, [0, 20, 40], 1000).map(({time, altitude}) => [time, altitude])).toEqual([
+      [1000, 0],
+      [21000, 10],
+      [41000, 20],
+    ]);
+  });
+
+  it('keeps the peaks of a long route', () => {
+    // 100 km every 10 m, flat but for one sharp 40 m bump at km 50.
+    const points = Array.from({length: 10001}, (_, step) => ({
+      lat: 47,
+      lng: -1,
+      altitude: 5000 === step ? 140 : 100,
+      distance: step * 10,
+    }));
+    const profile = elevationProfile(
+      points,
+      points.map((_, step) => step),
+      0,
+    );
+
+    expect(profile.length).toBeLessThanOrEqual(602);
+    expect(Math.max(...profile.map(({altitude}) => altitude))).toBe(140);
+    expect(profile[0].distance).toBe(0);
+    expect(profile.at(-1)?.distance).toBe(100000);
+    expect(profile.every((point, index) => 0 === index || profile[index - 1].distance < point.distance)).toBe(true);
+  });
+});
+
 describe('the weather along a route', () => {
   // 20 km due north, climbing 100 m in the second half.
   const route = routeFromPoints(
@@ -197,6 +249,9 @@ describe('what the weather means for the ride', () => {
     expect(head / 60).toBeGreaterThan(10);
     expect(tail).toBeLessThan(0);
     expect(-tail).toBeLessThan(head);
+
+    // The same ride with half an hour of stops spread along it: the riding speed is the same.
+    expect(windCost([point(0, 0, {headwind: 20}), point(30000, 90)], 60 / 90)).toBeCloseTo(head);
   });
 
   it('finds a start with less wind or rain, and keeps quiet when the chosen one is as good', () => {
@@ -255,5 +310,17 @@ describe('what the weather means for the ride', () => {
     expect(rainSpell(wet)).toMatchObject({from: {distance: 20000}, to: {distance: 40000}});
     expect(outfit(dry)).toBe('Long sleeves or arm warmers, knee warmers.');
     expect(outfit(wet)).toBe('Winter jacket, thermal tights, warm gloves and overshoes, a rain jacket.');
+  });
+
+  it('sums up the ride as one emoji: rain, then wind, then clouds', () => {
+    const along = (values: Partial<WeatherPoint>) => [0, 1, 2, 3].map(step => point(step * 5000, step * 10, values));
+
+    expect(rideSky([])).toBeNull();
+    expect(rideSky(along({rainChance: 80, rain: 2}))).toEqual({emoji: '🌧️', label: 'Rain'});
+    expect(rideSky([...along({cloud: 0}), point(20000, 40, {rainChance: 60})])?.emoji).toBe('🌦️');
+    expect(rideSky(along({wind: 35, cloud: 0}))?.emoji).toBe('💨');
+    expect(rideSky(along({cloud: 90}))?.emoji).toBe('☁️');
+    expect(rideSky(along({cloud: 40}))).toEqual({emoji: '⛅', label: 'Partly cloudy'});
+    expect(rideSky(along({cloud: 0}))?.emoji).toBe('☀️');
   });
 });

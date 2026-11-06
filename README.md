@@ -28,7 +28,7 @@ into a home page, stats, records and an explorer map.
 - **Records:** all-time totals, the hall of fame, Eddington by year, and the explorer tiles
   you have ridden, with the biggest square and the yard as Squadrats defines them.
 - **Ride weather:** a Strava route or a Komoot tour, ridden at your own pace (or a speed you
-  pick) from a day and time, either way round, with the forecast at each part of the route
+  pick) from a day and time, with stops, either way round, with the forecast at each part of the route
   when you get there and the wind as head or tail wind, like Epic Ride Weather. Advice on
   the best start, the wind's cost, rain and what to wear. Share it by link: a friend opens
   it without an account and can change the day, time, speed and direction. Log in again
@@ -112,7 +112,8 @@ npm install
 npm run dev
 ```
 
-The dev server runs on the demo data, so it needs no account and no keys. To work against
+The dev server runs on the demo data, so it needs no account and no keys. Shared rides
+(`/w/<id>`) open there too, read from statva.vumble.dev (`server.proxy` in `vite.config.ts`). To work against
 your real data, run the server functions too with the Vercel CLI and `VITE_REAL_DATA=1`
 in `.env.local`:
 

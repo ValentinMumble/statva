@@ -20,6 +20,7 @@ import {
   fetchKomootSavedTour,
   fetchKomootTour,
   fetchKomootTours,
+  fetchPlaceNames,
   fetchStravaRoute,
   fetchStravaRoutes,
   fetchSharedRide,
@@ -92,6 +93,7 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'komoot.tours': fetchKomootTours,
   'komoot.tour': fetchKomootSavedTour,
   'weather.forecast': fetchForecasts,
+  'place.names': fetchPlaceNames,
   'ride.share': shareRide,
   'ride.shared': fetchSharedRide,
 };
@@ -141,6 +143,7 @@ const DEMO: typeof REAL = {
   'komoot.tours': () => Promise.resolve([]),
   'komoot.tour': () => Promise.reject(new Error('The demo has no Komoot login')),
   'weather.forecast': fetchForecasts,
+  'place.names': fetchPlaceNames,
   'ride.share': () => Promise.reject(new Error('The demo cannot share')),
   'ride.shared': fetchSharedRide,
 };

@@ -177,6 +177,62 @@ const sampleIndexes = (points: RoutePoint[]): number[] => {
   return [...new Set(indexes)];
 };
 
+// The elevation chart draws the route in about this many stretches, each by its lowest and
+// highest point, so no climb or dip is lost between two.
+const PROFILE_STRETCHES = 300;
+
+type ProfilePoint<Point extends RoutePoint = RoutePoint> = Point & {time: number};
+
+/**
+ * The route's altitude for the elevation chart, with the time of day the rider gets to each
+ * point: every point of a short route, and the lowest and highest of each stretch of a long one.
+ */
+const elevationProfile = <Point extends RoutePoint>(
+  points: Point[],
+  times: number[],
+  start: number,
+): ProfilePoint<Point>[] => {
+  const total = points.at(-1)?.distance ?? 0;
+  const stretch = total / PROFILE_STRETCHES;
+  const at = (index: number): ProfilePoint<Point> => ({...points[index], time: start + times[index] * 1000});
+  if (points.length <= 2 * PROFILE_STRETCHES || 0 === stretch) return points.map((_, index) => at(index));
+
+  const kept: number[] = [];
+  let first = 0;
+  while (first < points.length) {
+    const end = Math.min(PROFILE_STRETCHES, Math.floor(points[first].distance / stretch) + 1) * stretch;
+    let last = first;
+    while (last + 1 < points.length && points[last + 1].distance < end) last++;
+    let lowest = first;
+    let highest = first;
+    for (let index = first; index <= last; index++) {
+      if (points[index].altitude < points[lowest].altitude) lowest = index;
+      if (points[index].altitude > points[highest].altitude) highest = index;
+    }
+    kept.push(...[lowest, highest].sort((left, right) => left - right));
+    first = last + 1;
+  }
+
+  return [...new Set([0, ...kept, points.length - 1])].map(at);
+};
+
+// The slope at a point is read over this far either side (m), so a noisy altitude does not
+// make every metre a wall.
+const GRADE_REACH = 100;
+
+/** The slope at each point of the route (a share: 0.05 is 5 %), uphill positive. */
+const gradeAlong = (points: {distance: number; altitude: number}[]): number[] => {
+  let [behind, ahead] = [0, 0];
+
+  return points.map(({distance}) => {
+    while (points[behind].distance < distance - GRADE_REACH) behind++;
+    while (ahead + 1 < points.length && points[ahead].distance < distance + GRADE_REACH) ahead++;
+    const length = points[ahead].distance - points[behind].distance;
+
+    return 0 < length ? (points[ahead].altitude - points[behind].altitude) / length : 0;
+  });
+};
+
 /** The forecast at a moment, between the two hours around it. */
 const forecastAt = (hours: HourForecast[], time: number): HourForecast | null => {
   const after = hours.findIndex(hour => hour.time >= time);
@@ -273,15 +329,20 @@ const speedInWind = (speed: number, headwind: number): number => {
  * The seconds the wind costs over the ride (negative when it saves time), at the same effort:
  * each stretch between forecast points ridden at its speed without wind, then into the wind
  * along it. The pace already holds the rider's usual wind, so this is the wind of that day.
+ * `riding` is the share of the clock spent riding, the rest being stops spread along the way:
+ * the speed comes from the riding time only.
  */
-const windCost = (weather: WeatherPoint[]): number =>
+const windCost = (weather: WeatherPoint[], riding = 1): number =>
   weather.slice(0, -1).reduce((total, point, sample) => {
     const next = weather[sample + 1];
-    const [length, seconds] = [next.distance - point.distance, (next.time - point.time) / 1000];
+    const [length, seconds] = [next.distance - point.distance, ((next.time - point.time) / 1000) * riding];
     if (length <= 0 || seconds <= 0) return total;
 
     return total + length / speedInWind(length / seconds, point.headwind / 3.6) - seconds;
   }, 0);
+
+// Stops, unless the rider says otherwise: an eighth of the riding time (30 minutes in 4 hours).
+const STOP_SHARE = 0.125;
 
 // Starting this many hours earlier or later is what the best start looks at.
 const START_SHIFTS = [-3, -2, -1, 0, 1, 2, 3];
@@ -299,6 +360,7 @@ const startOptions = (
   start: number,
   indexes: number[],
   forecasts: HourForecast[][],
+  riding = 1,
 ): StartOption[] =>
   START_SHIFTS.flatMap(shift => {
     const shifted = start + shift * HOUR_MS;
@@ -306,7 +368,11 @@ const startOptions = (
     if (weather.length < indexes.length) return [];
 
     return [
-      {start: shifted, windCost: windCost(weather), rainChance: Math.max(...weather.map(({rainChance}) => rainChance))},
+      {
+        start: shifted,
+        windCost: windCost(weather, riding),
+        rainChance: Math.max(...weather.map(({rainChance}) => rainChance)),
+      },
     ];
   });
 
@@ -342,13 +408,15 @@ const weatherReversed = (
   start: number,
   indexes: number[],
   forecasts: HourForecast[][],
+  // The clock time over the riding time, stops included.
+  stretch = 1,
 ): WeatherPoint[] => {
   const reversed = reversePoints(points);
   const last = points.length - 1;
 
   return weatherAlong(
     reversed,
-    timeline(reversed, pace),
+    timeline(reversed, pace).map(seconds => seconds * stretch),
     start,
     [...indexes].reverse().map(index => last - index),
     [...forecasts].reverse(),
@@ -367,6 +435,39 @@ const rainSpell = (weather: WeatherPoint[]): {from: WeatherPoint; to: WeatherPoi
 };
 
 /** What to wear, from the coldest it feels on the way, the chance of rain and the gusts. */
+// The ride is wet when rain is likely at this share of its forecast points or more.
+const WET_SHARE = 0.3;
+// Wind (km/h, average) or gusts (km/h) strong enough to be the ride's weather.
+const STRONG_WIND = 30;
+const STRONG_GUST = 55;
+type Sky = {emoji: string; label: string};
+
+// Cloud cover (%, average) from which each sky shows, cloudiest first.
+const SKIES: [number, Sky][] = [
+  [80, {emoji: '☁️', label: 'Overcast'}],
+  [55, {emoji: '🌥️', label: 'Mostly cloudy'}],
+  [30, {emoji: '⛅', label: 'Partly cloudy'}],
+  [10, {emoji: '🌤️', label: 'Mostly sunny'}],
+  [0, {emoji: '☀️', label: 'Sunny'}],
+];
+
+/** The ride's weather as one emoji and a word: rain first, then strong wind, then the clouds. Null with no forecast. */
+const rideSky = (weather: WeatherPoint[]): Sky | null => {
+  if (0 === weather.length) return null;
+  const wet = weather.filter(({rainChance, rain}) => LIKELY_RAIN <= rainChance && SOME_RAIN <= rain).length;
+  if (wet >= WET_SHARE * weather.length) return {emoji: '🌧️', label: 'Rain'};
+  if (null !== rainSpell(weather)) return {emoji: '🌦️', label: 'Showers likely'};
+  const average = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length;
+  if (
+    average(weather.map(({wind}) => wind)) >= STRONG_WIND ||
+    Math.max(...weather.map(({gust}) => gust)) >= STRONG_GUST
+  )
+    return {emoji: '💨', label: 'Windy'};
+  const cloud = average(weather.map(({cloud: cover}) => cover));
+
+  return SKIES.find(([from]) => cloud >= from)?.[1] ?? SKIES[SKIES.length - 1][1];
+};
+
 const outfit = (weather: WeatherPoint[]): string => {
   const coldest = Math.min(...weather.map(({feelsLike}) => feelsLike));
   const clothes =
@@ -390,6 +491,8 @@ const outfit = (weather: WeatherPoint[]): string => {
 export {
   betterStart,
   climbing,
+  elevationProfile,
+  gradeAlong,
   FORECAST_DAYS,
   forecastAt,
   haversine,
@@ -400,10 +503,12 @@ export {
   outfit,
   rainSpell,
   reversePoints,
+  rideSky,
   routeFromPoints,
   sampleIndexes,
   speedInWind,
   START_SHIFTS,
+  STOP_SHARE,
   startOptions,
   timeline,
   usualPace,
@@ -412,4 +517,4 @@ export {
   windCost,
   windShares,
 };
-export type {HourForecast, Pace, PlannedRoute, RoutePoint, RouteSource, StartOption, WeatherPoint};
+export type {HourForecast, Pace, PlannedRoute, ProfilePoint, RoutePoint, RouteSource, Sky, StartOption, WeatherPoint};

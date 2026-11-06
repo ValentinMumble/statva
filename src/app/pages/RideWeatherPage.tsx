@@ -127,13 +127,13 @@ const RideWeatherPage = () => {
   const timing = useRideTiming(route.data, usual ?? {secondsPerMetre: 3.6 / 25, secondsPerMetreClimbed: 0});
   // The route as shown: the way it was planned, or the other way round.
   const {pace, start, route: ridden} = timing;
-  const rideKey = JSON.stringify([ridden?.name, distance, start, pace]);
+  const rideKey = JSON.stringify([ridden?.name, distance, start, pace, timing.stopSeconds]);
 
   const share = async () => {
     if (undefined === ridden) return;
     setSharing(true);
     try {
-      const id = await shareRide({route: ridden, start, pace} satisfies SharedRide);
+      const id = await shareRide({route: ridden, start, pace, stops: timing.stopSeconds} satisfies SharedRide);
       setShared({url: `${SHARE_ORIGIN}/w/${id}`, ride: rideKey});
     } catch {
       toaster.create({title: 'The link could not be made', description: 'Try again in a moment.'});
@@ -279,7 +279,7 @@ const RideWeatherPage = () => {
       )}
 
       {undefined !== ridden && 1 < points.length && !Number.isNaN(start) && (
-        <RideWeatherResults route={ridden} start={start} pace={pace} locale={locale} />
+        <RideWeatherResults route={ridden} start={start} pace={pace} locale={locale} stops={timing.stopSeconds} />
       )}
     </Stack>
   );

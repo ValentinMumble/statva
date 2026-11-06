@@ -15,12 +15,15 @@ type SharedRide = {
   points: SharedPoint[];
   start: number;
   pace: {secondsPerMetre: number; secondsPerMetreClimbed: number};
+  // Stops along the way (s), when the rider set or kept them.
+  stops?: number;
   // The route's page on Strava or Komoot, when it has one.
   source?: {service: 'strava' | 'komoot'; url: string};
 };
 
 const SHARE_DAYS = 30;
 const MAX_POINTS = 2000;
+const MAX_STOPS = 86400;
 const ID = /^[A-Za-z0-9_-]{8}$/;
 const SOURCES = {
   strava: /^https:\/\/www\.strava\.com\/routes\/\d+$/,
@@ -35,7 +38,7 @@ const isNumber = (value: unknown): value is number => 'number' === typeof value 
 
 /** Checks what the app sends, so a share holds only a route and nothing else. */
 const sharedRideOf = (body: unknown): SharedRide => {
-  const {name, points, start, pace, source} = (body ?? {}) as Partial<SharedRide>;
+  const {name, points, start, pace, stops, source} = (body ?? {}) as Partial<SharedRide>;
 
   if ('string' !== typeof name || 0 === name.trim().length || name.length > MAX_NAME) throw new ShareError('A name');
   if (!Array.isArray(points) || points.length < 2 || points.length > MAX_POINTS)
@@ -45,6 +48,8 @@ const sharedRideOf = (body: unknown): SharedRide => {
   if (!isNumber(start)) throw new ShareError('A start time');
   if (!isNumber(pace?.secondsPerMetre) || !isNumber(pace?.secondsPerMetreClimbed) || pace.secondsPerMetre <= 0)
     throw new ShareError('A pace');
+  if (undefined !== stops && (!isNumber(stops) || stops < 0 || stops > MAX_STOPS))
+    throw new ShareError('Stops of 0 to 24 hours');
   if (undefined !== source && !SOURCES[source?.service]?.test(String(source?.url)))
     throw new ShareError('a Strava or Komoot page as its source');
 
@@ -53,6 +58,7 @@ const sharedRideOf = (body: unknown): SharedRide => {
     points,
     start,
     pace: {secondsPerMetre: pace.secondsPerMetre, secondsPerMetreClimbed: pace.secondsPerMetreClimbed},
+    ...(undefined === stops ? {} : {stops}),
     ...(undefined === source ? {} : {source: {service: source.service, url: source.url}}),
   };
 };

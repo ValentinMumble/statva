@@ -1,7 +1,9 @@
+import {useState} from 'react';
 import {Box, Center, Spinner, Stack, Text} from '@chakra-ui/react';
 import {useQuery} from '@tanstack/react-query';
 import {useParams} from 'react-router';
 import {SharedRide} from '../../api';
+import {PageTitle} from '../../components';
 import {getFetcher} from '../../hooks/useFetcher';
 import {useRideTiming} from '../../hooks/useRideTiming';
 import {Card} from '../components/Card';
@@ -14,8 +16,16 @@ const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
  * The shared ride, with its day, start and speed to change here: they start as shared, and
  * a change stays on this page, never in the link.
  */
-const SharedRideWeather = ({shared, locale}: {shared: SharedRide; locale: string}) => {
-  const timing = useRideTiming(shared.route, shared.pace, shared.start);
+const SharedRideWeather = ({
+  shared,
+  locale,
+  onSky,
+}: {
+  shared: SharedRide;
+  locale: string;
+  onSky: (sky: string | null) => void;
+}) => {
+  const timing = useRideTiming(shared.route, shared.pace, shared.start, shared.stops ?? null);
 
   return (
     <>
@@ -28,6 +38,8 @@ const SharedRideWeather = ({shared, locale}: {shared: SharedRide; locale: string
           start={timing.start}
           pace={timing.pace}
           locale={locale}
+          stops={timing.stopSeconds}
+          onSky={onSky}
         />
       )}
     </>
@@ -46,12 +58,18 @@ const SharedRidePage = () => {
     retry: false,
     staleTime: Infinity,
   });
+  // The ride's weather as an emoji, once its forecast is in.
+  const [sky, setSky] = useState<string | null>(null);
+  const name = shared.data?.route.name;
+  const title = undefined === name ? 'Ride weather' : `${null === sky ? '' : `${sky} `}${name}`;
 
   return (
     <Box maxWidth="1400px" marginX="auto" paddingX={{base: '16px', md: '32px'}} paddingY={{base: '16px', md: '32px'}}>
+      {/* The tab, and a bookmark, show the ride's name and its weather. */}
+      <PageTitle title={title} />
       <Stack gap={{base: '16px', md: '24px'}}>
         <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
-          Ride weather
+          {title}
         </Text>
         {shared.isPending && (
           <Center paddingY="48px">
@@ -61,7 +79,9 @@ const SharedRidePage = () => {
         {shared.isError && (
           <Text color="fg.muted">This ride is not shared any more: links last 30 days. Ask for a new one.</Text>
         )}
-        {undefined !== shared.data && <SharedRideWeather shared={shared.data} locale={navigator.language} />}
+        {undefined !== shared.data && (
+          <SharedRideWeather shared={shared.data} locale={navigator.language} onSky={setSky} />
+        )}
       </Stack>
     </Box>
   );
