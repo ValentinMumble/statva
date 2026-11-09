@@ -423,7 +423,8 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   installed) to copy or send through the phone's share sheet. It keeps the route (at most 800 points), its name, start, pace and stops on the server for
   15 days;
   anyone with the link sees the same page without logging in, with the forecast fetched
-  fresh when they open it. Its heading and tab show the ride's name after one emoji for its
+  fresh when they open it, in English (UK): English words, day, month, year, 24-hour clock.
+  Its heading and tab show the ride's name after one emoji for its
   weather, once the forecast is in: 🌧️ when rain is likely at 30 % of the forecast points,
   🌦️ when likely somewhere, 💨 for wind of 30 km/h on average or gusts of 55, else the
   average cloud cover (☁️ from 80 %, 🌥️ 55, ⛅ 30, 🌤️ 10, ☀️). They can change the day,
@@ -431,10 +432,12 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   shared speed"); that stays on their page, never in the link. A change to the route,
   start, speed or stops hides
   the link, as it no longer matches. The demo has no Share button.
-- **Bookmarks**: a shared page shows a ☆ Bookmark button only to a logged-in rider (it shows
-  once their bookmarks load). The rider's own shares are bookmarked when made. Ride weather lists them under
-  **Upcoming rides**, soonest first, each opening its shared page, with a cross to remove
-  it; one goes for good when its link expires or a day after its start.
+- **Bookmarks**: a shared page shows a ☆ Bookmark button, and a link back to Ride weather,
+  only to a logged-in rider (they show once their bookmarks load). The rider's own shares are bookmarked when made. Ride weather lists them under
+  **Upcoming rides**, soonest first, with a cross to remove each. One opens inside Ride
+  weather (`/weather?ride=<id>`, the menu still there) with its own day, start, speed, stops
+  and direction to change, and "Your routes" to go back. A bookmark goes for good when its
+  link expires or a day after its start.
 
 ---
 

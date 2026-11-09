@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useSearchParams} from 'react-router';
-import {LuCopy, LuSend, LuShare2, LuX} from 'react-icons/lu';
+import {LuArrowLeft, LuCopy, LuSend, LuShare2, LuX} from 'react-icons/lu';
 import {SiKomoot, SiStrava} from 'react-icons/si';
 import {useLocalStorage} from 'usehooks-ts';
 import {KomootTourSummary, RideBookmark, SharedRide, StravaRoute, UnknownLinkError} from '../../api';
@@ -25,6 +25,7 @@ import {PlannedRoute, usualPace} from '../../models';
 import {Card} from '../components/Card';
 import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
+import {SharedRideWeather} from './SharedRidePage';
 import {km} from '../format';
 
 const fetchStravaRoutes = getFetcher<StravaRoute[]>('routes.strava');
@@ -36,6 +37,7 @@ const shareRide = getFetcher<string>('ride.share');
 const fetchBookmarks = getFetcher<RideBookmark[]>('ride.bookmarks');
 const bookmarkRide = getFetcher<void>('ride.bookmark');
 const unbookmarkRide = getFetcher<void>('ride.unbookmark');
+const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
 
 type Source = 'strava' | 'komoot';
 // The two services' own colours, for their logos.
@@ -45,10 +47,10 @@ const KOMOOT_GREEN = '#6aa127';
 const KOMOOT_LINK = 'link';
 
 /**
- * The shared rides the rider bookmarked, soonest first, each opening its shared page. A link
- * from a shared page's Bookmark button (?bookmark=<id>) adds one, then leaves the address.
+ * The shared rides the rider bookmarked, soonest first, each opening here (?ride=<id>), the one
+ * open marked. A link with ?bookmark=<id> adds one, then leaves the address.
  */
-const UpcomingRides = ({locale}: {locale: string}) => {
+const UpcomingRides = ({locale, openId = null}: {locale: string; openId?: string | null}) => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const adding = searchParams.get('bookmark');
@@ -84,12 +86,13 @@ const UpcomingRides = ({locale}: {locale: string}) => {
       <Stack gap="2px">
         {bookmarks.data.map(({id, name, start, distance}) => (
           <HStack key={id} gap="8px" justifyContent="space-between">
-            <Link to={`/w/${id}`} style={{flex: 1, minWidth: 0}}>
+            <Link to={`/weather?ride=${id}`} style={{flex: 1, minWidth: 0}} aria-current={id === openId}>
               <HStack
                 gap="12px"
                 padding="6px 8px"
                 marginX="-8px"
                 borderRadius="10px"
+                background={id === openId ? 'bg.subtle' : undefined}
                 _hover={{background: 'bg.subtle'}}
               >
                 <Text fontWeight="semibold" truncate>
@@ -161,11 +164,44 @@ const ShareLink = ({url, title}: {url: string; title: string}) => {
 };
 
 /**
+ * A bookmarked ride, opened here rather than on its shared page: with its own day, start,
+ * speed and stops to change, and the way back to the rider's routes.
+ */
+const BookmarkedRideWeather = ({id}: {id: string}) => {
+  const {locale} = useSettings();
+  const shared = useQuery({
+    queryKey: ['sharedRide', id],
+    queryFn: () => fetchSharedRide(id),
+    retry: false,
+    staleTime: Infinity,
+  });
+
+  return (
+    <Stack gap={{base: '16px', md: '24px'}}>
+      <HStack justifyContent="space-between" alignItems="center" gap="12px">
+        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
+          Ride weather
+        </Text>
+        <Button variant="ghost" size="sm" asChild={true}>
+          <Link to="/weather">
+            <LuArrowLeft /> Your routes
+          </Link>
+        </Button>
+      </HStack>
+      <UpcomingRides locale={locale} openId={id} />
+      {shared.isPending && <Spinner alignSelf="center" />}
+      {shared.isError && <Text color="fg.muted">This ride is not shared any more: links last 15 days.</Text>}
+      {undefined !== shared.data && <SharedRideWeather key={id} shared={shared.data} locale={locale} />}
+    </Stack>
+  );
+};
+
+/**
  * The weather on a planned ride, as Epic Ride Weather shows it: a Strava route or a Komoot
  * tour, ridden at the rider's own pace from a start time, with the forecast at each part of
  * the route when they get there, and the wind as head or tail wind. Share makes a link.
  */
-const RideWeatherPage = () => {
+const PlannedRideWeather = () => {
   const {locale} = useSettings();
   const {athleteId, isDemo} = useSession();
   const {data: activities} = useAllActivities();
@@ -379,6 +415,14 @@ const RideWeatherPage = () => {
       )}
     </Stack>
   );
+};
+
+/** Ride weather: the rider's own routes, or a bookmarked ride (?ride=<id>). */
+const RideWeatherPage = () => {
+  const [searchParams] = useSearchParams();
+  const rideId = searchParams.get('ride');
+
+  return null === rideId ? <PlannedRideWeather /> : <BookmarkedRideWeather id={rideId} />;
 };
 
 export {RideWeatherPage};

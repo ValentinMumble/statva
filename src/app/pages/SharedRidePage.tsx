@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import {Box, Button, Center, HStack, Spinner, Stack, Text} from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
-import {LuStar} from 'react-icons/lu';
-import {useParams} from 'react-router';
+import {LuArrowLeft, LuStar} from 'react-icons/lu';
+import {Link, useParams} from 'react-router';
 import {bookmarkRide, fetchBookmarks, SharedRide, unbookmarkRide} from '../../api';
 import {PageTitle} from '../../components';
 import {getFetcher} from '../../hooks/useFetcher';
@@ -12,12 +12,15 @@ import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
 
 const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
+// English words, dates as day, month, year and a 24-hour clock, whoever opens the link.
+const SHARED_LOCALE = 'en-GB';
 
 /**
- * Bookmarks this ride for the rider's Ride weather, or takes it out. Only shown to a rider
- * logged in on this browser: a friend opening the link never sees it.
+ * For the rider logged in on this browser, a way back to Ride weather and a button that
+ * bookmarks this ride there, or takes it out. A friend opening the link sees neither: their
+ * bookmarks never load.
  */
-const BookmarkButton = ({shareId}: {shareId: string}) => {
+const RiderActions = ({shareId}: {shareId: string}) => {
   const queryClient = useQueryClient();
   const bookmarks = useQuery({queryKey: ['shareBookmarks'], queryFn: () => fetchBookmarks(), retry: false});
   if (undefined === bookmarks.data) return null;
@@ -30,9 +33,16 @@ const BookmarkButton = ({shareId}: {shareId: string}) => {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={() => void toggle()} aria-pressed={bookmarked}>
-      <LuStar fill={bookmarked ? 'currentColor' : 'none'} /> {bookmarked ? 'Bookmarked' : 'Bookmark'}
-    </Button>
+    <HStack gap="8px">
+      <Button variant="ghost" size="sm" asChild={true}>
+        <Link to="/weather">
+          <LuArrowLeft /> Ride weather
+        </Link>
+      </Button>
+      <Button variant="outline" size="sm" onClick={() => void toggle()} aria-pressed={bookmarked}>
+        <LuStar fill={bookmarked ? 'currentColor' : 'none'} /> {bookmarked ? 'Bookmarked' : 'Bookmark'}
+      </Button>
+    </HStack>
   );
 };
 
@@ -47,7 +57,8 @@ const SharedRideWeather = ({
 }: {
   shared: SharedRide;
   locale: string;
-  onSky: (sky: string | null) => void;
+  // Hears the ride's weather emoji, for the page's title.
+  onSky?: (sky: string | null) => void;
 }) => {
   const timing = useRideTiming(shared.route, shared.pace, shared.start, shared.stops ?? null);
 
@@ -96,7 +107,7 @@ const SharedRidePage = () => {
           <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
             {title}
           </Text>
-          {undefined !== shared.data && <BookmarkButton shareId={shareId} />}
+          {undefined !== shared.data && <RiderActions shareId={shareId} />}
         </HStack>
         {shared.isPending && (
           <Center paddingY="48px">
@@ -106,12 +117,10 @@ const SharedRidePage = () => {
         {shared.isError && (
           <Text color="fg.muted">This ride is not shared any more: links last 15 days. Ask for a new one.</Text>
         )}
-        {undefined !== shared.data && (
-          <SharedRideWeather shared={shared.data} locale={navigator.language} onSky={setSky} />
-        )}
+        {undefined !== shared.data && <SharedRideWeather shared={shared.data} locale={SHARED_LOCALE} onSky={setSky} />}
       </Stack>
     </Box>
   );
 };
 
-export {SharedRidePage};
+export {SharedRidePage, SharedRideWeather};
