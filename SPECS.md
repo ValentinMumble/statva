@@ -208,7 +208,7 @@ On a phone the dialog opens from the bottom, with thumb-sized buttons.
 - **Parts**: every wearing part's distance since fitted against its expected life, as a
   bar (green, amber from 80 %, red from 100 %), most worn first, with the fitting date,
   weeks left at the pace of the last 8 weeks, cost per km when priced, and a **Replace**
-  button. Below, the total wear cost per km.
+  button.
 - Expected life is the part's limit from the settings (by default chain 400 km per stint,
   tire 8000 km, cassette 30 000 km over all its stints), otherwise the average life of the
   earlier parts of that type on that bike.

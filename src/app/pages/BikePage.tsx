@@ -13,7 +13,6 @@ import {
   Event,
   getEventLabel,
   isTireEvent,
-  partsCostPerKm,
   PartState,
   shoeWear,
   tyrePressure,
@@ -263,7 +262,6 @@ const BikePage = () => {
     () => computeBikeParts(events, rides, bike, label, partRules),
     [events, rides, bike, label, partRules],
   );
-  const wearCost = partsCostPerKm(parts);
   const history = useMemo(() => events.filter(event => bike === event.bike).reverse(), [events, bike]);
   const total = rides.reduce((sum, {distance}) => sum + distance, 0);
   const {expenses} = useExpenses();
@@ -398,11 +396,6 @@ const BikePage = () => {
               </Stack>
             ))}
           </Stack>
-          {null !== wearCost && (
-            <Text fontSize="sm" color="fg.muted" marginTop="16px">
-              Parts wear: {centsPerKm(wearCost, locale)}
-            </Text>
-          )}
           <LogEvent
             bike={bike}
             onLogged={refetch}

@@ -1,5 +1,5 @@
 import {buildActivity} from '../../test/test-util';
-import {computeBikeParts, DEFAULT_PART_RULES, partsCostPerKm, recentFittings, suggestChains} from './parts';
+import {computeBikeParts, DEFAULT_PART_RULES, recentFittings, suggestChains} from './parts';
 import {Event} from './event';
 
 const BIKE = 'b1';
@@ -248,7 +248,6 @@ test('it turns a part"s price and life into a cost per km, and adds them up', ()
   expect(costOf('chain')).toBeCloseTo(0.024);
   // a price is no use without a life to spread it over
   expect(costOf('battery')).toBeNull();
-  expect(partsCostPerKm(parts)).toBeCloseTo(0.029);
 });
 
 test('a chain has no cost per km until one has been retired', () => {
@@ -258,9 +257,8 @@ test('a chain has no cost per km until one has been retired', () => {
   expect(parts[0].costPerKm).toBeNull();
 });
 
-test('there is no parts wear cost without any priced part', () => {
+test('there is no cost per km without a price', () => {
   const parts = computeBikeParts([on(1, {type: 'tire'})], activities, BIKE, label);
 
   expect(parts[0].costPerKm).toBeNull();
-  expect(partsCostPerKm(parts)).toBeNull();
 });

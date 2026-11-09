@@ -192,13 +192,6 @@ const computeBikeParts = (
     .sort((a, b) => b.ratio - a.ratio);
 };
 
-/** What the parts cost to wear out, in euros per km, over those with a price and a life. */
-const partsCostPerKm = (parts: PartStatus[]): number | null => {
-  const costs = parts.map(({costPerKm}) => costPerKm).filter((cost): cost is number => null !== cost);
-
-  return 0 === costs.length ? null : sum(costs);
-};
-
 /**
  * Which chain to fit next: the least used of the set, so they wear down together. The one
  * on the bike and the retired ones are out.
@@ -243,7 +236,6 @@ const recentFittings = (
 export {
   computeBikeParts,
   DEFAULT_PART_RULES,
-  partsCostPerKm,
   recentFittings,
   REFITTED_PARTS,
   rotationLimit,
