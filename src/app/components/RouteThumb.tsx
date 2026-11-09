@@ -4,8 +4,8 @@ import {activityHighlight, decodePolyline, routeShape} from '../../models';
 import {Activity} from '../../models/strava';
 import {sportIcon} from './sport';
 
-// A race is a solid orange tile, a 100 km day a plain one with an orange ring a bright arc
-// circles: both show at a glance, the race louder.
+// A race is a solid orange tile with a white arc circling it, a 100 km day a plain one with an
+// orange ring a bright arc circles: both show at a glance, the race louder.
 const TILE = {
   race: {background: 'brand.solid', ring: 'none', stroke: 'white', dot: 'white', icon: 'white'},
   long: {
@@ -27,6 +27,9 @@ const TILE = {
 // The ring of a 100 km day: faint orange, with a bright arc going round it.
 const RING_GRADIENT =
   'conic-gradient(from 0deg, color-mix(in srgb, var(--chakra-colors-brand-solid) 30%, transparent) 0 62%, var(--chakra-colors-brand-solid) 82%, color-mix(in srgb, var(--chakra-colors-brand-solid) 30%, transparent) 100%)';
+// A race's, round its solid orange tile: an orange rim with a white arc, which shows on orange.
+const RACE_RING_GRADIENT =
+  'conic-gradient(from 0deg, var(--chakra-colors-brand-solid) 0 62%, white 82%, var(--chakra-colors-brand-solid) 100%)';
 
 /**
  * A 100 km day's frame, round its thumbnail or its title: the gradient turns behind the content and shows only as a thin ring,
@@ -37,9 +40,10 @@ const RingFrame = ({
   radius,
   thickness,
   fill = 'bg.subtle',
+  gradient = RING_GRADIENT,
   children,
   ...boxProps
-}: BoxProps & {radius: string; thickness: number; fill?: string; children: ReactNode}) => (
+}: BoxProps & {radius: string; thickness: number; fill?: string; gradient?: string; children: ReactNode}) => (
   <Box position="relative" overflow="hidden" borderRadius={radius} padding={`${thickness}px`} {...boxProps}>
     <Box
       position="absolute"
@@ -53,7 +57,7 @@ const RingFrame = ({
       <Box
         width="full"
         height="full"
-        background={RING_GRADIENT}
+        background={gradient}
         animation="spin 4s linear infinite"
         _motionReduce={{animation: 'none'}}
       />
@@ -71,8 +75,17 @@ const RingFrame = ({
   </Box>
 );
 
-const LongRing = ({size, children}: {size: number; children: ReactNode}) => (
-  <RingFrame radius="10px" thickness={1.5} width={`${size}px`} height={`${size}px`} flexShrink={0}>
+// A 100 km day's or a race's tile, the arc circling it; a race's on solid orange.
+const MovingRing = ({size, race, children}: {size: number; race: boolean; children: ReactNode}) => (
+  <RingFrame
+    radius="10px"
+    thickness={race ? 2 : 1.5}
+    width={`${size}px`}
+    height={`${size}px`}
+    flexShrink={0}
+    fill={race ? 'brand.solid' : 'bg.subtle'}
+    gradient={race ? RACE_RING_GRADIENT : RING_GRADIENT}
+  >
     <Center height="full">{children}</Center>
   </RingFrame>
 );
@@ -86,9 +99,9 @@ const RouteThumb = ({activity, size = 56}: {activity: Activity; size?: number}) 
   const highlight = activityHighlight(activity);
   const tile = TILE[highlight ?? 'plain'];
 
-  if ('long' === highlight) {
+  if (null !== highlight) {
     return (
-      <LongRing size={size}>
+      <MovingRing size={size} race={'race' === highlight}>
         {null === shape ? (
           <Icon as={sportIcon(activity.sport_type)} boxSize="22px" color={tile.icon} />
         ) : (
@@ -104,7 +117,7 @@ const RouteThumb = ({activity, size = 56}: {activity: Activity; size?: number}) 
             <circle cx={shape.start[0]} cy={shape.start[1]} r={2.5} fill={tile.dot} />
           </svg>
         )}
-      </LongRing>
+      </MovingRing>
     );
   }
 

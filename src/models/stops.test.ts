@@ -8,7 +8,7 @@ const ride = (end: number) => ({
 });
 
 describe('findStops', () => {
-  it('finds where the rider stood still for 2 minutes or more, and for how long', () => {
+  it('finds where the rider stood still for 3 minutes or more, and for how long', () => {
     const streams = ride(1000);
     // Standing still from 300 to 500 s, and for 60 s from 700: too short to count.
     for (let second = 301; second <= 500; second++) streams.moving[second] = false;

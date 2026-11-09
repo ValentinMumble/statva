@@ -134,7 +134,13 @@ const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<Activ
 const fetchActivityStreams = (id: number): Promise<ActivityStreams> =>
   strava<ActivityStreams>(`activities/${id}/streams`, {keys: 'time,latlng,moving', key_by_type: 'true'});
 
-type ActivityPhoto = {unique_id: string; urls: Record<string, string>; caption?: string};
+// Where the photo was taken, when it says: [latitude, longitude].
+type ActivityPhoto = {
+  unique_id: string;
+  urls: Record<string, string>;
+  caption?: string;
+  location?: [number, number] | null;
+};
 
 /** Every photo of an activity (the details only hold the main one), at about 1000 px. */
 /** An activity's comments, oldest first. Strava lets apps read them, not write them. */

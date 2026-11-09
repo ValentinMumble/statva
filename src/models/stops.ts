@@ -22,9 +22,9 @@ type Stop = {
 // Longer than this between two points (s), the device paused itself: the rider was stopped.
 const PAUSE_GAP = 30;
 // Stops shorter than this (s) are traffic lights and the like, left out.
-const MIN_STOP = 120;
+const MIN_STOP = 180;
 
-/** The stops of 2 minutes or more, in order, each where it began. None without positions. */
+/** The stops of 3 minutes or more, in order, each where it began. None without positions. */
 const findStops = ({time, latlng, moving}: ActivityStreams, minimum = MIN_STOP): Stop[] => {
   const times = time?.data ?? [];
   const places = latlng?.data ?? [];

@@ -71,8 +71,9 @@ Activities carries a count in the sidebar and a dot on the tab.
 ### 3.1 List
 - Every stored activity in a virtual list (only the visible rows are drawn, so thousands
   stay fast), newest first by default.
-- A race's route shape sits on a solid orange tile; a 100 km day's has an orange ring a
-  bright arc slowly circles (still for those who ask for less motion).
+- A race's route shape sits on a solid orange tile with a white arc circling its rim; a
+  100 km day's has an orange ring a bright arc slowly circles (both still for those who ask
+  for less motion).
 - Each row: route shape (or sport icon), name, marks (race, KOM or Top 10 on a
   segment once the details are in), the sport's icon (and its name on a computer), day, climbing (on a phone; a column
   on a computer), gear, commute. Private activities are drawn
@@ -177,12 +178,14 @@ Strava's message names are links to them on Strava, next to the list of parts.
   cannot be changed here: Strava does not let apps change either. Both edits are saved on
   Strava, which needs write access (a login after Statva asked
   for it), and in the stored copies.
-- **Map** of the full track (the summary track until the details are in).
-- **Figures**: distance, times, climbing (for rides and runs, with a terrain tag from Flat
-  to Mountainous, graded against the rider's rides or runs), speeds, average, weighted and normalized power
-  (with power zone badges), intensity, average and max heart rate (with
-  heart rate zone badges), cadence, calories, temperature, suffer score, kudos,
-  achievements, PRs.
+- **Map** of the full track (the summary track until the details are in), with the photos
+  where they were taken (a thumbnail per spot, with how many when several; a click opens it).
+- **Figures**, in titled groups (two columns on a wide screen), each left out when empty:
+  Ride (distance, moving, elapsed, stops), Speed (average, max), Climbing (climbing and
+  gradient, for rides and runs with a terrain tag from Flat to Mountainous, graded against
+  the rider's rides or runs), Power (average, weighted, normalized with power zone badges,
+  intensity), Heart (average and max with heart rate zone badges, suffer score), More
+  (cadence, calories, temperature), On Strava (kudos, achievements, PRs).
 - **Photos**: all of them, fetched from Strava on open; one opens full size.
 - **Comments**, when the activity has some: who wrote each and when, and a box to answer.
   Strava lets apps read comments but not post them, so the box copies the text and opens
@@ -192,8 +195,8 @@ Strava's message names are links to them on Strava, next to the list of parts.
   not be allowed to write it), nothing changes in Statva and the rider is told to edit it
   on Strava. **Heart rate zones** (time in each of
   Strava's zones), **stops** (outdoors: from its recorded points, fetched from Strava when
-  it opens, every stop of 2 minutes or more, where the rider was not moving or the device
-  paused itself: an amber dot where it began on the map, bigger when longer, with how long
+  it opens, every stop of 3 minutes or more, where the rider was not moving or the device
+  paused itself: an amber square where it began on the map, bigger when longer, with how long
   and when; their number and total time with the figures; gaps in the daylight bar),
   **daylight** (outdoors, above the notes on a phone: sunrise and sunset where it started, at its local
   time, how long before sunrise it started or before or after sunset it finished, and the

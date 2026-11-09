@@ -57,7 +57,8 @@ import {GearField} from '../components/GearField';
 import {TopTenTrophy} from '../components/HighlightTags';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
-import {CircleMarker, Tooltip as MapTooltip} from 'react-leaflet';
+import {divIcon} from 'leaflet';
+import {Marker, Tooltip as MapTooltip} from 'react-leaflet';
 import {RingFrame} from '../components/RouteThumb';
 import {duration, km, metres, number, relativeDay} from '../format';
 
@@ -505,15 +506,59 @@ const largest = (urls: Record<string, string>): string | undefined =>
  * Every photo of the activity, fetched from Strava when the page opens (the stored
  * details only hold the main one, shown meanwhile). A photo opens full size on its own.
  */
-const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivity | null}) => {
+const usePhotos = (activity: Activity | undefined, detail: DetailedActivity | null) => {
   // The details are fetched again on Refresh, so their count is the freshest one.
-  const count = detail?.total_photo_count ?? activity.total_photo_count;
+  const count = detail?.total_photo_count ?? activity?.total_photo_count ?? 0;
   const {data: photos} = useQuery({
-    queryKey: ['photos', activity.id, count],
-    queryFn: () => fetchPhotos(activity.id),
+    queryKey: ['photos', activity?.id, count],
+    queryFn: () => fetchPhotos(activity?.id ?? 0),
     enabled: 0 < count,
     retry: false,
   });
+
+  return {count, photos};
+};
+
+// Photos taken within about 10 m of each other share one spot on the map.
+const photoSpot = ([lat, lng]: [number, number]): string => `${lat.toFixed(4)},${lng.toFixed(4)}`;
+
+/**
+ * The activity's photos where they were taken, as small thumbnails on its map: one per spot,
+ * with how many when several were taken there. A click opens the photo full size.
+ */
+const PhotoMarkers = ({photos}: {photos: ActivityPhoto[]}) => {
+  const spots = new Map<string, {location: [number, number]; url: string; caption: string; count: number}>();
+  for (const {location, urls, caption} of photos) {
+    const url = largest(urls);
+    if (!Array.isArray(location) || 2 !== location.length || undefined === url) continue;
+    const spot = spots.get(photoSpot(location));
+    if (undefined === spot) spots.set(photoSpot(location), {location, url, caption: caption ?? '', count: 1});
+    else spot.count++;
+  }
+
+  return [...spots.values()].map(({location, url, caption, count}) => (
+    <Marker
+      key={photoSpot(location)}
+      position={location}
+      eventHandlers={{click: () => window.open(url, '_blank', 'noreferrer')}}
+      icon={divIcon({
+        className: '',
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
+        html: `<div style="position:relative;width:38px;height:38px;border-radius:9px;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5);background:#333 center/cover no-repeat url('${encodeURI(url)}')">${
+          1 < count
+            ? `<span style="position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#f25c14;color:white;font:600 11px/18px system-ui,sans-serif;text-align:center">${count}</span>`
+            : ''
+        }</div>`,
+      })}
+    >
+      {'' !== caption && <MapTooltip>{caption}</MapTooltip>}
+    </Marker>
+  ));
+};
+
+const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivity | null}) => {
+  const {count, photos} = usePhotos(activity, detail);
   const primary = detail?.photos?.primary?.urls;
   const shown: {key: string; url: string; full: string}[] =
     undefined !== photos && 0 < photos.length
@@ -554,7 +599,6 @@ const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivit
 
 const ZONE_COLORS = ['gray.400', 'blue.400', 'green.400', 'yellow.400', 'orange.400', 'red.400'];
 
-// zone: the power or heart rate zone of the figure, shown as a badge in its colour.
 // zone: the power or heart rate zone of the figure, shown as a badge in its colour; tag: any
 // other badge, with a line explaining it on hover.
 type FigureItem = {
@@ -564,33 +608,53 @@ type FigureItem = {
   tag?: {label: string; colorPalette: string; title?: string};
 };
 
-const Figures = ({items}: {items: FigureItem[]}) => (
-  <Grid templateColumns={{base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)'}} gap="18px">
-    {items
-      .filter(({value}) => null !== value)
-      .map(({label, value, zone, tag}) => (
-        <Stack key={label} gap="0">
-          <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
-            {label}
+type FigureGroup = {title: string; items: FigureItem[]};
+
+/**
+ * The activity's figures in small titled groups (ride, climbing, power, heart...), two side
+ * by side on a wide screen. A group with nothing to show is left out.
+ */
+const Figures = ({groups}: {groups: FigureGroup[]}) => (
+  <Grid templateColumns={{base: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))'}} gap="20px 32px">
+    {groups
+      .map(({title, items}) => ({title, items: items.filter(({value}) => null !== value)}))
+      .filter(({items}) => 0 < items.length)
+      .map(({title, items}) => (
+        <Stack key={title} gap="10px" borderTopWidth="1px" paddingTop="10px">
+          <Text fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
+            {title}
           </Text>
-          <HStack gap="8px">
-            <Text fontFamily="figure" fontSize="xl" fontWeight="semibold">
-              {value}
-            </Text>
-            {zone ? (
-              <Badge size="sm" variant="subtle" colorPalette={getZoneColor(zone)}>
-                Zone {zone}
-              </Badge>
-            ) : null}
-            {tag ? (
-              <Badge size="sm" variant="subtle" colorPalette={tag.colorPalette} title={tag.title}>
-                {tag.label}
-              </Badge>
-            ) : null}
-          </HStack>
+          <Grid templateColumns="repeat(auto-fill, minmax(112px, 1fr))" gap="12px 16px">
+            {items.map(item => (
+              <Figure key={item.label} {...item} />
+            ))}
+          </Grid>
         </Stack>
       ))}
   </Grid>
+);
+
+const Figure = ({label, value, zone, tag}: FigureItem) => (
+  <Stack gap="0">
+    <Text fontSize="xs" color="fg.muted">
+      {label}
+    </Text>
+    <HStack gap="6px" flexWrap="wrap">
+      <Text fontFamily="figure" fontSize="lg" fontWeight="semibold">
+        {value}
+      </Text>
+      {zone ? (
+        <Badge size="sm" variant="subtle" colorPalette={getZoneColor(zone)}>
+          Zone {zone}
+        </Badge>
+      ) : null}
+      {tag ? (
+        <Badge size="sm" variant="subtle" colorPalette={tag.colorPalette} title={tag.title}>
+          {tag.label}
+        </Badge>
+      ) : null}
+    </HStack>
+  </Stack>
 );
 
 /** Time in each heart rate zone, as one bar and a line per zone. */
@@ -770,6 +834,8 @@ const ActivityPage = () => {
     retry: false,
   });
   const stops = useMemo(() => (undefined === streams.data ? [] : findStops(streams.data)), [streams.data]);
+  // The same photos as the photos card below (one fetch for both), to put on the map.
+  const {photos} = usePhotos(activity, detail ?? null);
   const difficulty = useMemo(() => {
     if (undefined === activity) return null;
     const kind = [ActivityType.Ride, ActivityType.Run].find(type =>
@@ -876,20 +942,29 @@ const ActivityPage = () => {
 
       {0 < track.length && (
         <TrackMap tracks={[track]} center={mapCenter} height={{base: '260px', md: '380px'}}>
-          {/* Each stop where it began, bigger for a longer one. */}
-          {stops.map(stop => (
-            <CircleMarker
-              key={stop.start}
-              center={[stop.lat, stop.lng]}
-              radius={Math.min(14, 5 + Math.sqrt(stop.duration / 60))}
-              pathOptions={{color: 'white', weight: 2, fillColor: STOP_COLOR, fillOpacity: 1}}
-            >
-              <MapTooltip>
-                {duration(stop.duration)} stop at{' '}
-                {localClock(activity, locale)(new Date(activity.start_date).getTime() + stop.start * 1000)}
-              </MapTooltip>
-            </CircleMarker>
-          ))}
+          {undefined !== photos && <PhotoMarkers photos={photos} />}
+          {/* Each stop where it began, as a square, bigger for a longer one. */}
+          {stops.map(stop => {
+            const side = Math.round(Math.min(26, 10 + 2 * Math.sqrt(stop.duration / 60)));
+
+            return (
+              <Marker
+                key={stop.start}
+                position={[stop.lat, stop.lng]}
+                icon={divIcon({
+                  className: '',
+                  iconSize: [side, side],
+                  iconAnchor: [side / 2, side / 2],
+                  html: `<div style="width:${side}px;height:${side}px;box-sizing:border-box;border-radius:3px;border:2px solid white;background:${STOP_COLOR};box-shadow:0 1px 3px rgba(0,0,0,0.45)"></div>`,
+                })}
+              >
+                <MapTooltip>
+                  {duration(stop.duration)} stop at{' '}
+                  {localClock(activity, locale)(new Date(activity.start_date).getTime() + stop.start * 1000)}
+                </MapTooltip>
+              </Marker>
+            );
+          })}
         </TrackMap>
       )}
 
@@ -901,73 +976,114 @@ const ActivityPage = () => {
         <Stack gap={{base: '16px', md: '24px'}}>
           <Card>
             <Figures
-              items={[
-                {label: 'Distance', value: 0 < activity.distance ? km(activity.distance, locale) : null},
-                {label: 'Moving time', value: duration(activity.moving_time)},
-                {label: 'Elapsed', value: duration(activity.elapsed_time)},
+              groups={[
                 {
-                  label: 'Stops',
-                  value:
-                    0 === stops.length
-                      ? null
-                      : `${stops.length} · ${duration(stops.reduce((sum, stop) => sum + stop.duration, 0))}`,
+                  title: 'Ride',
+                  items: [
+                    {label: 'Distance', value: 0 < activity.distance ? km(activity.distance, locale) : null},
+                    {label: 'Moving', value: duration(activity.moving_time)},
+                    {label: 'Elapsed', value: duration(activity.elapsed_time)},
+                    {
+                      label: 'Stops',
+                      value:
+                        0 === stops.length
+                          ? null
+                          : `${stops.length} · ${duration(stops.reduce((sum, stop) => sum + stop.duration, 0))}`,
+                    },
+                  ],
                 },
                 {
-                  label: 'Climbing',
-                  value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null,
+                  title: 'Speed',
+                  items: [
+                    {label: 'Average', value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null},
+                    {
+                      label: 'Max',
+                      value: 0 < activity.max_speed ? `${number(activity.max_speed * 3.6, locale, 1)} km/h` : null,
+                    },
+                  ],
                 },
                 {
-                  label: 'Elevation',
-                  value: null === difficulty ? null : `${number(difficulty.percent, locale, 2)}%`,
-                  tag:
-                    null === difficulty
-                      ? undefined
-                      : {
-                          label: difficulty.terrain.name,
-                          colorPalette: difficulty.terrain.colorPalette,
-                          title:
-                            null === difficulty.steeperThan
-                              ? `By metres climbed per km, until there are more ${kindName} to compare with`
-                              : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your ${kindName}`,
-                        },
-                },
-                {label: 'Average speed', value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null},
-                {
-                  label: 'Max speed',
-                  value: 0 < activity.max_speed ? `${number(activity.max_speed * 3.6, locale, 1)} km/h` : null,
-                },
-                {
-                  label: 'Average power',
-                  value: activity.average_watts ? `${Math.round(activity.average_watts)} W` : null,
-                  zone: powerZone(activity.average_watts),
-                },
-                {
-                  label: 'Weighted power',
-                  value: activity.weighted_average_watts ? `${activity.weighted_average_watts} W` : null,
-                  zone: powerZone(activity.weighted_average_watts),
-                },
-                {label: 'Normalized power', value: np ? `${np} W` : null, zone: powerZone(np)},
-                {label: 'Intensity', value: null === intensity ? null : `${Math.round(intensity * 100)}%`},
-                {
-                  label: 'Average heart rate',
-                  value: activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : null,
-                  zone: getHeartRateZone(activity.average_heartrate ?? 0),
+                  title: 'Climbing',
+                  items: [
+                    {
+                      label: 'Climbing',
+                      value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null,
+                    },
+                    {
+                      label: 'Gradient',
+                      value: null === difficulty ? null : `${number(difficulty.percent, locale, 2)}%`,
+                      tag:
+                        null === difficulty
+                          ? undefined
+                          : {
+                              label: difficulty.terrain.name,
+                              colorPalette: difficulty.terrain.colorPalette,
+                              title:
+                                null === difficulty.steeperThan
+                                  ? `By metres climbed per km, until there are more ${kindName} to compare with`
+                                  : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your ${kindName}`,
+                            },
+                    },
+                  ],
                 },
                 {
-                  label: 'Max heart rate',
-                  value: activity.max_heartrate ? `${Math.round(activity.max_heartrate)} bpm` : null,
-                  zone: getHeartRateZone(activity.max_heartrate ?? 0),
+                  title: 'Power',
+                  items: [
+                    {
+                      label: 'Average',
+                      value: activity.average_watts ? `${Math.round(activity.average_watts)} W` : null,
+                      zone: powerZone(activity.average_watts),
+                    },
+                    {
+                      label: 'Weighted',
+                      value: activity.weighted_average_watts ? `${activity.weighted_average_watts} W` : null,
+                      zone: powerZone(activity.weighted_average_watts),
+                    },
+                    {label: 'Normalized', value: np ? `${np} W` : null, zone: powerZone(np)},
+                    {label: 'Intensity', value: null === intensity ? null : `${Math.round(intensity * 100)}%`},
+                  ],
                 },
-                {label: 'Cadence', value: activity.average_cadence ? `${Math.round(activity.average_cadence)}` : null},
-                {label: 'Calories', value: detail?.calories ? `${number(detail.calories, locale)} kcal` : null},
                 {
-                  label: 'Temperature',
-                  value: undefined !== activity.average_temp ? `${activity.average_temp}°C` : null,
+                  title: 'Heart',
+                  items: [
+                    {
+                      label: 'Average',
+                      value: activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : null,
+                      zone: getHeartRateZone(activity.average_heartrate ?? 0),
+                    },
+                    {
+                      label: 'Max',
+                      value: activity.max_heartrate ? `${Math.round(activity.max_heartrate)} bpm` : null,
+                      zone: getHeartRateZone(activity.max_heartrate ?? 0),
+                    },
+                    {label: 'Suffer score', value: activity.suffer_score ? `${activity.suffer_score}` : null},
+                  ],
                 },
-                {label: 'Suffer score', value: activity.suffer_score ? `${activity.suffer_score}` : null},
-                {label: 'Kudos', value: `${activity.kudos_count}`},
-                {label: 'Achievements', value: 0 < activity.achievement_count ? `${activity.achievement_count}` : null},
-                {label: 'PRs', value: 0 < activity.pr_count ? `${activity.pr_count}` : null},
+                {
+                  title: 'More',
+                  items: [
+                    {
+                      label: 'Cadence',
+                      value: activity.average_cadence ? `${Math.round(activity.average_cadence)}` : null,
+                    },
+                    {label: 'Calories', value: detail?.calories ? `${number(detail.calories, locale)} kcal` : null},
+                    {
+                      label: 'Temperature',
+                      value: undefined !== activity.average_temp ? `${activity.average_temp}°C` : null,
+                    },
+                  ],
+                },
+                {
+                  title: 'On Strava',
+                  items: [
+                    {label: 'Kudos', value: `${activity.kudos_count}`},
+                    {
+                      label: 'Achievements',
+                      value: 0 < activity.achievement_count ? `${activity.achievement_count}` : null,
+                    },
+                    {label: 'PRs', value: 0 < activity.pr_count ? `${activity.pr_count}` : null},
+                  ],
+                },
               ]}
             />
           </Card>
