@@ -55,7 +55,7 @@ import {MergeDialog} from '../components/MergeDialog';
 import {RouteThumb} from '../components/RouteThumb';
 import {sportIcon, sportName} from '../components/sport';
 import {zoneTextColor} from '../components/zone';
-import {duration, km, relativeDay} from '../format';
+import {duration, km, metres, relativeDay} from '../format';
 
 type Commute = boolean | 'only';
 
@@ -778,9 +778,18 @@ const ActivitiesPage = () => {
                       <HighlightTags activity={activity} detail={meta} />
                     </HStack>
                     <HStack gap="5px" fontSize="xs" color="fg.muted" minWidth="0">
-                      <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />
+                      {/* On a phone the icon alone says the sport: the line keeps room for the day and the climbing. */}
+                      <Icon
+                        as={sportIcon(activity.sport_type)}
+                        flexShrink={0}
+                        aria-label={sportName(activity.sport_type)}
+                      />
                       <Text truncate={true}>
-                        {sportName(activity.sport_type)} · {relativeDay(new Date(activity.start_date), locale)}
+                        {isWide && `${sportName(activity.sport_type)} · `}
+                        {relativeDay(new Date(activity.start_date), locale)}
+                        {!isWide && 0 < activity.total_elevation_gain
+                          ? ` · ${metres(activity.total_elevation_gain, locale)} ↑`
+                          : ''}
                         {activity.gear_id ? ` · ${label(activity.gear_id)}` : ''}
                         {activity.commute ? ' · commute' : ''}
                       </Text>

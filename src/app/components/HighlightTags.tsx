@@ -18,8 +18,8 @@ const TopTenTrophy = ({rank}: {rank: number}) => (
 );
 
 /**
- * Small marks after an activity's name: private, a race, a 100 km day, a KOM or a top 10 on a
- * segment (when its details are loaded).
+ * Small marks for an activity: private, a race, a KOM or a top 10 on a segment (when its details
+ * are loaded). A 100 km day shows on its route's outline instead.
  */
 // The lock is for lists where private activities are mixed in (Home); the Activities list
 // already fades them and filters them on demand.
@@ -40,7 +40,7 @@ const HighlightTags = ({
   const highlight = activityHighlight(activity);
   const rank = bestKomRank(detail);
 
-  if (null === highlight && null === rank && !isPrivate && !isUnprocessed) return null;
+  if ('race' !== highlight && null === rank && !isPrivate && !isUnprocessed) return null;
 
   return (
     <HStack gap="4px" flexShrink={0}>
@@ -53,11 +53,6 @@ const HighlightTags = ({
       {'race' === highlight && (
         <Badge size="sm" variant="solid" colorPalette="brand">
           Race
-        </Badge>
-      )}
-      {'long' === highlight && (
-        <Badge size="sm" variant="outline" colorPalette="gray">
-          100 km+
         </Badge>
       )}
       {1 === rank && (

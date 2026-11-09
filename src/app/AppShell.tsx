@@ -1,4 +1,4 @@
-import {MouseEvent, useState} from 'react';
+import {MouseEvent, useMemo, useState} from 'react';
 import {Box, Button, Flex, HStack, Icon, IconButton, Stack, Text} from '@chakra-ui/react';
 import {Link, Outlet, useLocation} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
@@ -7,8 +7,8 @@ import {forgetCachedData} from '../api';
 import {toaster} from '../components/ui';
 import {LogEvent} from '../components/event';
 import {leaveDemo} from '../demo/mode';
-import {useAllActivities, useAthlete, useEvents, useSession, useSettings} from '../hooks';
-import {getActivityUrl, hasEmoji} from '../models';
+import {useAllActivities, useAthlete, useEvents, useGear, useLabels, useSession, useSettings} from '../hooks';
+import {computeBikeParts, getActivityUrl, hasEmoji} from '../models';
 import {Activity} from '../models/strava';
 import {isActive, NAV, navFor} from './nav';
 
@@ -148,11 +148,48 @@ const useUnprocessedCount = (): number => {
   return unprocessedEmoji ? (data ?? []).filter(({name}) => !hasEmoji(name)).length : 0;
 };
 
+/** How many parts are due or overdue on the bikes still in use, as Gear grades them. */
+const useDuePartsCount = (): number => {
+  const gear = useGear();
+  const {retiredBikes, partRules} = useSettings();
+  const {label} = useLabels();
+  const {events} = useEvents();
+  const {data: activities} = useAllActivities();
+
+  return useMemo(
+    () =>
+      gear
+        .filter(({type, id, retired}) => 'bike' === type && !retired && !retiredBikes.includes(id))
+        .flatMap(({id}) =>
+          computeBikeParts(
+            events,
+            (activities ?? []).filter(({gear_id}) => id === gear_id),
+            id,
+            label,
+            partRules,
+          ),
+        )
+        .filter(({state}) => 'ok' !== state).length,
+    [gear, retiredBikes, partRules, label, events, activities],
+  );
+};
+
+/** The count shown on a page's entry, and what it counts: activities to tag, parts to change. */
+const useBadges = (): Record<string, {count: number; title: string}> => {
+  const unprocessed = useUnprocessedCount();
+  const due = useDuePartsCount();
+
+  return {
+    '/activities': {count: unprocessed, title: `${unprocessed} without an emoji`},
+    '/gear': {count: due, title: `${due} ${1 === due ? 'part' : 'parts'} to change`},
+  };
+};
+
 const useNav = () => navFor(useSettings().club?.name || null);
 
 const Sidebar = () => {
   const {pathname} = useLocation();
-  const unprocessed = useUnprocessedCount();
+  const badges = useBadges();
   const nav = useNav();
 
   return (
@@ -194,7 +231,7 @@ const Sidebar = () => {
               >
                 <Icon as={icon} boxSize="18px" color={active ? 'brand.solid' : undefined} />
                 {label}
-                {'/activities' === to && 0 < unprocessed && (
+                {0 < (badges[to]?.count ?? 0) && (
                   <Text
                     as="span"
                     marginLeft="auto"
@@ -205,9 +242,9 @@ const Sidebar = () => {
                     borderRadius="full"
                     paddingX="7px"
                     lineHeight="18px"
-                    title={`${unprocessed} without an emoji`}
+                    title={badges[to].title}
                   >
-                    {unprocessed}
+                    {badges[to].count}
                   </Text>
                 )}
               </HStack>
@@ -285,7 +322,7 @@ const PhoneHeader = () => {
  */
 const TabBar = () => {
   const {pathname} = useLocation();
-  const unprocessed = useUnprocessedCount();
+  const badges = useBadges();
   const tabs = NAV.filter(({onPhone}) => onPhone);
   // A page with no tab of its own (an activity) has no lens.
   const current = tabs.findIndex(({to}) => isActive(to, pathname));
@@ -362,7 +399,7 @@ const TabBar = () => {
             >
               <Box position="relative">
                 <Icon as={icon} boxSize="21px" />
-                {'/activities' === to && 0 < unprocessed && (
+                {0 < (badges[to]?.count ?? 0) && (
                   <Box
                     position="absolute"
                     top="-2px"
@@ -372,7 +409,7 @@ const TabBar = () => {
                     borderRadius="full"
                     background="brand.solid"
                     boxShadow="0 0 0 2px var(--chakra-colors-bg-panel)"
-                    aria-label={`${unprocessed} without an emoji`}
+                    aria-label={badges[to].title}
                   />
                 )}
               </Box>

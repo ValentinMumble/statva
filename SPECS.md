@@ -33,7 +33,9 @@ account row (log out, or leave the demo). On a phone, a header shows the page ti
 Records, Club, Settings, Refresh and Log icons, and a floating tab bar in the style of iOS
 Liquid Glass (a frosted, see-through capsule) holds Home, Activities, Ride weather, Gear and
 Stats. Maps use Esri's grey canvas (light or dark with the theme) with its place names laid
-over it.
+over it. Two pages carry a count, beside their name in the sidebar and as a dot on their tab:
+Activities, the activities still without an emoji (3.4), and Gear, the parts due or overdue
+on the bikes still in use.
 
 **Refresh** syncs with Strava now (11.3) and says "Up to date" or how many activities
 came in. **Log** opens the event dialog (5.2). With the "no emoji" setting on (3.4),
@@ -47,9 +49,10 @@ Activities carries a count in the sidebar and a dot on the tab.
    score) since Monday, each against the same days of last week (last week's total before
    anything is done), and one bar per day. "This week" is counted from when the activity
    list last changed, so a Refresh on a page left open since last week moves to this week.
-2. **Latest**: the 6 newest activities with route shape, marks (private, race, 100 km+,
-   KOM or Top 10 on a segment, no emoji), sport, day, kudos, first photo, normalized power
-   coloured by zone, distance and time.
+2. **Latest**: the 6 newest activities: route shape, the name alone on its first line; under
+   it the sport's icon (and its name on a computer), day, kudos and marks (private, race, KOM or Top 10 on a segment, no
+   emoji); first photo; then normalized power (coloured by zone) and distance, with climbing
+   and time under them. The route shape is a little smaller on a phone.
 3. **Weeks**: the last 5 weeks (+4 on demand). Each day shows its longest activity, each
    week its distance and training load. A week can be renamed in place (stored as a label).
 4. **Bike**: the main bike's distance and its 4 most worn parts, the chain always among
@@ -65,8 +68,11 @@ Activities carries a count in the sidebar and a dot on the tab.
 ### 3.1 List
 - Every stored activity in a virtual list (only the visible rows are drawn, so thousands
   stay fast), newest first by default.
-- Each row: route shape (or sport icon), name, marks (race, 100 km+, KOM or Top 10 on a
-  segment once the details are in), sport, day, gear, commute. Private activities are drawn
+- A race's route shape sits on a solid orange tile; a 100 km day's has an orange ring a
+  bright arc slowly circles (still for those who ask for less motion).
+- Each row: route shape (or sport icon), name, marks (race, KOM or Top 10 on a
+  segment once the details are in), the sport's icon (and its name on a computer), day, climbing (on a phone; a column
+  on a computer), gear, commute. Private activities are drawn
   faded.
 - On a computer each chosen metric gets a column; on a phone a row shows distance and
   moving time.

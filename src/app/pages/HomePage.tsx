@@ -1,5 +1,17 @@
 import {useMemo} from 'react';
-import {Badge, Box, Button, Grid, HStack, Icon, Image, Skeleton, Stack, Text} from '@chakra-ui/react';
+import {
+  Badge,
+  Box,
+  Button,
+  Grid,
+  HStack,
+  Icon,
+  Image,
+  Skeleton,
+  Stack,
+  Text,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import {Link} from 'react-router';
 import {FaThumbsUp} from 'react-icons/fa6';
 import {LogEvent} from '../../components/event';
@@ -152,6 +164,8 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
   const latest = activities.slice(0, LATEST_COUNT);
   // Photos and normalized power live in the details: only these few are fetched.
   const details = useSomeActivityDetails(latest.map(({id}) => id));
+  // A little smaller on a phone, for a few more letters of the name.
+  const thumbSize = useBreakpointValue({base: 52, md: 56}) ?? 56;
 
   return (
     <Card>
@@ -173,23 +187,25 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                 opacity={activity.private ? 0.6 : 1}
                 _hover={{background: 'bg.subtle'}}
               >
-                <RouteThumb activity={activity} />
+                <RouteThumb activity={activity} size={thumbSize} />
                 <Stack gap="2px" minWidth="0" flex="1">
-                  <HStack gap="8px" minWidth="0">
-                    <Text fontWeight="medium" truncate={true}>
-                      {activity.name}
-                    </Text>
-                    <HighlightTags
-                      activity={activity}
-                      detail={detail}
-                      showPrivate={true}
-                      showUnprocessed={unprocessedEmoji}
-                    />
-                  </HStack>
+                  {/* The name has the first line to itself; its marks go on the second. */}
+                  <Text fontWeight="medium" truncate={true}>
+                    {activity.name}
+                  </Text>
                   <HStack gap="6px" fontSize="sm" color="fg.muted" minWidth="0">
-                    <Icon as={sportIcon(activity.sport_type)} flexShrink={0} />
+                    {/* On a phone the icon alone says the sport: the line keeps room for the day. */}
+                    <Icon
+                      as={sportIcon(activity.sport_type)}
+                      flexShrink={0}
+                      aria-label={sportName(activity.sport_type)}
+                    />
                     <Text truncate={true}>
-                      {sportName(activity.sport_type)} · {relativeDay(new Date(activity.start_date), locale, now)}
+                      {/* On a computer there is room for the sport's name as well. */}
+                      <Text as="span" hideBelow="md">
+                        {sportName(activity.sport_type)} ·{' '}
+                      </Text>
+                      {relativeDay(new Date(activity.start_date), locale, now)}
                       {activity.commute ? ' · commute' : ''}
                     </Text>
                     {/* Kept out of the truncated text, so a long line never hides it. */}
@@ -200,6 +216,12 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                         <Text>{activity.kudos_count}</Text>
                       </HStack>
                     )}
+                    <HighlightTags
+                      activity={activity}
+                      detail={detail}
+                      showPrivate={true}
+                      showUnprocessed={unprocessedEmoji}
+                    />
                   </HStack>
                 </Stack>
                 {undefined !== photo && (
@@ -213,26 +235,30 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                     hideBelow="sm"
                   />
                 )}
-                {null !== np && (
-                  <Stack gap="0" alignItems="flex-end" flexShrink={0}>
-                    <Text
-                      fontFamily="figure"
-                      fontWeight="semibold"
-                      color={zoneTextColor(getZoneColor(getPowerZone(np, getFtp(new Date(activity.start_date)))))}
-                    >
-                      {np} W
-                    </Text>
-                    <Text fontSize="sm" color="fg.muted">
-                      NP
-                    </Text>
-                  </Stack>
-                )}
+                {/* The normalized power (in its zone's colour) and distance, then climbing and time. */}
                 <Stack gap="0" alignItems="flex-end" flexShrink={0} minWidth="56px">
-                  <Text fontFamily="figure" fontWeight="semibold">
+                  <Text fontFamily="figure" fontWeight="semibold" whiteSpace="nowrap">
+                    {null !== np && (
+                      <>
+                        <Text
+                          as="span"
+                          color={zoneTextColor(getZoneColor(getPowerZone(np, getFtp(new Date(activity.start_date)))))}
+                          title="Normalized power"
+                        >
+                          {np} W
+                        </Text>
+                        {' · '}
+                      </>
+                    )}
                     {0 < activity.distance ? km(activity.distance, locale) : duration(activity.moving_time)}
                   </Text>
-                  <Text fontSize="sm" color="fg.muted">
-                    {0 < activity.distance ? duration(activity.moving_time) : ' '}
+                  <Text fontSize="sm" color="fg.muted" whiteSpace="nowrap">
+                    {[
+                      0 < activity.total_elevation_gain ? `${metres(activity.total_elevation_gain, locale)} ↑` : null,
+                      0 < activity.distance ? duration(activity.moving_time) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ') || ' '}
                   </Text>
                 </Stack>
               </HStack>
