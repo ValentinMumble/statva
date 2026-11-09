@@ -145,8 +145,8 @@ describe('gradeAlong', () => {
 });
 
 describe('progressAt', () => {
-  // 3 km due north, one point a km, a km every 3 minutes.
-  const points = [0, 1, 2, 3].map(km => ({lat: 47 + km * 0.009, lng: 0, altitude: 0, distance: km * 1000}));
+  // 3 km due north, one point a km, a km every 3 minutes, 20 m up each km.
+  const points = [0, 1, 2, 3].map(km => ({lat: 47 + km * 0.009, lng: 0, altitude: km * 20, distance: km * 1000}));
   const times = [0, 180, 360, 540];
   const start = Date.parse('2026-11-11T10:00:00Z');
 
@@ -157,6 +157,9 @@ describe('progressAt', () => {
     expect(progress?.offRoute).toBe(false);
     // planned there at 6 min, there at 7: a minute behind
     expect(progress?.behind).toBe(60);
+    // two thirds done, with the last 20 m up still ahead
+    expect(progress?.done).toBeCloseTo(2 / 3);
+    expect(progress?.climbLeft).toBe(20);
   });
 
   it('says when the rider is off the route', () => {

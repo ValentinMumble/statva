@@ -9,6 +9,9 @@ import {useTheme} from 'next-themes';
 const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ';
 const tileUrl = (dark: boolean) =>
   `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${dark ? 'World_Dark_Gray_Base' : 'World_Light_Gray_Base'}/MapServer/tile/{z}/{y}/{x}`;
+// The same maps' place names, laid over them (the base tiles have none).
+const labelUrl = (dark: boolean) =>
+  `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${dark ? 'World_Dark_Gray_Reference' : 'World_Light_Gray_Reference'}/MapServer/tile/{z}/{y}/{x}`;
 const TRACK_COLOR = '#f25c14';
 
 const FitToTracks = ({tracks, center}: {tracks: number[][][]; center: [number, number]}) => {
@@ -58,6 +61,7 @@ const TrackMap = ({tracks, center, showEnds = true, children, ...boxProps}: Trac
         style={{height: '100%', width: '100%'}}
       >
         <TileLayer key={String(dark)} url={tileUrl(dark)} attribution={ATTRIBUTION} />
+        <TileLayer key={`labels-${dark}`} url={labelUrl(dark)} />
         <FitToTracks tracks={tracks} center={center} />
         {tracks.map((track, index) => (
           <Polyline

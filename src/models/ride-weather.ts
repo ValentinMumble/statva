@@ -188,6 +188,9 @@ type Progress = {
   offRoute: boolean;
   // Seconds behind the plan at that point (negative: ahead).
   behind: number;
+  // The share of the route done (0 to 1), and the climbing still ahead (m).
+  done: number;
+  climbLeft: number;
 };
 
 /**
@@ -209,11 +212,15 @@ const progressAt = (
     if (gap < away) [nearest, away] = [index, gap];
   });
 
+  const total = points.at(-1)?.distance ?? 0;
+
   return {
     distance: points[nearest].distance,
     away,
     offRoute: away > OFF_ROUTE,
     behind: (at - (start + times[nearest] * 1000)) / 1000,
+    done: 0 < total ? points[nearest].distance / total : 0,
+    climbLeft: climbing(points.slice(nearest)),
   };
 };
 
@@ -539,6 +546,7 @@ export {
   heading,
   headwindOf,
   isLoop,
+  LOOP_GAP,
   NOTICEABLE_WIND,
   progressAt,
   outfit,

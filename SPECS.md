@@ -30,8 +30,10 @@ took too long).
 
 On a computer, a sidebar holds the pages, **Refresh**, **Log an event** (a wrench) and the
 account row (log out, or leave the demo). On a phone, a header shows the page title with
-Ride weather, Club, Settings, Refresh and Log icons, and a floating tab bar in the style of iOS Liquid Glass (a frosted,
-see-through capsule) holds Home, Activities, Bike, Stats and Records.
+Records, Club, Settings, Refresh and Log icons, and a floating tab bar in the style of iOS
+Liquid Glass (a frosted, see-through capsule) holds Home, Activities, Ride weather, Gear and
+Stats. Maps use Esri's grey canvas (light or dark with the theme) with its place names laid
+over it.
 
 **Refresh** syncs with Strava now (11.3) and says "Up to date" or how many activities
 came in. **Log** opens the event dialog (5.2). With the "no emoji" setting on (3.4),
@@ -141,7 +143,10 @@ Strava's message names are links to them on Strava, next to the list of parts.
 
 ## 4. Activity page
 
-- Back link to the list as it was left; date, name, and badges (gear, commute, private,
+- Back link to the list as it was left (on a phone, the header's title, "← Activities");
+  date, where it went (the towns at its start and end
+  from OpenStreetMap, "Rosnoën → Plœmeur", or "Loop from Nantes" when it ends within 2 km
+  of its start; nothing indoors), name, and badges (gear, commute, private,
   KOM or top 10 trophy, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
 - **Duplicate** (any activity with recorded data, not a manual entry) copies the ride to the
   day and start time chosen, where it was ridden (today at its own time by default), for a
@@ -417,7 +422,7 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
 - **Where am I**: a button on the map follows the phone's location while out on the ride: a
   blue dot with its accuracy, kept in view (centred once, then moved only when the rider
   leaves the view), and how far along the nearest point of the route is ("km 42 of 91 · 49
-  km to go"), against the plan at that point (on time within 2 minutes, or how far behind or
+  km to go", the share done and the climbing still ahead), against the plan at that point (on time within 2 minutes, or how far behind or
   ahead, stops included). Over 300 m from the route, it says how far off it is instead.
   Pressed again, or on leaving the page, it stops.
 - Pointing at a chart marks that moment on the map with an orange dot, and the four charts

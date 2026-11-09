@@ -4,7 +4,7 @@ import {LuLocateFixed, LuLocate} from 'react-icons/lu';
 import {Circle, CircleMarker, useMap} from 'react-leaflet';
 import {progressAt, RoutePoint} from '../../models';
 import {toaster} from '../../components/ui';
-import {duration, km} from '../format';
+import {duration, km, metres, number} from '../format';
 
 type Place = {lat: number; lng: number; accuracy: number; at: number};
 
@@ -128,7 +128,7 @@ const RideLocator = ({points, times, start, locale}: RideLocatorProps) => {
           </Text>
           {!progress.offRoute && (
             <Text fontSize="xs" color="fg.muted">
-              {timing}
+              {number(progress.done * 100, locale)} % done · {metres(progress.climbLeft, locale)} ↑ to go · {timing}
             </Text>
           )}
         </Box>

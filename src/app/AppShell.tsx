@@ -2,7 +2,7 @@ import {MouseEvent, useState} from 'react';
 import {Box, Button, Flex, HStack, Icon, IconButton, Stack, Text} from '@chakra-ui/react';
 import {Link, Outlet, useLocation} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
-import {LuLogOut, LuRefreshCw, LuWrench, LuX} from 'react-icons/lu';
+import {LuArrowLeft, LuLogOut, LuRefreshCw, LuWrench, LuX} from 'react-icons/lu';
 import {forgetCachedData} from '../api';
 import {toaster} from '../components/ui';
 import {LogEvent} from '../components/event';
@@ -227,9 +227,13 @@ const Sidebar = () => {
 };
 
 const PhoneHeader = () => {
-  const {pathname} = useLocation();
+  const {pathname, state} = useLocation();
   const nav = useNav();
   const current = nav.find(({to}) => isActive(to, pathname));
+  // On an activity, the title leads back to the list as it was left: no second back link below.
+  const backTo = /^\/activities\/\d+$/.test(pathname)
+    ? ((state as {list?: string} | null)?.list ?? '/activities')
+    : null;
 
   return (
     <HStack
@@ -246,9 +250,17 @@ const PhoneHeader = () => {
       backdropFilter="blur(12px)"
       borderBottomWidth="1px"
     >
-      <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
-        {current?.label ?? 'Statva'}
-      </Text>
+      {null === backTo ? (
+        <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
+          {current?.label ?? 'Statva'}
+        </Text>
+      ) : (
+        <Link to={backTo}>
+          <HStack gap="6px" fontFamily="heading" fontWeight="bold" fontSize="lg">
+            <LuArrowLeft /> {current?.label ?? 'Activities'}
+          </HStack>
+        </Link>
+      )}
       <HStack gap="4px">
         {nav
           .filter(({onPhone}) => !onPhone)

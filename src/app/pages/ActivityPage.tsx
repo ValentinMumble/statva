@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useLocation, useNavigate, useParams} from 'react-router';
-import {LuArrowLeft, LuCopy, LuExternalLink, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
+import {LuArrowLeft, LuCopy, LuExternalLink, LuMapPin, LuPencil, LuRefreshCw, LuSmilePlus} from 'react-icons/lu';
 import {FaHeart} from 'react-icons/fa6';
 import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
@@ -39,6 +39,8 @@ import {
   intensityOf,
   isPedalled,
   messagePieces,
+  haversine,
+  LOOP_GAP,
   suggestName,
   sunTimes,
   terrainOf,
@@ -584,6 +586,36 @@ const Figures = ({items}: {items: FigureItem[]}) => (
 );
 
 /** Time in each heart rate zone, as one bar and a line per zone. */
+const fetchPlaceNames = getFetcher<(string | null)[]>('place.names');
+
+/**
+ * Where an activity went, from the towns OpenStreetMap names at its start and end: "Rosnoën →
+ * Plœmeur", or "Loop from Nantes" when it ends where it started. Nothing indoors, without a
+ * start and end, or while the names are unknown.
+ */
+const Places = ({activity, locale}: {activity: Activity; locale: string}) => {
+  const located = !activity.trainer && 2 === activity.start_latlng?.length && 2 === activity.end_latlng?.length;
+  const ends = located ? [activity.start_latlng, activity.end_latlng].map(([lat, lng]) => ({lat, lng})) : [];
+  const names = useQuery({
+    queryKey: ['placeNames', locale, ...ends.map(({lat, lng}) => `${lat.toFixed(3)},${lng.toFixed(3)}`)],
+    queryFn: () => fetchPlaceNames(ends, locale),
+    enabled: located,
+    staleTime: Infinity,
+    retry: false,
+  });
+  const [from, to] = names.data ?? [null, null];
+  if (!located || null === from) return null;
+  const loop = haversine(ends[0], ends[1]) <= LOOP_GAP;
+  if (!loop && null === to) return null;
+
+  return (
+    <HStack gap="4px">
+      <LuMapPin aria-hidden="true" />
+      <Text>{loop || from === to ? `Loop from ${from}` : `${from} → ${to}`}</Text>
+    </HStack>
+  );
+};
+
 /**
  * The ride on the day's light where it started, as Ride weather shows a planned one: sunrise,
  * sunset and the ride between, at the ride's own local time. Nothing for a ride indoors or
@@ -737,20 +769,24 @@ const ActivityPage = () => {
 
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
-      <Link to={list}>
-        <HStack gap="6px" color="fg.muted" fontSize="sm" _hover={{color: 'fg'}}>
-          <LuArrowLeft /> Activities
-        </HStack>
-      </Link>
+      {/* On a phone, the header's title leads back instead. */}
+      <Box hideBelow="md">
+        <Link to={list}>
+          <HStack gap="6px" color="fg.muted" fontSize="sm" _hover={{color: 'fg'}}>
+            <LuArrowLeft /> Activities
+          </HStack>
+        </Link>
+      </Box>
 
       <HStack justifyContent="space-between" alignItems="flex-start" gap="16px" flexWrap="wrap">
         <Stack gap="4px" minWidth="0" flex="1" flexBasis={{base: '100%', md: '0'}}>
-          <HStack gap="8px" color="fg.muted" fontSize="sm">
+          <HStack gap="8px" color="fg.muted" fontSize="sm" flexWrap="wrap">
             <Icon as={sportIcon(activity.sport_type)} />
             <Text>
               {date.toLocaleDateString(locale, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})} ·{' '}
               {date.toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit'})}
             </Text>
+            <Places activity={activity} locale={locale} />
           </HStack>
           <ActivityTitle key={activity.id} activity={activity} history={activities} />
           <HStack gap="6px" flexWrap="wrap">
