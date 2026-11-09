@@ -2,14 +2,14 @@ import {MouseEvent, useMemo, useState} from 'react';
 import {Box, Button, Flex, HStack, Icon, IconButton, Stack, Text} from '@chakra-ui/react';
 import {Link, Outlet, useLocation} from 'react-router';
 import {useQueryClient} from '@tanstack/react-query';
-import {LuArrowLeft, LuLogOut, LuRefreshCw, LuWrench, LuX} from 'react-icons/lu';
+import {LuArrowLeft, LuLogOut, LuRefreshCw, LuRoute, LuWrench, LuX} from 'react-icons/lu';
 import {forgetCachedData} from '../api';
 import {toaster} from '../components/ui';
 import {LogEvent} from '../components/event';
 import {leaveDemo} from '../demo/mode';
 import {useAllActivities, useAthlete, useEvents, useGear, useLabels, useSession, useSettings} from '../hooks';
-import {computeBikeParts, getActivityUrl, hasEmoji} from '../models';
-import {Activity} from '../models/strava';
+import {computeBikeParts, eddingtonNumber, getActivityUrl, getTypes, hasEmoji} from '../models';
+import {Activity, ActivityType} from '../models/strava';
 import {isActive, NAV, navFor} from './nav';
 
 const SIDEBAR_WIDTH = '232px';
@@ -174,6 +174,17 @@ const useDuePartsCount = (): number => {
   );
 };
 
+/** The rider's Eddington number for rides (E days of at least E km), as Home's card counts it. */
+const useEddington = (): number | null => {
+  const {data: activities} = useAllActivities();
+
+  return useMemo(() => {
+    if (undefined === activities) return null;
+    const types: string[] = getTypes(ActivityType.Ride);
+    return eddingtonNumber(activities.filter(({sport_type}) => types.includes(sport_type)))[0];
+  }, [activities]);
+};
+
 /** The count shown on a page's entry, and what it counts: activities to tag, parts to change. */
 const useBadges = (): Record<string, {count: number; title: string}> => {
   const unprocessed = useUnprocessedCount();
@@ -267,6 +278,7 @@ const PhoneHeader = () => {
   const {pathname, state} = useLocation();
   const nav = useNav();
   const current = nav.find(({to}) => isActive(to, pathname));
+  const eddington = useEddington();
   // On an activity, the title leads back to the list as it was left: no second back link below.
   const backTo = /^\/activities\/\d+$/.test(pathname)
     ? ((state as {list?: string} | null)?.list ?? '/activities')
@@ -287,7 +299,27 @@ const PhoneHeader = () => {
       backdropFilter="blur(12px)"
       borderBottomWidth="1px"
     >
-      {null === backTo ? (
+      {'/' === pathname ? (
+        // Home is the app itself: its name, with the rider's Eddington number beside it.
+        <HStack gap="14px">
+          <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
+            Statva
+          </Text>
+          {null !== eddington && (
+            <HStack
+              as="span"
+              gap="3px"
+              color="brand.solid"
+              title={`Eddington ${eddington}: ${eddington} days of ${eddington} km or more`}
+            >
+              <LuRoute size="14" aria-hidden="true" />
+              <Text as="span" fontFamily="figure" fontSize="sm" fontWeight="semibold">
+                {eddington}
+              </Text>
+            </HStack>
+          )}
+        </HStack>
+      ) : null === backTo ? (
         <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
           {current?.label ?? 'Statva'}
         </Text>

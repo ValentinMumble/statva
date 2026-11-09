@@ -29,7 +29,9 @@ a login fails, it says why (not on the allowed list, a scope unticked, access de
 took too long).
 
 On a computer, a sidebar holds the pages, **Refresh**, **Log an event** (a wrench) and the
-account row (log out, or leave the demo). On a phone, a header shows the page title with
+account row (log out, or leave the demo). On a phone, a header shows the page title (on Home,
+"Statva" with the rider's Eddington number beside it, a small orange route icon and
+"85") with
 Records, Club, Settings, Refresh and Log icons, and a floating tab bar in the style of iOS
 Liquid Glass (a frosted, see-through capsule) holds Home, Activities, Ride weather, Gear and
 Stats. Maps use Esri's grey canvas (light or dark with the theme) with its place names laid
