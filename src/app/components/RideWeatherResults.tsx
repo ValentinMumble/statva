@@ -489,7 +489,9 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
     );
   }, [points, times, start]);
   const sky = useMemo(() => rideSky(weather), [weather]);
-  useEffect(() => onSky?.(sky?.emoji ?? null), [sky, onSky]);
+  useEffect(() => {
+    onSky?.(sky?.emoji ?? null);
+  }, [sky, onSky]);
   const rainWeather = useMemo(() => weather.map(point => ({...point, rainLevel: rainLevel(point.rain)})), [weather]);
   const advice = useMemo(() => {
     if (!forecasts.data || 0 === weather.length) return null;

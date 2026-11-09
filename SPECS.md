@@ -154,8 +154,9 @@ Strava's message names are links to them on Strava, next to the list of parts.
 - Back link to the list as it was left (on a phone, the header's title, "← Activities");
   date, where it went (the towns at its start and end
   from OpenStreetMap, "Rosnoën → Plœmeur", or "Loop from Nantes" when it ends within 2 km
-  of its start; nothing indoors), name, and badges (gear, commute, private,
-  KOM or top 10 trophy, number of riders). **Refresh** fetches it from Strava again; **Strava** opens it.
+  of its start; nothing indoors), name, and badges (gear, race, commute, private,
+  KOM or top 10 trophy, number of riders; a 100 km day's "100 km+" badge has the same moving
+  ring as its thumbnail in the lists). Another activity opens at the top of the page. **Refresh** fetches it from Strava again; **Strava** opens it.
 - **Duplicate** (any activity with recorded data, not a manual entry) copies the ride to the
   day and start time chosen, where it was ridden (today at its own time by default), for a
   ride done again the same way with nothing recorded, a commute say: its data streams move
@@ -171,7 +172,8 @@ Strava's message names are links to them on Strava, next to the list of parts.
   Strava, which needs write access (a login after Statva asked
   for it), and in the stored copies.
 - **Map** of the full track (the summary track until the details are in).
-- **Figures**: distance, times, climbing, speeds, average, weighted and normalized power
+- **Figures**: distance, times, climbing (for rides and runs, with a terrain tag from Flat
+  to Mountainous, graded against the rider's rides or runs), speeds, average, weighted and normalized power
   (with power zone badges), intensity, average and max heart rate (with
   heart rate zone badges), cadence, calories, temperature, suffer score, kudos,
   achievements, PRs.

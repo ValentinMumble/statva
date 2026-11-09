@@ -372,12 +372,18 @@ const TabBar = () => {
       padding="5px"
       gap="2px"
       borderRadius="full"
-      background={{base: 'rgba(242, 242, 247, 0.72)', _dark: 'rgba(22, 22, 24, 0.7)'}}
-      backdropFilter="blur(24px) saturate(180%)"
+      // Liquid glass: a light tint the page shows through, blurred and brightened, with a sheen
+      // across the top and a bright rim.
+      backgroundColor={{base: 'rgba(250, 250, 252, 0.38)', _dark: 'rgba(28, 28, 32, 0.38)'}}
+      backgroundImage={{
+        base: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 55%)',
+        _dark: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 55%)',
+      }}
+      backdropFilter="blur(14px) saturate(190%)"
       boxShadow={{
-        base: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.14)',
+        base: 'inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.35), 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 10px 30px rgba(0, 0, 0, 0.12)',
         _dark:
-          'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5)',
+          'inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.45)',
       }}
     >
       {0 <= current && (

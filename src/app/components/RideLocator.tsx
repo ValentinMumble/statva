@@ -76,7 +76,9 @@ const RideLocator = ({points, times, start, locale, onPlace}: RideLocatorProps) 
 
   const progress = null === here ? null : progressAt(points, times, start, here, here.at);
   const plannedAt = null === progress || progress.offRoute ? null : progress.plannedAt;
-  useEffect(() => onPlace?.(plannedAt), [plannedAt, onPlace]);
+  useEffect(() => {
+    onPlace?.(plannedAt);
+  }, [plannedAt, onPlace]);
   const total = points.at(-1)?.distance ?? 0;
   const timing =
     null === progress

@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {
   Badge,
   Box,
@@ -26,6 +26,7 @@ import {FaHeart} from 'react-icons/fa6';
 import {useActivityMeta, useAllActivities, useFtp, useGear, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {
+  activityHighlight,
   bestKomRank,
   CopyResult,
   decodePolyline,
@@ -54,6 +55,7 @@ import {GearField} from '../components/GearField';
 import {TopTenTrophy} from '../components/HighlightTags';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
+import {RingFrame} from '../components/RouteThumb';
 import {duration, km, metres, number, relativeDay} from '../format';
 
 const fetchZones = getFetcher<ActivityZone[]>('activity.zones');
@@ -706,6 +708,12 @@ const HeartRateZones = ({activity}: {activity: Activity}) => {
 
 const ActivityPage = () => {
   const {activityId} = useParams();
+  // Another activity opens at its top, not where the last one was left.
+  // In braces: scrollTo returns a promise in recent browsers, and an effect may only return a
+  // clean-up function.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activityId]);
   // Back to the list as it was left, filters included, when the activity was opened from it.
   const list = (useLocation().state as {list?: string} | null)?.list ?? '/activities';
   const {data: activities} = useAllActivities();
@@ -724,14 +732,24 @@ const ActivityPage = () => {
     () => decodePolyline(detail?.map?.polyline || activity?.map?.summary_polyline || ''),
     [detail, activity],
   );
-  // A ride's climbing, graded against the rider's other rides.
+  // A race or a 100 km day, as the lists mark them.
+  const highlight = undefined === activity ? null : activityHighlight(activity);
+  // A ride's climbing, graded against the rider's other rides; a run's against their runs.
+  const kindName =
+    undefined !== activity && getTypes(ActivityType.Run).includes(activity.sport_type as ActivityType)
+      ? 'runs'
+      : 'rides';
   const difficulty = useMemo(() => {
-    if (undefined === activity || !activity.sport_type.includes('Ride')) return null;
-    const rides = getTypes(ActivityType.Ride);
+    if (undefined === activity) return null;
+    const kind = [ActivityType.Ride, ActivityType.Run].find(type =>
+      getTypes(type).includes(activity.sport_type as ActivityType),
+    );
+    if (undefined === kind) return null;
+    const sameKind: string[] = getTypes(kind);
 
     return terrainOf(
       activity,
-      (activities ?? []).filter(({sport_type}) => rides.includes(sport_type)),
+      (activities ?? []).filter(({sport_type}) => sameKind.includes(sport_type)),
     );
   }, [activity, activities]);
 
@@ -791,6 +809,19 @@ const ActivityPage = () => {
           <ActivityTitle key={activity.id} activity={activity} history={activities} />
           <HStack gap="6px" flexWrap="wrap">
             <GearSelect activity={activity} />
+            {'race' === highlight && (
+              <Badge variant="solid" colorPalette="brand">
+                Race
+              </Badge>
+            )}
+            {'long' === highlight && (
+              // The same moving ring as a 100 km day's thumbnail in the lists, round a small badge.
+              <RingFrame radius="6px" thickness={1} fill="bg.panel">
+                <Text fontSize="xs" fontWeight="medium" paddingX="7px" lineHeight="20px" whiteSpace="nowrap">
+                  100 km+
+                </Text>
+              </RingFrame>
+            )}
             {activity.commute && <Badge variant="surface">Commute</Badge>}
             {activity.private && <Badge variant="surface">Private</Badge>}
             {1 === komRank && <Badge colorPalette="yellow">KOM 👑</Badge>}
@@ -841,8 +872,8 @@ const ActivityPage = () => {
                           colorPalette: difficulty.terrain.colorPalette,
                           title:
                             null === difficulty.steeperThan
-                              ? 'By metres climbed per km, until there are more rides to compare with'
-                              : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your rides`,
+                              ? `By metres climbed per km, until there are more ${kindName} to compare with`
+                              : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your ${kindName}`,
                         },
                 },
                 {label: 'Average speed', value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null},

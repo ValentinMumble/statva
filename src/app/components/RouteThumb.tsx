@@ -1,4 +1,4 @@
-import {Box, Center, Icon} from '@chakra-ui/react';
+import {Box, BoxProps, Center, Icon} from '@chakra-ui/react';
 import {ReactNode, useMemo} from 'react';
 import {activityHighlight, decodePolyline, routeShape} from '../../models';
 import {Activity} from '../../models/strava';
@@ -29,29 +29,52 @@ const RING_GRADIENT =
   'conic-gradient(from 0deg, color-mix(in srgb, var(--chakra-colors-brand-solid) 30%, transparent) 0 62%, var(--chakra-colors-brand-solid) 82%, color-mix(in srgb, var(--chakra-colors-brand-solid) 30%, transparent) 100%)';
 
 /**
- * A 100 km day's tile: the gradient turns behind it and shows only as a thin ring, so the arc
- * seems to run round the edge. Still for those who ask for less motion.
+ * A 100 km day's frame, round its thumbnail or its title: the gradient turns behind the content and shows only as a thin ring,
+ * so the arc seems to run round the edge. The turning square is three times the frame's width,
+ * so it covers the corners. Still for those who ask for less motion.
  */
-const LongRing = ({size, children}: {size: number; children: ReactNode}) => (
-  <Box
-    position="relative"
-    width={`${size}px`}
-    height={`${size}px`}
-    borderRadius="10px"
-    overflow="hidden"
-    flexShrink={0}
-  >
+const RingFrame = ({
+  radius,
+  thickness,
+  fill = 'bg.subtle',
+  children,
+  ...boxProps
+}: BoxProps & {radius: string; thickness: number; fill?: string; children: ReactNode}) => (
+  <Box position="relative" overflow="hidden" borderRadius={radius} padding={`${thickness}px`} {...boxProps}>
     <Box
       position="absolute"
-      inset="-50%"
-      background={RING_GRADIENT}
-      animation="spin 4s linear infinite"
-      _motionReduce={{animation: 'none'}}
-    />
-    <Center position="absolute" inset="1.5px" borderRadius="8.5px" background="bg.subtle">
+      top="50%"
+      left="50%"
+      width="300%"
+      aspectRatio="1"
+      transform="translate(-50%, -50%)"
+      pointerEvents="none"
+    >
+      <Box
+        width="full"
+        height="full"
+        background={RING_GRADIENT}
+        animation="spin 4s linear infinite"
+        _motionReduce={{animation: 'none'}}
+      />
+    </Box>
+    <Box
+      position="relative"
+      height="full"
+      borderRadius={`calc(${radius} - ${thickness}px)`}
+      overflow="hidden"
+      isolation="isolate"
+      background={fill}
+    >
       {children}
-    </Center>
+    </Box>
   </Box>
+);
+
+const LongRing = ({size, children}: {size: number; children: ReactNode}) => (
+  <RingFrame radius="10px" thickness={1.5} width={`${size}px`} height={`${size}px`} flexShrink={0}>
+    <Center height="full">{children}</Center>
+  </RingFrame>
 );
 
 /** The shape of an activity's route, or its sport's icon when it has none (indoors, pools). */
@@ -124,4 +147,4 @@ const RouteThumb = ({activity, size = 56}: {activity: Activity; size?: number}) 
   );
 };
 
-export {RouteThumb};
+export {RingFrame, RouteThumb};
