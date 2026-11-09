@@ -10,6 +10,7 @@ import {
   HourForecast,
   isLoop,
   outfit,
+  progressAt,
   rainSpell,
   reversePoints,
   rideSky,
@@ -140,6 +141,30 @@ describe('gradeAlong', () => {
     expect(grades[12]).toBeCloseTo(0.1);
     expect(grades[6]).toBeGreaterThan(0);
     expect(grades[6]).toBeLessThan(0.1);
+  });
+});
+
+describe('progressAt', () => {
+  // 3 km due north, one point a km, a km every 3 minutes.
+  const points = [0, 1, 2, 3].map(km => ({lat: 47 + km * 0.009, lng: 0, altitude: 0, distance: km * 1000}));
+  const times = [0, 180, 360, 540];
+  const start = Date.parse('2026-11-11T10:00:00Z');
+
+  it('finds the nearest point and how the moment compares with the plan', () => {
+    const progress = progressAt(points, times, start, {lat: 47.018, lng: 0}, start + 7 * 60000);
+
+    expect(progress?.distance).toBe(2000);
+    expect(progress?.offRoute).toBe(false);
+    // planned there at 6 min, there at 7: a minute behind
+    expect(progress?.behind).toBe(60);
+  });
+
+  it('says when the rider is off the route', () => {
+    const progress = progressAt(points, times, start, {lat: 47.009, lng: 0.01}, start);
+
+    expect(progress?.offRoute).toBe(true);
+    expect(progress?.away).toBeGreaterThan(700);
+    expect(progressAt([], [], start, {lat: 47, lng: 0}, start)).toBeNull();
   });
 });
 

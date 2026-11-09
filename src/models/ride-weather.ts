@@ -177,6 +177,46 @@ const sampleIndexes = (points: RoutePoint[]): number[] => {
   return [...new Set(indexes)];
 };
 
+// Further than this from the route (m), the rider is off it rather than on it.
+const OFF_ROUTE = 300;
+
+type Progress = {
+  // How far along the route the nearest point is (m).
+  distance: number;
+  // How far the rider is from that point (m): over OFF_ROUTE, off the route.
+  away: number;
+  offRoute: boolean;
+  // Seconds behind the plan at that point (negative: ahead).
+  behind: number;
+};
+
+/**
+ * Where a rider out on the route is: the nearest point of it, how far along that is, and how
+ * the moment compares with when the plan (start, timeline) has them there.
+ */
+const progressAt = (
+  points: RoutePoint[],
+  times: number[],
+  start: number,
+  place: {lat: number; lng: number},
+  at: number,
+): Progress | null => {
+  if (0 === points.length) return null;
+  let nearest = 0;
+  let away = Infinity;
+  points.forEach((point, index) => {
+    const gap = haversine(point, place);
+    if (gap < away) [nearest, away] = [index, gap];
+  });
+
+  return {
+    distance: points[nearest].distance,
+    away,
+    offRoute: away > OFF_ROUTE,
+    behind: (at - (start + times[nearest] * 1000)) / 1000,
+  };
+};
+
 // The elevation chart draws the route in about this many stretches, each by its lowest and
 // highest point, so no climb or dip is lost between two.
 const PROFILE_STRETCHES = 300;
@@ -500,6 +540,7 @@ export {
   headwindOf,
   isLoop,
   NOTICEABLE_WIND,
+  progressAt,
   outfit,
   rainSpell,
   reversePoints,
@@ -517,4 +558,15 @@ export {
   windCost,
   windShares,
 };
-export type {HourForecast, Pace, PlannedRoute, ProfilePoint, RoutePoint, RouteSource, Sky, StartOption, WeatherPoint};
+export type {
+  HourForecast,
+  Pace,
+  PlannedRoute,
+  ProfilePoint,
+  Progress,
+  RoutePoint,
+  RouteSource,
+  Sky,
+  StartOption,
+  WeatherPoint,
+};

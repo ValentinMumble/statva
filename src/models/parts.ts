@@ -12,14 +12,11 @@ import {Activity} from './strava';
 type PartRules = {
   limitsKm: Partial<Record<Event['type'], number>>;
   retiredChains: string[];
-  // What one replacement costs, in euros, to turn a part's life into a cost per km.
-  pricesEur: Partial<Record<Event['type'], number>>;
 };
 
 const DEFAULT_PART_RULES: PartRules = {
   limitsKm: {chain: 400, tire: 8000, cassette: 30000},
   retiredChains: [],
-  pricesEur: {},
 };
 
 // A chain comes off the bike once it has done this much on its current stint.
@@ -53,8 +50,6 @@ type PartStatus = {
   state: PartState;
   // At the recent pace on this bike; 0 when it is due now, null without a life or recent riding.
   weeksLeft: number | null;
-  // In euros per km, from its price and expected life; null without either.
-  costPerKm: number | null;
 };
 
 type Fitting = {event: Event; detail: string};
@@ -77,9 +72,6 @@ const weeksLeftOf = (distance: number, expected: number | null, pace: number): n
 
   return 0 < pace ? (expected - distance) / pace : null;
 };
-
-const costPerKmOf = (price: number | undefined, expected: number | null): number | null =>
-  undefined === price || 0 >= price || null === expected || 0 >= expected ? null : price / (expected / 1000);
 
 const stateOf = (distance: number, expected: number | null): PartState => {
   if (null === expected || 0 >= expected) return 'ok';
@@ -105,18 +97,6 @@ const chainTotals = (events: Event[], activities: Activity[], bikeId: string): R
 
     return totals;
   }, {});
-};
-
-/**
- * How far a chain goes in all: the average of the retired ones on this bike. A chain's
- * limit is one stint of a rotation, so its price is spread over this instead.
- */
-const chainLife = (events: Event[], activities: Activity[], bikeId: string, retiredChains: string[]): number | null => {
-  const lives = Object.entries(chainTotals(events, activities, bikeId))
-    .filter(([chain, distance]) => retiredChains.includes(chain) && 0 < distance)
-    .map(([, distance]) => distance);
-
-  return 0 === lives.length ? null : sum(lives) / lives.length;
 };
 
 /**
@@ -170,10 +150,6 @@ const partStatus = (
     ratio: null === expected || 0 >= expected ? 0 : distance / expected,
     state: stateOf(distance, expected),
     weeksLeft: weeksLeftOf(distance, expected, pace),
-    costPerKm: costPerKmOf(
-      rules.pricesEur[type],
-      'chain' === type ? chainLife(events, activities, bikeId, rules.retiredChains) : expected,
-    ),
   };
 };
 

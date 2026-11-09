@@ -29,8 +29,6 @@ type Settings = {
   retiredBikes: string[];
   retiredChains: string[];
   partLimitsKm: Partial<Record<Event['type'], number>>;
-  // What one replacement of each part costs, in euros.
-  partPricesEur: Partial<Record<Event['type'], number>>;
   yearGoalKm: number;
   // What a km by car would cost, in euros, to count what commuting by bike saves.
   carCostPerKm: number;
@@ -61,7 +59,6 @@ const DEFAULT_SETTINGS: Settings = {
   retiredBikes: [],
   retiredChains: [],
   partLimitsKm: {chain: 400, tire: 8000, cassette: 30000},
-  partPricesEur: {},
   yearGoalKm: 5000,
   carCostPerKm: 0.3,
   sports: ['Ride', 'Run'],

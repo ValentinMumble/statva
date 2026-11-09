@@ -65,16 +65,6 @@ const LIMITED_PARTS: [keyof Settings['partLimitsKm'], string][] = [
   ['battery', 'Battery charge'],
 ];
 
-// Parts that cost something to replace, for their cost per km. A chain's price is spread over
-// what the retired chains did in all, since its limit is only one stint of the rotation.
-const PRICED_PARTS: [keyof Settings['partPricesEur'], string][] = [
-  ['chain', 'Chain'],
-  ['tire', 'Tires'],
-  ['cassette', 'Cassette'],
-  ['brake_pad', 'Brake pads'],
-  ['brake_bleed', 'Brake fluid'],
-];
-
 const list = (text: string): string[] =>
   text
     .split(/[,\n]/)
@@ -555,22 +545,6 @@ const SettingsPage = () => {
             />
           ))}
         </Grid>
-        <Stack gap="6px">
-          <GroupLabel>Prices, for the cost per km</GroupLabel>
-          <Grid templateColumns={{base: '1fr', md: '1fr 1fr'}} gap="16px">
-            {PRICED_PARTS.map(([part, name]) => (
-              <NumberField
-                key={part}
-                label={name}
-                unit="€"
-                step={0.01}
-                placeholder="Not set"
-                value={settings.partPricesEur[part]}
-                onChange={value => set('partPricesEur', {...settings.partPricesEur, [part]: value})}
-              />
-            ))}
-          </Grid>
-        </Stack>
         <Field.Root>
           <Field.Label>Retired chains</Field.Label>
           <Input

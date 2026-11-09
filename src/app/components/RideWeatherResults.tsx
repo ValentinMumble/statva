@@ -56,6 +56,7 @@ import {Activity} from '../../models/strava';
 import {ChartTooltip} from '../../components/charts/ChartTooltip';
 import {Card, CardTitle} from './Card';
 import {DaylightBar} from './DaylightBar';
+import {RideLocator} from './RideLocator';
 import {ARROW_COLORS, arrowLength, arrowPath, WIND_COLORS} from './ride-weather-colors';
 import {WeatherRow} from './WeatherRow';
 import {TrackMap} from './TrackMap';
@@ -655,6 +656,7 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
             {marks.map(mark => (
               <DistanceMark key={mark.distance} {...mark} locale={locale} />
             ))}
+            <RideLocator points={points} times={times} start={start} locale={locale} />
             {weather
               .filter((_, sample) => 0 === sample % Math.max(1, Math.round(weather.length / ARROWS)))
               .map(point => (

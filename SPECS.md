@@ -170,7 +170,7 @@ Strava's message names are links to them on Strava, next to the list of parts.
   write one), saved on Strava. When Strava answers but keeps a note as it was (apps may
   not be allowed to write it), nothing changes in Statva and the rider is told to edit it
   on Strava. **Heart rate zones** (time in each of
-  Strava's zones), **daylight** (outdoors: sunrise and sunset where it started, at its local
+  Strava's zones), **daylight** (outdoors, above the notes on a phone: sunrise and sunset where it started, at its local
   time, how long before sunrise it started or before or after sunset it finished, and the
   same daylight bar as Ride weather) and **recorded with** (device, power meter or not).
 
@@ -207,8 +207,7 @@ On a phone the dialog opens from the bottom, with thumb-sized buttons.
   events.
 - **Parts**: every wearing part's distance since fitted against its expected life, as a
   bar (green, amber from 80 %, red from 100 %), most worn first, with the fitting date,
-  weeks left at the pace of the last 8 weeks, cost per km when priced, and a **Replace**
-  button.
+  weeks left at the pace of the last 8 weeks, and a **Replace** button.
 - Expected life is the part's limit from the settings (by default chain 400 km per stint,
   tire 8000 km, cassette 30 000 km over all its stints), otherwise the average life of the
   earlier parts of that type on that bike.
@@ -231,10 +230,7 @@ On a phone the dialog opens from the bottom, with thumb-sized buttons.
   cross-check on SILCA's calculator, and keeps the pressures the rider actually runs, in bar.
 
 ### 5.4 Costs
-An expense has a date, an amount (negative for a sale) and a description. Part prices
-(settings) give each part a cost per km over its expected life. A chain's limit is one
-stint of a rotation, so its price is spread over what the retired chains on the bike did
-in all; until one is retired, chains have no cost per km.
+An expense has a date, an amount (negative for a sale) and a description.
 
 ---
 
@@ -329,7 +325,7 @@ Changes are kept as a draft until **Save**.
 | Section | Settings |
 |---|---|
 | Bikes | Main bike (default: Strava's primary bike), the bike running costs follow, retired bikes, each bike's weight and whether it runs tubeless, the weight of kit carried |
-| Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), prices (chain, tires, cassette, brake pads, brake fluid), retired chains, how far running shoes last |
+| Parts | Life limits (chain per stint, tires, cassette, brake pads, battery), retired chains, how far running shoes last |
 | Ride rules | For recurring rides: where they turn around (and how close), the longest they are, weekdays only, then the name, commute flag and bike they get |
 | Goal and sports | Yearly riding goal, car cost per km, the sports Stats shows |
 | Body | Weight, heart rate zone thresholds |
@@ -418,6 +414,12 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
     or 0.3 mm per hour), with the times, or dry.
   - **What to wear**: from the coldest feels like on the way, plus a rain jacket when rain
     is likely and a word on gusts over 45 km/h.
+- **Where am I**: a button on the map follows the phone's location while out on the ride: a
+  blue dot with its accuracy, kept in view (centred once, then moved only when the rider
+  leaves the view), and how far along the nearest point of the route is ("km 42 of 91 · 49
+  km to go"), against the plan at that point (on time within 2 minutes, or how far behind or
+  ahead, stops included). Over 300 m from the route, it says how far off it is instead.
+  Pressed again, or on leaving the page, it stops.
 - Pointing at a chart marks that moment on the map with an orange dot, and the four charts
   show the same moment together (each its point closest in time).
 - The heading is taken over the next kilometre, so a hairpin does not swap head and tail

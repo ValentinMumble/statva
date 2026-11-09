@@ -850,6 +850,10 @@ const ActivityPage = () => {
             />
           </Card>
           <Photos activity={activity} detail={detail} />
+          {/* On a phone, one column: the daylight comes before the notes rather than at the end. */}
+          <Box hideFrom="lg">
+            <Daylight activity={activity} locale={locale} />
+          </Box>
           {null !== detail && (
             <Card>
               <CardTitle>Notes</CardTitle>
@@ -868,7 +872,9 @@ const ActivityPage = () => {
         </Stack>
         <Stack gap={{base: '16px', md: '24px'}}>
           <HeartRateZones activity={activity} />
-          <Daylight activity={activity} locale={locale} />
+          <Box hideBelow="lg">
+            <Daylight activity={activity} locale={locale} />
+          </Box>
           {null !== detail && (
             <Card>
               <CardTitle>Recorded with</CardTitle>

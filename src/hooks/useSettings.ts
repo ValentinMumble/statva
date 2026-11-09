@@ -31,7 +31,6 @@ const useSettings = (): ResolvedSettings => {
     partRules: {
       limitsKm: settings.partLimitsKm,
       retiredChains: settings.retiredChains,
-      pricesEur: settings.partPricesEur,
     },
   };
 };

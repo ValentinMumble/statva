@@ -59,7 +59,6 @@ const weeksLeftText = (weeksLeft: number): string => {
 };
 
 // Euros per km read as cents, since a part costs a few cents per km at most.
-const centsPerKm = (eurosPerKm: number, locale: string): string => `${number(eurosPerKm * 100, locale, 1)} c/km`;
 
 const ChartCard = ({title, children}: {title: string; children: React.ReactNode}) => (
   <Card>
@@ -367,7 +366,6 @@ const BikePage = () => {
                       Fitted {relativeDay(part.fittedOn, locale).toLowerCase()} · {km(part.distance, locale)}
                       {null !== part.expected && ` of ${km(part.expected, locale)}`}
                       {null !== part.weeksLeft && ` · ${weeksLeftText(part.weeksLeft)}`}
-                      {null !== part.costPerKm && ` · ${centsPerKm(part.costPerKm, locale)}`}
                     </Text>
                   </Stack>
                   <LogEvent
