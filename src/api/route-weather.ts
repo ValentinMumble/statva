@@ -1,5 +1,5 @@
 import {HourForecast, Pace, PlannedRoute, routeFromPoints, RouteSource} from '../models/ride-weather';
-import {getJson, NotLoggedInError} from './strava';
+import {getJson} from './strava';
 
 /**
  * Where Ride weather gets its routes and forecasts: the rider's saved routes on Strava
@@ -203,31 +203,18 @@ const fetchSharedRide = async (id: string): Promise<SharedRide> => {
 // A shared ride kept for quick access on Ride weather.
 type RideBookmark = {id: string; name: string; start: number; distance: number; source?: RouteSource};
 
-/**
- * The rider's bookmarked rides still to come, soonest first. `origin` is Statva's own address,
- * for the share page, which lives on another one: the rider's cookie goes along.
- */
-const fetchBookmarks = async (origin = ''): Promise<RideBookmark[]> => {
-  const response = await fetch(`${origin}/api/activity?${new URLSearchParams({action: 'bookmark'})}`, {
-    credentials: 'include',
-  });
-  if (401 === response.status) throw new NotLoggedInError('Not logged in');
-  if (!response.ok) throw new Error(`${response.status}`);
+/** The rider's bookmarked rides still to come, soonest first. */
+const fetchBookmarks = async (): Promise<RideBookmark[]> =>
+  await getJson<RideBookmark[]>(`/api/activity?${new URLSearchParams({action: 'bookmark'})}`);
 
-  return (await response.json()) as RideBookmark[];
-};
-
-const changeBookmark = async (method: 'POST' | 'DELETE', id: string, origin: string): Promise<void> => {
-  const response = await fetch(`${origin}/api/activity?${new URLSearchParams({action: 'bookmark', id})}`, {
-    method,
-    credentials: 'include',
-  });
+const changeBookmark = async (method: 'POST' | 'DELETE', id: string): Promise<void> => {
+  const response = await fetch(`/api/activity?${new URLSearchParams({action: 'bookmark', id})}`, {method});
   if (!response.ok)
     throw new Error(404 === response.status ? 'This ride is not shared any more' : `${response.status}`);
 };
 
-const bookmarkRide = async (id: string, origin = ''): Promise<void> => await changeBookmark('POST', id, origin);
-const unbookmarkRide = async (id: string, origin = ''): Promise<void> => await changeBookmark('DELETE', id, origin);
+const bookmarkRide = async (id: string): Promise<void> => await changeBookmark('POST', id);
+const unbookmarkRide = async (id: string): Promise<void> => await changeBookmark('DELETE', id);
 
 type NominatimPlace = {address?: Record<string, string>};
 // From the town down to the hamlet: the first one OpenStreetMap knows names the place.

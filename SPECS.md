@@ -419,10 +419,8 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   show the same moment together (each its point closest in time).
 - The heading is taken over the next kilometre, so a hairpin does not swap head and tail
   wind. The choices of source, route and link are kept on the device.
-- **Share** makes a link (`/w/<id>`) to copy or send through the phone's share sheet, on
-  `VITE_SHARE_ORIGIN` when set: another host of the same deployment, so the link opens in the
-  browser rather than in the app installed in the Dock or on a home screen. It
-  keeps the route (at most 800 points), its name, start, pace and stops on the server for
+- **Share** makes a link (`/w/<id>`, on Statva's own address, so it opens in the app when
+  installed) to copy or send through the phone's share sheet. It keeps the route (at most 800 points), its name, start, pace and stops on the server for
   15 days;
   anyone with the link sees the same page without logging in, with the forecast fetched
   fresh when they open it. Its heading and tab show the ride's name after one emoji for its
@@ -433,10 +431,8 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   shared speed"); that stays on their page, never in the link. A change to the route,
   start, speed or stops hides
   the link, as it no longer matches. The demo has no Share button.
-- **Bookmarks**: a shared page shows a ☆ Bookmark button only to a logged-in rider: it asks
-  Statva's own address (`VITE_APP_ORIGIN`) for the rider's bookmarks with their cookie (both
-  addresses are one site, so the browser sends it), which answers that page and only for
-  bookmarks. The rider's own shares are bookmarked when made. Ride weather lists them under
+- **Bookmarks**: a shared page shows a ☆ Bookmark button only to a logged-in rider (it shows
+  once their bookmarks load). The rider's own shares are bookmarked when made. Ride weather lists them under
   **Upcoming rides**, soonest first, each opening its shared page, with a cross to remove
   it; one goes for good when its link expires or a day after its start.
 

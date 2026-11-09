@@ -43,30 +43,6 @@ const activityIdOf = (request: Request): number | null => {
 const actionOf = (request: Request): string | null => new URL(request.url).searchParams.get('action');
 const shareIdOf = (request: Request): string => new URL(request.url).searchParams.get('id') ?? '';
 
-/**
- * The share page lives on another address (VITE_SHARE_ORIGIN) and asks this one about
- * bookmarks, with the rider's cookie (both addresses are one site, so the browser sends it).
- * Only bookmark calls, only from that address, may read the answer.
- */
-const fromSharePage = (request: Request): boolean => {
-  const shareOrigin = process.env.VITE_SHARE_ORIGIN;
-  return (
-    undefined !== shareOrigin &&
-    '' !== shareOrigin &&
-    request.headers.get('Origin') === shareOrigin &&
-    'bookmark' === actionOf(request)
-  );
-};
-
-const forSharePage = (request: Request, response: Response): Response => {
-  if (!fromSharePage(request)) return response;
-  response.headers.set('Access-Control-Allow-Origin', request.headers.get('Origin') ?? '');
-  response.headers.set('Access-Control-Allow-Credentials', 'true');
-  response.headers.set('Vary', 'Origin');
-
-  return response;
-};
-
 const uploadFailure = (error: unknown): Response => {
   if (error instanceof UploadError) return json({error: error.message}, error.status);
   throw error;
@@ -166,7 +142,7 @@ const komoot = async (request: Request, athleteId: number): Promise<Response> =>
  * shared ride (?action=share&id=), for anyone with its link; the rider's bookmarked rides
  * still to come (?action=bookmark).
  */
-const answerGet = async (request: Request): Promise<Response> => {
+export const GET = async (request: Request): Promise<Response> => {
   if ('share' === actionOf(request)) {
     const ride = await readSharedRide(new URL(request.url).searchParams.get('id') ?? '');
     return null === ride ? json({error: 'No such ride, or its link has expired'}, 404) : json(ride);
@@ -187,7 +163,7 @@ const answerGet = async (request: Request): Promise<Response> => {
  * merges activities (?action=merge), copies one to another day (?action=copy), shares a
  * planned ride by link (?action=share) or bookmarks a shared one (?action=bookmark&id=).
  */
-const answerPost = async (request: Request): Promise<Response> => {
+export const POST = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
@@ -259,7 +235,7 @@ export const PUT = async (request: Request): Promise<Response> => {
 };
 
 /** Forgets the waiting merge and its file (?action=merge), or a bookmark (?action=bookmark&id=). */
-const answerDelete = async (request: Request): Promise<Response> => {
+export const DELETE = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
@@ -272,21 +248,4 @@ const answerDelete = async (request: Request): Promise<Response> => {
   await discardMerge(athleteId);
 
   return json({ok: true});
-};
-
-export const GET = async (request: Request): Promise<Response> => forSharePage(request, await answerGet(request));
-export const POST = async (request: Request): Promise<Response> => forSharePage(request, await answerPost(request));
-export const DELETE = async (request: Request): Promise<Response> => forSharePage(request, await answerDelete(request));
-
-/** The browser's check before the share page removes a bookmark. */
-export const OPTIONS = async (request: Request): Promise<Response> => {
-  if (!fromSharePage(request)) return new Response(null, {status: 404});
-
-  return forSharePage(
-    request,
-    new Response(null, {
-      status: 204,
-      headers: {'Access-Control-Allow-Methods': 'GET, POST, DELETE', 'Access-Control-Max-Age': '86400'},
-    }),
-  );
 };

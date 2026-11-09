@@ -12,22 +12,21 @@ import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
 
 const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
-// Statva's own address, where the rider is logged in: this page may live on another one.
-const APP_ORIGIN = import.meta.env.VITE_APP_ORIGIN || window.location.origin;
 
 /**
- * Bookmarks this ride for the rider's Ride weather, or takes it out. Only shown when Statva
- * answers that someone is logged in on this browser: a friend opening the link never sees it.
+ * Bookmarks this ride for the rider's Ride weather, or takes it out. Only shown to a rider
+ * logged in on this browser: a friend opening the link never sees it.
  */
 const BookmarkButton = ({shareId}: {shareId: string}) => {
   const queryClient = useQueryClient();
-  const bookmarks = useQuery({queryKey: ['shareBookmarks'], queryFn: () => fetchBookmarks(APP_ORIGIN), retry: false});
+  const bookmarks = useQuery({queryKey: ['shareBookmarks'], queryFn: () => fetchBookmarks(), retry: false});
   if (undefined === bookmarks.data) return null;
 
   const bookmarked = bookmarks.data.some(({id}) => id === shareId);
   const toggle = async () => {
-    await (bookmarked ? unbookmarkRide(shareId, APP_ORIGIN) : bookmarkRide(shareId, APP_ORIGIN));
+    await (bookmarked ? unbookmarkRide(shareId) : bookmarkRide(shareId));
     await queryClient.invalidateQueries({queryKey: ['shareBookmarks']});
+    await queryClient.invalidateQueries({queryKey: ['rideBookmarks']});
   };
 
   return (

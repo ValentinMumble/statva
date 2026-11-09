@@ -91,11 +91,6 @@ database. Both have free plans that are enough for a few riders.
    node scripts/webhook-subscribe.mjs https://your-domain
    ```
 
-6. **Optional:** add a second domain to the project and set `VITE_SHARE_ORIGIN` to it, so
-   share links open in the browser rather than in Statva installed as an app, and
-   `VITE_APP_ORIGIN` to the main one, for the Bookmark button. See
-   [.env.example](.env.example) for these and the Komoot settings.
-
 ### Riding with friends
 
 A new Strava API app can only be used by its owner. From its settings page you can raise

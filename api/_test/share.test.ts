@@ -1,6 +1,6 @@
 import {install} from './fakes.js';
 import {sessionCookie} from '../_lib/session.js';
-import {DELETE as remove, GET as read, OPTIONS as check, POST as save} from '../activity.js';
+import {DELETE as remove, GET as read, POST as save} from '../activity.js';
 
 const ORIGIN = 'https://statva.test';
 
@@ -111,43 +111,5 @@ describe('bookmarking shared rides', () => {
     await call(save, 'POST', 'action=share', {...soon, start: Date.now() - 2 * DAY});
 
     expect(await (await call(read, 'GET', 'action=bookmark')).json()).toEqual([]);
-  });
-});
-
-describe('bookmarks from the share page, on its own address', () => {
-  const SHARE_ORIGIN = 'https://share.statva.test';
-  const from = (origin: string, query: string, method = 'GET') =>
-    new Request(`${ORIGIN}/api/activity?${query}`, {
-      method,
-      headers: {Origin: origin, cookie: sessionCookie(42).split(';')[0]},
-    });
-
-  beforeEach(() => {
-    process.env.VITE_SHARE_ORIGIN = SHARE_ORIGIN;
-  });
-  afterEach(() => {
-    delete process.env.VITE_SHARE_ORIGIN;
-  });
-
-  it('lets that address, and only it, read the answers about bookmarks', async () => {
-    install().login(42);
-
-    const answer = await read(from(SHARE_ORIGIN, 'action=bookmark'));
-    expect(answer.headers.get('Access-Control-Allow-Origin')).toBe(SHARE_ORIGIN);
-    expect(answer.headers.get('Access-Control-Allow-Credentials')).toBe('true');
-
-    expect(
-      (await read(from('https://evil.example', 'action=bookmark'))).headers.get('Access-Control-Allow-Origin'),
-    ).toBeNull();
-    expect((await read(from(SHARE_ORIGIN, 'action=merge'))).headers.get('Access-Control-Allow-Origin')).toBeNull();
-  });
-
-  it("answers the browser's check before removing one", async () => {
-    install();
-
-    const allowed = await check(from(SHARE_ORIGIN, 'action=bookmark&id=abcdefgh', 'OPTIONS'));
-    expect(allowed.status).toBe(204);
-    expect(allowed.headers.get('Access-Control-Allow-Methods')).toContain('DELETE');
-    expect((await check(from('https://evil.example', 'action=bookmark', 'OPTIONS'))).status).toBe(404);
   });
 });
