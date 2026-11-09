@@ -7,6 +7,7 @@ import {bookmarkRide, fetchBookmarks, SharedRide, unbookmarkRide} from '../../ap
 import {PageTitle} from '../../components';
 import {getFetcher} from '../../hooks/useFetcher';
 import {useRideTiming} from '../../hooks/useRideTiming';
+import {Activity} from '../../models/strava';
 import {Card} from '../components/Card';
 import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
@@ -54,11 +55,14 @@ const SharedRideWeather = ({
   shared,
   locale,
   onSky,
+  rides,
 }: {
   shared: SharedRide;
   locale: string;
   // Hears the ride's weather emoji, for the page's title.
   onSky?: (sky: string | null) => void;
+  // The rider's rides, to grade the climbing against (a friend's page has none).
+  rides?: Activity[];
 }) => {
   const timing = useRideTiming(shared.route, shared.pace, shared.start, shared.stops ?? null);
 
@@ -75,6 +79,7 @@ const SharedRideWeather = ({
           locale={locale}
           stops={timing.stopSeconds}
           onSky={onSky}
+          rides={rides}
         />
       )}
     </>

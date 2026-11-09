@@ -21,7 +21,8 @@ import {toaster} from '../../components/ui';
 import {useAllActivities, useSession, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {useRideTiming} from '../../hooks/useRideTiming';
-import {PlannedRoute, usualPace} from '../../models';
+import {getTypes, PlannedRoute, usualPace} from '../../models';
+import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
 import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
@@ -38,6 +39,13 @@ const fetchBookmarks = getFetcher<RideBookmark[]>('ride.bookmarks');
 const bookmarkRide = getFetcher<void>('ride.bookmark');
 const unbookmarkRide = getFetcher<void>('ride.unbookmark');
 const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
+const RIDE_TYPES: string[] = getTypes(ActivityType.Ride);
+
+/** The rider's rides, to grade a route's climbing against. */
+const useRides = (): Activity[] => {
+  const {data: activities} = useAllActivities();
+  return useMemo(() => (activities ?? []).filter(({sport_type}) => RIDE_TYPES.includes(sport_type)), [activities]);
+};
 
 type Source = 'strava' | 'komoot';
 // The two services' own colours, for their logos.
@@ -169,6 +177,7 @@ const ShareLink = ({url, title}: {url: string; title: string}) => {
  */
 const BookmarkedRideWeather = ({id}: {id: string}) => {
   const {locale} = useSettings();
+  const rides = useRides();
   const shared = useQuery({
     queryKey: ['sharedRide', id],
     queryFn: () => fetchSharedRide(id),
@@ -191,7 +200,7 @@ const BookmarkedRideWeather = ({id}: {id: string}) => {
       <UpcomingRides locale={locale} openId={id} />
       {shared.isPending && <Spinner alignSelf="center" />}
       {shared.isError && <Text color="fg.muted">This ride is not shared any more: links last 15 days.</Text>}
-      {undefined !== shared.data && <SharedRideWeather key={id} shared={shared.data} locale={locale} />}
+      {undefined !== shared.data && <SharedRideWeather key={id} shared={shared.data} locale={locale} rides={rides} />}
     </Stack>
   );
 };
@@ -203,6 +212,7 @@ const BookmarkedRideWeather = ({id}: {id: string}) => {
  */
 const PlannedRideWeather = () => {
   const {locale} = useSettings();
+  const rides = useRides();
   const {athleteId, isDemo} = useSession();
   const {data: activities} = useAllActivities();
   const [source, setSource] = useLocalStorage<Source>('ride-weather-source', 'strava');
@@ -411,7 +421,14 @@ const PlannedRideWeather = () => {
       )}
 
       {undefined !== ridden && 1 < points.length && !Number.isNaN(start) && (
-        <RideWeatherResults route={ridden} start={start} pace={pace} locale={locale} stops={timing.stopSeconds} />
+        <RideWeatherResults
+          route={ridden}
+          start={start}
+          pace={pace}
+          locale={locale}
+          stops={timing.stopSeconds}
+          rides={rides}
+        />
       )}
     </Stack>
   );

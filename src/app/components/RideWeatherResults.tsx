@@ -1,5 +1,5 @@
 import {ReactNode, useEffect, useId, useMemo, useState} from 'react';
-import {Box, Grid, HStack, Link as ChakraLink, Spinner, Stack, Text} from '@chakra-ui/react';
+import {Badge, Box, Grid, HStack, Link as ChakraLink, Spinner, Stack, Text} from '@chakra-ui/react';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {useQuery} from '@tanstack/react-query';
 import {divIcon} from 'leaflet';
@@ -43,6 +43,7 @@ import {
   START_SHIFTS,
   startOptions,
   sunTimes,
+  terrainOf,
   timeline,
   WeatherPoint,
   weatherAlong,
@@ -51,6 +52,7 @@ import {
   windShares,
 } from '../../models';
 import {deviceDay} from '../../models/local-day';
+import {Activity} from '../../models/strava';
 import {ChartTooltip} from '../../components/charts/ChartTooltip';
 import {Card, CardTitle} from './Card';
 import {DaylightBar} from './DaylightBar';
@@ -412,6 +414,8 @@ type RideWeatherResultsProps = {
   stops: number;
   // Hears the ride's weather as one emoji once the forecast is in (null before).
   onSky?: (emoji: string | null) => void;
+  // The rider's rides, to grade the route's climbing against; fixed steps without them.
+  rides?: Activity[];
 };
 
 /**
@@ -419,10 +423,15 @@ type RideWeatherResultsProps = {
  * the forecast there and then, as figures, a map with the wind and charts. Shared by the
  * rider's own page and the page a shared link opens.
  */
-const RideWeatherResults = ({route, start, pace, locale, stops, onSky}: RideWeatherResultsProps) => {
+const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = []}: RideWeatherResultsProps) => {
   const {points} = route;
   const distance = points.at(-1)?.distance ?? 0;
   const climb = useMemo(() => climbing(points), [points]);
+  // Flat to mountainous, as an activity's page grades it.
+  const difficulty = useMemo(
+    () => terrainOf({id: -1, distance, total_elevation_gain: climb}, rides),
+    [distance, climb, rides],
+  );
   const riding = useMemo(() => timeline(points, pace), [points, pace]);
   const moving = riding.at(-1) ?? 0;
   // The clock time over the riding time: stops spread along the way push every point later.
@@ -669,7 +678,25 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky}: RideWeat
             />
             <Field
               label="Elevation"
-              value={`${metres(climb, locale)} ↑`}
+              value={
+                <HStack as="span" gap="8px">
+                  {metres(climb, locale)} ↑
+                  {null !== difficulty && (
+                    <Badge
+                      size="sm"
+                      variant="subtle"
+                      colorPalette={difficulty.terrain.colorPalette}
+                      title={
+                        null === difficulty.steeperThan
+                          ? 'By metres climbed per km, until there are more rides to compare with'
+                          : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your rides`
+                      }
+                    >
+                      {difficulty.terrain.name}
+                    </Badge>
+                  )}
+                </HStack>
+              }
               detail={`${number(climb / (distance / 1000), locale)} m per km · top ${metres(Math.max(...points.map(({altitude}) => altitude)), locale)}`}
             />
             <Field

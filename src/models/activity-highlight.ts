@@ -31,7 +31,11 @@ const MIN_HISTORY = 20;
 // Short rides climb a hill and back, which says little about the route.
 const MIN_DISTANCE = 5000;
 
-const percentOf = ({total_elevation_gain, distance}: Activity): number => (total_elevation_gain / distance) * 100;
+// What grading needs of a ride: an activity, or a planned route (with an id of its own, so it
+// is never one of the rider's rides).
+type Climb = Pick<Activity, 'id' | 'distance' | 'total_elevation_gain'>;
+
+const percentOf = ({total_elevation_gain, distance}: Climb): number => (total_elevation_gain / distance) * 100;
 const gradeOf = (grades: [number, Terrain][], value: number): Terrain =>
   grades.find(([limit]) => value < limit)?.[1] ?? grades[grades.length - 1][1];
 
@@ -39,7 +43,7 @@ const gradeOf = (grades: [number, Terrain][], value: number): Terrain =>
  * How much a ride climbs for its length, and how hard that is for this rider: ranked
  * among their other rides of the same kind, or by fixed steps while there are too few.
  */
-const terrainOf = (activity: Activity, history: Activity[] = []): Difficulty | null => {
+const terrainOf = (activity: Climb, history: Activity[] = []): Difficulty | null => {
   if (0 >= activity.distance) return null;
 
   const percent = percentOf(activity);

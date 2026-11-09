@@ -40,12 +40,14 @@ import {
   isPedalled,
   messagePieces,
   suggestName,
+  sunTimes,
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '../../models/strava';
 import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, UploadRefusedError} from '../../api';
 import {toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
+import {DaylightBar} from '../components/DaylightBar';
 import {GearField} from '../components/GearField';
 import {TopTenTrophy} from '../components/HighlightTags';
 import {sportIcon} from '../components/sport';
@@ -582,6 +584,43 @@ const Figures = ({items}: {items: FigureItem[]}) => (
 );
 
 /** Time in each heart rate zone, as one bar and a line per zone. */
+/**
+ * The ride on the day's light where it started, as Ride weather shows a planned one: sunrise,
+ * sunset and the ride between, at the ride's own local time. Nothing for a ride indoors or
+ * without a start.
+ */
+const Daylight = ({activity, locale}: {activity: Activity; locale: string}) => {
+  if (activity.trainer || 2 !== activity.start_latlng?.length) return null;
+
+  const start = new Date(activity.start_date).getTime();
+  const finish = start + activity.elapsed_time * 1000;
+  const sun = sunTimes(start, activity.start_latlng);
+  if (null === sun) return null;
+
+  // Strava gives the start's local time as if it were UTC: the gap is the place's offset.
+  const offset = new Date(activity.start_date_local).getTime() - start;
+  const clock = (time: number): string =>
+    new Date(time + offset).toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit', timeZone: 'UTC'});
+  const minutes = (milliseconds: number): string => duration(Math.round(milliseconds / 1000));
+
+  return (
+    <Card>
+      <CardTitle>Daylight</CardTitle>
+      <Text>
+        Sunrise {clock(sun.rise)} · sunset {clock(sun.set)}
+      </Text>
+      <Text fontSize="sm" color="fg.muted">
+        {start < sun.rise
+          ? `Started ${minutes(sun.rise - start)} before sunrise`
+          : finish > sun.set
+            ? `Finished ${minutes(finish - sun.set)} after sunset`
+            : `Finished ${minutes(sun.set - finish)} before sunset`}
+      </Text>
+      <DaylightBar start={start} finish={finish} sun={sun} clock={clock} />
+    </Card>
+  );
+};
+
 const HeartRateZones = ({activity}: {activity: Activity}) => {
   const {data} = useQuery({
     queryKey: ['zones', activity.id],
@@ -829,6 +868,7 @@ const ActivityPage = () => {
         </Stack>
         <Stack gap={{base: '16px', md: '24px'}}>
           <HeartRateZones activity={activity} />
+          <Daylight activity={activity} locale={locale} />
           {null !== detail && (
             <Card>
               <CardTitle>Recorded with</CardTitle>

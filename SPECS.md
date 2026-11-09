@@ -170,7 +170,9 @@ Strava's message names are links to them on Strava, next to the list of parts.
   write one), saved on Strava. When Strava answers but keeps a note as it was (apps may
   not be allowed to write it), nothing changes in Statva and the rider is told to edit it
   on Strava. **Heart rate zones** (time in each of
-  Strava's zones) and **recorded with** (device, power meter or not).
+  Strava's zones), **daylight** (outdoors: sunrise and sunset where it started, at its local
+  time, how long before sunrise it started or before or after sunset it finished, and the
+  same daylight bar as Ride weather) and **recorded with** (device, power meter or not).
 
 ---
 
@@ -372,7 +374,8 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   and back to Nantes"; from OpenStreetMap's Nominatim, no key, in the page's language, left
   out when it knows none), day, start and finish, and where it comes from (its page on
   Strava or Komoot, with the logo; never a private share token); then distance (a loop, or
-  how far from the start it ends), elevation (climbing, metres per km, highest point), moving
+  how far from the start it ends), elevation (climbing with its terrain tag, Flat to
+  Mountainous, graded as on an activity's page; metres per km, highest point), moving
   time (and the time back), average speed, temperature and feels like (lowest to highest), rain (highest
   chance and mm per hour, average cloud cover), wind (average speed, its usual direction
   with an arrow the way it blows, strongest gust), and the share of the route into a
