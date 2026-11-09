@@ -11,13 +11,20 @@ import {
 } from './_lib/merge.js';
 import {canUseKomoot, komootTour, komootTours, KomootUnavailableError} from './_lib/komoot.js';
 import {readSession} from './_lib/session.js';
-import {readSharedRide, saveSharedRide, ShareError} from './_lib/share.js';
+import {
+  bookmarkedRides,
+  bookmarkRide,
+  readSharedRide,
+  saveSharedRide,
+  ShareError,
+  unbookmarkRide,
+} from './_lib/share.js';
 import {changeActivity, refreshActivity} from './_lib/sync.js';
 
 /**
  * One activity, and what Statva uploads from activities: a merge (?action=merge) and a copy to
- * another day (?action=copy); a planned ride shared by link (?action=share), and the owner's
- * Komoot tours for it (?action=komoot). One function for all, as the Hobby plan allows 12 per
+ * another day (?action=copy); a planned ride shared by link (?action=share), the shared rides a
+ * rider bookmarked (?action=bookmark), and the owner's Komoot tours for it (?action=komoot). One function for all, as the Hobby plan allows 12 per
  * deployment.
  */
 
@@ -34,6 +41,31 @@ const activityIdOf = (request: Request): number | null => {
 };
 
 const actionOf = (request: Request): string | null => new URL(request.url).searchParams.get('action');
+const shareIdOf = (request: Request): string => new URL(request.url).searchParams.get('id') ?? '';
+
+/**
+ * The share page lives on another address (VITE_SHARE_ORIGIN) and asks this one about
+ * bookmarks, with the rider's cookie (both addresses are one site, so the browser sends it).
+ * Only bookmark calls, only from that address, may read the answer.
+ */
+const fromSharePage = (request: Request): boolean => {
+  const shareOrigin = process.env.VITE_SHARE_ORIGIN;
+  return (
+    undefined !== shareOrigin &&
+    '' !== shareOrigin &&
+    request.headers.get('Origin') === shareOrigin &&
+    'bookmark' === actionOf(request)
+  );
+};
+
+const forSharePage = (request: Request, response: Response): Response => {
+  if (!fromSharePage(request)) return response;
+  response.headers.set('Access-Control-Allow-Origin', request.headers.get('Origin') ?? '');
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  response.headers.set('Vary', 'Origin');
+
+  return response;
+};
 
 const uploadFailure = (error: unknown): Response => {
   if (error instanceof UploadError) return json({error: error.message}, error.status);
@@ -131,9 +163,10 @@ const komoot = async (request: Request, athleteId: number): Promise<Response> =>
 
 /**
  * The merge Strava refused, waiting for its parts to be deleted, or null (?action=merge); a
- * shared ride (?action=share&id=), for anyone with its link.
+ * shared ride (?action=share&id=), for anyone with its link; the rider's bookmarked rides
+ * still to come (?action=bookmark).
  */
-export const GET = async (request: Request): Promise<Response> => {
+const answerGet = async (request: Request): Promise<Response> => {
   if ('share' === actionOf(request)) {
     const ride = await readSharedRide(new URL(request.url).searchParams.get('id') ?? '');
     return null === ride ? json({error: 'No such ride, or its link has expired'}, 404) : json(ride);
@@ -143,6 +176,7 @@ export const GET = async (request: Request): Promise<Response> => {
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
   if ('komoot' === actionOf(request)) return await komoot(request, athleteId);
+  if ('bookmark' === actionOf(request)) return json(await bookmarkedRides(athleteId));
   if ('merge' !== actionOf(request)) return json({error: 'Not found'}, 404);
 
   return json({pending: await pendingMerge(athleteId)});
@@ -150,17 +184,25 @@ export const GET = async (request: Request): Promise<Response> => {
 
 /**
  * Fetches one activity from Strava again and stores it, for when the stored copy is out of date;
- * merges activities (?action=merge), copies one to another day (?action=copy), or shares a
- * planned ride by link (?action=share).
+ * merges activities (?action=merge), copies one to another day (?action=copy), shares a
+ * planned ride by link (?action=share) or bookmarks a shared one (?action=bookmark&id=).
  */
-export const POST = async (request: Request): Promise<Response> => {
+const answerPost = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
   if ('merge' === actionOf(request)) return await merge(request, athleteId);
+  if ('bookmark' === actionOf(request)) {
+    return (await bookmarkRide(athleteId, shareIdOf(request)))
+      ? json({ok: true})
+      : json({error: 'No such ride, or its link has expired'}, 404);
+  }
   if ('share' === actionOf(request)) {
     try {
-      return json({id: await saveSharedRide(await request.json().catch(() => null))});
+      // The rider's own shared rides are bookmarked too.
+      const id = await saveSharedRide(await request.json().catch(() => null));
+      await bookmarkRide(athleteId, id);
+      return json({id});
     } catch (error) {
       if (error instanceof ShareError) return json({error: `A shared ride needs ${error.message}`}, 400);
       throw error;
@@ -216,14 +258,35 @@ export const PUT = async (request: Request): Promise<Response> => {
   return json(update);
 };
 
-/** Forgets the waiting merge and its file (?action=merge). */
-export const DELETE = async (request: Request): Promise<Response> => {
+/** Forgets the waiting merge and its file (?action=merge), or a bookmark (?action=bookmark&id=). */
+const answerDelete = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
+  if ('bookmark' === actionOf(request)) {
+    await unbookmarkRide(athleteId, shareIdOf(request));
+    return json({ok: true});
+  }
   if ('merge' !== actionOf(request)) return json({error: 'Not found'}, 404);
 
   await discardMerge(athleteId);
 
   return json({ok: true});
+};
+
+export const GET = async (request: Request): Promise<Response> => forSharePage(request, await answerGet(request));
+export const POST = async (request: Request): Promise<Response> => forSharePage(request, await answerPost(request));
+export const DELETE = async (request: Request): Promise<Response> => forSharePage(request, await answerDelete(request));
+
+/** The browser's check before the share page removes a bookmark. */
+export const OPTIONS = async (request: Request): Promise<Response> => {
+  if (!fromSharePage(request)) return new Response(null, {status: 404});
+
+  return forSharePage(
+    request,
+    new Response(null, {
+      status: 204,
+      headers: {'Access-Control-Allow-Methods': 'GET, POST, DELETE', 'Access-Control-Max-Age': '86400'},
+    }),
+  );
 };

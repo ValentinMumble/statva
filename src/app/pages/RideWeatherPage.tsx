@@ -1,10 +1,22 @@
-import {useMemo, useState} from 'react';
-import {Button, Field, HStack, Input, NativeSelect, SegmentGroup, Spinner, Stack, Text} from '@chakra-ui/react';
-import {useQuery} from '@tanstack/react-query';
-import {LuCopy, LuSend, LuShare2} from 'react-icons/lu';
+import {useEffect, useMemo, useState} from 'react';
+import {
+  Button,
+  Field,
+  HStack,
+  IconButton,
+  Input,
+  NativeSelect,
+  SegmentGroup,
+  Spinner,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {Link, useSearchParams} from 'react-router';
+import {LuCopy, LuSend, LuShare2, LuX} from 'react-icons/lu';
 import {SiKomoot, SiStrava} from 'react-icons/si';
 import {useLocalStorage} from 'usehooks-ts';
-import {KomootTourSummary, SharedRide, StravaRoute, UnknownLinkError} from '../../api';
+import {KomootTourSummary, RideBookmark, SharedRide, StravaRoute, UnknownLinkError} from '../../api';
 import {toaster} from '../../components/ui';
 import {useAllActivities, useSession, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
@@ -21,6 +33,9 @@ const fetchKomootTour = getFetcher<PlannedRoute>('route.komoot');
 const fetchKomootTours = getFetcher<KomootTourSummary[]>('komoot.tours');
 const fetchKomootSavedTour = getFetcher<PlannedRoute>('komoot.tour');
 const shareRide = getFetcher<string>('ride.share');
+const fetchBookmarks = getFetcher<RideBookmark[]>('ride.bookmarks');
+const bookmarkRide = getFetcher<void>('ride.bookmark');
+const unbookmarkRide = getFetcher<void>('ride.unbookmark');
 
 type Source = 'strava' | 'komoot';
 // The two services' own colours, for their logos.
@@ -31,6 +46,85 @@ const KOMOOT_GREEN = '#6aa127';
 const SHARE_ORIGIN = import.meta.env.VITE_SHARE_ORIGIN || window.location.origin;
 // The Komoot choice meaning "the tour from the link pasted" rather than a saved one.
 const KOMOOT_LINK = 'link';
+
+/**
+ * The shared rides the rider bookmarked, soonest first, each opening its shared page. A link
+ * from a shared page's Bookmark button (?bookmark=<id>) adds one, then leaves the address.
+ */
+const UpcomingRides = ({locale}: {locale: string}) => {
+  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const adding = searchParams.get('bookmark');
+  const bookmarks = useQuery({queryKey: ['rideBookmarks'], queryFn: fetchBookmarks});
+
+  useEffect(() => {
+    if (null === adding) return;
+    setSearchParams({}, {replace: true});
+    const add = async () => {
+      try {
+        await bookmarkRide(adding);
+        toaster.create({title: 'Ride bookmarked'});
+      } catch (error) {
+        toaster.create({title: 'The ride could not be bookmarked', description: (error as Error).message});
+      }
+      await queryClient.invalidateQueries({queryKey: ['rideBookmarks']});
+    };
+    void add();
+  }, [adding, setSearchParams, queryClient]);
+
+  const remove = async (id: string) => {
+    queryClient.setQueryData<RideBookmark[]>(['rideBookmarks'], rides => rides?.filter(ride => ride.id !== id));
+    await unbookmarkRide(id);
+  };
+
+  if (!bookmarks.data?.length) return null;
+
+  return (
+    <Card>
+      <Text fontSize="xs" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em" marginBottom="8px">
+        Upcoming rides
+      </Text>
+      <Stack gap="2px">
+        {bookmarks.data.map(({id, name, start, distance}) => (
+          <HStack key={id} gap="8px" justifyContent="space-between">
+            <Link to={`/w/${id}`} style={{flex: 1, minWidth: 0}}>
+              <HStack
+                gap="12px"
+                padding="6px 8px"
+                marginX="-8px"
+                borderRadius="10px"
+                _hover={{background: 'bg.subtle'}}
+              >
+                <Text fontWeight="semibold" truncate>
+                  {name}
+                </Text>
+                <Text color="fg.muted" fontSize="sm" whiteSpace="nowrap">
+                  {new Date(start).toLocaleString(locale, {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                  {' · '}
+                  {km(distance, locale)}
+                </Text>
+              </HStack>
+            </Link>
+            <IconButton
+              aria-label={`Remove ${name} from the bookmarks`}
+              size="xs"
+              variant="ghost"
+              onClick={() => void remove(id)}
+            >
+              <LuX />
+            </IconButton>
+          </HStack>
+        ))}
+      </Stack>
+    </Card>
+  );
+};
 
 /**
  * The link to a shared ride, to copy or send. Sending opens the phone's share sheet: a fresh
@@ -63,7 +157,7 @@ const ShareLink = ({url, title}: {url: string; title: string}) => {
         )}
       </HStack>
       <Text fontSize="xs" color="fg.muted">
-        Anyone with the link sees this ride for 30 days, with a fresh forecast, without logging in.
+        Anyone with the link sees this ride for 15 days, with a fresh forecast, without logging in.
       </Text>
     </Stack>
   );
@@ -84,6 +178,7 @@ const RideWeatherPage = () => {
   const [komootChoice, setKomootChoice] = useLocalStorage<string>('ride-weather-komoot-tour', '');
   const [linkDraft, setLinkDraft] = useState(komootLink);
   const [sharing, setSharing] = useState(false);
+  const queryClient = useQueryClient();
   // The link made, with what it was made of: a change to the ride hides it.
   const [shared, setShared] = useState<{url: string; ride: string} | null>(null);
 
@@ -135,6 +230,8 @@ const RideWeatherPage = () => {
     try {
       const id = await shareRide({route: ridden, start, pace, stops: timing.stopSeconds} satisfies SharedRide);
       setShared({url: `${SHARE_ORIGIN}/w/${id}`, ride: rideKey});
+      // The server bookmarks the rider's own shares.
+      await queryClient.invalidateQueries({queryKey: ['rideBookmarks']});
     } catch {
       toaster.create({title: 'The link could not be made', description: 'Try again in a moment.'});
     } finally {
@@ -159,6 +256,8 @@ const RideWeatherPage = () => {
       {null !== shared && rideKey === shared.ride && (
         <ShareLink url={shared.url} title={`${ridden?.name}: the ride weather`} />
       )}
+
+      <UpcomingRides locale={locale} />
 
       <Card>
         <Stack gap="16px">

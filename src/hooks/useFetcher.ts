@@ -20,11 +20,14 @@ import {
   fetchKomootSavedTour,
   fetchKomootTour,
   fetchKomootTours,
+  bookmarkRide,
+  fetchBookmarks,
   fetchPlaceNames,
   fetchStravaRoute,
   fetchStravaRoutes,
   fetchSharedRide,
   shareRide,
+  unbookmarkRide,
   getActivities,
   getActivitySummaries,
   getEvents,
@@ -96,6 +99,9 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'place.names': fetchPlaceNames,
   'ride.share': shareRide,
   'ride.shared': fetchSharedRide,
+  'ride.bookmarks': fetchBookmarks,
+  'ride.bookmark': bookmarkRide,
+  'ride.unbookmark': unbookmarkRide,
 };
 
 const DEMO: typeof REAL = {
@@ -146,6 +152,10 @@ const DEMO: typeof REAL = {
   'place.names': fetchPlaceNames,
   'ride.share': () => Promise.reject(new Error('The demo cannot share')),
   'ride.shared': fetchSharedRide,
+  // The demo keeps nothing on a server: no bookmarks.
+  'ride.bookmarks': () => Promise.resolve([]),
+  'ride.bookmark': () => Promise.reject(new Error('The demo cannot keep bookmarks')),
+  'ride.unbookmark': () => Promise.resolve(),
 };
 
 const REGISTRY = isDemo() ? DEMO : REAL;

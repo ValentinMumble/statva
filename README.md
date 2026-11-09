@@ -31,7 +31,8 @@ into a home page, stats, records and an explorer map.
   pick) from a day and time, with stops, either way round, with the forecast at each part of the route
   when you get there and the wind as head or tail wind, like Epic Ride Weather. Advice on
   the best start, the wind's cost, rain and what to wear. Share it by link: a friend opens
-  it without an account and can change the day, time, speed and direction. Log in again
+  it without an account and can change the day, time, speed and direction. Bookmark a
+  shared ride (yours are kept automatically) to find it under Upcoming rides. Log in again
   once to list your private routes; set `KOMOOT_EMAIL` and `KOMOOT_PASSWORD` to pick your
   planned Komoot tours instead of pasting links.
 - **Club:** for riders in a club, its own page: attendance week by week, groups and their
@@ -91,8 +92,9 @@ database. Both have free plans that are enough for a few riders.
    ```
 
 6. **Optional:** add a second domain to the project and set `VITE_SHARE_ORIGIN` to it, so
-   share links open in the browser rather than in Statva installed as an app. See
-   [.env.example](.env.example) for this and the Komoot settings.
+   share links open in the browser rather than in Statva installed as an app, and
+   `VITE_APP_ORIGIN` to the main one, for the Bookmark button. See
+   [.env.example](.env.example) for these and the Komoot settings.
 
 ### Riding with friends
 

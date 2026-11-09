@@ -1,6 +1,6 @@
 import {install} from './fakes.js';
 import {sessionCookie} from '../_lib/session.js';
-import {GET as read, POST as save} from '../activity.js';
+import {DELETE as remove, GET as read, OPTIONS as check, POST as save} from '../activity.js';
 
 const ORIGIN = 'https://statva.test';
 
@@ -68,5 +68,86 @@ describe('sharing a planned ride by link', () => {
 
     expect((await call(read, 'GET', 'action=share&id=nothing1', undefined, false)).status).toBe(404);
     expect((await call(read, 'GET', 'action=share&id=../../x', undefined, false)).status).toBe(404);
+  });
+});
+
+describe('bookmarking shared rides', () => {
+  const DAY = 86400000;
+  const soon = {...ride, start: Date.now() + 2 * DAY};
+
+  it("keeps the rider's own shares, and others they bookmark, soonest first", async () => {
+    install().login(42);
+
+    const own = (await (await call(save, 'POST', 'action=share', soon)).json()) as {id: string};
+    const sooner = (await (
+      await call(save, 'POST', 'action=share', {...soon, name: 'Lundi', start: Date.now() + DAY})
+    ).json()) as {id: string};
+    await call(remove, 'DELETE', `action=bookmark&id=${sooner.id}`);
+    expect((await call(save, 'POST', `action=bookmark&id=${sooner.id}`)).status).toBe(200);
+
+    const listed = (await (await call(read, 'GET', 'action=bookmark')).json()) as {
+      id: string;
+      name: string;
+      distance: number;
+    }[];
+    expect(listed.map(({id}) => id)).toEqual([sooner.id, own.id]);
+    expect(listed[1]).toMatchObject({name: 'Samedi aller', distance: 1300, source: ride.source});
+  });
+
+  it('forgets a bookmark on request, and when its link leads nowhere', async () => {
+    install().login(42);
+
+    const {id} = (await (await call(save, 'POST', 'action=share', soon)).json()) as {id: string};
+    await call(remove, 'DELETE', `action=bookmark&id=${id}`);
+
+    expect(await (await call(read, 'GET', 'action=bookmark')).json()).toEqual([]);
+    expect((await call(save, 'POST', 'action=bookmark&id=nothing1')).status).toBe(404);
+    expect((await call(read, 'GET', 'action=bookmark', undefined, false)).status).toBe(401);
+  });
+
+  it('drops a ride a day after its start', async () => {
+    install().login(42);
+
+    await call(save, 'POST', 'action=share', {...soon, start: Date.now() - 2 * DAY});
+
+    expect(await (await call(read, 'GET', 'action=bookmark')).json()).toEqual([]);
+  });
+});
+
+describe('bookmarks from the share page, on its own address', () => {
+  const SHARE_ORIGIN = 'https://share.statva.test';
+  const from = (origin: string, query: string, method = 'GET') =>
+    new Request(`${ORIGIN}/api/activity?${query}`, {
+      method,
+      headers: {Origin: origin, cookie: sessionCookie(42).split(';')[0]},
+    });
+
+  beforeEach(() => {
+    process.env.VITE_SHARE_ORIGIN = SHARE_ORIGIN;
+  });
+  afterEach(() => {
+    delete process.env.VITE_SHARE_ORIGIN;
+  });
+
+  it('lets that address, and only it, read the answers about bookmarks', async () => {
+    install().login(42);
+
+    const answer = await read(from(SHARE_ORIGIN, 'action=bookmark'));
+    expect(answer.headers.get('Access-Control-Allow-Origin')).toBe(SHARE_ORIGIN);
+    expect(answer.headers.get('Access-Control-Allow-Credentials')).toBe('true');
+
+    expect(
+      (await read(from('https://evil.example', 'action=bookmark'))).headers.get('Access-Control-Allow-Origin'),
+    ).toBeNull();
+    expect((await read(from(SHARE_ORIGIN, 'action=merge'))).headers.get('Access-Control-Allow-Origin')).toBeNull();
+  });
+
+  it("answers the browser's check before removing one", async () => {
+    install();
+
+    const allowed = await check(from(SHARE_ORIGIN, 'action=bookmark&id=abcdefgh', 'OPTIONS'));
+    expect(allowed.status).toBe(204);
+    expect(allowed.headers.get('Access-Control-Allow-Methods')).toContain('DELETE');
+    expect((await check(from('https://evil.example', 'action=bookmark', 'OPTIONS'))).status).toBe(404);
   });
 });

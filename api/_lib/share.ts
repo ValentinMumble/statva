@@ -1,10 +1,11 @@
 import {randomBytes} from 'node:crypto';
 import {MAX_NAME} from './http.js';
+import {athleteKey} from './keys.js';
 import {redis} from './redis.js';
 
 /**
  * A planned ride shared by link (Ride weather's Share): the route, its start and the rider's
- * pace, kept 30 days under a random id. Anyone with the link reads it, with no login; the
+ * pace, kept 15 days under a random id. Anyone with the link reads it, with no login; the
  * forecast is fetched fresh by whoever opens it.
  */
 
@@ -21,7 +22,7 @@ type SharedRide = {
   source?: {service: 'strava' | 'komoot'; url: string};
 };
 
-const SHARE_DAYS = 30;
+const SHARE_DAYS = 15;
 const MAX_POINTS = 2000;
 const MAX_STOPS = 86400;
 const ID = /^[A-Za-z0-9_-]{8}$/;
@@ -31,6 +32,12 @@ const SOURCES = {
 };
 
 const shareKey = (id: string): string => `ride-share:${id}`;
+// The shared rides a rider keeps for quick access, by id: the moment each was added.
+const bookmarksKey = (athleteId: number): string => athleteKey(athleteId, 'ride-bookmarks');
+// A bookmark stays a day past its ride's start, then goes.
+const BOOKMARK_GRACE = 86400000;
+
+type RideBookmark = {id: string; name: string; start: number; distance: number; source?: SharedRide['source']};
 
 class ShareError extends Error {}
 
@@ -63,7 +70,7 @@ const sharedRideOf = (body: unknown): SharedRide => {
   };
 };
 
-/** Keeps the ride under a new id for 30 days, and gives the id. */
+/** Keeps the ride under a new id for 15 days, and gives the id. */
 const saveSharedRide = async (body: unknown): Promise<string> => {
   const ride = sharedRideOf(body);
   const id = randomBytes(6).toString('base64url');
@@ -75,5 +82,36 @@ const saveSharedRide = async (body: unknown): Promise<string> => {
 const readSharedRide = async (id: string): Promise<SharedRide | null> =>
   ID.test(id) ? await redis().get<SharedRide>(shareKey(id)) : null;
 
-export {readSharedRide, saveSharedRide, ShareError};
-export type {SharedRide};
+/** Keeps a shared ride in the rider's bookmarks; false when the link leads nowhere. */
+const bookmarkRide = async (athleteId: number, id: string): Promise<boolean> => {
+  if (null === (await readSharedRide(id))) return false;
+  await redis().hset(bookmarksKey(athleteId), {[id]: Date.now()});
+
+  return true;
+};
+
+const unbookmarkRide = async (athleteId: number, id: string): Promise<void> => {
+  await redis().hdel(bookmarksKey(athleteId), id);
+};
+
+/**
+ * The rider's bookmarked rides still to come, soonest first. Those whose link expired, or
+ * whose start is more than a day gone, are dropped for good.
+ */
+const bookmarkedRides = async (athleteId: number, now = Date.now()): Promise<RideBookmark[]> => {
+  const ids = Object.keys((await redis().hgetall<Record<string, number>>(bookmarksKey(athleteId))) ?? {});
+  const rides = await Promise.all(ids.map(async id => ({id, ride: await readSharedRide(id)})));
+  const gone = rides.filter(({ride}) => null === ride || ride.start < now - BOOKMARK_GRACE).map(({id}) => id);
+  if (0 < gone.length) await redis().hdel(bookmarksKey(athleteId), ...gone);
+
+  return rides
+    .flatMap(({id, ride}) =>
+      null === ride || gone.includes(id)
+        ? []
+        : [{id, name: ride.name, start: ride.start, distance: ride.points.at(-1)?.[3] ?? 0, source: ride.source}],
+    )
+    .sort((first, second) => first.start - second.start);
+};
+
+export {bookmarkedRides, bookmarkRide, readSharedRide, saveSharedRide, ShareError, unbookmarkRide};
+export type {RideBookmark, SharedRide};

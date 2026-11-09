@@ -25,8 +25,9 @@ const RIDER_NAMES = ['events', 'labels', 'ftp_tests', 'expenses', 'settings'];
 // Data from features that are gone, still removed when a rider disconnects.
 const RETIRED_NAMES = ['check_ins'];
 // Server data the browser never reads directly: a merge waiting for its parts to be deleted, with
-// its file, and the rider's Strava profile, served by /api/strava when Strava does not answer.
-const PRIVATE_NAMES = ['merge', 'profile'];
+// its file, the rider's Strava profile, served by /api/strava when Strava does not answer, and the
+// shared rides they bookmarked, served by /api/activity.
+const PRIVATE_NAMES = ['merge', 'profile', 'ride-bookmarks'];
 
 type SyncState = {nextPage: number; historyDone: boolean; newestStart: number};
 // What a sync brought in, quickly: new activities and their details (detailIds).
