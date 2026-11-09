@@ -180,12 +180,13 @@ Strava's message names are links to them on Strava, next to the list of parts.
   for it), and in the stored copies.
 - **Map** of the full track (the summary track until the details are in), with the photos
   where they were taken (a thumbnail per spot, with how many when several; a click opens it).
-- **Figures**, in titled groups (two columns on a wide screen), each left out when empty:
-  Ride (distance, moving, elapsed, stops), Speed (average, max), Climbing (climbing and
-  gradient, for rides and runs with a terrain tag from Flat to Mountainous, graded against
-  the rider's rides or runs), Power (average, weighted, normalized with power zone badges,
-  intensity), Heart (average and max with heart rate zone badges, suffer score), More
-  (cadence, calories, temperature), On Strava (kudos, achievements, PRs).
+- **Figures**: a strip of large numbers (distance, moving time with the elapsed time,
+  climbing with its gradient and, for rides and runs, a terrain tag from Flat to
+  Mountainous graded against the rider's rides or runs, speed with the max, normalized
+  power with its zone), then a list, a line each, two columns on a wide screen: average
+  power with the weighted, intensity, heart rate with the max, suffer score, stops (total
+  time and how many), cadence, calories, temperature, and kudos, achievements and PRs on
+  one line. Zones show as a dot in their colour. Anything missing is left out.
 - **Photos**: all of them, fetched from Strava on open; one opens full size.
 - **Comments**, when the activity has some: who wrote each and when, and a box to answer.
   Strava lets apps read comments but not post them, so the box copies the text and opens

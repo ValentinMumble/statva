@@ -18,7 +18,7 @@ into a home page, stats, records and an explorer map.
 - **Activities:** search by name or by date ("2 nov", "2024-11-02"), filter by sport, gear
   and commute, choose and sort columns, merge a ride recorded in parts into one on Strava,
   or duplicate one to another day. Each activity has its own page with its map (stops and photos
-  on it), grouped figures, heart rate zones, photos and notes; ⌘-click opens it on Strava.
+  on it), key figures, heart rate zones, photos and notes; ⌘-click opens it on Strava.
 - **Gear:** every bike part with its wear (chains by stint, cassettes over all their stints,
   tires, pads, battery), chain rotation with the next chain to fit, the history of every
   change, and the running cost per km; running shoes and their km too. Logging a change

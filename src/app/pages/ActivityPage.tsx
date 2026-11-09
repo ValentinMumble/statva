@@ -599,63 +599,99 @@ const Photos = ({activity, detail}: {activity: Activity; detail: DetailedActivit
 
 const ZONE_COLORS = ['gray.400', 'blue.400', 'green.400', 'yellow.400', 'orange.400', 'red.400'];
 
-// zone: the power or heart rate zone of the figure, shown as a badge in its colour; tag: any
-// other badge, with a line explaining it on hover.
+// extra: a companion figure, small and grey beside the value ("max 56.0"); zone: the power or
+// heart rate zone, a dot in its colour; tag: any other badge, with a line explaining it on hover.
 type FigureItem = {
   label: string;
   value: string | null;
+  extra?: string | null;
   zone?: number;
   tag?: {label: string; colorPalette: string; title?: string};
 };
 
-type FigureGroup = {title: string; items: FigureItem[]};
+const ZoneDot = ({zone}: {zone: number}) => (
+  <HStack as="span" gap="4px" title={`Zone ${zone}`} fontSize="xs" color="fg.muted" flexShrink={0}>
+    <Box as="span" boxSize="8px" borderRadius="full" background={`${getZoneColor(zone)}.solid`} />Z{zone}
+  </HStack>
+);
+
+const FigureMarks = ({zone, tag}: Pick<FigureItem, 'zone' | 'tag'>) => (
+  <>
+    {zone ? <ZoneDot zone={zone} /> : null}
+    {tag ? (
+      <Badge size="sm" variant="subtle" colorPalette={tag.colorPalette} title={tag.title}>
+        {tag.label}
+      </Badge>
+    ) : null}
+  </>
+);
 
 /**
- * The activity's figures in small titled groups (ride, climbing, power, heart...), two side
- * by side on a wide screen. A group with nothing to show is left out.
+ * The activity's figures: the few that matter as large numbers in one strip, then the rest as
+ * a short list, a line each, two columns on a wide screen. Paired figures share a line (the
+ * average with its max). Anything with no value is left out.
  */
-const Figures = ({groups}: {groups: FigureGroup[]}) => (
-  <Grid templateColumns={{base: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))'}} gap="20px 32px">
-    {groups
-      .map(({title, items}) => ({title, items: items.filter(({value}) => null !== value)}))
-      .filter(({items}) => 0 < items.length)
-      .map(({title, items}) => (
-        <Stack key={title} gap="10px" borderTopWidth="1px" paddingTop="10px">
-          <Text fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase" letterSpacing="0.06em">
-            {title}
-          </Text>
-          <Grid templateColumns="repeat(auto-fill, minmax(112px, 1fr))" gap="12px 16px">
-            {items.map(item => (
-              <Figure key={item.label} {...item} />
-            ))}
-          </Grid>
-        </Stack>
-      ))}
-  </Grid>
-);
+const Figures = ({headline, rows}: {headline: FigureItem[]; rows: FigureItem[]}) => {
+  const shownHeadline = headline.filter(({value}) => null !== value);
+  const shownRows = rows.filter(({value}) => null !== value);
 
-const Figure = ({label, value, zone, tag}: FigureItem) => (
-  <Stack gap="0">
-    <Text fontSize="xs" color="fg.muted">
-      {label}
-    </Text>
-    <HStack gap="6px" flexWrap="wrap">
-      <Text fontFamily="figure" fontSize="lg" fontWeight="semibold">
-        {value}
-      </Text>
-      {zone ? (
-        <Badge size="sm" variant="subtle" colorPalette={getZoneColor(zone)}>
-          Zone {zone}
-        </Badge>
-      ) : null}
-      {tag ? (
-        <Badge size="sm" variant="subtle" colorPalette={tag.colorPalette} title={tag.title}>
-          {tag.label}
-        </Badge>
-      ) : null}
-    </HStack>
-  </Stack>
-);
+  return (
+    <Stack gap="18px">
+      <Grid templateColumns="repeat(auto-fit, minmax(110px, 1fr))" gap="16px 20px">
+        {shownHeadline.map(({label, value, extra, zone, tag}) => (
+          <Stack key={label} gap="2px" minWidth="0">
+            <Text fontSize="xs" color="fg.muted">
+              {label}
+            </Text>
+            <Text fontFamily="figure" fontSize="2xl" fontWeight="semibold" lineHeight="1.1">
+              {value}
+            </Text>
+            {(extra || zone || tag) && (
+              <HStack gap="6px" fontSize="xs" color="fg.muted" flexWrap="wrap">
+                {extra ? (
+                  <Text as="span" fontFamily="figure">
+                    {extra}
+                  </Text>
+                ) : null}
+                <FigureMarks zone={zone} tag={tag} />
+              </HStack>
+            )}
+          </Stack>
+        ))}
+      </Grid>
+      {0 < shownRows.length && (
+        <Grid templateColumns={{base: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))'}} columnGap="32px">
+          {shownRows.map(({label, value, extra, zone, tag}) => (
+            <HStack
+              key={label}
+              justifyContent="space-between"
+              gap="12px"
+              paddingY="7px"
+              borderTopWidth="1px"
+              borderColor="border.muted"
+              fontSize="sm"
+            >
+              <Text color="fg.muted" flexShrink={0}>
+                {label}
+              </Text>
+              <HStack gap="6px" minWidth="0" justifyContent="flex-end" flexWrap="wrap">
+                <Text as="span" fontFamily="figure" fontWeight="semibold">
+                  {value}
+                </Text>
+                {extra ? (
+                  <Text as="span" fontFamily="figure" color="fg.muted">
+                    {extra}
+                  </Text>
+                ) : null}
+                <FigureMarks zone={zone} tag={tag} />
+              </HStack>
+            </HStack>
+          ))}
+        </Grid>
+      )}
+    </Stack>
+  );
+};
 
 /** Time in each heart rate zone, as one bar and a line per zone. */
 const fetchPlaceNames = getFetcher<(string | null)[]>('place.names');
@@ -976,113 +1012,79 @@ const ActivityPage = () => {
         <Stack gap={{base: '16px', md: '24px'}}>
           <Card>
             <Figures
-              groups={[
+              headline={[
+                {label: 'Distance', value: 0 < activity.distance ? km(activity.distance, locale) : null},
                 {
-                  title: 'Ride',
-                  items: [
-                    {label: 'Distance', value: 0 < activity.distance ? km(activity.distance, locale) : null},
-                    {label: 'Moving', value: duration(activity.moving_time)},
-                    {label: 'Elapsed', value: duration(activity.elapsed_time)},
-                    {
-                      label: 'Stops',
-                      value:
-                        0 === stops.length
-                          ? null
-                          : `${stops.length} · ${duration(stops.reduce((sum, stop) => sum + stop.duration, 0))}`,
-                    },
-                  ],
+                  label: 'Moving time',
+                  value: duration(activity.moving_time),
+                  extra:
+                    activity.elapsed_time > activity.moving_time ? `${duration(activity.elapsed_time)} elapsed` : null,
                 },
                 {
-                  title: 'Speed',
-                  items: [
-                    {label: 'Average', value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null},
-                    {
-                      label: 'Max',
-                      value: 0 < activity.max_speed ? `${number(activity.max_speed * 3.6, locale, 1)} km/h` : null,
-                    },
-                  ],
+                  label: 'Climbing',
+                  value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null,
+                  extra: null === difficulty ? null : `${number(difficulty.percent, locale, 2)}%`,
+                  tag:
+                    null === difficulty
+                      ? undefined
+                      : {
+                          label: difficulty.terrain.name,
+                          colorPalette: difficulty.terrain.colorPalette,
+                          title:
+                            null === difficulty.steeperThan
+                              ? `By metres climbed per km, until there are more ${kindName} to compare with`
+                              : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your ${kindName}`,
+                        },
                 },
                 {
-                  title: 'Climbing',
-                  items: [
-                    {
-                      label: 'Climbing',
-                      value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null,
-                    },
-                    {
-                      label: 'Gradient',
-                      value: null === difficulty ? null : `${number(difficulty.percent, locale, 2)}%`,
-                      tag:
-                        null === difficulty
-                          ? undefined
-                          : {
-                              label: difficulty.terrain.name,
-                              colorPalette: difficulty.terrain.colorPalette,
-                              title:
-                                null === difficulty.steeperThan
-                                  ? `By metres climbed per km, until there are more ${kindName} to compare with`
-                                  : `Climbs more per km than ${Math.round(difficulty.steeperThan * 100)}% of your ${kindName}`,
-                            },
-                    },
-                  ],
+                  label: 'Speed',
+                  value: 0 < speed ? `${number(speed, locale, 1)} km/h` : null,
+                  extra: 0 < activity.max_speed ? `max ${number(activity.max_speed * 3.6, locale, 1)}` : null,
                 },
                 {
-                  title: 'Power',
-                  items: [
-                    {
-                      label: 'Average',
-                      value: activity.average_watts ? `${Math.round(activity.average_watts)} W` : null,
-                      zone: powerZone(activity.average_watts),
-                    },
-                    {
-                      label: 'Weighted',
-                      value: activity.weighted_average_watts ? `${activity.weighted_average_watts} W` : null,
-                      zone: powerZone(activity.weighted_average_watts),
-                    },
-                    {label: 'Normalized', value: np ? `${np} W` : null, zone: powerZone(np)},
-                    {label: 'Intensity', value: null === intensity ? null : `${Math.round(intensity * 100)}%`},
-                  ],
+                  label: 'Normalized power',
+                  value: np ? `${np} W` : null,
+                  zone: powerZone(np),
+                },
+              ]}
+              rows={[
+                {
+                  label: 'Average power',
+                  value: activity.average_watts ? `${Math.round(activity.average_watts)} W` : null,
+                  extra: activity.weighted_average_watts ? `${activity.weighted_average_watts} W weighted` : null,
+                  zone: powerZone(activity.average_watts),
+                },
+                {label: 'Intensity', value: null === intensity ? null : `${Math.round(intensity * 100)}%`},
+                {
+                  label: 'Heart rate',
+                  value: activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : null,
+                  extra: activity.max_heartrate ? `max ${Math.round(activity.max_heartrate)}` : null,
+                  zone: getHeartRateZone(activity.average_heartrate ?? 0),
+                },
+                {label: 'Suffer score', value: activity.suffer_score ? `${activity.suffer_score}` : null},
+                {
+                  label: 'Stops',
+                  value: 0 === stops.length ? null : duration(stops.reduce((sum, stop) => sum + stop.duration, 0)),
+                  extra: 0 === stops.length ? null : `in ${stops.length}`,
                 },
                 {
-                  title: 'Heart',
-                  items: [
-                    {
-                      label: 'Average',
-                      value: activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : null,
-                      zone: getHeartRateZone(activity.average_heartrate ?? 0),
-                    },
-                    {
-                      label: 'Max',
-                      value: activity.max_heartrate ? `${Math.round(activity.max_heartrate)} bpm` : null,
-                      zone: getHeartRateZone(activity.max_heartrate ?? 0),
-                    },
-                    {label: 'Suffer score', value: activity.suffer_score ? `${activity.suffer_score}` : null},
-                  ],
+                  label: 'Cadence',
+                  value: activity.average_cadence ? `${Math.round(activity.average_cadence)} rpm` : null,
+                },
+                {label: 'Calories', value: detail?.calories ? `${number(detail.calories, locale)} kcal` : null},
+                {
+                  label: 'Temperature',
+                  value: undefined !== activity.average_temp ? `${activity.average_temp}°C` : null,
                 },
                 {
-                  title: 'More',
-                  items: [
-                    {
-                      label: 'Cadence',
-                      value: activity.average_cadence ? `${Math.round(activity.average_cadence)}` : null,
-                    },
-                    {label: 'Calories', value: detail?.calories ? `${number(detail.calories, locale)} kcal` : null},
-                    {
-                      label: 'Temperature',
-                      value: undefined !== activity.average_temp ? `${activity.average_temp}°C` : null,
-                    },
-                  ],
-                },
-                {
-                  title: 'On Strava',
-                  items: [
-                    {label: 'Kudos', value: `${activity.kudos_count}`},
-                    {
-                      label: 'Achievements',
-                      value: 0 < activity.achievement_count ? `${activity.achievement_count}` : null,
-                    },
-                    {label: 'PRs', value: 0 < activity.pr_count ? `${activity.pr_count}` : null},
-                  ],
+                  label: 'On Strava',
+                  value: [
+                    `${activity.kudos_count} kudos`,
+                    0 < activity.achievement_count ? `${activity.achievement_count} achievements` : null,
+                    0 < activity.pr_count ? `${activity.pr_count} ${1 === activity.pr_count ? 'PR' : 'PRs'}` : null,
+                  ]
+                    .filter(part => null !== part)
+                    .join(' · '),
                 },
               ]}
             />
