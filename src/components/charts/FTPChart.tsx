@@ -1,5 +1,6 @@
 import {useState} from 'react';
-import {Button, Group, Input, Clipboard, IconButton, NumberInput} from '@chakra-ui/react';
+import {Button, Group, Clipboard, IconButton, NumberInput} from '@chakra-ui/react';
+import {DateInput} from '../ui';
 import {Chart, useChart} from '@chakra-ui/charts';
 import {Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {useFtp, useSettings} from '../../hooks';
@@ -128,7 +129,7 @@ const FTPChart = () => {
         </ResponsiveContainer>
       </Chart.Root>
       <Group marginBottom="20px">
-        <Input type="date" size="sm" width="200px" value={date} onChange={({target}) => setDate(target.value)} />
+        <DateInput size="sm" width="200px" value={date} onChange={({target}) => setDate(target.value)} />
         <NumberInput.Root size="sm" value={weight?.toString()} onValueChange={({value}) => setWeight(Number(value))}>
           <NumberInput.Control />
           <NumberInput.Input placeholder="Weight" />

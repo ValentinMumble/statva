@@ -1,4 +1,4 @@
-import {useLayoutEffect, useMemo, useRef, useState} from 'react';
+import {ReactNode, RefObject, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {
   Box,
   Button,
@@ -48,6 +48,7 @@ import {
   suggestName,
   TAGS,
 } from '../../models';
+import {mondayOf} from '../../models/week';
 import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
@@ -116,6 +117,38 @@ const groupOf = (types: ActivityType[] | null, sports: SportCount[]): string => 
 };
 
 const ROW_HEIGHT = {base: 68, md: 56};
+// A week's divider in the list, when it is sorted by date.
+const WEEK_HEIGHT = 32;
+
+// Each column's short name for the header; its full name shows on hover.
+const COLUMN_NAMES: Partial<Record<SortType, string>> = {
+  distance: 'Distance',
+  total_elevation_gain: 'Climb',
+  elevation_percent: 'Climb %',
+  moving_time: 'Moving',
+  elapsed_time: 'Elapsed',
+  average_speed: 'Speed',
+  max_speed: 'Max speed',
+  average_watts: 'Power',
+  weighted_average_watts: 'Weighted',
+  normalized_power: 'NP',
+  max_watts: 'Max power',
+  intensity: 'Intensity',
+  average_heartrate: 'HR',
+  max_heartrate: 'Max HR',
+  suffer_score: 'Suffer',
+  kilojoules: 'Calories',
+  average_cadence: 'Cadence',
+  average_temp: 'Temp',
+  pr_count: 'PRs',
+  achievement_count: 'Trophies',
+  athlete_count: 'Riders',
+  kudos_count: 'Kudos',
+  photo_count: 'Photos',
+};
+
+type ListItem =
+  {kind: 'week'; key: string; label: string; detail: string} | {kind: 'activity'; key: string; activity: Activity};
 const COLUMN_WIDTH = 112;
 
 const Toolbar = ({
@@ -416,7 +449,8 @@ const Unprocessed = ({
   if (0 === activities.length) return null;
 
   return (
-    <Card padding="14px" background="brand.subtle" borderColor="brand.muted">
+    // A plain card with an orange edge: a reminder, not an alarm.
+    <Card padding="14px" borderLeftWidth="3px" borderLeftColor="brand.solid">
       <Stack gap="10px">
         <Text fontSize="sm">
           <strong>{activities.length}</strong> {1 === activities.length ? 'activity has' : 'activities have'} no emoji
@@ -428,6 +462,39 @@ const Unprocessed = ({
         ))}
       </Stack>
     </Card>
+  );
+};
+
+/**
+ * The rows on screen, and only they. Scrolling changes which rows those are, so it redraws this
+ * and nothing else: the filters, menus and column totals above stay as they are.
+ */
+const VirtualRows = <Row,>({
+  rows,
+  sizeOf,
+  scrollMargin,
+  listRef,
+  renderRow,
+}: {
+  rows: Row[];
+  // Each row's height (px): an activity's, or a week divider's.
+  sizeOf: (row: Row) => number;
+  scrollMargin: number;
+  listRef: RefObject<HTMLDivElement | null>;
+  // A row, the height it takes and how far down the list it sits (px).
+  renderRow: (row: Row, size: number, offset: number) => ReactNode;
+}) => {
+  const virtualizer = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: index => sizeOf(rows[index]),
+    overscan: 12,
+    scrollMargin,
+  });
+
+  return (
+    <Box ref={listRef} position="relative" height={`${virtualizer.getTotalSize()}px`}>
+      {virtualizer.getVirtualItems().map(item => renderRow(rows[item.index], item.size, item.start - scrollMargin))}
+    </Box>
   );
 };
 
@@ -535,27 +602,65 @@ const ActivitiesPage = () => {
 
     return undefined === detail ? null : detail.device_name || 'unknown';
   };
-  const rows = null === device ? (activities ?? []) : (activities ?? []).filter(({id}) => device === deviceOf(id));
-  const devices = Object.entries(
-    countBy(
-      (allActivities ?? []).filter(({id}) => null !== deviceOf(id)),
-      ({id}) => deviceOf(id) ?? 'unknown',
-    ),
-  )
-    .map(([name, count]) => ({device: name, count}))
-    .sort((a, b) => b.count - a.count);
+  const rows = useMemo(
+    () => (null === device ? (activities ?? []) : (activities ?? []).filter(({id}) => device === deviceOf(id))),
+    // deviceOf only reads activityMeta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activities, device, activityMeta],
+  );
+  const devices = useMemo(
+    () =>
+      Object.entries(
+        countBy(
+          (allActivities ?? []).filter(({id}) => null !== deviceOf(id)),
+          ({id}) => deviceOf(id) ?? 'unknown',
+        ),
+      )
+        .map(([name, count]) => ({device: name, count}))
+        .sort((a, b) => b.count - a.count),
+    // deviceOf only reads activityMeta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allActivities, activityMeta],
+  );
+  // Sorted by date, the list gets a divider at the head of each week, with its distance and count.
+  const items = useMemo((): ListItem[] => {
+    const activityItems = rows.map(activity => ({kind: 'activity' as const, key: String(activity.id), activity}));
+    if ('date' !== sort) return activityItems;
+    const thisMonday = mondayOf(new Date()).getTime();
+    const weeks = new Map<number, Activity[]>();
+    for (const activity of rows) {
+      const monday = mondayOf(new Date(activity.start_date)).getTime();
+      weeks.set(monday, [...(weeks.get(monday) ?? []), activity]);
+    }
+
+    return [...weeks.entries()].flatMap(([monday, activities]) => [
+      {
+        kind: 'week' as const,
+        key: `week-${monday}`,
+        label:
+          thisMonday === monday
+            ? 'This week'
+            : `Week of ${new Date(monday).toLocaleDateString(locale, {day: 'numeric', month: 'short'})}`,
+        detail: `${km(
+          activities.reduce((sum, {distance}) => sum + distance, 0),
+          locale,
+        )} · ${activities.length} ${1 === activities.length ? 'activity' : 'activities'}`,
+      },
+      ...activities.map(activity => ({kind: 'activity' as const, key: String(activity.id), activity})),
+    ]);
+  }, [rows, sort, locale]);
+  // The column totals over every row shown, worked out once per change of rows or columns.
+  const totals = useMemo(
+    () => Object.fromEntries(shownColumns.map(tag => [tag.sortType, tag.total(rows, activityMeta, getFtp)])),
+    // shownColumns follows columns.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [columns, rows, activityMeta, getFtp],
+  );
 
   useLayoutEffect(() => {
     const node = listRef.current;
     if (null !== node) setScrollMargin(node.getBoundingClientRect().top + window.scrollY);
   }, [rows.length, unprocessedActivities.length, isWide, columns.length]);
-
-  const virtualizer = useWindowVirtualizer({
-    count: rows.length,
-    estimateSize: () => rowHeight,
-    overscan: 12,
-    scrollMargin,
-  });
 
   const sortBy = (sortType: SortType) =>
     sortType === sort
@@ -685,6 +790,27 @@ const ActivitiesPage = () => {
 
       <Card padding="0" overflowX="auto">
         <Box minWidth={minWidth ? `${minWidth}px` : undefined}>
+          {/* The totals over every activity shown, in one quiet line rather than in each header. */}
+          {isWide && 0 < rows.length && (
+            <HStack
+              gap="6px 18px"
+              flexWrap="wrap"
+              paddingX="16px"
+              paddingTop="12px"
+              paddingBottom="2px"
+              fontSize="xs"
+              color="fg.muted"
+            >
+              {shownColumns.map(tag => (
+                <Text as="span" key={tag.sortType} whiteSpace="nowrap" title={tag.help}>
+                  {COLUMN_NAMES[tag.sortType] ?? tag.help}{' '}
+                  <Text as="span" fontFamily="figure" color={tag.sortType === sort ? 'brand.fg' : 'fg'}>
+                    {totals[tag.sortType]}
+                  </Text>
+                </Text>
+              ))}
+            </HStack>
+          )}
           {isWide && (
             <Box
               display="grid"
@@ -711,18 +837,44 @@ const ActivitiesPage = () => {
                   onClick={() => sortBy(tag.sortType)}
                 >
                   {tag.sortType === sort && ('asc' === direction ? <LuArrowUp /> : <LuArrowDown />)}
-                  <span>{label(tag.sortType)}</span>
-                  <Text as="span" fontFamily="figure" fontSize="sm" color={tag.sortType === sort ? 'brand.fg' : 'fg'}>
-                    {0 === rows.length ? ' ' : tag.total(rows, activityMeta, getFtp)}
-                  </Text>
+                  <span>{COLUMN_NAMES[tag.sortType] ?? tag.help}</span>
                 </HStack>
               ))}
             </Box>
           )}
 
-          <Box ref={listRef} position="relative" height={`${virtualizer.getTotalSize()}px`}>
-            {virtualizer.getVirtualItems().map(item => {
-              const activity = rows[item.index];
+          <VirtualRows
+            rows={items}
+            sizeOf={item => ('week' === item.kind ? WEEK_HEIGHT : rowHeight)}
+            scrollMargin={scrollMargin}
+            listRef={listRef}
+            renderRow={(item, size, offset) => {
+              if ('week' === item.kind) {
+                return (
+                  <HStack
+                    key={item.key}
+                    position="absolute"
+                    top="0"
+                    left="0"
+                    right="0"
+                    height={`${size}px`}
+                    transform={`translateY(${offset}px)`}
+                    paddingX="16px"
+                    gap="8px"
+                    fontSize="xs"
+                    color="fg.muted"
+                    background="bg.subtle"
+                    borderBottomWidth="1px"
+                    borderColor="border/60"
+                  >
+                    <Text as="span" fontWeight="semibold" color="fg">
+                      {item.label}
+                    </Text>
+                    <Text as="span">{item.detail}</Text>
+                  </HStack>
+                );
+              }
+              const {activity} = item;
               const meta = activityMeta[activity.id] ?? null;
               const ftp = getFtp(new Date(activity.start_date));
 
@@ -733,8 +885,8 @@ const ActivitiesPage = () => {
                   top="0"
                   left="0"
                   right="0"
-                  height={`${item.size}px`}
-                  transform={`translateY(${item.start - virtualizer.options.scrollMargin}px)`}
+                  height={`${size}px`}
+                  transform={`translateY(${offset}px)`}
                   display="grid"
                   gridTemplateColumns={gridColumns}
                   alignItems="center"
@@ -829,8 +981,8 @@ const ActivitiesPage = () => {
                   )}
                 </Box>
               );
-            })}
-          </Box>
+            }}
+          />
           {null !== activities && 0 === rows.length && 0 === hiddenPrivate && (
             <Stack padding="32px" alignItems="center" gap="12px">
               <Text color="fg.muted">Nothing matches. Try another search or filter.</Text>

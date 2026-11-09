@@ -37,7 +37,8 @@ Liquid Glass (a frosted, see-through capsule) holds Home, Activities, Ride weath
 Stats. Maps use Esri's grey canvas (light or dark with the theme) with its place names laid
 over it. Two pages carry a count, beside their name in the sidebar and as a dot on their tab:
 Activities, the activities still without an emoji (3.4), and Gear, the parts due or overdue
-on the bikes still in use.
+on the bikes still in use. Date and time boxes show day/month/year and a 24-hour clock whatever the
+device's own format, with the browser's picker still opening on a click or a tap.
 
 **Refresh** syncs with Strava now (11.3) and says "Up to date" or how many activities
 came in. **Log** opens the event dialog (5.2). With the "no emoji" setting on (3.4),
@@ -81,8 +82,12 @@ Activities carries a count in the sidebar and a dot on the tab.
 - A row opens the Activity page. Coming back finds the same filters and scroll position.
 
 ### 3.2 Metric columns
-Any of these can be a column and sorted on. The header shows a total or an average over
-the filtered list. Columns that make no sense for a sport stay blank.
+Any of these can be a column and sorted on. Headers carry short names (Distance, Climb, NP,
+HR...), the full name on hover; one quiet line above them gives each column's total or
+average over the filtered list. Columns that make no sense for a sport stay blank. Sorted by
+date, each week starts with a divider: "Week of 2 Nov", or "This week", with its distance
+and number of activities. Only the rows on screen are drawn, and scrolling redraws them
+alone, not the filters or totals.
 
 | Metric | Cell | Header |
 |---|---|---|

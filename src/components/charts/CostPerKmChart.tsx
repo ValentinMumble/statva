@@ -2,7 +2,7 @@ import {useMemo, useState} from 'react';
 import {Button, Group, HStack, IconButton, Input, NumberInput, Stack, Text} from '@chakra-ui/react';
 import {LuMinus} from 'react-icons/lu';
 import {Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
-import {StepperInput} from '../ui';
+import {DateInput, StepperInput} from '../ui';
 import {useActivities, useExpenses, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
 import {BikeExpense, formatCurrency, formatDistance, formatDuration} from '../../models';
@@ -233,8 +233,7 @@ const CostPerKmChart = () => {
       </ResponsiveContainer>
       {/* Wraps on a phone, where the four fields do not fit on one line. */}
       <HStack gap="8px" flexWrap="wrap" marginBottom="20px" onKeyDown={({key}) => key === 'Enter' && handleAdd()}>
-        <Input
-          type="date"
+        <DateInput
           size="sm"
           width={{base: '150px', md: '220px'}}
           value={date}

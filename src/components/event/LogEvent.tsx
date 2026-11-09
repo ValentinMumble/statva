@@ -1,6 +1,6 @@
 import {ReactNode, useState} from 'react';
-import {Button, Dialog, Grid, Group, HStack, Input, Portal, Stack, Text} from '@chakra-ui/react';
-import {toaster} from '../../components/ui';
+import {Button, Dialog, Grid, Group, HStack, Portal, Stack, Text} from '@chakra-ui/react';
+import {DateInput, toaster} from '../../components/ui';
 import {EventForm, GearSelect} from '../../components';
 import {useActivities, useEvents, useLabels, useSettings} from '../../hooks';
 import {getFetcher} from '../../hooks/useFetcher';
@@ -149,8 +149,7 @@ const LogEvent = ({bike: chosenBike, date, type: presetType, onLogged, trigger}:
               ) : (
                 <Stack gap="14px">
                   <HStack gap="8px">
-                    <Input
-                      type="date"
+                    <DateInput
                       size={ACTION_SIZE}
                       flex={{base: 1, md: 'none'}}
                       width={{md: '150px'}}

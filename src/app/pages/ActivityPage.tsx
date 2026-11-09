@@ -48,7 +48,7 @@ import {
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '../../models/strava';
 import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, UploadRefusedError} from '../../api';
-import {toaster} from '../../components/ui';
+import {DateInput, TimeInput, toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
 import {DaylightBar} from '../components/DaylightBar';
 import {GearField} from '../components/GearField';
@@ -280,11 +280,11 @@ const DuplicateActivity = ({activity}: {activity: Activity}) => {
                 <HStack gap="12px">
                   <Field.Root>
                     <Field.Label>Day</Field.Label>
-                    <Input type="date" value={date} onChange={({target}) => setDate(target.value)} />
+                    <DateInput value={date} onChange={({target}) => setDate(target.value)} />
                   </Field.Root>
                   <Field.Root>
                     <Field.Label>Start</Field.Label>
-                    <Input type="time" value={time} onChange={({target}) => setTime(target.value)} />
+                    <TimeInput value={time} onChange={({target}) => setTime(target.value)} />
                   </Field.Root>
                 </HStack>
                 <GearField sport={activity.sport_type} value={gearId} onChange={setGearId} />

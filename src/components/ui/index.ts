@@ -1,3 +1,4 @@
+export * from './date-time-input';
 export * from './segmented-control';
 export * from './slider';
 export * from './stepper-input';
