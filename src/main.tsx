@@ -34,6 +34,28 @@ window.addEventListener('vite:preloadError', event => {
   window.location.reload();
 });
 
+// An app on a phone's home screen can sit in memory for days and come back as it was, on an old
+// deploy. Each time it comes back to the front (at most once a minute), it asks for the page
+// and reloads when the page names another build than the one running.
+const RUNNING_BUILD = import.meta.url.match(/\/assets\/index-[^/]+\.js/)?.[0] ?? null;
+const BUILD_CHECK_GAP_MS = 60_000;
+let checkedBuildAt = 0;
+document.addEventListener('visibilitychange', async () => {
+  if (null === RUNNING_BUILD || 'visible' !== document.visibilityState) return;
+  if (Date.now() - checkedBuildAt < BUILD_CHECK_GAP_MS) return;
+  checkedBuildAt = Date.now();
+  try {
+    const page = await (await fetch('/', {cache: 'no-store'})).text();
+    const live = page.match(/\/assets\/index-[^"']+\.js/)?.[0];
+    if (undefined === live || live === RUNNING_BUILD) return;
+    if (Date.now() - Number(sessionStorage.getItem(RELOADED_AT_KEY) ?? 0) < RELOAD_GAP_MS) return;
+    sessionStorage.setItem(RELOADED_AT_KEY, String(Date.now()));
+    window.location.reload();
+  } catch {
+    // Offline, or storage refused: the next return to the front tries again.
+  }
+});
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

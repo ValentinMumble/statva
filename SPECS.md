@@ -612,6 +612,11 @@ change). A visit shows them at once, then the first sync reloads the list whole 
 details reload when a page needs them. Logging out or disconnecting deletes them from the
 browser. In a private window or with storage blocked, the app loads from the server as before.
 
+The app keeps itself current: a page left open across a deploy that asks for a file the deploy
+removed reloads, and each time the app comes back to the front (at most once a minute) it reads
+the live page and reloads when it names another build than the one running. An app on a
+phone's home screen can otherwise sit in memory on an old deploy for days.
+
 ### 11.6 Without Strava
 Strava's API needs a paid subscription on the account that owns the app. Once it lapses,
 Statva keeps working on what it has stored: the activities, their details, the profile and
