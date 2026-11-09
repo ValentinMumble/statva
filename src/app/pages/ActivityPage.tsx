@@ -1054,6 +1054,7 @@ const ActivityPage = () => {
                   extra: activity.weighted_average_watts ? `${activity.weighted_average_watts} W weighted` : null,
                   zone: powerZone(activity.average_watts),
                 },
+                {label: 'Max power', value: activity.max_watts ? `${activity.max_watts} W` : null},
                 {label: 'Intensity', value: null === intensity ? null : `${Math.round(intensity * 100)}%`},
                 {
                   label: 'Heart rate',

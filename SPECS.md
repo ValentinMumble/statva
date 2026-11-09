@@ -184,7 +184,7 @@ Strava's message names are links to them on Strava, next to the list of parts.
   climbing with its gradient and, for rides and runs, a terrain tag from Flat to
   Mountainous graded against the rider's rides or runs, speed with the max, normalized
   power with its zone), then a list, a line each, two columns on a wide screen: average
-  power with the weighted, intensity, heart rate with the max, suffer score, stops (total
+  power with the weighted, max power, intensity, heart rate with the max, suffer score, stops (total
   time and how many), cadence, calories, temperature, and kudos, achievements and PRs on
   one line. Zones show as a dot in their colour. Anything missing is left out.
 - **Photos**: all of them, fetched from Strava on open; one opens full size.
