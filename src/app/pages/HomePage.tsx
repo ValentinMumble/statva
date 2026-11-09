@@ -158,6 +158,13 @@ const ThisWeek = ({activities, locale, now}: {activities: Activity[]; locale: st
   );
 };
 
+/** The dot between two figures, with room on each side: the figure font's own spaces are narrow. */
+const FigureDot = () => (
+  <Text as="span" marginX="9px" color="fg.muted">
+    ·
+  </Text>
+);
+
 const LatestActivities = ({activities, locale, now}: {activities: Activity[]; locale: string; now: Date}) => {
   const {getFtp} = useFtp();
   const {unprocessedEmoji} = useSettings();
@@ -247,18 +254,16 @@ const LatestActivities = ({activities, locale, now}: {activities: Activity[]; lo
                         >
                           {np} W
                         </Text>
-                        {' · '}
+                        <FigureDot />
                       </>
                     )}
                     {0 < activity.distance ? km(activity.distance, locale) : duration(activity.moving_time)}
                   </Text>
                   <Text fontSize="sm" color="fg.muted" whiteSpace="nowrap">
-                    {[
-                      0 < activity.total_elevation_gain ? `${metres(activity.total_elevation_gain, locale)} ↑` : null,
-                      0 < activity.distance ? duration(activity.moving_time) : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ') || ' '}
+                    {0 < activity.total_elevation_gain && `${metres(activity.total_elevation_gain, locale)} ↑`}
+                    {0 < activity.total_elevation_gain && 0 < activity.distance && <FigureDot />}
+                    {0 < activity.distance && duration(activity.moving_time)}
+                    {0 === activity.total_elevation_gain && 0 === activity.distance && ' '}
                   </Text>
                 </Stack>
               </HStack>
