@@ -56,7 +56,7 @@ import {Activity} from '../../models/strava';
 import {ChartTooltip} from '../../components/charts/ChartTooltip';
 import {Card, CardTitle} from './Card';
 import {DaylightBar} from './DaylightBar';
-import {RideLocator} from './RideLocator';
+import {HERE, RideLocator} from './RideLocator';
 import {ARROW_COLORS, arrowLength, arrowPath, WIND_COLORS} from './ride-weather-colors';
 import {WeatherRow} from './WeatherRow';
 import {TrackMap} from './TrackMap';
@@ -243,6 +243,7 @@ const WeatherChart = <Point extends ChartPoint>({
   yDomain,
   tooltipExtra,
   rightLabels,
+  youAt = null,
   onHover,
 }: {
   data: Point[];
@@ -255,6 +256,8 @@ const WeatherChart = <Point extends ChartPoint>({
   tooltipExtra?: (point: Point) => string | null;
   // Words on the right-hand side, on the same scale as the left: no second scale.
   rightLabels?: {value: number; label: string}[];
+  // The moment the plan has the rider where they are now, marked across the chart.
+  youAt?: number | null;
   // Where the rider is at the point under the pointer, or null once it leaves, for the map.
   onHover: (place: Place | null) => void;
 }) => {
@@ -306,6 +309,14 @@ const WeatherChart = <Point extends ChartPoint>({
             />
           ))}
           {zeroLine && <ReferenceLine y={0} stroke={chart.color('border')} />}
+          {null !== youAt && (
+            <ReferenceLine
+              x={youAt}
+              stroke={HERE}
+              strokeWidth={2}
+              label={{value: 'You', position: 'insideTopLeft', fill: HERE, fontSize: 11}}
+            />
+          )}
           {1 < series.length && <Legend content={<Chart.Legend />} />}
           <Tooltip
             isAnimationActive={false}
@@ -467,6 +478,8 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
   const shares = windShares(weather);
   // The forecast point the pointer is on in a chart, marked on the map.
   const [hovered, setHovered] = useState<Place | null>(null);
+  // Where the plan has the rider now, while the map follows them, marked on the charts.
+  const [youAt, setYouAt] = useState<number | null>(null);
   const profile = useMemo(() => {
     const grades = gradeAlong(points);
     return elevationProfile(
@@ -656,7 +669,7 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
             {marks.map(mark => (
               <DistanceMark key={mark.distance} {...mark} locale={locale} />
             ))}
-            <RideLocator points={points} times={times} start={start} locale={locale} />
+            <RideLocator points={points} times={times} start={start} locale={locale} onPlace={setYouAt} />
             {weather
               .filter((_, sample) => 0 === sample % Math.max(1, Math.round(weather.length / ARROWS)))
               .map(point => (
@@ -792,6 +805,7 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
             <WeatherChart
               data={weather}
               onHover={setHovered}
+              youAt={youAt}
               unit="°"
               locale={locale}
               series={[
@@ -806,6 +820,7 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
             <WeatherChart
               data={rainWeather}
               onHover={setHovered}
+              youAt={youAt}
               unit="%"
               locale={locale}
               yDomain={[0, 100]}
@@ -828,6 +843,7 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
             <WeatherChart
               data={weather}
               onHover={setHovered}
+              youAt={youAt}
               unit=" km/h"
               locale={locale}
               zeroLine={true}
@@ -844,6 +860,7 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
             <WeatherChart
               data={profile}
               onHover={setHovered}
+              youAt={youAt}
               unit=" m"
               locale={locale}
               yDomain={[

@@ -14,6 +14,9 @@ type RideLocatorProps = {
   times: number[];
   start: number;
   locale: string;
+  // Hears when the plan has the rider where they are (ms), for the charts; null off the route
+  // or once they stop following.
+  onPlace?: (plannedAt: number | null) => void;
 };
 
 // Within this, the rider is on time (s).
@@ -26,7 +29,7 @@ const HERE = '#2f80ed';
  * where they are, keeps them in view, and says how far along they are and how that compares
  * with the plan. Pressed again, it stops.
  */
-const RideLocator = ({points, times, start, locale}: RideLocatorProps) => {
+const RideLocator = ({points, times, start, locale, onPlace}: RideLocatorProps) => {
   const map = useMap();
   const [here, setHere] = useState<Place | null>(null);
   const [following, setFollowing] = useState(false);
@@ -72,6 +75,8 @@ const RideLocator = ({points, times, start, locale}: RideLocatorProps) => {
   };
 
   const progress = null === here ? null : progressAt(points, times, start, here, here.at);
+  const plannedAt = null === progress || progress.offRoute ? null : progress.plannedAt;
+  useEffect(() => onPlace?.(plannedAt), [plannedAt, onPlace]);
   const total = points.at(-1)?.distance ?? 0;
   const timing =
     null === progress
@@ -137,4 +142,4 @@ const RideLocator = ({points, times, start, locale}: RideLocatorProps) => {
   );
 };
 
-export {RideLocator};
+export {HERE, RideLocator};

@@ -424,7 +424,8 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   leaves the view), and how far along the nearest point of the route is ("km 42 of 91 · 49
   km to go", the share done and the climbing still ahead), against the plan at that point (on time within 2 minutes, or how far behind or
   ahead, stops included). Over 300 m from the route, it says how far off it is instead.
-  Pressed again, or on leaving the page, it stops.
+  On the route, a blue "You" line marks that moment of the plan on every chart. Pressed
+  again, or on leaving the page, it stops.
 - Pointing at a chart marks that moment on the map with an orange dot, and the four charts
   show the same moment together (each its point closest in time).
 - The heading is taken over the next kilometre, so a hairpin does not swap head and tail

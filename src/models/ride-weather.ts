@@ -186,7 +186,9 @@ type Progress = {
   // How far the rider is from that point (m): over OFF_ROUTE, off the route.
   away: number;
   offRoute: boolean;
-  // Seconds behind the plan at that point (negative: ahead).
+  // When the plan has the rider at that point (ms), and how many seconds behind it they are
+  // (negative: ahead).
+  plannedAt: number;
   behind: number;
   // The share of the route done (0 to 1), and the climbing still ahead (m).
   done: number;
@@ -218,6 +220,7 @@ const progressAt = (
     distance: points[nearest].distance,
     away,
     offRoute: away > OFF_ROUTE,
+    plannedAt: start + times[nearest] * 1000,
     behind: (at - (start + times[nearest] * 1000)) / 1000,
     done: 0 < total ? points[nearest].distance / total : 0,
     climbLeft: climbing(points.slice(nearest)),

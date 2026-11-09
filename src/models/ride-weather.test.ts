@@ -156,6 +156,7 @@ describe('progressAt', () => {
     expect(progress?.distance).toBe(2000);
     expect(progress?.offRoute).toBe(false);
     // planned there at 6 min, there at 7: a minute behind
+    expect(progress?.plannedAt).toBe(start + 6 * 60000);
     expect(progress?.behind).toBe(60);
     // two thirds done, with the last 20 m up still ahead
     expect(progress?.done).toBeCloseTo(2 / 3);
