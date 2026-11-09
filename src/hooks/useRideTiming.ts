@@ -2,6 +2,11 @@ import {useMemo, useState} from 'react';
 import {climbing, Pace, PlannedRoute, reversePoints, STOP_SHARE} from '../models';
 import {deviceDay} from '../models/local-day';
 
+const OTHER_WAY = ', the other way';
+// A route ridden the other way says so; one saved the other way, turned back, no longer does.
+const otherWay = (name: string): string =>
+  name.endsWith(OTHER_WAY) ? name.slice(0, -OTHER_WAY.length) : `${name}${OTHER_WAY}`;
+
 /** The next full hour, as the start offered first. */
 const nextHour = (): Date => {
   const date = new Date(Date.now() + 3600000);
@@ -34,7 +39,7 @@ const useRideTiming = (
     () =>
       undefined === planned || !reversed
         ? planned
-        : {...planned, name: `${planned.name}, the other way`, points: reversePoints(planned.points)},
+        : {...planned, name: otherWay(planned.name), points: reversePoints(planned.points)},
     [planned, reversed],
   );
   const points = useMemo(() => route?.points ?? [], [route]);

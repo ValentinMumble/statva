@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useSearchParams} from 'react-router';
-import {LuArrowLeft, LuCopy, LuSend, LuShare2, LuX} from 'react-icons/lu';
+import {LuArrowLeft, LuShare2, LuX} from 'react-icons/lu';
 import {SiKomoot, SiStrava} from 'react-icons/si';
 import {useLocalStorage} from 'usehooks-ts';
 import {KomootTourSummary, RideBookmark, SharedRide, StravaRoute, UnknownLinkError} from '../../api';
@@ -26,6 +26,7 @@ import {Activity, ActivityType} from '../../models/strava';
 import {Card} from '../components/Card';
 import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
+import {ShareLink} from '../components/ShareLink';
 import {SharedRideWeather} from './SharedRidePage';
 import {km} from '../format';
 
@@ -135,55 +136,21 @@ const UpcomingRides = ({locale, openId = null}: {locale: string; openId?: string
 };
 
 /**
- * The link to a shared ride, to copy or send. Sending opens the phone's share sheet: a fresh
- * tap, as browsers only open it right after one.
- */
-const ShareLink = ({url, title}: {url: string; title: string}) => {
-  const copy = async () => {
-    await navigator.clipboard.writeText(url);
-    toaster.create({title: 'Link copied'});
-  };
-  const send = async () => {
-    try {
-      await navigator.share({url, title});
-    } catch {
-      // Closed without sending.
-    }
-  };
-
-  return (
-    <Stack gap="6px">
-      <HStack width="full">
-        <Input value={url} readOnly={true} onFocus={({target}) => target.select()} />
-        <Button variant="outline" onClick={copy}>
-          <LuCopy /> Copy
-        </Button>
-        {'share' in navigator && (
-          <Button colorPalette="brand" onClick={send}>
-            <LuSend /> Send
-          </Button>
-        )}
-      </HStack>
-      <Text fontSize="xs" color="fg.muted">
-        Anyone with the link sees this ride for 15 days, with a fresh forecast, without logging in.
-      </Text>
-    </Stack>
-  );
-};
-
-/**
  * A bookmarked ride, opened here rather than on its shared page: with its own day, start,
  * speed and stops to change, and the way back to the rider's routes.
  */
 const BookmarkedRideWeather = ({id}: {id: string}) => {
   const {locale} = useSettings();
   const rides = useRides();
+  const queryClient = useQueryClient();
   const shared = useQuery({
     queryKey: ['sharedRide', id],
     queryFn: () => fetchSharedRide(id),
     retry: false,
     staleTime: Infinity,
   });
+  // Changes made here are saved to the link: the next visit reads it again.
+  useEffect(() => () => queryClient.removeQueries({queryKey: ['sharedRide', id]}), [id, queryClient]);
 
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
@@ -200,7 +167,9 @@ const BookmarkedRideWeather = ({id}: {id: string}) => {
       <UpcomingRides locale={locale} openId={id} />
       {shared.isPending && <Spinner alignSelf="center" />}
       {shared.isError && <Text color="fg.muted">This ride is not shared any more: links last 15 days.</Text>}
-      {undefined !== shared.data && <SharedRideWeather key={id} shared={shared.data} locale={locale} rides={rides} />}
+      {undefined !== shared.data && (
+        <SharedRideWeather key={id} shared={shared.data} locale={locale} rides={rides} shareId={id} />
+      )}
     </Stack>
   );
 };
@@ -267,14 +236,20 @@ const PlannedRideWeather = () => {
   const {pace, start, route: ridden} = timing;
   const rideKey = JSON.stringify([ridden?.name, distance, start, pace, timing.stopSeconds]);
 
+  // Makes a link for the ride as shown, and keeps it with what it was made of.
+  const makeLink = async (): Promise<string> => {
+    if (undefined === ridden) throw new Error('No route');
+    const id = await shareRide({route: ridden, start, pace, stops: timing.stopSeconds} satisfies SharedRide);
+    const url = `${window.location.origin}/w/${id}`;
+    setShared({url, ride: rideKey});
+    // The server bookmarks the rider's own shares.
+    await queryClient.invalidateQueries({queryKey: ['rideBookmarks']});
+    return url;
+  };
   const share = async () => {
-    if (undefined === ridden) return;
     setSharing(true);
     try {
-      const id = await shareRide({route: ridden, start, pace, stops: timing.stopSeconds} satisfies SharedRide);
-      setShared({url: `${window.location.origin}/w/${id}`, ride: rideKey});
-      // The server bookmarks the rider's own shares.
-      await queryClient.invalidateQueries({queryKey: ['rideBookmarks']});
+      await makeLink();
     } catch {
       toaster.create({title: 'The link could not be made', description: 'Try again in a moment.'});
     } finally {
@@ -296,8 +271,13 @@ const PlannedRideWeather = () => {
         )}
       </HStack>
 
-      {null !== shared && rideKey === shared.ride && (
-        <ShareLink url={shared.url} title={`${ridden?.name}: the ride weather`} />
+      {null !== shared && (
+        <ShareLink
+          url={shared.url}
+          title={`${ridden?.name}: the ride weather`}
+          stale={rideKey !== shared.ride}
+          renew={makeLink}
+        />
       )}
 
       <UpcomingRides locale={locale} />

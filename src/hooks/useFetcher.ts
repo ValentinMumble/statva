@@ -28,6 +28,7 @@ import {
   fetchSharedRide,
   shareRide,
   unbookmarkRide,
+  updateSharedRide,
   getActivities,
   getActivitySummaries,
   getEvents,
@@ -98,6 +99,7 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'weather.forecast': fetchForecasts,
   'place.names': fetchPlaceNames,
   'ride.share': shareRide,
+  'ride.update': updateSharedRide,
   'ride.shared': fetchSharedRide,
   'ride.bookmarks': fetchBookmarks,
   'ride.bookmark': bookmarkRide,
@@ -151,6 +153,7 @@ const DEMO: typeof REAL = {
   'weather.forecast': fetchForecasts,
   'place.names': fetchPlaceNames,
   'ride.share': () => Promise.reject(new Error('The demo cannot share')),
+  'ride.update': () => Promise.reject(new Error('The demo cannot share')),
   'ride.shared': fetchSharedRide,
   // The demo keeps nothing on a server: no bookmarks.
   'ride.bookmarks': () => Promise.resolve([]),

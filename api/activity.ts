@@ -18,6 +18,7 @@ import {
   saveSharedRide,
   ShareError,
   unbookmarkRide,
+  updateSharedRide,
 } from './_lib/share.js';
 import {changeActivity, refreshActivity} from './_lib/sync.js';
 
@@ -42,6 +43,18 @@ const activityIdOf = (request: Request): number | null => {
 
 const actionOf = (request: Request): string | null => new URL(request.url).searchParams.get('action');
 const shareIdOf = (request: Request): string => new URL(request.url).searchParams.get('id') ?? '';
+
+/** A shared ride changed behind the same link (?action=share&id=), by the rider who made it. */
+const updateShare = async (request: Request, athleteId: number): Promise<Response> => {
+  try {
+    return (await updateSharedRide(shareIdOf(request), await request.json().catch(() => null), athleteId))
+      ? json({ok: true})
+      : json({error: 'No such ride, or its link has expired'}, 404);
+  } catch (error) {
+    if (error instanceof ShareError) return json({error: `A shared ride needs ${error.message}`}, 400);
+    throw error;
+  }
+};
 
 const uploadFailure = (error: unknown): Response => {
   if (error instanceof UploadError) return json({error: error.message}, error.status);
@@ -176,7 +189,7 @@ export const POST = async (request: Request): Promise<Response> => {
   if ('share' === actionOf(request)) {
     try {
       // The rider's own shared rides are bookmarked too.
-      const id = await saveSharedRide(await request.json().catch(() => null));
+      const id = await saveSharedRide(await request.json().catch(() => null), athleteId);
       await bookmarkRide(athleteId, id);
       return json({id});
     } catch (error) {
@@ -195,11 +208,15 @@ export const POST = async (request: Request): Promise<Response> => {
   return null === activity ? json({error: 'Not found'}, 404) : json(activity);
 };
 
-/** Renames an activity on Strava, moves it to other gear, or changes its description or private note. */
+/**
+ * Renames an activity on Strava, moves it to other gear, or changes its description or private
+ * note; or changes a shared ride behind its link (?action=share&id=).
+ */
 export const PUT = async (request: Request): Promise<Response> => {
   const athleteId = readSession(request);
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
+  if ('share' === actionOf(request)) return await updateShare(request, athleteId);
 
   const activityId = activityIdOf(request);
   const body = (await request.json().catch(() => null)) as {

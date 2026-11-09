@@ -1,6 +1,6 @@
 import {install} from './fakes.js';
 import {sessionCookie} from '../_lib/session.js';
-import {DELETE as remove, GET as read, POST as save} from '../activity.js';
+import {DELETE as remove, GET as read, POST as save, PUT as change} from '../activity.js';
 
 const ORIGIN = 'https://statva.test';
 
@@ -111,5 +111,43 @@ describe('bookmarking shared rides', () => {
     await call(save, 'POST', 'action=share', {...soon, start: Date.now() - 2 * DAY});
 
     expect(await (await call(read, 'GET', 'action=bookmark')).json()).toEqual([]);
+  });
+});
+
+describe('changing a shared ride behind the same link', () => {
+  it('keeps the link, with the new day, for its maker only, never showing who made it', async () => {
+    install().login(42);
+
+    const {id} = (await (await call(save, 'POST', 'action=share', ride)).json()) as {id: string};
+    const later = {...ride, start: ride.start + 86400000, stops: 600};
+
+    expect((await call(change, 'PUT', `action=share&id=${id}`, later)).status).toBe(200);
+    const opened = (await (await call(read, 'GET', `action=share&id=${id}`, undefined, false)).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(opened).toEqual(later);
+    expect(opened).not.toHaveProperty('owner');
+  });
+
+  it('refuses another rider, a link that leads nowhere, and a ride that is not one', async () => {
+    const fake = install();
+    fake.login(42);
+    const {id} = (await (await call(save, 'POST', 'action=share', ride)).json()) as {id: string};
+
+    fake.login(7);
+    const other = await change(
+      new Request(`${ORIGIN}/api/activity?action=share&id=${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json', cookie: sessionCookie(7).split(';')[0]},
+        body: JSON.stringify({...ride, name: 'Mine now'}),
+      }),
+    );
+    expect(other.status).toBe(400);
+    expect(
+      ((await (await call(read, 'GET', `action=share&id=${id}`, undefined, false)).json()) as {name: string}).name,
+    ).toBe(ride.name);
+    expect((await call(change, 'PUT', 'action=share&id=nothing1', ride)).status).toBe(404);
+    expect((await call(change, 'PUT', `action=share&id=${id}`, {...ride, points: []})).status).toBe(400);
   });
 });

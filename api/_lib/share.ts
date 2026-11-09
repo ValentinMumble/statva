@@ -70,17 +70,47 @@ const sharedRideOf = (body: unknown): SharedRide => {
   };
 };
 
+// A shared ride as kept: with the athlete who made it, never shown to whoever opens the link.
+type StoredRide = SharedRide & {owner?: number};
+
+const storeRide = async (id: string, ride: SharedRide, owner: number): Promise<void> => {
+  await redis().set(shareKey(id), {...ride, owner} satisfies StoredRide, {ex: SHARE_DAYS * 86400});
+};
+
+const readStoredRide = async (id: string): Promise<StoredRide | null> =>
+  ID.test(id) ? await redis().get<StoredRide>(shareKey(id)) : null;
+
 /** Keeps the ride under a new id for 15 days, and gives the id. */
-const saveSharedRide = async (body: unknown): Promise<string> => {
+const saveSharedRide = async (body: unknown, owner: number): Promise<string> => {
   const ride = sharedRideOf(body);
   const id = randomBytes(6).toString('base64url');
-  await redis().set(shareKey(id), ride, {ex: SHARE_DAYS * 86400});
+  await storeRide(id, ride, owner);
 
   return id;
 };
 
-const readSharedRide = async (id: string): Promise<SharedRide | null> =>
-  ID.test(id) ? await redis().get<SharedRide>(shareKey(id)) : null;
+/**
+ * Changes a shared ride behind the same link (another day, start, speed...), for 15 days from
+ * now. Only its maker may; a ride kept before makers were recorded, any rider. Gives false when
+ * the link leads nowhere.
+ */
+const updateSharedRide = async (id: string, body: unknown, athleteId: number): Promise<boolean> => {
+  const stored = await readStoredRide(id);
+  if (null === stored) return false;
+  if (undefined !== stored.owner && stored.owner !== athleteId) throw new ShareError('its own maker to change it');
+  await storeRide(id, sharedRideOf(body), stored.owner ?? athleteId);
+
+  return true;
+};
+
+const readSharedRide = async (id: string): Promise<SharedRide | null> => {
+  const stored = await readStoredRide(id);
+  if (null === stored) return null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {owner, ...ride} = stored;
+
+  return ride;
+};
 
 /** Keeps a shared ride in the rider's bookmarks; false when the link leads nowhere. */
 const bookmarkRide = async (athleteId: number, id: string): Promise<boolean> => {
@@ -113,5 +143,5 @@ const bookmarkedRides = async (athleteId: number, now = Date.now()): Promise<Rid
     .sort((first, second) => first.start - second.start);
 };
 
-export {bookmarkedRides, bookmarkRide, readSharedRide, saveSharedRide, ShareError, unbookmarkRide};
+export {bookmarkedRides, bookmarkRide, readSharedRide, saveSharedRide, ShareError, unbookmarkRide, updateSharedRide};
 export type {RideBookmark, SharedRide};

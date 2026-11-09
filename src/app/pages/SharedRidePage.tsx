@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Box, Button, Center, HStack, Spinner, Stack, Text} from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {LuArrowLeft, LuStar} from 'react-icons/lu';
@@ -11,8 +11,12 @@ import {Activity} from '../../models/strava';
 import {Card} from '../components/Card';
 import {RideTimingFields} from '../components/RideTimingFields';
 import {RideWeatherResults} from '../components/RideWeatherResults';
+import {ShareLink} from '../components/ShareLink';
 
 const fetchSharedRide = getFetcher<SharedRide>('ride.shared');
+const updateRide = getFetcher<void>('ride.update');
+// How long after the last change the ride is saved to its link (ms).
+const SAVE_DELAY = 800;
 // English words, dates as day, month, year and a 24-hour clock, whoever opens the link.
 const SHARED_LOCALE = 'en-GB';
 
@@ -56,18 +60,63 @@ const SharedRideWeather = ({
   locale,
   onSky,
   rides,
+  shareId,
 }: {
   shared: SharedRide;
   locale: string;
+  // The ride's link id, for the rider's own copy of it: a link box to copy or send, which makes
+  // a fresh link once they change the ride.
+  shareId?: string;
   // Hears the ride's weather emoji, for the page's title.
   onSky?: (sky: string | null) => void;
   // The rider's rides, to grade the climbing against (a friend's page has none).
   rides?: Activity[];
 }) => {
   const timing = useRideTiming(shared.route, shared.pace, shared.start, shared.stops ?? null);
+  const queryClient = useQueryClient();
+  const ridden = timing.route ?? shared.route;
+  const rideKey = JSON.stringify([ridden.name, timing.start, timing.pace, timing.stopSeconds]);
+  // What the link holds, as last saved: the shared ride as it came, at first.
+  const [savedKey, setSavedKey] = useState(rideKey);
+  const [saving, setSaving] = useState<'saving' | 'saved' | 'failed' | null>(null);
+
+  // The rider's changes go to the same link, a moment after they stop changing things.
+  useEffect(() => {
+    if (undefined === shareId || rideKey === savedKey) return;
+    const timer = setTimeout(async () => {
+      setSaving('saving');
+      try {
+        await updateRide({
+          id: shareId,
+          ride: {route: ridden, start: timing.start, pace: timing.pace, stops: timing.stopSeconds},
+        });
+        setSavedKey(rideKey);
+        setSaving('saved');
+        await queryClient.invalidateQueries({queryKey: ['rideBookmarks']});
+      } catch {
+        setSaving('failed');
+      }
+    }, SAVE_DELAY);
+    return () => clearTimeout(timer);
+  }, [shareId, rideKey, savedKey, ridden, timing.start, timing.pace, timing.stopSeconds, queryClient]);
 
   return (
     <>
+      {undefined !== shareId && (
+        <ShareLink
+          url={`${window.location.origin}/w/${shareId}`}
+          title={`${ridden.name}: the ride weather`}
+          note={
+            'saving' === saving
+              ? 'Saving your changes to this link…'
+              : 'failed' === saving
+                ? 'Your changes could not be saved. Try changing something again.'
+                : 'saved' === saving
+                  ? 'Your changes are saved: anyone with the link sees this ride as it is now.'
+                  : 'Changes you make here are saved to this link.'
+          }
+        />
+      )}
       <Card>
         <RideTimingFields timing={timing} locale={locale} ownLabel="the shared speed" />
       </Card>

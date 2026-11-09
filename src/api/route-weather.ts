@@ -152,29 +152,45 @@ type SharedRide = {route: PlannedRoute; start: number; pace: Pace; stops?: numbe
 const SHARED_POINTS = 800;
 
 /** Keeps the ride on the server under a short id, for a link anyone can open; gives the id. */
-const shareRide = async ({route, start, pace, stops}: SharedRide): Promise<string> => {
+/** What the server keeps of a ride: its points thinned and rounded. */
+const sharedBody = ({route, start, pace, stops}: SharedRide): string => {
   const step = Math.ceil(route.points.length / SHARED_POINTS);
   const kept = route.points.filter((_, index) => 0 === index % step || index === route.points.length - 1);
+
+  return JSON.stringify({
+    name: route.name,
+    points: kept.map(({lat, lng, altitude, distance}) => [
+      Math.round(lat * 1e5) / 1e5,
+      Math.round(lng * 1e5) / 1e5,
+      Math.round(altitude * 10) / 10,
+      Math.round(distance),
+    ]),
+    start,
+    pace,
+    stops: undefined === stops ? undefined : Math.round(stops),
+    source: route.source,
+  });
+};
+
+const shareRide = async (ride: SharedRide): Promise<string> => {
   const response = await fetch('/api/activity?action=share', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      name: route.name,
-      points: kept.map(({lat, lng, altitude, distance}) => [
-        Math.round(lat * 1e5) / 1e5,
-        Math.round(lng * 1e5) / 1e5,
-        Math.round(altitude * 10) / 10,
-        Math.round(distance),
-      ]),
-      start,
-      pace,
-      stops: undefined === stops ? undefined : Math.round(stops),
-      source: route.source,
-    }),
+    body: sharedBody(ride),
   });
   if (!response.ok) throw new Error(`Sharing failed: ${response.status}`);
 
   return ((await response.json()) as {id: string}).id;
+};
+
+/** Saves the rider's changes to a ride they shared, behind the same link. */
+const updateSharedRide = async ({id, ride}: {id: string; ride: SharedRide}): Promise<void> => {
+  const response = await fetch(`/api/activity?${new URLSearchParams({action: 'share', id})}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: sharedBody(ride),
+  });
+  if (!response.ok) throw new Error(`Saving failed: ${response.status}`);
 };
 
 /** A ride shared by link, for anyone who has it: no login needed. */
@@ -257,5 +273,6 @@ export {
   shareRide,
   unbookmarkRide,
   UnknownLinkError,
+  updateSharedRide,
 };
 export type {KomootTourSummary, RideBookmark, SharedRide, StravaRoute};

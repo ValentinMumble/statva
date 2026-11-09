@@ -432,14 +432,18 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   🌦️ when likely somewhere, 💨 for wind of 30 km/h on average or gusts of 55, else the
   average cloud cover (☁️ from 80 %, 🌥️ 55, ⛅ 30, 🌤️ 10, ☀️). They can change the day,
   start, speed, direction and stops there (starting from the shared ones, with "Back to the
-  shared speed"); that stays on their page, never in the link. A change to the route,
-  start, speed or stops hides
-  the link, as it no longer matches. The demo has no Share button.
+  shared speed"); that stays on their page, never in the link. After a change to the
+  route, day, start, speed, stops or direction, the link stays, greyed, and Copy or Send
+  makes a new one with the changes (bookmarked like any of the rider's shares). The demo
+  has no Share button.
 - **Bookmarks**: a shared page shows a ☆ Bookmark button, and a link back to Ride weather,
   only to a logged-in rider (they show once their bookmarks load). The rider's own shares are bookmarked when made. Ride weather lists them under
   **Upcoming rides**, soonest first, with a cross to remove each. One opens inside Ride
   weather (`/weather?ride=<id>`, the menu still there) with its own day, start, speed, stops
-  and direction to change, and "Your routes" to go back. A bookmark goes for good when its
+  and direction to change, its link to copy or send, and "Your routes" to go back. Changes
+  made there are saved to that same link a moment after the last one ("Saved" under it),
+  so anyone with it sees the ride as it is now; only the rider who made a link may change
+  it (links from before makers were kept: any rider). A bookmark goes for good when its
   link expires or a day after its start.
 
 ---
@@ -519,7 +523,7 @@ shared ride need a session.
 | `POST /api/sync?step=backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
 | `GET /api/activity?action=komoot`, `&id=` | The owner's planned Komoot tours, or one with its points (9.5) |
-| `POST /api/activity?action=share`, `GET ?action=share&id=` | Keep a planned ride for a share link (15 days); read it, with no login (9.5) |
+| `POST /api/activity?action=share`, `GET ?action=share&id=`, `PUT ?action=share&id=` | Keep a planned ride for a share link (15 days); read it, with no login; change it behind the same link, by its maker (9.5) |
 | `POST /api/activity?action=copy&id=` | Copy a ride to the day and time given (`{date, time}`, today at its own time by default), on Strava and in Statva (4) |
 | `GET, POST, DELETE /api/activity?action=merge` | Merge activities into a new one on Strava (3.5); the merge Strava refused, uploaded again or forgotten |
 | `GET /api/club` | The club's calendar from its team on pedalons.fr, read again at most every 6 hours |
@@ -590,8 +594,9 @@ adds that prefix itself, so no request can reach another rider's data or the tok
 The rider can read every name but the server-only `merge`, `profile` and `ride-bookmarks`,
 and write only their own five. Shared keys:
 `strava_tokens` (every rider's tokens, never reachable from the browser),
-`strava:usage` (the app's rate limit usage), `ride-share:<id>` (a ride shared by link,
-gone after 15 days; anyone with the id reads it) and `komoot_session` (the owner's Komoot
+`strava:usage` (the app's rate limit usage), `ride-share:<id>` (a ride shared by link and
+its maker's id, gone 15 days after it was made or last changed; anyone with the id reads it,
+without the maker) and `komoot_session` (the owner's Komoot
 session key, never the password, never reachable from the browser).
 
 The browser also keeps the rider's activities and their details as last loaded (IndexedDB
