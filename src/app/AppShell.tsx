@@ -372,9 +372,12 @@ const TabBar = () => {
       padding="5px"
       gap="2px"
       borderRadius="full"
-      // Liquid glass: a light tint the page shows through, blurred and brightened, with a sheen
-      // across the top and a bright rim.
-      backgroundColor={{base: 'rgba(250, 250, 252, 0.38)', _dark: 'rgba(28, 28, 32, 0.38)'}}
+      // Liquid glass, the same recipe as the docks of Tillroll, Chords and hk: a light tint the
+      // page shows through, blurred and brightened, with a sheen across the top and a bright rim;
+      // solid when the system asks for less transparency. Its labels are in the system's type, as
+      // iOS's are.
+      fontFamily="system"
+      backgroundColor={{base: 'rgba(250, 250, 252, 0.3)', _dark: 'rgba(28, 28, 32, 0.3)'}}
       backgroundImage={{
         base: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 55%)',
         _dark: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 55%)',
@@ -385,6 +388,7 @@ const TabBar = () => {
         _dark:
           'inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.45)',
       }}
+      css={{'@media (prefers-reduced-transparency: reduce)': {backgroundColor: 'bg.panel', backgroundImage: 'none'}}}
     >
       {0 <= current && (
         // One tab wide: the bar minus its padding and gaps, split by the number of tabs.

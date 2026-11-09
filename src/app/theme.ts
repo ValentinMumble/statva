@@ -1,8 +1,9 @@
 import {createSystem, defaultConfig, defineConfig} from '@chakra-ui/react';
 
 /**
- * Statva's own look: Inter for reading, Space Grotesk for headings and figures, one
- * orange accent, and warm surfaces in light and dark.
+ * Statva's own look: Inter for reading, Space Grotesk for headings and figures, the system's
+ * type in the phone's tab bar (as on iOS), one orange accent, and warm surfaces in light and
+ * dark.
  */
 const config = defineConfig({
   globalCss: {
@@ -18,6 +19,8 @@ const config = defineConfig({
         heading: {value: "'Space Grotesk', Inter, system-ui, sans-serif"},
         body: {value: 'Inter, system-ui, sans-serif'},
         figure: {value: "'Space Grotesk', Inter, system-ui, sans-serif"},
+        // The phone's tab bar, as on iOS: San Francisco on Apple devices.
+        system: {value: '-apple-system, BlinkMacSystemFont, system-ui, sans-serif'},
       },
       colors: {
         brand: {
