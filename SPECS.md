@@ -83,9 +83,10 @@ Activities carries a count in the sidebar and a dot on the tab.
 
 ### 3.2 Metric columns
 Any of these can be a column and sorted on. Headers carry short names (Distance, Climb, NP,
-HR...), the full name on hover; one quiet line above them gives each column's total or
-average over the filtered list. Columns that make no sense for a sport stay blank. Sorted by
-date, each week starts with a divider: "Week of 2 Nov", or "This week", with its distance
+HR...), the full name on hover; a row above them gives each column's total or average
+over the filtered list, right above its column. Columns that make no sense for a sport stay blank. Sorted by
+date, each week starts with a divider: its name when renamed on Home ("Alps trip"), else
+"Week of 2 Nov" or "This week", with its distance
 and number of activities. Only the rows on screen are drawn, and scrolling redraws them
 alone, not the filters or totals.
 
@@ -190,7 +191,11 @@ Strava's message names are links to them on Strava, next to the list of parts.
   write one), saved on Strava. When Strava answers but keeps a note as it was (apps may
   not be allowed to write it), nothing changes in Statva and the rider is told to edit it
   on Strava. **Heart rate zones** (time in each of
-  Strava's zones), **daylight** (outdoors, above the notes on a phone: sunrise and sunset where it started, at its local
+  Strava's zones), **stops** (outdoors: from its recorded points, fetched from Strava when
+  it opens, every stop of 2 minutes or more, where the rider was not moving or the device
+  paused itself: an amber dot where it began on the map, bigger when longer, with how long
+  and when; their number and total time with the figures; gaps in the daylight bar),
+  **daylight** (outdoors, above the notes on a phone: sunrise and sunset where it started, at its local
   time, how long before sunrise it started or before or after sunset it finished, and the
   same daylight bar as Ride weather) and **recorded with** (device, power meter or not).
 

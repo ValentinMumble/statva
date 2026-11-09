@@ -121,6 +121,18 @@ describe('Strava proxy', () => {
     expect(fake.strava.calls.at(-1)).toBe('/api/v3/activities/12/photos?size=1000&photo_sources=true');
   });
 
+  it('lets an activity’s points through, for its stops', async () => {
+    const fake = install();
+    fake.strava.streams[12] = {time: {data: [0, 1]}};
+    const session = await logIn();
+
+    const response = await strava(
+      request('/api/strava?path=activities/12/streams&keys=time,latlng,moving&key_by_type=true', session),
+    );
+    expect(response.status).toBe(200);
+    expect(fake.strava.calls.at(-1)).toBe('/api/v3/activities/12/streams?keys=time%2Clatlng%2Cmoving&key_by_type=true');
+  });
+
   it('lets the rider’s own saved routes through, never another athlete’s', async () => {
     const fake = install();
     const session = await logIn();

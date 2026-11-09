@@ -47,6 +47,7 @@ import {
   SortType,
   suggestName,
   TAGS,
+  TIMEFRAMES,
 } from '../../models';
 import {mondayOf} from '../../models/week';
 import {Activity, ActivityType} from '../../models/strava';
@@ -633,22 +634,28 @@ const ActivitiesPage = () => {
       weeks.set(monday, [...(weeks.get(monday) ?? []), activity]);
     }
 
-    return [...weeks.entries()].flatMap(([monday, activities]) => [
-      {
-        kind: 'week' as const,
-        key: `week-${monday}`,
-        label:
-          thisMonday === monday
-            ? 'This week'
-            : `Week of ${new Date(monday).toLocaleDateString(locale, {day: 'numeric', month: 'short'})}`,
-        detail: `${km(
-          activities.reduce((sum, {distance}) => sum + distance, 0),
-          locale,
-        )} · ${activities.length} ${1 === activities.length ? 'activity' : 'activities'}`,
-      },
-      ...activities.map(activity => ({kind: 'activity' as const, key: String(activity.id), activity})),
-    ]);
-  }, [rows, sort, locale]);
+    return [...weeks.entries()].flatMap(([monday, activities]) => {
+      // A week renamed on Home (a trip, a race week) keeps that name here.
+      const weekKey = TIMEFRAMES.week.getPeriodKey(new Date(monday));
+      const named = label(weekKey) !== weekKey;
+      return [
+        {
+          kind: 'week' as const,
+          key: `week-${monday}`,
+          label: named
+            ? label(weekKey)
+            : thisMonday === monday
+              ? 'This week'
+              : `Week of ${new Date(monday).toLocaleDateString(locale, {day: 'numeric', month: 'short'})}`,
+          detail: `${km(
+            activities.reduce((sum, {distance}) => sum + distance, 0),
+            locale,
+          )} · ${activities.length} ${1 === activities.length ? 'activity' : 'activities'}`,
+        },
+        ...activities.map(activity => ({kind: 'activity' as const, key: String(activity.id), activity})),
+      ];
+    });
+  }, [rows, sort, locale, label]);
   // The column totals over every row shown, worked out once per change of rows or columns.
   const totals = useMemo(
     () => Object.fromEntries(shownColumns.map(tag => [tag.sortType, tag.total(rows, activityMeta, getFtp)])),
@@ -790,26 +797,34 @@ const ActivitiesPage = () => {
 
       <Card padding="0" overflowX="auto">
         <Box minWidth={minWidth ? `${minWidth}px` : undefined}>
-          {/* The totals over every activity shown, in one quiet line rather than in each header. */}
+          {/* The totals over every activity shown, each above its own column. */}
           {isWide && 0 < rows.length && (
-            <HStack
-              gap="6px 18px"
-              flexWrap="wrap"
+            <Box
+              display="grid"
+              gridTemplateColumns={gridColumns}
+              alignItems="center"
               paddingX="16px"
               paddingTop="12px"
-              paddingBottom="2px"
               fontSize="xs"
               color="fg.muted"
             >
+              <Box />
+              <Text as="span">All {rows.length.toLocaleString(locale)}</Text>
               {shownColumns.map(tag => (
-                <Text as="span" key={tag.sortType} whiteSpace="nowrap" title={tag.help}>
-                  {COLUMN_NAMES[tag.sortType] ?? tag.help}{' '}
-                  <Text as="span" fontFamily="figure" color={tag.sortType === sort ? 'brand.fg' : 'fg'}>
-                    {totals[tag.sortType]}
-                  </Text>
+                <Text
+                  as="span"
+                  key={tag.sortType}
+                  textAlign="right"
+                  whiteSpace="nowrap"
+                  fontFamily="figure"
+                  fontSize="sm"
+                  color={tag.sortType === sort ? 'brand.fg' : 'fg'}
+                  title={tag.help}
+                >
+                  {totals[tag.sortType]}
                 </Text>
               ))}
-            </HStack>
+            </Box>
           )}
           {isWide && (
             <Box

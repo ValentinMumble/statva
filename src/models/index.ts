@@ -30,4 +30,5 @@ export * from './route-shape';
 export * from './ride-weather';
 export * from './timeframe';
 export * from './util';
+export * from './stops';
 export * from './week';

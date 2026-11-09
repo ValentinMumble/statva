@@ -20,10 +20,12 @@ type DaylightBarProps = {
   finish: number;
   sun: {rise: number; set: number};
   clock: (time: number) => string;
+  // Stops along the way (ms), shown as gaps in the ride.
+  pauses?: {start: number; end: number}[];
 };
 
 /** The ride on the day's light: a sky from night to night, the ride framed on it, and the sun's times. */
-const DaylightBar = ({start, finish, sun, clock}: DaylightBarProps) => {
+const DaylightBar = ({start, finish, sun, clock, pauses = []}: DaylightBarProps) => {
   const from = Math.min(start, sun.rise) - MARGIN;
   const to = Math.max(finish, sun.set) + MARGIN;
   const at = (time: number): number => Math.min(100, Math.max(0, ((time - from) / (to - from)) * 100));
@@ -54,6 +56,20 @@ const DaylightBar = ({start, finish, sun, clock}: DaylightBarProps) => {
           borderRadius="full"
           background={`linear-gradient(to right, ${stops.map(([color, place]) => `${color} ${place}%`).join(', ')})`}
         />
+        {/* The stops, as darker gaps in the sky under the ride. */}
+        {pauses.map(pause => (
+          <Box
+            key={pause.start}
+            position="absolute"
+            top="7px"
+            height="12px"
+            left={`${at(pause.start)}%`}
+            width={`${Math.max(0.6, at(pause.end) - at(pause.start))}%`}
+            background="bg.panel"
+            opacity={0.7}
+            title={`Stopped ${clock(pause.start)} to ${clock(pause.end)}`}
+          />
+        ))}
         {/* The ride, framed on the sky: what is past sunset sits on the dark. */}
         <Box
           position="absolute"

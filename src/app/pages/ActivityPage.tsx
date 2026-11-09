@@ -43,10 +43,12 @@ import {
   haversine,
   LOOP_GAP,
   suggestName,
+  findStops,
   sunTimes,
   terrainOf,
 } from '../../models';
 import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '../../models/strava';
+import type {ActivityStreams, Stop} from '../../models/stops';
 import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, UploadRefusedError} from '../../api';
 import {DateInput, TimeInput, toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
@@ -55,10 +57,14 @@ import {GearField} from '../components/GearField';
 import {TopTenTrophy} from '../components/HighlightTags';
 import {sportIcon} from '../components/sport';
 import {TrackMap} from '../components/TrackMap';
+import {CircleMarker, Tooltip as MapTooltip} from 'react-leaflet';
 import {RingFrame} from '../components/RouteThumb';
 import {duration, km, metres, number, relativeDay} from '../format';
 
 const fetchZones = getFetcher<ActivityZone[]>('activity.zones');
+const fetchStreams = getFetcher<ActivityStreams>('activity.streams');
+// A stop's dot on the map: amber, apart from the route's orange and its ends' green and black.
+const STOP_COLOR = '#f5a524';
 const refreshActivity = getFetcher<DetailedActivity>('activity.refresh');
 const renameActivity = getFetcher<void>('activity.rename');
 const setActivityGear = getFetcher<void>('activity.gear');
@@ -623,7 +629,16 @@ const Places = ({activity, locale}: {activity: Activity; locale: string}) => {
  * sunset and the ride between, at the ride's own local time. Nothing for a ride indoors or
  * without a start.
  */
-const Daylight = ({activity, locale}: {activity: Activity; locale: string}) => {
+/** A moment as the clock read where the activity was, wherever the page is opened. */
+const localClock = (activity: Activity, locale: string) => {
+  // Strava gives the start's local time as if it were UTC: the gap is the place's offset.
+  const offset = new Date(activity.start_date_local).getTime() - new Date(activity.start_date).getTime();
+
+  return (time: number): string =>
+    new Date(time + offset).toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit', timeZone: 'UTC'});
+};
+
+const Daylight = ({activity, locale, stops = []}: {activity: Activity; locale: string; stops?: Stop[]}) => {
   if (activity.trainer || 2 !== activity.start_latlng?.length) return null;
 
   const start = new Date(activity.start_date).getTime();
@@ -631,10 +646,7 @@ const Daylight = ({activity, locale}: {activity: Activity; locale: string}) => {
   const sun = sunTimes(start, activity.start_latlng);
   if (null === sun) return null;
 
-  // Strava gives the start's local time as if it were UTC: the gap is the place's offset.
-  const offset = new Date(activity.start_date_local).getTime() - start;
-  const clock = (time: number): string =>
-    new Date(time + offset).toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit', timeZone: 'UTC'});
+  const clock = localClock(activity, locale);
   const minutes = (milliseconds: number): string => duration(Math.round(milliseconds / 1000));
 
   return (
@@ -650,7 +662,16 @@ const Daylight = ({activity, locale}: {activity: Activity; locale: string}) => {
             ? `Finished ${minutes(finish - sun.set)} after sunset`
             : `Finished ${minutes(sun.set - finish)} before sunset`}
       </Text>
-      <DaylightBar start={start} finish={finish} sun={sun} clock={clock} />
+      <DaylightBar
+        start={start}
+        finish={finish}
+        sun={sun}
+        clock={clock}
+        pauses={stops.map(stop => ({
+          start: start + stop.start * 1000,
+          end: start + (stop.start + stop.duration) * 1000,
+        }))}
+      />
     </Card>
   );
 };
@@ -739,6 +760,16 @@ const ActivityPage = () => {
     undefined !== activity && getTypes(ActivityType.Run).includes(activity.sport_type as ActivityType)
       ? 'runs'
       : 'rides';
+  // Its stops of 2 minutes or more, from its recorded points: outdoors only.
+  const outdoors = undefined !== activity && !activity.trainer && 2 === activity.start_latlng?.length;
+  const streams = useQuery({
+    queryKey: ['streams', activity?.id],
+    queryFn: () => fetchStreams(activity?.id ?? 0),
+    enabled: outdoors,
+    staleTime: Infinity,
+    retry: false,
+  });
+  const stops = useMemo(() => (undefined === streams.data ? [] : findStops(streams.data)), [streams.data]);
   const difficulty = useMemo(() => {
     if (undefined === activity) return null;
     const kind = [ActivityType.Ride, ActivityType.Run].find(type =>
@@ -843,7 +874,24 @@ const ActivityPage = () => {
         </HStack>
       </HStack>
 
-      {0 < track.length && <TrackMap tracks={[track]} center={mapCenter} height={{base: '260px', md: '380px'}} />}
+      {0 < track.length && (
+        <TrackMap tracks={[track]} center={mapCenter} height={{base: '260px', md: '380px'}}>
+          {/* Each stop where it began, bigger for a longer one. */}
+          {stops.map(stop => (
+            <CircleMarker
+              key={stop.start}
+              center={[stop.lat, stop.lng]}
+              radius={Math.min(14, 5 + Math.sqrt(stop.duration / 60))}
+              pathOptions={{color: 'white', weight: 2, fillColor: STOP_COLOR, fillOpacity: 1}}
+            >
+              <MapTooltip>
+                {duration(stop.duration)} stop at{' '}
+                {localClock(activity, locale)(new Date(activity.start_date).getTime() + stop.start * 1000)}
+              </MapTooltip>
+            </CircleMarker>
+          ))}
+        </TrackMap>
+      )}
 
       <Grid
         templateColumns={{base: 'minmax(0, 1fr)', lg: 'minmax(0, 1.6fr) minmax(0, 1fr)'}}
@@ -857,6 +905,13 @@ const ActivityPage = () => {
                 {label: 'Distance', value: 0 < activity.distance ? km(activity.distance, locale) : null},
                 {label: 'Moving time', value: duration(activity.moving_time)},
                 {label: 'Elapsed', value: duration(activity.elapsed_time)},
+                {
+                  label: 'Stops',
+                  value:
+                    0 === stops.length
+                      ? null
+                      : `${stops.length} · ${duration(stops.reduce((sum, stop) => sum + stop.duration, 0))}`,
+                },
                 {
                   label: 'Climbing',
                   value: 0 < activity.total_elevation_gain ? metres(activity.total_elevation_gain, locale) : null,
@@ -919,7 +974,7 @@ const ActivityPage = () => {
           <Photos activity={activity} detail={detail} />
           {/* On a phone, one column: the daylight comes before the notes rather than at the end. */}
           <Box hideFrom="lg">
-            <Daylight activity={activity} locale={locale} />
+            <Daylight activity={activity} locale={locale} stops={stops} />
           </Box>
           {null !== detail && (
             <Card>
@@ -940,7 +995,7 @@ const ActivityPage = () => {
         <Stack gap={{base: '16px', md: '24px'}}>
           <HeartRateZones activity={activity} />
           <Box hideBelow="lg">
-            <Daylight activity={activity} locale={locale} />
+            <Daylight activity={activity} locale={locale} stops={stops} />
           </Box>
           {null !== detail && (
             <Card>

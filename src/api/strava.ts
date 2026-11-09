@@ -1,5 +1,6 @@
 import type {ClubRide} from '../models/club';
 import type {CopyChoice, CopyResult, MergeChoice, MergeResult, PendingMerge} from '../models/merge';
+import type {ActivityStreams} from '../models/stops';
 import {ActivityZone, Athlete, Comment, DetailedActivity} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
@@ -129,6 +130,10 @@ const refreshActivity = (id: number): Promise<DetailedActivity> => post<Detailed
 
 const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<ActivityZone[]>(`activities/${id}/zones`);
 
+/** An activity's recorded points: times, positions and whether the rider was moving, for its stops. */
+const fetchActivityStreams = (id: number): Promise<ActivityStreams> =>
+  strava<ActivityStreams>(`activities/${id}/streams`, {keys: 'time,latlng,moving', key_by_type: 'true'});
+
 type ActivityPhoto = {unique_id: string; urls: Record<string, string>; caption?: string};
 
 /** Every photo of an activity (the details only hold the main one), at about 1000 px. */
@@ -155,6 +160,7 @@ export {
   IgnoredByStravaError,
   fetchActivityComments,
   fetchActivityPhotos,
+  fetchActivityStreams,
   fetchActivityZones,
   fetchAthlete,
   getJson,
