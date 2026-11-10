@@ -143,8 +143,11 @@ const useTabSwipe = <FrameElement extends HTMLElement>() => {
         if (!still) settle(frame);
         return;
       }
+      // As a tap on the tab bar: the next tab opens at the top, not where the last page was
+      // scrolled to (nor where the activities list was left).
       const go = () => {
-        void latest.current.navigate(next.to);
+        window.scrollTo(0, 0);
+        void latest.current.navigate(next.to, {state: {fromTab: true}});
       };
       if (still) {
         go();
