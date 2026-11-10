@@ -38,6 +38,7 @@ into a home page, stats, records and an explorer map.
 - **Club:** for riders in a club, its own page: attendance week by week, groups and their
   pace, session records, finish places, every route on one map.
 - **Settings:** bikes, part limits, goal, heart rate, weight, club rules, language, labels.
+- **On a phone:** installable as an app, with a tab bar you can also swipe through.
   Export your data or disconnect from Strava (which deletes everything Statva holds).
 
 The full feature list is in [SPECS.md](SPECS.md).

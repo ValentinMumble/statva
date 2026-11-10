@@ -544,7 +544,14 @@ const RecordsPage = () => {
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
       <Stack gap="2px">
-        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
+        {/* On a phone the header already names the page. */}
+        <Text
+          hideBelow="md"
+          fontFamily="heading"
+          fontSize={{base: '2xl', md: '3xl'}}
+          fontWeight="bold"
+          letterSpacing="-0.02em"
+        >
           Records
         </Text>
         <Text color="fg.muted">

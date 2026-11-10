@@ -154,8 +154,15 @@ const BookmarkedRideWeather = ({id}: {id: string}) => {
 
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
-      <HStack justifyContent="space-between" alignItems="center" gap="12px">
-        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
+      <HStack justifyContent={{base: 'flex-end', md: 'space-between'}} alignItems="center" gap="12px">
+        {/* On a phone the header already names the page. */}
+        <Text
+          hideBelow="md"
+          fontFamily="heading"
+          fontSize={{base: '2xl', md: '3xl'}}
+          fontWeight="bold"
+          letterSpacing="-0.02em"
+        >
           Ride weather
         </Text>
         <Button variant="ghost" size="sm" asChild={true}>
@@ -257,14 +264,28 @@ const PlannedRideWeather = () => {
     }
   };
 
+  // The demo keeps nothing on a server, so it has no links to give.
+  const canShare = !isDemo && undefined !== route.data && 1 < points.length;
+
   return (
     <Stack gap={{base: '16px', md: '24px'}}>
-      <HStack justifyContent="space-between" alignItems="center" gap="12px">
-        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
+      {/* On a phone the header already names the page: the row only shows to hold Share. */}
+      <HStack
+        display={{base: canShare ? 'flex' : 'none', md: 'flex'}}
+        justifyContent={{base: 'flex-end', md: 'space-between'}}
+        alignItems="center"
+        gap="12px"
+      >
+        <Text
+          hideBelow="md"
+          fontFamily="heading"
+          fontSize={{base: '2xl', md: '3xl'}}
+          fontWeight="bold"
+          letterSpacing="-0.02em"
+        >
           Ride weather
         </Text>
-        {/* The demo keeps nothing on a server, so it has no links to give. */}
-        {!isDemo && undefined !== route.data && 1 < points.length && (
+        {canShare && (
           <Button variant="outline" size="sm" onClick={share} loading={sharing} loadingText="Making the link">
             <LuShare2 /> Share
           </Button>

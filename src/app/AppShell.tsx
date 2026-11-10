@@ -11,6 +11,8 @@ import {useAllActivities, useAthlete, useEvents, useGear, useLabels, useSession,
 import {computeBikeParts, eddingtonNumber, getActivityUrl, getTypes, hasEmoji} from '../models';
 import {Activity, ActivityType} from '../models/strava';
 import {isActive, NAV, navFor} from './nav';
+import {useTabSwipe} from './useTabSwipe';
+import {HeaderNoteSlot} from './HeaderNote';
 
 const SIDEBAR_WIDTH = '232px';
 // About the 62 pt of iOS 26's tab bar.
@@ -274,7 +276,7 @@ const Sidebar = () => {
   );
 };
 
-const PhoneHeader = () => {
+const PhoneHeader = ({noteRef}: {noteRef: (element: HTMLElement | null) => void}) => {
   const {pathname, state} = useLocation();
   const nav = useNav();
   const current = nav.find(({to}) => isActive(to, pathname));
@@ -320,9 +322,13 @@ const PhoneHeader = () => {
           )}
         </HStack>
       ) : null === backTo ? (
-        <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
-          {current?.label ?? 'Statva'}
-        </Text>
+        <HStack gap="10px" alignItems="baseline" minWidth="0">
+          <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
+            {current?.label ?? 'Statva'}
+          </Text>
+          {/* A page's own short note, like the number of activities shown. */}
+          <Text as="span" ref={noteRef} fontFamily="figure" fontSize="sm" color="fg.muted" truncate={true} />
+        </HStack>
       ) : (
         <Link to={backTo}>
           <HStack gap="6px" fontFamily="heading" fontWeight="bold" fontSize="lg">
@@ -471,6 +477,8 @@ const AppShell = () => {
   const {heartRate, weightKg, normalizedPowerFromNote} = useSettings();
   // Calculations everywhere read these, so a change redraws the page from scratch.
   const profileKey = JSON.stringify([heartRate, weightKg, normalizedPowerFromNote]);
+  const swipeRef = useTabSwipe<HTMLDivElement>();
+  const [noteSlot, setNoteSlot] = useState<HTMLElement | null>(null);
 
   return (
     <Flex minHeight="100dvh" onClickCapture={openOnStrava}>
@@ -480,15 +488,18 @@ const AppShell = () => {
         minWidth="0"
         paddingBottom={{base: `calc(${TAB_BAR_HEIGHT} + ${TAB_BAR_GAP} + env(safe-area-inset-bottom) + 16px)`, md: '0'}}
       >
-        <PhoneHeader />
+        <PhoneHeader noteRef={setNoteSlot} />
         <Box
+          ref={swipeRef}
           as="main"
           maxWidth="1600px"
           marginX="auto"
           paddingX={{base: '16px', md: '32px'}}
           paddingY={{base: '16px', md: '32px'}}
         >
-          <Outlet key={profileKey} />
+          <HeaderNoteSlot.Provider value={noteSlot}>
+            <Outlet key={profileKey} />
+          </HeaderNoteSlot.Provider>
         </Box>
       </Box>
       <TabBar />

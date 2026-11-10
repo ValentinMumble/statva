@@ -34,7 +34,9 @@ account row (log out, or leave the demo). On a phone, a header shows the page ti
 "85") with
 Records, Club, Settings, Refresh and Log icons, and a floating tab bar in the style of iOS
 Liquid Glass (a frosted, see-through capsule) holds Home, Activities, Ride weather, Gear and
-Stats. Maps use Esri's grey canvas (light or dark with the theme) with its place names laid
+Stats; a quick swipe left or right on one of their pages opens the next or previous tab (not
+from a map, chart, slider, field or anything that scrolls sideways). Pages do not repeat the
+header's title on a phone; a page can add a short note beside it (the activity count). Maps use Esri's grey canvas (light or dark with the theme) with its place names laid
 over it. Two pages carry a count, beside their name in the sidebar and as a dot on their tab:
 Activities, the activities still without an emoji (3.4), and Gear, the parts due or overdue
 on the bikes still in use. Date and time boxes show day/month/year and a 24-hour clock whatever the
@@ -135,7 +137,7 @@ again.
 
 ### 3.5 Merging activities
 For a ride recorded in parts (a watch stopped and started again). **Merge** next to the
-count turns the rows into checkboxes: pick 2 to 10 activities, then **Merge**. A dialog
+count (on a phone, a merge icon beside the lock, the count beside the header's title) turns the rows into checkboxes: pick 2 to 10 activities, then **Merge**. A dialog
 lists the parts in time order with their total distance, moving time and the stops between
 them, and asks for the name (the first part's), the bike or shoes and the commute flag
 (the first part's too). Parts that overlap in time cannot be merged: they were recorded
@@ -697,8 +699,8 @@ development runs on it unless `VITE_REAL_DATA=1` (then `vercel dev` serves the A
 - The demo lets anyone try the app without an account, and develop without real data.
 
 ### 13.4 Phones
-- Floating tab bar, one column at a time, thumb-sized buttons, dialogs from the bottom,
-  pages kept clear of the notch and the home indicator.
+- Floating tab bar, swipe between tabs, one column at a time, thumb-sized buttons, dialogs
+  from the bottom, pages kept clear of the notch and the home indicator.
 - Installable as an app (web manifest).
 
 ### 13.5 Quality

@@ -128,22 +128,35 @@ const FTPChart = () => {
           </LineChart>
         </ResponsiveContainer>
       </Chart.Root>
-      <Group marginBottom="20px">
-        <DateInput size="sm" width="200px" value={date} onChange={({target}) => setDate(target.value)} />
-        <NumberInput.Root size="sm" value={weight?.toString()} onValueChange={({value}) => setWeight(Number(value))}>
+      {/* Fits a phone's width: the boxes share the room left by the buttons. */}
+      <Group marginBottom="20px" width="full" maxWidth="520px">
+        <DateInput size="sm" flex="1.4" value={date} onChange={({target}) => setDate(target.value)} />
+        <NumberInput.Root
+          size="sm"
+          flex="1"
+          minWidth="0"
+          value={weight?.toString()}
+          onValueChange={({value}) => setWeight(Number(value))}
+        >
           <NumberInput.Control />
           <NumberInput.Input placeholder="Weight" />
         </NumberInput.Root>
-        <NumberInput.Root size="sm" value={ftp?.toString()} onValueChange={({value}) => setFtp(Number(value))}>
+        <NumberInput.Root
+          size="sm"
+          flex="1"
+          minWidth="0"
+          value={ftp?.toString()}
+          onValueChange={({value}) => setFtp(Number(value))}
+        >
           <NumberInput.Control />
           <NumberInput.Input placeholder="FTP" />
         </NumberInput.Root>
-        <Button size="sm" variant="outline" disabled={!canSubmit} onClick={handleAdd}>
+        <Button size="sm" variant="outline" flexShrink={0} disabled={!canSubmit} onClick={handleAdd}>
           Add
         </Button>
         <Clipboard.Root value={backup(ftpTests)}>
           <Clipboard.Trigger asChild={true}>
-            <IconButton title="Backup" size="xs" variant="outline">
+            <IconButton title="Backup" size="xs" variant="outline" flexShrink={0}>
               <Clipboard.Indicator />
             </IconButton>
           </Clipboard.Trigger>

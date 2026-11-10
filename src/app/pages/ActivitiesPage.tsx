@@ -55,6 +55,7 @@ import {Card} from '../components/Card';
 import {HighlightTags} from '../components/HighlightTags';
 import {MergeDialog} from '../components/MergeDialog';
 import {RouteThumb} from '../components/RouteThumb';
+import {HeaderNote} from '../HeaderNote';
 import {sportIcon, sportName} from '../components/sport';
 import {zoneTextColor} from '../components/zone';
 import {duration, km, metres, relativeDay} from '../format';
@@ -171,6 +172,7 @@ const Toolbar = ({
   device,
   onDevice,
   onClear,
+  phoneAction,
 }: {
   search: string;
   onSearch: (value: string) => void;
@@ -191,6 +193,8 @@ const Toolbar = ({
   // Set when a filter narrows the list, to put them all back.
   onClear?: () => void;
   label: (key: string) => string;
+  // A button for the toolbar on a phone, where the page's own header row is hidden.
+  phoneAction?: ReactNode;
 }) => {
   const toggleSport = (sport: ActivityType) => {
     // From "all", unticking one sport keeps every other one.
@@ -253,6 +257,7 @@ const Toolbar = ({
         >
           <LuLock />
         </IconButton>
+        {phoneAction}
         <Menu.Root closeOnSelect={false}>
           <Menu.Trigger asChild={true}>
             <Button variant="ghost" size="sm" hideBelow="md">
@@ -693,8 +698,10 @@ const ActivitiesPage = () => {
 
   return (
     <Stack gap="16px">
-      <HStack justifyContent="space-between" alignItems="baseline">
-        <Text fontFamily="heading" fontSize={{base: '2xl', md: '3xl'}} fontWeight="bold" letterSpacing="-0.02em">
+      {/* On a phone the header names the page and gives the count; Merge sits in the toolbar. */}
+      <HeaderNote>{null === activities ? '' : rows.length.toLocaleString(locale)}</HeaderNote>
+      <HStack justifyContent="space-between" alignItems="baseline" hideBelow="md">
+        <Text fontFamily="heading" fontSize="3xl" fontWeight="bold" letterSpacing="-0.02em">
           Activities
         </Text>
         <HStack gap="12px">
@@ -770,6 +777,17 @@ const ActivitiesPage = () => {
         onDevice={setDevice}
         onClear={isFiltered ? clearFilters : undefined}
         label={label}
+        phoneAction={
+          <IconButton
+            hideFrom="md"
+            aria-label={picking ? 'Cancel the merge' : 'Merge activities'}
+            variant={picking ? 'surface' : 'ghost'}
+            size="sm"
+            onClick={() => (picking ? stopPicking() : setPicking(true))}
+          >
+            {picking ? <LuX /> : <LuMerge />}
+          </IconButton>
+        }
       />
 
       {unprocessedEmoji && (
