@@ -486,6 +486,8 @@ const AppShell = () => {
       <Box
         flex="1"
         minWidth="0"
+        // A page sliding with a swipe, or anything too wide, never makes the whole page scroll sideways.
+        overflowX="clip"
         paddingBottom={{base: `calc(${TAB_BAR_HEIGHT} + ${TAB_BAR_GAP} + env(safe-area-inset-bottom) + 16px)`, md: '0'}}
       >
         <PhoneHeader noteRef={setNoteSlot} />

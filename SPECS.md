@@ -34,8 +34,10 @@ account row (log out, or leave the demo). On a phone, a header shows the page ti
 "85") with
 Records, Club, Settings, Refresh and Log icons, and a floating tab bar in the style of iOS
 Liquid Glass (a frosted, see-through capsule) holds Home, Activities, Ride weather, Gear and
-Stats; a quick swipe left or right on one of their pages opens the next or previous tab (not
-from a map, chart, slider, field or anything that scrolls sideways). Pages do not repeat the
+Stats; a swipe left or right on one of their pages opens the next or previous tab: the page
+follows the finger, then slides out as the next one slides in, as in Tillroll (no motion
+with Reduce motion; not from the screen's edges, a map, chart, slider, field or anything
+that scrolls sideways). Pages do not repeat the
 header's title on a phone; a page can add a short note beside it (the activity count). Maps use Esri's grey canvas (light or dark with the theme) with its place names laid
 over it. Two pages carry a count, beside their name in the sidebar and as a dot on their tab:
 Activities, the activities still without an emoji (3.4), and Gear, the parts due or overdue
