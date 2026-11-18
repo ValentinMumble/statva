@@ -1,6 +1,6 @@
 import {BikeExpense, encodePolyline, Event, FTPTest, Labels, Settings} from '../models';
-import {Activity, ActivityZone, Athlete, DetailedActivity} from '../models/strava';
-import {ActivityZoneType} from '../models/strava/activity-zone-type';
+import {Activity, Athlete, DetailedActivity} from '../models/strava';
+import {ActivityStreams} from '../models/stops';
 import {Random, seeded} from './random';
 
 /**
@@ -680,36 +680,20 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
   return {events, expenses};
 };
 
-/** Heart rate zones for an activity, spread around its average heart rate. */
-const demoZones = (activity: Activity): ActivityZone[] => {
+/** Heart rate points for an activity, every 10 s, wandering around its average heart rate. */
+const demoStreams = (activity: Activity): ActivityStreams => {
+  const average = activity.average_heartrate;
+  if (undefined === average) return {};
   const random = seeded(activity.id);
-  const ranges = [
-    [0, 120],
-    [120, 145],
-    [145, 160],
-    [160, 175],
-    [175, -1],
-  ];
-  const center = ranges.findIndex(([, max]) => -1 === max || (activity.average_heartrate ?? 0) < max);
-  const weights = ranges.map((_, index) => Math.exp(-((index - center) ** 2)) * random.between(0.7, 1.3));
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const time = Array.from({length: Math.floor(activity.moving_time / 10) + 1}, (_, index) => index * 10);
+  let drift = 0;
+  const heartrate = time.map(() => {
+    drift = Math.max(-25, Math.min(25, drift + random.between(-4, 4)));
+    return Math.round(average + drift);
+  });
 
-  return [
-    {
-      type: ActivityZoneType.Heartrate,
-      score: 0,
-      points: 0,
-      sensor_based: true,
-      custom_zones: false,
-      max: 0,
-      distribution_buckets: ranges.map(([min, max], index) => ({
-        min,
-        max,
-        time: Math.round((activity.moving_time * weights[index]) / total),
-      })),
-    },
-  ];
+  return {time: {data: time}, heartrate: {data: heartrate}};
 };
 
-export {CLUB as DEMO_CLUB, demoZones, FINISHES as DEMO_FINISHES, generateDemo};
+export {CLUB as DEMO_CLUB, demoStreams, FINISHES as DEMO_FINISHES, generateDemo};
 export type {DemoData};

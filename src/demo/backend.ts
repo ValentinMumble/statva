@@ -14,7 +14,7 @@ import {
 } from '../models';
 import {UploadRefusedError} from '../api/strava';
 import {Activity, DetailedActivity} from '../models/strava';
-import {DEMO_CLUB, DEMO_FINISHES, DemoData, demoZones, generateDemo} from './generate';
+import {DEMO_CLUB, DEMO_FINISHES, DemoData, demoStreams, generateDemo} from './generate';
 
 /**
  * The demo's stand-in for the server: the same calls as the real fetchers, answered
@@ -204,10 +204,11 @@ const demoBackend = {
       })),
     );
   },
-  getZones: (id: number) => {
+  // Heart rate points only: the demo's rides have no positions, so no stops.
+  getStreams: (id: number) => {
     const activity = demo().activities.find(activity => activity.id === id);
 
-    return answer(undefined === activity ? [] : demoZones(activity as Activity));
+    return answer(undefined === activity ? {} : demoStreams(activity as Activity));
   },
 };
 

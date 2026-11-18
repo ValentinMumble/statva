@@ -3,12 +3,13 @@
  * moving (Strava's own "moving" flag), and the gaps a device leaves while it pauses itself.
  */
 
-// An activity's points as Strava gives them, by type: seconds from the start, positions, and
-// whether the rider was moving at each.
+// An activity's points as Strava gives them, by type: seconds from the start, positions,
+// whether the rider was moving at each, and the heart rate.
 type ActivityStreams = {
   time?: {data: number[]};
   latlng?: {data: [number, number][]};
   moving?: {data: boolean[]};
+  heartrate?: {data: number[]};
 };
 
 type Stop = {

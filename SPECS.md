@@ -199,7 +199,8 @@ Strava's message names are links to them on Strava, next to the list of parts.
   write one), saved on Strava. When Strava answers but keeps a note as it was (apps may
   not be allowed to write it), nothing changes in Statva and the rider is told to edit it
   on Strava. **Heart rate zones** (time in each of
-  Strava's zones), **stops** (outdoors: from its recorded points, fetched from Strava when
+  the rider's zones from Settings, worked out from its heart rate points, moving time only:
+  Strava gives its own zones to subscribers only), **stops** (outdoors: from its recorded points, fetched from Strava when
   it opens, every stop of 3 minutes or more, where the rider was not moving or the device
   paused itself: an amber square where it began on the map, bigger when longer, with how long
   and when; their number and total time with the figures; gaps in the daylight bar),
@@ -573,9 +574,9 @@ shared ride need a session.
 | `GET /athlete` | Name, gear | 1 per visit |
 | `GET /athlete/activities` | The activity list | 1 per 200 activities for the history, then 1 per sync |
 | `GET /activities/{id}` | Details: notes, photo, calories, KOMs, device, full track | 1 per activity, again on a webhook event or Refresh |
-| `GET /activities/{id}/streams` | Power analysis, merges, copies | 1 per activity with a power meter, 1 per merged part or copy |
+| `GET /activities/{id}/streams` | Power analysis, merges, copies; on the activity page its stops and heart rate zones | 1 per activity with a power meter, 1 per merged part or copy, 1 per page open |
 | `POST /uploads`, `GET /uploads/{id}` | Merges, copies | 1 upload and a few status checks each |
-| `GET /activities/{id}/zones`, `/photos` | Activity page | 1 each per page open |
+| `GET /activities/{id}/photos` | Activity page | 1 per page open |
 | `GET /athletes/{id}/routes`, `/routes/{id}/streams` | Ride weather (the rider's own routes only) | 1 per page open, 1 per route picked |
 
 ### 11.3 Sync

@@ -9,7 +9,6 @@ const ALLOWED_PATHS = [
   /^athlete$/,
   /^athlete\/activities$/,
   /^activities\/\d+$/,
-  /^activities\/\d+\/zones$/,
   /^activities\/\d+\/photos$/,
   /^activities\/\d+\/comments$/,
   /^activities\/\d+\/streams$/,

@@ -15,7 +15,6 @@ import {
   fetchActivityComments,
   fetchActivityPhotos,
   fetchActivityStreams,
-  fetchActivityZones,
   fetchAthlete,
   fetchForecasts,
   fetchKomootSavedTour,
@@ -71,7 +70,6 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'activities.merge.pending': fetchPendingMerge,
   'activities.merge.discard': discardMerge,
   'club.calendar': fetchClubCalendar,
-  'activity.zones': fetchActivityZones,
   'activity.streams': fetchActivityStreams,
   'activity.photos': fetchActivityPhotos,
   'activity.comments': fetchActivityComments,
@@ -123,9 +121,7 @@ const DEMO: typeof REAL = {
   'activities.merge.pending': () => Promise.resolve(null),
   'activities.merge.discard': () => Promise.resolve(),
   'club.calendar': demoBackend.getClubCalendar,
-  'activity.zones': demoBackend.getZones,
-  // The demo's rides have no recorded points: no stops.
-  'activity.streams': () => Promise.resolve({}),
+  'activity.streams': demoBackend.getStreams,
   // The demo has no photos.
   'activity.photos': () => Promise.resolve([]),
   'activity.comments': demoBackend.getComments,

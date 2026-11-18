@@ -47,8 +47,9 @@ import {
   sunTimes,
   terrainOf,
 } from '../../models';
-import {Activity, ActivityType, ActivityZone, Comment, DetailedActivity} from '../../models/strava';
+import {Activity, ActivityType, Comment, DetailedActivity} from '../../models/strava';
 import type {ActivityStreams, Stop} from '../../models/stops';
+import {heartRateZoneTimes} from '../../models/heart-rate-zones';
 import {ActivityNote, ActivityPhoto, IgnoredByStravaError, NoWriteAccessError, UploadRefusedError} from '../../api';
 import {DateInput, TimeInput, toaster} from '../../components/ui';
 import {Card, CardTitle} from '../components/Card';
@@ -62,7 +63,6 @@ import {Marker, Tooltip as MapTooltip} from 'react-leaflet';
 import {RingFrame} from '../components/RouteThumb';
 import {duration, km, metres, number, relativeDay} from '../format';
 
-const fetchZones = getFetcher<ActivityZone[]>('activity.zones');
 const fetchStreams = getFetcher<ActivityStreams>('activity.streams');
 // A stop's dot on the map: amber, apart from the route's orange and its ends' green and black.
 const STOP_COLOR = '#f5a524';
@@ -776,16 +776,20 @@ const Daylight = ({activity, locale, stops = []}: {activity: Activity; locale: s
   );
 };
 
-const HeartRateZones = ({activity}: {activity: Activity}) => {
-  const {data} = useQuery({
-    queryKey: ['zones', activity.id],
-    queryFn: () => fetchZones(activity.id),
-    enabled: activity.has_heartrate,
-  });
-  const buckets = data?.find(({type}) => 'heartrate' === type)?.distribution_buckets ?? [];
+/**
+ * Time in each heart rate zone, from the activity's heart rate points and the rider's zones in
+ * Settings (Strava gives its own zones to subscribers only).
+ */
+const HeartRateZones = ({activity, streams}: {activity: Activity; streams: ActivityStreams | undefined}) => {
+  const {heartRate} = useSettings();
+  const buckets = useMemo(
+    () => (undefined === streams ? [] : (heartRateZoneTimes(streams, heartRate.zones) ?? [])),
+    [streams, heartRate.zones],
+  );
   const total = buckets.reduce((sum, {time}) => sum + time, 0);
 
-  if (!activity.has_heartrate) return null;
+  // Nothing to show without heart rate, or once the points came back with none.
+  if (!activity.has_heartrate || (undefined !== streams && 0 === total)) return null;
 
   return (
     <Card>
@@ -860,12 +864,13 @@ const ActivityPage = () => {
     undefined !== activity && getTypes(ActivityType.Run).includes(activity.sport_type as ActivityType)
       ? 'runs'
       : 'rides';
-  // Its stops of 2 minutes or more, from its recorded points: outdoors only.
+  // Its recorded points: its stops of 3 minutes or more (outdoors only) and its time in each
+  // heart rate zone.
   const outdoors = undefined !== activity && !activity.trainer && 2 === activity.start_latlng?.length;
   const streams = useQuery({
     queryKey: ['streams', activity?.id],
     queryFn: () => fetchStreams(activity?.id ?? 0),
-    enabled: outdoors,
+    enabled: outdoors || true === activity?.has_heartrate,
     staleTime: Infinity,
     retry: false,
   });
@@ -1112,7 +1117,7 @@ const ActivityPage = () => {
           <Comments key={activity.id} activity={activity} detail={detail} locale={locale} />
         </Stack>
         <Stack gap={{base: '16px', md: '24px'}}>
-          <HeartRateZones activity={activity} />
+          <HeartRateZones activity={activity} streams={streams.isError ? {} : streams.data} />
           <Box hideBelow="lg">
             <Daylight activity={activity} locale={locale} stops={stops} />
           </Box>

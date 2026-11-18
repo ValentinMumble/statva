@@ -1,7 +1,7 @@
 import type {ClubRide} from '../models/club';
 import type {CopyChoice, CopyResult, MergeChoice, MergeResult, PendingMerge} from '../models/merge';
 import type {ActivityStreams} from '../models/stops';
-import {ActivityZone, Athlete, Comment, DetailedActivity} from '../models/strava';
+import {Athlete, Comment, DetailedActivity} from '../models/strava';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
 class NotLoggedInError extends Error {}
@@ -128,11 +128,12 @@ const fetchClubCalendar = (): Promise<{rides: ClubRide[]; complete: boolean}> =>
 /** Asks the server to fetch one activity from Strava again and store it. */
 const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
 
-const fetchActivityZones = (id: number): Promise<ActivityZone[]> => strava<ActivityZone[]>(`activities/${id}/zones`);
-
-/** An activity's recorded points: times, positions and whether the rider was moving, for its stops. */
+/**
+ * An activity's recorded points: times, positions, whether the rider was moving and the heart
+ * rate, for its stops and its time in each heart rate zone.
+ */
 const fetchActivityStreams = (id: number): Promise<ActivityStreams> =>
-  strava<ActivityStreams>(`activities/${id}/streams`, {keys: 'time,latlng,moving', key_by_type: 'true'});
+  strava<ActivityStreams>(`activities/${id}/streams`, {keys: 'time,latlng,moving,heartrate', key_by_type: 'true'});
 
 // Where the photo was taken, when it says: [latitude, longitude].
 type ActivityPhoto = {
@@ -167,7 +168,6 @@ export {
   fetchActivityComments,
   fetchActivityPhotos,
   fetchActivityStreams,
-  fetchActivityZones,
   fetchAthlete,
   getJson,
   NotLoggedInError,
