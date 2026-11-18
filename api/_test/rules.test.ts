@@ -38,7 +38,7 @@ const AKENEO: RideRule = {
 };
 
 const ride = (fields: Partial<RuledActivity> = {}): RuledActivity => ({
-  id: 1,
+  id: '1',
   name: 'Morning Ride',
   sport_type: 'Ride',
   distance: 9000,

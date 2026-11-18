@@ -14,7 +14,7 @@ const TEST_CLUB: ClubRules = {
 
 const dummyActivity: Activity = {
   resource_state: 2,
-  athlete: {id: 1, resource_state: 1},
+  athlete: {id: '1', resource_state: 1},
   name: 'N-Peloton #575 G2',
   distance: 111256,
   moving_time: 12271,
@@ -23,7 +23,7 @@ const dummyActivity: Activity = {
   type: ActivityType.Ride,
   sport_type: ActivityType.Ride,
   workout_type: 10,
-  id: 12728812950,
+  id: '12728812950',
   start_date: '2024-10-23T16:50:25Z',
   start_date_local: '2024-10-23T18:50:25Z',
   timezone: '(GMT+01:00) Europe/Paris',
@@ -80,7 +80,7 @@ const dummyActivity: Activity = {
 const dummyDetailedActivity: DetailedActivity = {
   resource_state: 3,
   athlete: {
-    id: 1,
+    id: '1',
     resource_state: 1,
   },
   name: 'N-Peloton #561 G2 préchauffé 🎸',
@@ -91,7 +91,7 @@ const dummyDetailedActivity: DetailedActivity = {
   type: 'Ride',
   sport_type: 'Ride',
   workout_type: 10,
-  id: 11914029170,
+  id: '11914029170',
   start_date: '2024-07-17T16:42:13Z',
   start_date_local: '2024-07-17T18:42:13Z',
   timezone: '(GMT+01:00) Europe/Paris',

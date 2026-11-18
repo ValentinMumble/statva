@@ -6,7 +6,7 @@ const label = (key: string | null) => (null === key ? '🤷' : `[${key}]`);
 
 const activity = (id: number, local: string, km: number, extra = {}) =>
   buildDetailedActivity({
-    id,
+    id: String(id),
     name: `Ride ${id}`,
     start_date: local,
     start_date_local: local,
@@ -40,7 +40,7 @@ describe('buildYearReview', () => {
   });
 
   it('finds the longest ride among rides', () => {
-    expect(review.longestRide).toEqual({id: 3, name: 'Sunny 🌞 loop 🥶', day: '2026-05-10', value: 90000});
+    expect(review.longestRide).toEqual({id: '3', name: 'Sunny 🌞 loop 🥶', day: '2026-05-10', value: 90000});
   });
 
   it('names the bike with the most kilometres', () => {
@@ -59,9 +59,9 @@ describe('buildYearReview', () => {
   });
 
   it('finds the most kudos and the first and last activity', () => {
-    expect(review.mostKudos).toMatchObject({id: 3, value: 12});
-    expect(review.first).toMatchObject({id: 2, day: '2026-01-04'});
-    expect(review.last).toMatchObject({id: 6, day: '2026-08-15'});
+    expect(review.mostKudos).toMatchObject({id: '3', value: 12});
+    expect(review.first).toMatchObject({id: '2', day: '2026-01-04'});
+    expect(review.last).toMatchObject({id: '6', day: '2026-08-15'});
   });
 
   it('stays empty for a year with nothing', () => {

@@ -2,7 +2,7 @@ import {install} from './fakes.js';
 import {sessionCookie} from '../_lib/session.js';
 import {GET} from '../activity.js';
 
-const call = async (athleteId: number, query = '') =>
+const call = async (athleteId: string, query = '') =>
   await GET(
     new Request(`https://statva.test/api/activity?action=komoot${query}`, {
       headers: {cookie: sessionCookie(athleteId).split(';')[0]},
@@ -26,10 +26,10 @@ describe("the owner's Komoot tours", () => {
   it('lists the planned tours and reads one, logging in once and keeping the session', async () => {
     const fake = withKomoot();
 
-    expect(await (await call(42)).json()).toEqual([
+    expect(await (await call('42')).json()).toEqual([
       {id: 55, name: 'Samedi aller', distance: 118000, elevation_up: 1003, sport: 'racebike', date: '2026-11-01'},
     ]);
-    expect(await (await call(42, '&id=55')).json()).toEqual({
+    expect(await (await call('42', '&id=55')).json()).toEqual({
       name: 'Samedi aller',
       points: [
         {lat: 47.2, lng: -1.5, alt: 10},
@@ -43,21 +43,21 @@ describe("the owner's Komoot tours", () => {
 
   it('logs in again when the session has run out', async () => {
     const fake = withKomoot();
-    await call(42);
+    await call('42');
 
     fake.komoot.session++;
 
-    expect((await call(42)).status).toBe(200);
+    expect((await call('42')).status).toBe(200);
     expect(fake.komoot.logins).toBe(2);
   });
 
   it('is only for the owner, once the login is set, and says when Komoot refuses it', async () => {
     const fake = withKomoot();
 
-    expect((await call(43)).status).toBe(404);
+    expect((await call('43')).status).toBe(404);
     fake.komoot.password = 'changed on Komoot';
-    expect((await call(42)).status).toBe(502);
+    expect((await call('42')).status).toBe(502);
     delete process.env.KOMOOT_PASSWORD;
-    expect((await call(42)).status).toBe(404);
+    expect((await call('42')).status).toBe(404);
   });
 });

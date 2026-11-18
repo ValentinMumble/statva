@@ -8,7 +8,7 @@ import {FTPTest} from './ftp';
 import {DetailedActivity} from './strava';
 
 type Named = {name: string; value: number};
-type Record_ = {id: number; name: string; date: string; value: number; label: string};
+type Record_ = {id: string; name: string; date: string; value: number; label: string};
 
 type Dashboard = {
   totals: {
@@ -46,7 +46,7 @@ type Dashboard = {
     previousYear: number;
     rows: {metric: string; current: number; previous: number; format: 'count' | 'km' | 'm' | 'h'}[];
   };
-  photos: {id: number; name: string; date: string; url: string}[];
+  photos: {id: string; name: string; date: string; url: string}[];
   commute: {count: number; distance: number; co2Kg: number};
   distanceBands: Named[];
   weekendShare: {weekday: number; weekend: number};

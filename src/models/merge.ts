@@ -8,7 +8,7 @@ import {Activity} from './strava';
 // The most activities one merge takes.
 const MAX_MERGE_PARTS = 10;
 
-type MergePart = {id: number; name: string; start_date: string};
+type MergePart = {id: string; name: string; start_date: string};
 
 // A merge Strava refused (as a duplicate of a part, say), kept until its parts are deleted.
 type PendingMerge = {
@@ -21,12 +21,12 @@ type PendingMerge = {
 };
 
 type MergeResult =
-  | {outcome: 'merged'; activity: Activity; parts: number[]}
+  | {outcome: 'merged'; activity: Activity; parts: string[]}
   | {outcome: 'refused'; pending: PendingMerge}
   // Strava took the file but was still making it an activity: it shows up a little later.
-  | {outcome: 'processing'; parts: number[]};
+  | {outcome: 'processing'; parts: string[]};
 
-type MergeChoice = {ids: number[]; name: string; gearId: string; commute: boolean};
+type MergeChoice = {ids: string[]; name: string; gearId: string; commute: boolean};
 
 // A ride copied to another day and time (or still being made on Strava).
 type CopyResult = {outcome: 'copied'; activity: Activity} | {outcome: 'processing'};
@@ -69,7 +69,7 @@ const mergePlan = (activities: Activity[]): MergePlan => {
 };
 
 // A piece of Strava's message about an upload: text, or one of the rider's activities.
-type MessagePiece = {text: string} | {id: number; name: string};
+type MessagePiece = {text: string} | {id: string; name: string};
 
 // Strava names the activity an upload duplicates as a link (<a href='/activities/123'>Name</a>),
 // or as "activity 123".
@@ -81,7 +81,7 @@ const messagePieces = (message: string): MessagePiece[] => {
   let from = 0;
   for (const match of message.matchAll(ACTIVITY_IN_MESSAGE)) {
     if (from < match.index) pieces.push({text: message.slice(from, match.index)});
-    const id = Number(match[1] ?? match[3]);
+    const id = match[1] ?? match[3];
     pieces.push({id, name: match[2]?.replace(/<[^>]*>/g, '') || `activity ${id}`});
     from = match.index + match[0].length;
   }

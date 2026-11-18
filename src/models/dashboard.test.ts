@@ -8,7 +8,7 @@ const label = (key: string | null) => (null === key ? '🤷' : `[${key}]`);
 
 const activities = [
   buildDetailedActivity({
-    id: 1,
+    id: '1',
     name: 'N-Peloton #575 G2',
     distance: 60000,
     moving_time: 7200,
@@ -42,7 +42,7 @@ const activities = [
     },
   }),
   buildDetailedActivity({
-    id: 2,
+    id: '2',
     name: 'Sortie du dimanche',
     distance: 40000,
     moving_time: 3600,
@@ -132,7 +132,13 @@ test('it ranks rides by each measure and formats the winner', () => {
   const {records} = build();
   const longest = records.find(({key}) => 'distance' === key);
 
-  expect(longest?.rides[0]).toEqual({id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 60, label: '60 km'});
+  expect(longest?.rides[0]).toEqual({
+    id: '1',
+    name: 'N-Peloton #575 G2',
+    date: '06/03/2024',
+    value: 60,
+    label: '60 km',
+  });
   expect(records.find(({key}) => 'hilliest' === key)?.rides[0].label).toBe('6.7 m/km');
 });
 
@@ -188,7 +194,7 @@ test('it adds up the work done and the kit used', () => {
 test('it takes the middle stop, so a ride left paused does not skew it', () => {
   // gaps are 1800s and 600s, plus a fake 10h one that must not move the figure
   const withPausedRide = computeDashboard(
-    [...activities, buildDetailedActivity({id: 3, moving_time: 3600, elapsed_time: 3600 + 36000})],
+    [...activities, buildDetailedActivity({id: '3', moving_time: 3600, elapsed_time: 3600 + 36000})],
     events,
     ftpTests,
     [],
@@ -209,7 +215,7 @@ test('it ranks the fastest average, the earliest start and the most crowded ride
   expect(fastest.label).toBe('30.0 km/h');
   expect(records.find(({key}) => 'earliest' === key)?.rides[0].label).toBe('08:00');
   expect(records.find(({key}) => 'company' === key)?.rides).toEqual([
-    {id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 12, label: '12 riders'},
+    {id: '1', name: 'N-Peloton #575 G2', date: '06/03/2024', value: 12, label: '12 riders'},
   ]);
 });
 
@@ -231,12 +237,12 @@ test('it groups heart rate into bands', () => {
 
 test('it counts days out, a day with two activities once', () => {
   const backToBack = [
-    buildDetailedActivity({id: 10, start_date: '2024-05-01T08:00:00Z', start_date_local: '2024-05-01T10:00:00Z'}),
-    buildDetailedActivity({id: 11, start_date: '2024-05-02T08:00:00Z', start_date_local: '2024-05-02T10:00:00Z'}),
-    buildDetailedActivity({id: 12, start_date: '2024-05-03T08:00:00Z', start_date_local: '2024-05-03T10:00:00Z'}),
+    buildDetailedActivity({id: '10', start_date: '2024-05-01T08:00:00Z', start_date_local: '2024-05-01T10:00:00Z'}),
+    buildDetailedActivity({id: '11', start_date: '2024-05-02T08:00:00Z', start_date_local: '2024-05-02T10:00:00Z'}),
+    buildDetailedActivity({id: '12', start_date: '2024-05-03T08:00:00Z', start_date_local: '2024-05-03T10:00:00Z'}),
     // same day as the one before, so it is not a new day out
-    buildDetailedActivity({id: 13, start_date: '2024-05-03T16:00:00Z', start_date_local: '2024-05-03T18:00:00Z'}),
-    buildDetailedActivity({id: 14, start_date: '2024-06-20T08:00:00Z', start_date_local: '2024-06-20T10:00:00Z'}),
+    buildDetailedActivity({id: '13', start_date: '2024-05-03T16:00:00Z', start_date_local: '2024-05-03T18:00:00Z'}),
+    buildDetailedActivity({id: '14', start_date: '2024-06-20T08:00:00Z', start_date_local: '2024-06-20T10:00:00Z'}),
   ];
   const {totals} = computeDashboard(backToBack, [], [], [], label);
 
@@ -275,7 +281,7 @@ test('it leaves ski out of the records, where it would take every altitude', () 
   const withSki = [
     ...activities,
     buildDetailedActivity({
-      id: 20,
+      id: '20',
       name: 'Les Menuires jour 2',
       sport_type: 'AlpineSki' as ActivityType,
       total_elevation_gain: 9000,
@@ -300,19 +306,19 @@ test('it works out the eddington number from rides only', () => {
   const {totals} = computeDashboard(
     [
       buildDetailedActivity({
-        id: 30,
+        id: '30',
         distance: 60000,
         start_date: '2024-04-01T08:00:00Z',
         start_date_local: '2024-04-01T10:00:00Z',
       }),
       buildDetailedActivity({
-        id: 31,
+        id: '31',
         distance: 60000,
         start_date: '2024-04-02T08:00:00Z',
         start_date_local: '2024-04-02T10:00:00Z',
       }),
       buildDetailedActivity({
-        id: 32,
+        id: '32',
         distance: 60000,
         start_date: '2024-04-03T08:00:00Z',
         start_date_local: '2024-04-03T10:00:00Z',
@@ -332,19 +338,19 @@ test('it says how many more days the next eddington level needs', () => {
   const {eddingtonNext} = computeDashboard(
     [
       buildDetailedActivity({
-        id: 30,
+        id: '30',
         distance: 60000,
         start_date: '2024-04-01T08:00:00Z',
         start_date_local: '2024-04-01T10:00:00Z',
       }),
       buildDetailedActivity({
-        id: 31,
+        id: '31',
         distance: 60000,
         start_date: '2024-04-02T08:00:00Z',
         start_date_local: '2024-04-02T10:00:00Z',
       }),
       buildDetailedActivity({
-        id: 32,
+        id: '32',
         distance: 60000,
         start_date: '2024-04-03T08:00:00Z',
         start_date_local: '2024-04-03T10:00:00Z',
@@ -363,7 +369,7 @@ test('it ranks strength by the logged normalized power, so estimated running pow
   const withRun = [
     ...activities,
     buildDetailedActivity({
-      id: 40,
+      id: '40',
       name: 'Trail du Haras',
       sport_type: 'TrailRun' as ActivityType,
       moving_time: 5400,
@@ -376,7 +382,7 @@ test('it ranks strength by the logged normalized power, so estimated running pow
   const strongest = computeDashboard(withRun, [], [], [], label).records.find(({key}) => 'power' === key);
 
   expect(strongest?.rides).toEqual([
-    {id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', value: 211, label: '211 W'},
+    {id: '1', name: 'N-Peloton #575 G2', date: '06/03/2024', value: 211, label: '211 W'},
   ]);
 });
 
@@ -385,7 +391,7 @@ test('it counts the milestone rides', () => {
     [
       ...activities,
       buildDetailedActivity({
-        id: 50,
+        id: '50',
         distance: 210000,
         total_elevation_gain: 1500,
         start_date: '2024-08-01T06:00:00Z',
@@ -412,7 +418,7 @@ test('it compares this year with last year up to the same day', () => {
   const withLateRide = [
     ...activities,
     buildDetailedActivity({
-      id: 60,
+      id: '60',
       distance: 100000,
       kudos_count: 3,
       start_date: '2024-11-20T06:00:00Z',
@@ -437,8 +443,8 @@ test('it lists the latest photos, newest first, preferring the large size', () =
   const {photos} = build();
 
   expect(photos).toEqual([
-    {id: 2, name: 'Sortie du dimanche', date: '13/07/2025', url: 'small-2.jpg'},
-    {id: 1, name: 'N-Peloton #575 G2', date: '06/03/2024', url: 'big-1.jpg'},
+    {id: '2', name: 'Sortie du dimanche', date: '13/07/2025', url: 'small-2.jpg'},
+    {id: '1', name: 'N-Peloton #575 G2', date: '06/03/2024', url: 'big-1.jpg'},
   ]);
 });
 

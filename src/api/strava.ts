@@ -29,8 +29,8 @@ const strava = <T>(path: string, params: Record<string, number | string> = {}): 
 const fetchAthlete = (): Promise<Athlete> => strava<Athlete>('athlete');
 
 // detailIds: the activities whose details the call stored, for the app to fetch those alone.
-type SyncReport = {added: number; historyDone: boolean; detailIds: number[]; limited: boolean};
-type BackfillReport = {detailIds: number[]; detailsMissing: number; powerFetched: number; limited: boolean};
+type SyncReport = {added: number; historyDone: boolean; detailIds: string[]; limited: boolean};
+type BackfillReport = {detailIds: string[]; detailsMissing: number; powerFetched: number; limited: boolean};
 
 const post = async <T>(url: string): Promise<T> => {
   const response = await fetch(url, {method: 'POST'});
@@ -57,7 +57,7 @@ type ActivityNote = 'description' | 'private_note';
 /** Changes an activity on Strava (and in Statva). */
 type ActivityChange = {name: string} | {gear_id: string} | Partial<Record<ActivityNote, string>>;
 
-const changeActivity = async (id: number, change: ActivityChange): Promise<void> => {
+const changeActivity = async (id: string, change: ActivityChange): Promise<void> => {
   const response = await fetch(`/api/activity?id=${id}`, {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
@@ -70,13 +70,13 @@ const changeActivity = async (id: number, change: ActivityChange): Promise<void>
   if (!response.ok) throw new Error(`Changing the activity failed: ${response.status}`);
 };
 
-const renameActivity = (id: number, name: string): Promise<void> => changeActivity(id, {name});
+const renameActivity = (id: string, name: string): Promise<void> => changeActivity(id, {name});
 
 /** Moves an activity to other gear on Strava, or takes it off with "none". */
-const setActivityGear = (id: number, gearId: string): Promise<void> => changeActivity(id, {gear_id: gearId});
+const setActivityGear = (id: string, gearId: string): Promise<void> => changeActivity(id, {gear_id: gearId});
 
 /** Changes an activity's description or private note on Strava. */
-const setActivityNote = (id: number, note: ActivityNote, text: string): Promise<void> =>
+const setActivityNote = (id: string, note: ActivityNote, text: string): Promise<void> =>
   changeActivity(id, {[note]: text});
 
 /** Thrown when a merge or a copy cannot be made (parts overlap, Strava refused it): the server says why. */
@@ -104,7 +104,7 @@ const sendMerge = (body: unknown): Promise<MergeResult> =>
  * Copies a ride to another day and time, with the gear and commute flag chosen (today at its own
  * time, with its own gear and flag, by default), on Strava and in Statva.
  */
-const copyActivity = (id: number, {date, time, gearId, commute}: CopyChoice = {}): Promise<CopyResult> =>
+const copyActivity = (id: string, {date, time, gearId, commute}: CopyChoice = {}): Promise<CopyResult> =>
   sendUpload<CopyResult>(`/api/activity?action=copy&id=${id}`, {date, time, gear_id: gearId, commute});
 
 /** Merges activities into a new one on Strava, with the name, gear and commute flag chosen. */
@@ -126,13 +126,13 @@ const discardMerge = async (): Promise<void> => {
 const fetchClubCalendar = (): Promise<{rides: ClubRide[]; complete: boolean}> => getJson('/api/club');
 
 /** Asks the server to fetch one activity from Strava again and store it. */
-const refreshActivity = (id: number): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
+const refreshActivity = (id: string): Promise<DetailedActivity> => post<DetailedActivity>(`/api/activity?id=${id}`);
 
 /**
  * An activity's recorded points: times, positions, whether the rider was moving and the heart
  * rate, for its stops and its time in each heart rate zone.
  */
-const fetchActivityStreams = (id: number): Promise<ActivityStreams> =>
+const fetchActivityStreams = (id: string): Promise<ActivityStreams> =>
   strava<ActivityStreams>(`activities/${id}/streams`, {keys: 'time,latlng,moving,heartrate', key_by_type: 'true'});
 
 // Where the photo was taken, when it says: [latitude, longitude].
@@ -145,10 +145,10 @@ type ActivityPhoto = {
 
 /** Every photo of an activity (the details only hold the main one), at about 1000 px. */
 /** An activity's comments, oldest first. Strava lets apps read them, not write them. */
-const fetchActivityComments = (id: number): Promise<Comment[]> =>
+const fetchActivityComments = (id: string): Promise<Comment[]> =>
   strava<Comment[]>(`activities/${id}/comments`, {page_size: 100});
 
-const fetchActivityPhotos = (id: number): Promise<ActivityPhoto[]> =>
+const fetchActivityPhotos = (id: string): Promise<ActivityPhoto[]> =>
   strava<ActivityPhoto[]>(`activities/${id}/photos`, {size: 1000, photo_sources: 'true'});
 
 export {

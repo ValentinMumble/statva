@@ -2,7 +2,7 @@ import {ResourceState} from './resource-state';
 import {Sex} from './sex';
 
 export interface SummaryAthlete {
-  id: number;
+  id: string;
   resource_state: ResourceState;
   firstname: string;
   lastname: string;

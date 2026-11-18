@@ -98,7 +98,7 @@ const readAll = async (slug: string): Promise<ClubRide[]> => {
  * between. When the site cannot be read, what is kept is returned as it is.
  */
 const readClubCalendar = async (
-  athleteId: number,
+  athleteId: string,
   website: string | undefined,
   now = Date.now(),
 ): Promise<ClubCalendar> => {

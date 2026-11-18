@@ -1,8 +1,8 @@
 import {SummaryAthlete} from '.';
 
 export interface Comment {
-  id: number;
-  activity_id: number;
+  id: string;
+  activity_id: string;
   text: string;
   athlete: SummaryAthlete;
   created_at: Date;

@@ -10,7 +10,7 @@ import {getJson} from './strava';
 // Strava route ids pass JavaScript's safe integers: id_str is the one to use.
 type StravaRoute = {id_str: string; name: string; distance: number; elevation_gain: number; type: number};
 
-const fetchStravaRoutes = (athleteId: number): Promise<StravaRoute[]> =>
+const fetchStravaRoutes = (athleteId: string): Promise<StravaRoute[]> =>
   getJson<StravaRoute[]>(`/api/strava?${new URLSearchParams({path: `athletes/${athleteId}/routes`, per_page: '100'})}`);
 
 type Stream = {type: string; data: unknown[]};

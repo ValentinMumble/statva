@@ -31,6 +31,7 @@ import {homedir} from 'os';
 import {join} from 'path';
 import {pathToFileURL} from 'url';
 import {loadEnv, ownerAccessToken, REDIS_KEYS, STRAVA_KEYS} from './env.mjs';
+import {parseStravaJson} from './strava-json.mjs';
 
 const env = loadEnv([...STRAVA_KEYS, ...REDIS_KEYS]);
 const redis = new Redis({
@@ -70,7 +71,7 @@ const stravaJson = async (token, path, init = {}) => {
   }
   if (!response.ok) throw new Error(`${init.method ?? 'GET'} ${path}: ${response.status} ${await response.text()}`);
 
-  return await response.json();
+  return parseStravaJson(await response.text());
 };
 
 /** Asks the rider to approve write access in the browser, and catches the answer on localhost. */

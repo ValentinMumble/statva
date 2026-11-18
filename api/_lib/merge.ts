@@ -3,6 +3,7 @@ import {StravaActivity, UPLOAD_EXTERNAL_ID_PREFIX} from './activities.js';
 import {athleteKey} from './keys.js';
 import {redis} from './redis.js';
 import {stravaGet, stravaPut, stravaUpload} from './strava.js';
+import {readStravaJson, withStringIds} from './strava-ids.js';
 import {forgetActivities, refreshActivity} from './sync.js';
 
 /**
@@ -43,14 +44,14 @@ type PendingMerge = MergeChoice & {
   sportType: string;
   trainer: boolean;
   description: string;
-  parts: {id: number; name: string; start_date: string}[];
+  parts: {id: string; name: string; start_date: string}[];
   error: string;
 };
 
 type MergeResult =
-  | {outcome: 'merged'; activity: StravaActivity; parts: number[]}
+  | {outcome: 'merged'; activity: StravaActivity; parts: string[]}
   | {outcome: 'refused'; pending: PendingMerge}
-  | {outcome: 'processing'; parts: number[]};
+  | {outcome: 'processing'; parts: string[]};
 
 class UploadError extends Error {
   constructor(
@@ -154,11 +155,11 @@ const buildTcx = (sport: string, points: Point[]): string => {
 `;
 };
 
-const readPart = async (athleteId: number, id: number): Promise<Part> => {
+const readPart = async (athleteId: string, id: string): Promise<Part> => {
   const response = await stravaGet(athleteId, `activities/${id}`);
   if (404 === response.status) throw new UploadError('The activity is not on Strava any more', 404);
   if (!response.ok) throw new UploadError(`Strava sent an activity with ${response.status}`, 502);
-  const activity = (await response.json()) as StravaActivity;
+  const activity = await readStravaJson<StravaActivity>(response);
 
   const streams = await stravaGet(
     athleteId,
@@ -170,18 +171,18 @@ const readPart = async (athleteId: number, id: number): Promise<Part> => {
   return {activity, streams: (await streams.json()) as Streams};
 };
 
-type UploadAnswer = {id?: number; id_str?: string; error?: string | null; status?: string; activity_id?: number | null};
+type UploadAnswer = {id?: string; error?: string | null; status?: string; activity_id?: string | null};
 
 /**
  * Uploads a TCX file (a merge, a copy) and waits for Strava to make it an activity: its id, the
  * error Strava gave, or null while it is still busy.
  */
 const upload = async (
-  athleteId: number,
+  athleteId: string,
   file: string,
   fields: UploadFields,
   kind: 'merge' | 'copy',
-): Promise<number | {error: string} | null> => {
+): Promise<string | {error: string} | null> => {
   const form = new FormData();
   form.append('file', new Blob([file]), `${kind}.tcx`);
   form.append('data_type', 'tcx');
@@ -195,12 +196,12 @@ const upload = async (
 
   const response = await stravaUpload(athleteId, form);
   if (401 === response.status || 403 === response.status) throw new UploadError('No write access', 403);
-  let answer = (await response.json().catch(() => ({}))) as UploadAnswer;
+  let answer = await readStravaJson<UploadAnswer>(response).catch((): UploadAnswer => ({}));
   if (!response.ok && !answer.error) throw new UploadError(`Strava refused the upload with ${response.status}`, 502);
 
   for (let poll = 0; !answer.activity_id && !answer.error && poll < POLLS; poll++) {
     await sleep(POLL_MS);
-    answer = (await (await stravaGet(athleteId, `uploads/${answer.id_str ?? answer.id}`)).json()) as UploadAnswer;
+    answer = await readStravaJson<UploadAnswer>(await stravaGet(athleteId, `uploads/${answer.id}`));
   }
 
   if (answer.error) return {error: answer.error};
@@ -210,8 +211,8 @@ const upload = async (
 
 /** After an upload: what a file cannot carry (the gear), then the activity stored in Statva. */
 const finish = async (
-  athleteId: number,
-  activityId: number,
+  athleteId: string,
+  activityId: string,
   update: Record<string, unknown>,
 ): Promise<StravaActivity> => {
   await stravaPut(athleteId, `activities/${activityId}`, update);
@@ -219,9 +220,9 @@ const finish = async (
   return (await refreshActivity(athleteId, activityId)) ?? ({id: activityId} as StravaActivity);
 };
 
-const mergeKey = (athleteId: number): string => athleteKey(athleteId, 'merge');
+const mergeKey = (athleteId: string): string => athleteKey(athleteId, 'merge');
 
-const uploadAndFinish = async (athleteId: number, file: string, pending: PendingMerge): Promise<MergeResult> => {
+const uploadAndFinish = async (athleteId: string, file: string, pending: PendingMerge): Promise<MergeResult> => {
   const parts = pending.parts.map(({id}) => id);
   const uploaded = await upload(athleteId, file, pending, 'merge');
 
@@ -230,7 +231,7 @@ const uploadAndFinish = async (athleteId: number, file: string, pending: Pending
     await forgetActivities(athleteId, parts);
     return {outcome: 'processing', parts};
   }
-  if ('number' !== typeof uploaded) {
+  if ('string' !== typeof uploaded) {
     // Kept for a retry, as the parts' data goes once they are deleted.
     const refused = {...pending, error: uploaded.error};
     await redis().hset(mergeKey(athleteId), {
@@ -246,7 +247,7 @@ const uploadAndFinish = async (athleteId: number, file: string, pending: Pending
 };
 
 /** Merges the activities into a new one on Strava, with the rider's name, bike and commute flag. */
-const mergeActivities = async (athleteId: number, ids: number[], choice: MergeChoice): Promise<MergeResult> => {
+const mergeActivities = async (athleteId: string, ids: string[], choice: MergeChoice): Promise<MergeResult> => {
   const unique = [...new Set(ids)];
   if (unique.length < MIN_PARTS || unique.length > MAX_PARTS)
     throw new UploadError(`Merge ${MIN_PARTS} to ${MAX_PARTS} activities`, 400);
@@ -278,18 +279,20 @@ const mergeActivities = async (athleteId: number, ids: number[], choice: MergeCh
 };
 
 /** The merge Strava refused, waiting for its parts to be deleted, if any. */
-const pendingMerge = async (athleteId: number): Promise<PendingMerge | null> =>
-  await redis().hget<PendingMerge>(mergeKey(athleteId), 'pending');
+const pendingMerge = async (athleteId: string): Promise<PendingMerge | null> =>
+  withStringIds(await redis().hget<PendingMerge>(mergeKey(athleteId), 'pending'));
 
 /** Uploads the refused merge again, once its parts are deleted. */
-const retryMerge = async (athleteId: number): Promise<MergeResult> => {
+const retryMerge = async (athleteId: string): Promise<MergeResult> => {
   const stored = await redis().hmget<{pending: PendingMerge; file: string}>(mergeKey(athleteId), 'pending', 'file');
   if (!stored?.pending || !stored.file) throw new UploadError('No merge is waiting', 404);
 
-  return await uploadAndFinish(athleteId, gunzipSync(Buffer.from(stored.file, 'base64')).toString(), stored.pending);
+  const file = gunzipSync(Buffer.from(stored.file, 'base64')).toString();
+
+  return await uploadAndFinish(athleteId, file, withStringIds(stored.pending));
 };
 
-const discardMerge = async (athleteId: number): Promise<void> => {
+const discardMerge = async (athleteId: string): Promise<void> => {
   await redis().del(mergeKey(athleteId));
 };
 

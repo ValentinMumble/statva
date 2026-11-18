@@ -1,6 +1,7 @@
 import {createHmac, timingSafeEqual} from 'node:crypto';
 import {env} from './env.js';
 import {cookie, readCookie} from './http.js';
+import {isStravaId} from './strava-ids.js';
 
 const SESSION_COOKIE = 'statva_session';
 // The longest browsers keep a cookie (Chrome caps it at 400 days); each visit starts it over.
@@ -10,7 +11,7 @@ const sign = (payload: string): string =>
   createHmac('sha256', env('SESSION_SECRET')).update(payload).digest('base64url');
 
 /** A cookie that says which athlete this is, signed so it cannot be forged or edited. */
-const sessionCookie = (athleteId: number): string => {
+const sessionCookie = (athleteId: string): string => {
   const expiresAt = Math.floor(Date.now() / 1000) + SESSION_DAYS * 86400;
   const payload = `${athleteId}.${expiresAt}`;
 
@@ -20,7 +21,7 @@ const sessionCookie = (athleteId: number): string => {
 const clearSessionCookie = (): string => cookie(SESSION_COOKIE, '', 0);
 
 /** The athlete id of a valid, unexpired session, or null. */
-const readSession = (request: Request): number | null => {
+const readSession = (request: Request): string | null => {
   const [athleteId, expiresAt, signature] = (readCookie(request, SESSION_COOKIE) ?? '').split('.');
 
   if (undefined === signature) return null;
@@ -29,9 +30,9 @@ const readSession = (request: Request): number | null => {
   const given = Buffer.from(signature);
 
   if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
-  if (Number(expiresAt) < Date.now() / 1000) return null;
+  if (Number(expiresAt) < Date.now() / 1000 || !isStravaId(athleteId)) return null;
 
-  return Number(athleteId);
+  return athleteId;
 };
 
 export {clearSessionCookie, readSession, sessionCookie};

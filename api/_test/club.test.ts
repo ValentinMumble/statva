@@ -65,7 +65,7 @@ describe('readClubCalendar', () => {
     const fake = install();
     fake.site.publications = weekly(450);
 
-    const calendar = await readClubCalendar(42, WEBSITE);
+    const calendar = await readClubCalendar('42', WEBSITE);
 
     expect(fake.site.requests).toEqual(
       [0, 1, 2].map(page => `/api/teams/n-peloton/publications?page=${page}&size=200`),
@@ -79,30 +79,30 @@ describe('readClubCalendar', () => {
     const fake = install();
     fake.site.publications = weekly(3);
     const now = Date.UTC(2026, 0, 25);
-    await readClubCalendar(42, WEBSITE, now);
+    await readClubCalendar('42', WEBSITE, now);
 
     fake.site.publications = weekly(4);
     fake.site.requests = [];
-    expect((await readClubCalendar(42, WEBSITE, now + HOUR_MS)).rides).toHaveLength(3);
+    expect((await readClubCalendar('42', WEBSITE, now + HOUR_MS)).rides).toHaveLength(3);
     expect(fake.site.requests).toHaveLength(0);
 
-    expect((await readClubCalendar(42, WEBSITE, now + 7 * HOUR_MS)).rides).toHaveLength(4);
+    expect((await readClubCalendar('42', WEBSITE, now + 7 * HOUR_MS)).rides).toHaveLength(4);
     expect(fake.site.requests).toHaveLength(1);
   });
 
   it('keeps what it has when the site is down, and reads nothing without a team page', async () => {
     const fake = install();
     fake.site.publications = weekly(2);
-    await readClubCalendar(42, WEBSITE);
+    await readClubCalendar('42', WEBSITE);
 
     fake.site.down = true;
-    expect((await readClubCalendar(42, WEBSITE, Date.now() + 24 * HOUR_MS)).rides).toHaveLength(2);
-    expect(await readClubCalendar(42, 'https://example.com/equipes/club')).toEqual({rides: [], complete: true});
+    expect((await readClubCalendar('42', WEBSITE, Date.now() + 24 * HOUR_MS)).rides).toHaveLength(2);
+    expect(await readClubCalendar('42', 'https://example.com/equipes/club')).toEqual({rides: [], complete: true});
   });
 });
 
 describe('the club route', () => {
-  const call = async (athleteId: number | null = 42) =>
+  const call = async (athleteId: string | null = '42') =>
     await clubCalendar(
       new Request('https://statva.test/api/club', {
         headers: null === athleteId ? {} : {cookie: sessionCookie(athleteId).split(';')[0]},

@@ -2,6 +2,7 @@ import {recordUsage} from './budget.js';
 import {allowedAthletes, env} from './env.js';
 import {TOKENS_KEY} from './keys.js';
 import {redis} from './redis.js';
+import {readStravaJson} from './strava-ids.js';
 
 const TOKEN_ENDPOINT = 'https://www.strava.com/oauth/token';
 const API = 'https://www.strava.com/api/v3';
@@ -11,7 +12,7 @@ const EXPIRY_MARGIN_SECONDS = 120;
 
 type Tokens = {access_token: string; refresh_token: string; expires_at: number};
 
-const requestTokens = async (body: Record<string, string>): Promise<Tokens & {athlete?: {id: number}}> => {
+const requestTokens = async (body: Record<string, string>): Promise<Tokens & {athlete?: {id: string}}> => {
   const response = await fetch(TOKEN_ENDPOINT, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -20,10 +21,10 @@ const requestTokens = async (body: Record<string, string>): Promise<Tokens & {at
 
   if (!response.ok) throw new Error(`Strava token request failed: ${response.status}`);
 
-  return (await response.json()) as Tokens & {athlete?: {id: number}};
+  return await readStravaJson<Tokens & {athlete?: {id: string}}>(response);
 };
 
-const saveTokens = async (athleteId: number, {access_token, refresh_token, expires_at}: Tokens) => {
+const saveTokens = async (athleteId: string, {access_token, refresh_token, expires_at}: Tokens) => {
   await redis().hset(TOKENS_KEY, {[athleteId]: {access_token, refresh_token, expires_at}});
 };
 
@@ -33,7 +34,7 @@ const saveTokens = async (athleteId: number, {access_token, refresh_token, expir
  * Strava and nothing is stored, so the webhook never brings in their activities and they
  * do not take one of the app's athlete places on Strava.
  */
-const exchangeCode = async (code: string): Promise<number | null> => {
+const exchangeCode = async (code: string): Promise<string | null> => {
   const tokens = await requestTokens({code, grant_type: 'authorization_code'});
 
   if (undefined === tokens.athlete) throw new Error('Strava did not say which athlete this is');
@@ -50,8 +51,8 @@ const exchangeCode = async (code: string): Promise<number | null> => {
 };
 
 /** A valid access token for the athlete, refreshed and stored again when it has expired. */
-const accessToken = async (athleteId: number): Promise<string> => {
-  const tokens = await redis().hget<Tokens>(TOKENS_KEY, String(athleteId));
+const accessToken = async (athleteId: string): Promise<string> => {
+  const tokens = await redis().hget<Tokens>(TOKENS_KEY, athleteId);
 
   if (null === tokens) throw new Error(`No Strava tokens for athlete ${athleteId}`);
   if (tokens.expires_at - EXPIRY_MARGIN_SECONDS > Date.now() / 1000) return tokens.access_token;
@@ -63,7 +64,7 @@ const accessToken = async (athleteId: number): Promise<string> => {
 };
 
 /** Changes an activity on Strava (name, commute, gear, mute): needs the activity:write scope. */
-const stravaPut = async (athleteId: number, path: string, body: Record<string, unknown>): Promise<Response> =>
+const stravaPut = async (athleteId: string, path: string, body: Record<string, unknown>): Promise<Response> =>
   await fetch(`${API}/${path}`, {
     method: 'PUT',
     headers: {Authorization: `Bearer ${await accessToken(athleteId)}`, 'Content-Type': 'application/json'},
@@ -71,14 +72,14 @@ const stravaPut = async (athleteId: number, path: string, body: Record<string, u
   });
 
 /** Sends Strava a file to make an activity of (form fields as its uploads take them): needs activity:write. */
-const stravaUpload = async (athleteId: number, form: FormData): Promise<Response> =>
+const stravaUpload = async (athleteId: string, form: FormData): Promise<Response> =>
   await fetch(`${API}/uploads`, {
     method: 'POST',
     headers: {Authorization: `Bearer ${await accessToken(athleteId)}`},
     body: form,
   });
 
-const stravaGet = async (athleteId: number, path: string, query = new URLSearchParams()): Promise<Response> => {
+const stravaGet = async (athleteId: string, path: string, query = new URLSearchParams()): Promise<Response> => {
   const url = `${API}/${path}${0 < [...query].length ? `?${query}` : ''}`;
   const response = await fetch(url, {headers: {Authorization: `Bearer ${await accessToken(athleteId)}`}});
   await recordUsage(response.headers);
@@ -87,7 +88,7 @@ const stravaGet = async (athleteId: number, path: string, query = new URLSearchP
 };
 
 /** Revokes Statva's access to the athlete on Strava, which invalidates every token it holds. */
-const deauthorize = async (athleteId: number): Promise<void> => {
+const deauthorize = async (athleteId: string): Promise<void> => {
   await fetch(DEAUTHORIZE_ENDPOINT, {
     method: 'POST',
     headers: {Authorization: `Bearer ${await accessToken(athleteId)}`},
@@ -95,12 +96,12 @@ const deauthorize = async (athleteId: number): Promise<void> => {
 };
 
 /** Forgets an athlete's tokens, after they disconnected Statva on Strava's side. */
-const forgetTokens = async (athleteId: number): Promise<void> => {
-  await redis().hdel(TOKENS_KEY, String(athleteId));
+const forgetTokens = async (athleteId: string): Promise<void> => {
+  await redis().hdel(TOKENS_KEY, athleteId);
 };
 
 /** Whether Statva still has access to the athlete, checked with Strava itself. */
-const hasAccess = async (athleteId: number): Promise<boolean> => {
+const hasAccess = async (athleteId: string): Promise<boolean> => {
   try {
     return (await stravaGet(athleteId, 'athlete')).ok;
   } catch {

@@ -1,7 +1,7 @@
 import {ActivityType, SummarySegmentEffort} from '.';
 
 export interface SummarySegment {
-  id: number;
+  id: string;
   name: string;
   activity_type: ActivityType;
   distance: number;

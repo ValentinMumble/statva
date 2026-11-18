@@ -58,7 +58,7 @@ type CalendarMatch = {
   missed: ClubRide[];
   attended: number;
   // Where each ridden session finished, by activity id, for sessions the notes say nothing about.
-  finishes: Map<number, string>;
+  finishes: Map<string, string>;
   // The Mondays of the weeks the club held a ride of the series.
   heldWeeks: Set<string>;
 };
@@ -223,7 +223,7 @@ const matchCalendar = (sessions: ClubSession[], rides: ClubRide[], series: strin
   const entries = [...merged.values()]
     .filter(entry => entry.days.some(day => day < today) || undefined !== riddenAs(entry))
     .sort((first, second) => second.ride.day.localeCompare(first.ride.day));
-  const finishes = new Map<number, string>();
+  const finishes = new Map<string, string>();
   for (const entry of entries) {
     const session = riddenAs(entry);
     if (undefined !== session && null !== entry.ride.finish) finishes.set(session.activity.id, entry.ride.finish);
@@ -255,7 +255,7 @@ const placeKey = (place: string): string =>
  */
 const finishCounts = (
   sessions: ClubSession[],
-  calendarFinishes: Map<number, string> = new Map(),
+  calendarFinishes: Map<string, string> = new Map(),
 ): [string, number][] => {
   const places = new Map<string, {name: string; visits: number; fromNotes: boolean}>();
   for (const {activity, finish} of sessions) {

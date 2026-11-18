@@ -63,8 +63,8 @@ const copyStart = (startLocal: string, timeZone: string, now: number, {date, tim
 };
 
 const copyActivity = async (
-  athleteId: number,
-  activityId: number,
+  athleteId: string,
+  activityId: string,
   choice: CopyChoice = {},
   now = Date.now(),
 ): Promise<CopyResult> => {
@@ -101,7 +101,7 @@ const copyActivity = async (
     'copy',
   );
   if (null === uploaded) return {outcome: 'processing'};
-  if ('number' !== typeof uploaded) throw new UploadError(uploaded.error, 409);
+  if ('string' !== typeof uploaded) throw new UploadError(uploaded.error, 409);
 
   return {
     outcome: 'copied',

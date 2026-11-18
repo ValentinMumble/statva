@@ -1,6 +1,7 @@
 import {BikeExpense, encodePolyline, Event, FTPTest, Labels, Settings} from '../models';
 import {Activity, Athlete, DetailedActivity} from '../models/strava';
 import {ActivityStreams} from '../models/stops';
+import {compareIds} from '../models/strava-id';
 import {Random, seeded} from './random';
 
 /**
@@ -257,7 +258,8 @@ const generateDemo = (today: Date = new Date()): DemoData => {
 
   const create = (kind: Kind, date: Date, km: number, name: string, hourLocal: number, extra: Extra = {}) => {
     const profile = PROFILES[kind];
-    const id = nextId++;
+    const serial = nextId++;
+    const id = String(serial);
     const startTime = new Date(date.getTime() + (hourLocal - 1) * 3600000 + random.integer(0, 50) * 60000);
     const distance = Math.round(km * 1000);
     const movingTime =
@@ -312,7 +314,7 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       total_photo_count: 0,
       photo_count: 0,
       // A few club rides get comments, picked by id so the rest of the made-up data stays the same.
-      comment_count: 'club' === kind ? id % 3 : 0,
+      comment_count: 'club' === kind ? serial % 3 : 0,
       commute: 'commute' === kind,
       private: random.chance(0.04),
       trainer: 'zwift' === kind,
@@ -322,7 +324,7 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       start_latlng: 0 === points.length ? [] : points[0],
       end_latlng: 0 === points.length ? [] : points[points.length - 1],
       map: {id: `a${id}`, summary_polyline: encodePolyline(summaryPoints), resource_state: 2},
-      athlete: {id: 1, resource_state: 1},
+      athlete: {id: '1', resource_state: 1},
     };
 
     activities.push(summary as unknown as Activity);
@@ -340,7 +342,7 @@ const generateDemo = (today: Date = new Date()): DemoData => {
       segment_efforts: Array.from({length: Math.floor(km / 6)}, () => ({kom_rank: komRank(random.integer(1, 1000))})),
       photos: {count: 0, use_primary_photo: false},
       map: {...summary.map, polyline: encodePolyline(points)},
-      ...powerDetails(id, ftpAt(date.getTime()), weighted, averageWatts, movingTime),
+      ...powerDetails(serial, ftpAt(date.getTime()), weighted, averageWatts, movingTime),
       ...runEfforts(kind, distance, movingTime),
     } as unknown as DetailedActivity;
   };
@@ -411,7 +413,7 @@ const generateDemo = (today: Date = new Date()): DemoData => {
     planned = [];
   }
 
-  activities.sort((a, b) => b.id - a.id);
+  activities.sort((a, b) => compareIds(b.id, a.id));
 
   // The newest ride keeps Strava's default name, as a ride not yet given its emoji would, and
   // took a KOM, so the latest rides show one.
@@ -449,7 +451,7 @@ const generateDemo = (today: Date = new Date()): DemoData => {
   const latestFtp = ftpTests[0];
 
   const athlete = {
-    id: 1,
+    id: '1',
     firstname: 'Demo',
     lastname: 'Rider',
     city: 'Annecy',
@@ -519,7 +521,7 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
     expenses.push({id: `demo-expense-${expenses.length}`, date, amount, description});
   const after = (activity: Activity) => new Date(new Date(activity.start_date).getTime() + 12 * 3600000);
 
-  const chronological = [...activities].sort((a, b) => a.id - b.id);
+  const chronological = [...activities].sort((a, b) => compareIds(a.id, b.id));
   const first = chronological[0];
   const firstDate = new Date(new Date(first.start_date).getTime() - DAY_MS);
 
@@ -684,7 +686,7 @@ const generateParts = (random: Random, activities: Activity[]): {events: Event[]
 const demoStreams = (activity: Activity): ActivityStreams => {
   const average = activity.average_heartrate;
   if (undefined === average) return {};
-  const random = seeded(activity.id);
+  const random = seeded(Number(activity.id));
   const time = Array.from({length: Math.floor(activity.moving_time / 10) + 1}, (_, index) => index * 10);
   let drift = 0;
   const heartrate = time.map(() => {

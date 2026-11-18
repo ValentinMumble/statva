@@ -3,7 +3,7 @@ import {GetLabel, hasEmoji} from './label';
 import {localDay, localYear} from './local-day';
 import {DetailedActivity} from './strava';
 
-type ReviewRide = {id: number; name: string; day: string; value: number};
+type ReviewRide = {id: string; name: string; day: string; value: number};
 
 type YearReview = {
   year: number;

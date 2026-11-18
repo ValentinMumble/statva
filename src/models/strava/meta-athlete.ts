@@ -1,4 +1,4 @@
 export interface MetaAthlete {
-  id: number;
+  id: string;
   resource_state: number;
 }

@@ -10,7 +10,7 @@ const call = async (handler: (request: Request) => Promise<Response>, method: st
   await handler(
     new Request(`${ORIGIN}/api/activity?action=merge`, {
       method,
-      headers: {'Content-Type': 'application/json', cookie: sessionCookie(42).split(';')[0]},
+      headers: {'Content-Type': 'application/json', cookie: sessionCookie('42').split(';')[0]},
       ...(undefined === body ? {} : {body: JSON.stringify(body)}),
     }),
   );
@@ -18,7 +18,7 @@ const call = async (handler: (request: Request) => Promise<Response>, method: st
 // A ride recorded in two parts on a watch: 5 minutes, a stop, then 5 more.
 const withParts = () => {
   const fake = install();
-  fake.login(42);
+  fake.login('42');
   fake.strava.activities = [
     {id: 1002, name: 'Afternoon Ride 2', sport_type: 'Ride', start_date: '2026-10-28T14:10:00Z', description: ''},
     {id: 1001, name: 'Afternoon Ride', sport_type: 'Ride', start_date: '2026-10-28T14:00:00Z', description: 'Windy'},
@@ -49,11 +49,11 @@ const withParts = () => {
   return fake;
 };
 
-const choice = {ids: [1002, 1001], name: 'Ride to the lake 🌊', gear_id: 'b1', commute: true};
+const choice = {ids: ['1002', '1001'], name: 'Ride to the lake 🌊', gear_id: 'b1', commute: true};
 
 describe('joining parts', () => {
   const part = (id: number, start: string, times: number[], distances: number[]) => ({
-    activity: {id, name: `Part ${id}`, start_date: start},
+    activity: {id: String(id), name: `Part ${id}`, start_date: start},
     streams: {time: {data: times}, distance: {data: distances}},
   });
 
@@ -92,8 +92,8 @@ describe('merging activities', () => {
     expect(response.status).toBe(200);
     expect(body).toMatchObject({
       outcome: 'merged',
-      parts: [1001, 1002],
-      activity: {id: 9001, name: 'Ride to the lake 🌊'},
+      parts: ['1001', '1002'],
+      activity: {id: '9001', name: 'Ride to the lake 🌊'},
     });
 
     const [upload] = fake.strava.uploads;
@@ -124,7 +124,7 @@ describe('merging activities', () => {
       pending: {
         name: 'Ride to the lake 🌊',
         error: 'merged.tcx duplicate of activity 1001',
-        parts: [{id: 1001}, {id: 1002}],
+        parts: [{id: '1001'}, {id: '1002'}],
       },
     });
     expect(await (await call(pending, 'GET')).json()).toMatchObject({pending: {name: 'Ride to the lake 🌊'}});
@@ -142,7 +142,7 @@ describe('merging activities', () => {
 
   it('drops the parts from what Statva stores, as the rider deletes them on Strava next', async () => {
     const fake = withParts();
-    await syncActivities(42);
+    await syncActivities('42');
     expect(Object.keys(fake.read('athlete:42:activities'))).toEqual(expect.arrayContaining(['1001', '1002']));
 
     await call(merge, 'POST', choice);
@@ -166,7 +166,7 @@ describe('merging activities', () => {
   it('needs 2 to 10 activities, a name and gear', async () => {
     withParts();
 
-    expect((await call(merge, 'POST', {...choice, ids: [1001]})).status).toBe(400);
+    expect((await call(merge, 'POST', {...choice, ids: ['1001']})).status).toBe(400);
     expect(
       (await call(merge, 'POST', {...choice, ids: Array.from({length: 11}, (_, index) => index + 1)})).status,
     ).toBe(400);
@@ -177,6 +177,6 @@ describe('merging activities', () => {
   it('says when a part is not on Strava any more', async () => {
     withParts();
 
-    expect((await call(merge, 'POST', {...choice, ids: [1001, 404]})).status).toBe(404);
+    expect((await call(merge, 'POST', {...choice, ids: ['1001', '404']})).status).toBe(404);
   });
 });

@@ -1,6 +1,6 @@
 // Strava objects are large and loosely typed here: only the fields Statva touches are named.
 type StravaActivity = {
-  id: number;
+  id: string;
   start_date: string;
   segment_efforts?: {kom_rank?: number | null}[];
   map?: {id?: string; summary_polyline?: string; polyline?: string};

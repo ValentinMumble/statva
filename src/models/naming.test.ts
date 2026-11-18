@@ -5,7 +5,7 @@ import {ActivityType} from './strava';
 const HOME = [47.2306, -1.5518];
 const ride = (id: number, name: string, fields = {}) =>
   buildActivity({
-    id,
+    id: String(id),
     name,
     sport_type: ActivityType.Ride,
     distance: 9000,

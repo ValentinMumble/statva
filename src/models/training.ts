@@ -51,7 +51,7 @@ const powerCurveByYear = (details: DetailedActivity[]): {years: number[]; rows: 
 /** Normalized power per heartbeat, ride by ride: it rises as the same effort costs less. */
 const aerobicEfficiency = (
   details: DetailedActivity[],
-): {date: number; id: number; name: string; efficiency: number}[] =>
+): {date: number; id: string; name: string; efficiency: number}[] =>
   details
     .map(activity => ({activity, power: extractNormalizedPower(activity), heartRate: activity.average_heartrate ?? 0}))
     .filter(({power, heartRate}) => null !== power && 0 < heartRate)
@@ -99,7 +99,7 @@ const zonesPerWeek = (
 };
 
 /** Heart rate drift of each long ride, oldest first. */
-const driftByRide = (details: DetailedActivity[]): {date: number; id: number; name: string; drift: number}[] =>
+const driftByRide = (details: DetailedActivity[]): {date: number; id: string; name: string; drift: number}[] =>
   details
     .filter(({heart_rate_drift}) => null !== (heart_rate_drift ?? null))
     .map(({start_date, id, name, heart_rate_drift}) => ({
@@ -113,8 +113,8 @@ const driftByRide = (details: DetailedActivity[]): {date: number; id: number; na
 type BestEffort = {name: string; elapsed_time: number};
 type RunBest = {
   distance: string;
-  byYear: Record<number, {seconds: number; id: number} | null>;
-  best: {seconds: number; id: number; year: number} | null;
+  byYear: Record<number, {seconds: number; id: string} | null>;
+  best: {seconds: number; id: string; year: number} | null;
 };
 
 /** The fastest time over each distance in first year, from Strava's best efforts on every run. */
@@ -156,10 +156,10 @@ type CommuteRoute = {
   count: number;
   distance: number;
   bestSpeed: number;
-  bestId: number;
+  bestId: string;
   medianSpeed: number;
   lastSpeed: number;
-  rides: {date: number; id: number; speed: number}[];
+  rides: {date: number; id: string; speed: number}[];
 };
 
 const median = (values: number[]): number => {

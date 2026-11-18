@@ -18,7 +18,7 @@ type RideRule = {
 };
 
 type RuledActivity = {
-  id: number;
+  id: string;
   name: string;
   sport_type: string;
   distance: number;

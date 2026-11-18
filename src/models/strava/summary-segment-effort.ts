@@ -1,5 +1,5 @@
 export interface SummarySegmentEffort {
-  id: number;
+  id: string;
   elapsed_time: number;
   start_date: Date;
   start_date_local: Date;

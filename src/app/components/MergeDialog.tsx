@@ -37,7 +37,7 @@ type Step =
   | {kind: 'merged'; activity: Activity | null; parts: MergePart[]}
   | {kind: 'refused'; pending: PendingMerge};
 
-const stravaUrl = (id: number): string => `https://www.strava.com/activities/${id}`;
+const stravaUrl = (id: string): string => `https://www.strava.com/activities/${id}`;
 
 const timeOf = (start: string, locale: string): string =>
   new Date(start).toLocaleTimeString(locale, {hour: '2-digit', minute: '2-digit'});

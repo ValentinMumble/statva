@@ -42,7 +42,7 @@ const useActivityMeta = ({enabled = true}: {enabled?: boolean} = {}) => {
 const fetchSomeDetails = getFetcher<Record<string, DetailedActivity | null>>('activities.details.some');
 
 /** The details of a few activities only, for a page that shows a handful of them. */
-const useSomeActivityDetails = (ids: number[]): Record<string, DetailedActivity | null> => {
+const useSomeActivityDetails = (ids: string[]): Record<string, DetailedActivity | null> => {
   const {data = {}} = useQuery({
     queryKey: ['someDetails', ids.join(',')],
     queryFn: () => fetchSomeDetails(ids),

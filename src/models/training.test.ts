@@ -4,7 +4,7 @@ import {ActivityType, DetailedActivity} from './strava';
 
 const ride = (id: number, date: string, fields: Partial<DetailedActivity> = {}) =>
   buildDetailedActivity({
-    id,
+    id: String(id),
     name: `Ride ${id}`,
     sport_type: ActivityType.Ride,
     start_date: date,
@@ -36,8 +36,8 @@ describe('aerobic efficiency', () => {
     ]);
 
     expect(points.map(({id, efficiency}) => [id, efficiency])).toEqual([
-      [1, 1.33],
-      [2, 1.5],
+      ['1', 1.33],
+      ['2', 1.5],
     ]);
   });
 });
@@ -64,8 +64,8 @@ describe('heart rate drift', () => {
     ]);
 
     expect(rides.map(({id, drift}) => [id, drift])).toEqual([
-      [1, -1],
-      [2, 3.5],
+      ['1', -1],
+      ['2', 3.5],
     ]);
   });
 });
@@ -74,7 +74,7 @@ describe('run best times', () => {
   it('finds the fastest time over each distance, per year and of all', () => {
     const run = (id: number, date: string, fiveK: number) =>
       buildDetailedActivity({
-        id,
+        id: String(id),
         sport_type: ActivityType.Run,
         start_date: date,
         start_date_local: date,
@@ -90,8 +90,8 @@ describe('run best times', () => {
     expect(rows).toEqual([
       {
         distance: '5K',
-        byYear: {2025: {seconds: 1500, id: 1}, 2026: {seconds: 1520, id: 3}},
-        best: {seconds: 1500, id: 1, year: 2025},
+        byYear: {2025: {seconds: 1500, id: '1'}, 2026: {seconds: 1520, id: '3'}},
+        best: {seconds: 1500, id: '1', year: 2025},
       },
     ]);
   });
@@ -101,7 +101,7 @@ describe('commute routes', () => {
   it('groups commutes by name and keeps routes ridden a few times', () => {
     const commute = (id: number, name: string, speed: number) =>
       buildActivity({
-        id,
+        id: String(id),
         name,
         commute: true,
         distance: 8000,
@@ -122,7 +122,7 @@ describe('commute routes', () => {
       count: 3,
       distance: 24000,
       bestSpeed: 7,
-      bestId: 2,
+      bestId: '2',
       medianSpeed: 6.5,
       lastSpeed: 6.5,
     });

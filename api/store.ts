@@ -2,6 +2,7 @@ import {json} from './_lib/http.js';
 import {athleteKey} from './_lib/keys.js';
 import {redis} from './_lib/redis.js';
 import {readSession} from './_lib/session.js';
+import {newestFirst, withStringIds} from './_lib/strava-ids.js';
 import {RIDER_NAMES, SERVER_NAMES} from './_lib/sync.js';
 
 // A function response is capped at 4.5 MB, and the activity data is bigger, so large
@@ -21,6 +22,8 @@ type Command =
   | {command: 'hdel'; name: string; field: string};
 
 const READS = ['hgetall', 'hpage', 'hget', 'hmget', 'hlatest'];
+// Hashes of Strava activities: those stored before Strava ids were strings get them as strings.
+const ACTIVITY_NAMES = ['activities', 'details'];
 // A few entries at a time, like the details of the activities on the home page.
 const MAX_FIELDS = 50;
 
@@ -43,40 +46,38 @@ export const POST = async (request: Request): Promise<Response> => {
   }
 
   const key = athleteKey(athleteId, body.name);
+  const answer = (value: unknown): Response => json(ACTIVITY_NAMES.includes(body.name) ? withStringIds(value) : value);
 
   switch (body.command) {
     case 'hgetall':
-      return json(await redis().hgetall(key));
+      return answer(await redis().hgetall(key));
     case 'hpage': {
       // Newest first, like hlatest, with the page count so the first answer tells how many
       // more to ask for, all at once.
       const size = PAGE_SIZES[body.name] ?? PAGE_SIZE;
       const page = Math.max(0, Math.floor(Number(body.page)) || 0);
-      const fields = (await redis().hkeys(key)).map(String).sort((a, b) => Number(b) - Number(a));
+      const fields = (await redis().hkeys(key)).map(String).sort(newestFirst);
       const slice = fields.slice(page * size, (page + 1) * size);
 
       return json({
         pages: Math.ceil(fields.length / size),
-        entries: 0 === slice.length ? {} : ((await redis().hmget(key, ...slice)) ?? {}),
+        entries: 0 === slice.length ? {} : withStringIds((await redis().hmget(key, ...slice)) ?? {}),
       });
     }
     case 'hget':
-      return json(await redis().hget(key, String(body.field)));
+      return answer(await redis().hget(key, String(body.field)));
     case 'hlatest': {
       // Strava ids grow over time, so the highest ones are the newest activities: a screen
       // can show those at once, before the whole hash has arrived.
       const count = Math.min(Math.max(1, Math.floor(Number(body.count)) || 20), MAX_FIELDS);
-      const fields = (await redis().hkeys(key))
-        .map(String)
-        .sort((a, b) => Number(b) - Number(a))
-        .slice(0, count);
+      const fields = (await redis().hkeys(key)).map(String).sort(newestFirst).slice(0, count);
 
-      return json(0 === fields.length ? {} : ((await redis().hmget(key, ...fields)) ?? {}));
+      return answer(0 === fields.length ? {} : ((await redis().hmget(key, ...fields)) ?? {}));
     }
     case 'hmget': {
       const fields = (Array.isArray(body.fields) ? body.fields : []).slice(0, MAX_FIELDS).map(String);
 
-      return json(0 === fields.length ? {} : ((await redis().hmget(key, ...fields)) ?? {}));
+      return answer(0 === fields.length ? {} : ((await redis().hmget(key, ...fields)) ?? {}));
     }
     case 'hset':
       return json(await redis().hset(key, {[String(body.field)]: body.value}));

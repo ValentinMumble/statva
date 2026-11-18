@@ -14,7 +14,7 @@ const call = async (
   await handler(
     new Request(`${ORIGIN}/api/activity?${query}`, {
       method,
-      headers: {'Content-Type': 'application/json', ...(loggedIn ? {cookie: sessionCookie(42).split(';')[0]} : {})},
+      headers: {'Content-Type': 'application/json', ...(loggedIn ? {cookie: sessionCookie('42').split(';')[0]} : {})},
       ...(undefined === body ? {} : {body: JSON.stringify(body)}),
     }),
   );
@@ -33,7 +33,7 @@ const ride = {
 
 describe('sharing a planned ride by link', () => {
   it('keeps it under a short id, for anyone with the link to read without a login', async () => {
-    install().login(42);
+    install().login('42');
 
     const saved = await call(save, 'POST', 'action=share', ride);
     const {id} = (await saved.json()) as {id: string};
@@ -47,7 +47,7 @@ describe('sharing a planned ride by link', () => {
   });
 
   it('needs a login to share, and a route that is only a route', async () => {
-    install().login(42);
+    install().login('42');
 
     expect((await call(save, 'POST', 'action=share', ride, false)).status).toBe(401);
     expect((await call(save, 'POST', 'action=share', {...ride, points: [[47.2, -1.5]]})).status).toBe(400);
@@ -76,7 +76,7 @@ describe('bookmarking shared rides', () => {
   const soon = {...ride, start: Date.now() + 2 * DAY};
 
   it("keeps the rider's own shares, and others they bookmark, soonest first", async () => {
-    install().login(42);
+    install().login('42');
 
     const own = (await (await call(save, 'POST', 'action=share', soon)).json()) as {id: string};
     const sooner = (await (
@@ -95,7 +95,7 @@ describe('bookmarking shared rides', () => {
   });
 
   it('forgets a bookmark on request, and when its link leads nowhere', async () => {
-    install().login(42);
+    install().login('42');
 
     const {id} = (await (await call(save, 'POST', 'action=share', soon)).json()) as {id: string};
     await call(remove, 'DELETE', `action=bookmark&id=${id}`);
@@ -106,7 +106,7 @@ describe('bookmarking shared rides', () => {
   });
 
   it('drops a ride a day after its start', async () => {
-    install().login(42);
+    install().login('42');
 
     await call(save, 'POST', 'action=share', {...soon, start: Date.now() - 2 * DAY});
 
@@ -116,7 +116,7 @@ describe('bookmarking shared rides', () => {
 
 describe('changing a shared ride behind the same link', () => {
   it('keeps the link, with the new day, for its maker only, never showing who made it', async () => {
-    install().login(42);
+    install().login('42');
 
     const {id} = (await (await call(save, 'POST', 'action=share', ride)).json()) as {id: string};
     const later = {...ride, start: ride.start + 86400000, stops: 600};
@@ -132,14 +132,14 @@ describe('changing a shared ride behind the same link', () => {
 
   it('refuses another rider, a link that leads nowhere, and a ride that is not one', async () => {
     const fake = install();
-    fake.login(42);
+    fake.login('42');
     const {id} = (await (await call(save, 'POST', 'action=share', ride)).json()) as {id: string};
 
-    fake.login(7);
+    fake.login('7');
     const other = await change(
       new Request(`${ORIGIN}/api/activity?action=share&id=${id}`, {
         method: 'PUT',
-        headers: {'Content-Type': 'application/json', cookie: sessionCookie(7).split(';')[0]},
+        headers: {'Content-Type': 'application/json', cookie: sessionCookie('7').split(';')[0]},
         body: JSON.stringify({...ride, name: 'Mine now'}),
       }),
     );

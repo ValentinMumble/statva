@@ -10,11 +10,11 @@ const env = (name: string): string => {
 };
 
 /** The Strava athletes allowed to log in, from a comma-separated list. */
-const allowedAthletes = (): number[] =>
+const allowedAthletes = (): string[] =>
   env('STRAVA_ATHLETE_IDS')
     .split(',')
-    .map(id => Number(id.trim()))
-    .filter(id => Number.isInteger(id) && 0 < id);
+    .map(id => id.trim())
+    .filter(id => /^\d+$/.test(id));
 
 /**
  * The string Strava echoes back once, when the webhook is registered. It only has to be

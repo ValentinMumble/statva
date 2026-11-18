@@ -3,6 +3,7 @@ import {athleteKey} from './_lib/keys.js';
 import {redis} from './_lib/redis.js';
 import {readSession} from './_lib/session.js';
 import {stravaGet} from './_lib/strava.js';
+import {quoteIds, readStravaJson, withStringIds} from './_lib/strava-ids.js';
 
 // The only Strava calls the app makes. Anything else is refused.
 const ALLOWED_PATHS = [
@@ -28,7 +29,7 @@ export const GET = async (request: Request): Promise<Response> => {
 
   // Routes only of the rider logged in.
   const athlete = path.match(/^athletes\/(\d+)\//)?.[1];
-  if (!ALLOWED_PATHS.some(pattern => pattern.test(path)) || (undefined !== athlete && Number(athlete) !== athleteId)) {
+  if (!ALLOWED_PATHS.some(pattern => pattern.test(path)) || (undefined !== athlete && athlete !== athleteId)) {
     return json({error: 'Not allowed'}, 403);
   }
 
@@ -40,15 +41,19 @@ export const GET = async (request: Request): Promise<Response> => {
     const profileKey = athleteKey(athleteId, 'profile');
     const response = await stravaGet(athleteId, path, query).catch(() => null);
     if (response?.ok) {
-      const profile = await response.json();
+      const profile = await readStravaJson(response);
       await redis().set(profileKey, profile);
       return json(profile);
     }
     const kept = await redis().get(profileKey);
-    return null === kept ? json({error: 'Strava did not answer'}, 502) : json(kept);
+    return null === kept ? json({error: 'Strava did not answer'}, 502) : json(withStringIds(kept));
   }
 
   const response = await stravaGet(athleteId, path, query);
 
-  return new Response(response.body, {status: response.status, headers: {'Content-Type': 'application/json'}});
+  // Ids as strings, so the browser never rounds a 64-bit one.
+  return new Response(quoteIds(await response.text()), {
+    status: response.status,
+    headers: {'Content-Type': 'application/json'},
+  });
 };

@@ -33,7 +33,7 @@ const SOURCES = {
 
 const shareKey = (id: string): string => `ride-share:${id}`;
 // The shared rides a rider keeps for quick access, by id: the moment each was added.
-const bookmarksKey = (athleteId: number): string => athleteKey(athleteId, 'ride-bookmarks');
+const bookmarksKey = (athleteId: string): string => athleteKey(athleteId, 'ride-bookmarks');
 // A bookmark stays a day past its ride's start, then goes.
 const BOOKMARK_GRACE = 86400000;
 
@@ -70,10 +70,11 @@ const sharedRideOf = (body: unknown): SharedRide => {
   };
 };
 
-// A shared ride as kept: with the athlete who made it, never shown to whoever opens the link.
-type StoredRide = SharedRide & {owner?: number};
+// A shared ride as kept: with the athlete who made it, never shown to whoever opens the link. Rides
+// kept before Strava ids were strings have it as a number.
+type StoredRide = SharedRide & {owner?: string | number};
 
-const storeRide = async (id: string, ride: SharedRide, owner: number): Promise<void> => {
+const storeRide = async (id: string, ride: SharedRide, owner: string): Promise<void> => {
   await redis().set(shareKey(id), {...ride, owner} satisfies StoredRide, {ex: SHARE_DAYS * 86400});
 };
 
@@ -81,7 +82,7 @@ const readStoredRide = async (id: string): Promise<StoredRide | null> =>
   ID.test(id) ? await redis().get<StoredRide>(shareKey(id)) : null;
 
 /** Keeps the ride under a new id for 15 days, and gives the id. */
-const saveSharedRide = async (body: unknown, owner: number): Promise<string> => {
+const saveSharedRide = async (body: unknown, owner: string): Promise<string> => {
   const ride = sharedRideOf(body);
   const id = randomBytes(6).toString('base64url');
   await storeRide(id, ride, owner);
@@ -94,11 +95,12 @@ const saveSharedRide = async (body: unknown, owner: number): Promise<string> => 
  * now. Only its maker may; a ride kept before makers were recorded, any rider. Gives false when
  * the link leads nowhere.
  */
-const updateSharedRide = async (id: string, body: unknown, athleteId: number): Promise<boolean> => {
+const updateSharedRide = async (id: string, body: unknown, athleteId: string): Promise<boolean> => {
   const stored = await readStoredRide(id);
   if (null === stored) return false;
-  if (undefined !== stored.owner && stored.owner !== athleteId) throw new ShareError('its own maker to change it');
-  await storeRide(id, sharedRideOf(body), stored.owner ?? athleteId);
+  const owner = undefined === stored.owner ? athleteId : String(stored.owner);
+  if (owner !== athleteId) throw new ShareError('its own maker to change it');
+  await storeRide(id, sharedRideOf(body), owner);
 
   return true;
 };
@@ -113,14 +115,14 @@ const readSharedRide = async (id: string): Promise<SharedRide | null> => {
 };
 
 /** Keeps a shared ride in the rider's bookmarks; false when the link leads nowhere. */
-const bookmarkRide = async (athleteId: number, id: string): Promise<boolean> => {
+const bookmarkRide = async (athleteId: string, id: string): Promise<boolean> => {
   if (null === (await readSharedRide(id))) return false;
   await redis().hset(bookmarksKey(athleteId), {[id]: Date.now()});
 
   return true;
 };
 
-const unbookmarkRide = async (athleteId: number, id: string): Promise<void> => {
+const unbookmarkRide = async (athleteId: string, id: string): Promise<void> => {
   await redis().hdel(bookmarksKey(athleteId), id);
 };
 
@@ -128,7 +130,7 @@ const unbookmarkRide = async (athleteId: number, id: string): Promise<void> => {
  * The rider's bookmarked rides still to come, soonest first. Those whose link expired, or
  * whose start is more than a day gone, are dropped for good.
  */
-const bookmarkedRides = async (athleteId: number, now = Date.now()): Promise<RideBookmark[]> => {
+const bookmarkedRides = async (athleteId: string, now = Date.now()): Promise<RideBookmark[]> => {
   const ids = Object.keys((await redis().hgetall<Record<string, number>>(bookmarksKey(athleteId))) ?? {});
   const rides = await Promise.all(ids.map(async id => ({id, ride: await readSharedRide(id)})));
   const gone = rides.filter(({ride}) => null === ride || ride.start < now - BOOKMARK_GRACE).map(({id}) => id);

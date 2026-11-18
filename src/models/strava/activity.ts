@@ -26,7 +26,7 @@ export interface Activity {
   has_heartrate: boolean;
   has_kudoed: boolean;
   heartrate_opt_out: boolean;
-  id: number;
+  id: string;
   kilojoules?: number;
   kudos_count: number;
   location_city: string | null;

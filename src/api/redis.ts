@@ -121,8 +121,8 @@ const getLatestDetails = async (count: number): Promise<Record<string, DetailedA
   await client().hlatest<DetailedActivity>(Key.DETAILS, count);
 
 /** The details of a few activities, without loading them all. */
-const getSomeDetails = async (ids: number[]): Promise<Record<string, DetailedActivity | null>> =>
-  0 === ids.length ? {} : await client().hmget<DetailedActivity>(Key.DETAILS, ids.map(String));
+const getSomeDetails = async (ids: string[]): Promise<Record<string, DetailedActivity | null>> =>
+  0 === ids.length ? {} : await client().hmget<DetailedActivity>(Key.DETAILS, ids);
 
 const getActivitySummaries = async (onPage?: (sofar: Activity[]) => void): Promise<Activity[]> =>
   Object.values(await client().readAll<Activity>(Key.ACTIVITIES, sofar => onPage?.(Object.values(sofar))));

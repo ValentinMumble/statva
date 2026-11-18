@@ -2,7 +2,7 @@ import {MetaAthlete, PolylineMap} from '.';
 import {ActivityType} from './activity-type';
 
 export interface SummaryActivity {
-  id: number;
+  id: string;
   achievement_count: number;
   athlete_count: number;
   athlete: MetaAthlete;

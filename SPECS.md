@@ -579,6 +579,12 @@ shared ride need a session.
 | `GET /activities/{id}/photos` | Activity page | 1 per page open |
 | `GET /athletes/{id}/routes`, `/routes/{id}/streams` | Ride weather (the rider's own routes only) | 1 per page open, 1 per route picked |
 
+Strava ids are 64-bit, more than a JavaScript number holds exactly, so Statva keeps every
+Strava id as a string. Strava's `id_str` covers activities and athletes only, not webhook events
+or uploads, so the server puts the ids in quotes in Strava's JSON before parsing it
+(`api/_lib/strava-ids.ts`), and the browser gets them as strings through the server. Activities
+stored with number ids are read back with string ids.
+
 ### 11.3 Sync
 - The app syncs on every visit and on Refresh. The first syncs page through the whole
   history, a few pages per call, and the list fills up after each. After that a sync

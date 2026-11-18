@@ -39,7 +39,7 @@ const openOnStrava = (event: MouseEvent) => {
 
   event.preventDefault();
   event.stopPropagation();
-  window.open(getActivityUrl({id: Number(id)}), '_blank', 'noreferrer');
+  window.open(getActivityUrl({id}), '_blank', 'noreferrer');
 };
 
 const LogButton = ({compact = false}: {compact?: boolean}) => {

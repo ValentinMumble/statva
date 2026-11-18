@@ -13,9 +13,9 @@ const CACHED_KEYS = ['activities', 'activityMeta'];
  * lets them refresh from the server; keeps them again whenever they change. Ready once the
  * kept data is in place (at once in the demo, which has nothing to wait for).
  */
-const useBrowserCache = (athleteId: number | null): boolean => {
+const useBrowserCache = (athleteId: string | null): boolean => {
   const queryClient = useQueryClient();
-  const [readyFor, setReadyFor] = useState<number | null>(null);
+  const [readyFor, setReadyFor] = useState<string | null>(null);
 
   useEffect(() => {
     if (null === athleteId) return;

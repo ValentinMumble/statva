@@ -2,7 +2,7 @@ import {riderProfile} from './rider';
 import {formatSpeed, formatCalories} from './util';
 import {ActivityType, Activity} from './strava';
 
-const getActivityUrl = ({id}: {id: number}): string => `https://www.strava.com/activities/${id}`;
+const getActivityUrl = ({id}: {id: string}): string => `https://www.strava.com/activities/${id}`;
 
 // Zone 1 below the first threshold, zone 5 from the last, with the rider's thresholds.
 const getHeartRateZone = (bpm: number): number =>

@@ -2,7 +2,7 @@ import {ResourceState} from './resource-state';
 import {SportType} from './sport-type';
 
 export interface SummaryClub {
-  id: number;
+  id: string;
   resource_state: ResourceState;
   name: string;
   profile_medium: string;

@@ -20,7 +20,7 @@ class KomootUnavailableError extends Error {}
 const basic = (user: string, secret: string) => `Basic ${Buffer.from(`${user}:${secret}`).toString('base64')}`;
 
 /** Komoot for this rider: only the owner, and only once the login is set. */
-const canUseKomoot = (athleteId: number): boolean =>
+const canUseKomoot = (athleteId: string): boolean =>
   athleteId === allowedAthletes()[0] && Boolean(process.env.KOMOOT_EMAIL) && Boolean(process.env.KOMOOT_PASSWORD);
 
 const logIn = async (): Promise<Session> => {

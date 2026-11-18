@@ -31,11 +31,11 @@ test("with enough history, a ride is graded against the rider's own rides", () =
   // A hundred rides from 0.1% to 1% climbing, and short ones that do not count.
   const history = [
     ...Array.from({length: 100}, (_, index) =>
-      buildActivity({id: index + 1, distance: 50000, total_elevation_gain: 50 + index * 5}),
+      buildActivity({id: String(index + 1), distance: 50000, total_elevation_gain: 50 + index * 5}),
     ),
-    buildActivity({id: 500, distance: 2000, total_elevation_gain: 200}),
+    buildActivity({id: '500', distance: 2000, total_elevation_gain: 200}),
   ];
-  const ride = (climbing: number) => buildActivity({id: 999, distance: 50000, total_elevation_gain: climbing});
+  const ride = (climbing: number) => buildActivity({id: '999', distance: 50000, total_elevation_gain: climbing});
 
   expect(terrainOf(ride(60), history)).toMatchObject({terrain: {name: 'Flat'}, steeperThan: 0.02});
   expect(terrainOf(ride(300), history)?.terrain.name).toBe('Hilly');
@@ -46,7 +46,7 @@ test("with enough history, a ride is graded against the rider's own rides", () =
 test('grades spread over the years as each ride is graded against all of them', () => {
   const rides = Array.from({length: 100}, (_, index) =>
     buildActivity({
-      id: index + 1,
+      id: String(index + 1),
       distance: 50000,
       total_elevation_gain: 50 + index * 5,
       start_date_local: `${2025 + (index % 2)}-05-01T08:00:00Z`,

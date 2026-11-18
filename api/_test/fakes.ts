@@ -271,7 +271,7 @@ const install = () => {
   }) as typeof fetch;
 
   /** Stores tokens for an athlete, as a login would. */
-  const login = (athleteId: number) => {
+  const login = (athleteId: string) => {
     run([
       'hset',
       'strava_tokens',

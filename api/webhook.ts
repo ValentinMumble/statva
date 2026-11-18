@@ -3,13 +3,14 @@ import {json} from './_lib/http.js';
 import {TOKENS_KEY} from './_lib/keys.js';
 import {redis} from './_lib/redis.js';
 import {forgetTokens, hasAccess} from './_lib/strava.js';
+import {readStravaJson} from './_lib/strava-ids.js';
 import {applyRideRules, refreshActivity} from './_lib/sync.js';
 
 type StravaEvent = {
   object_type: 'activity' | 'athlete';
-  object_id: number;
+  object_id: string;
   aspect_type: 'create' | 'update' | 'delete';
-  owner_id: number;
+  owner_id: string;
   updates?: Record<string, string>;
 };
 
@@ -32,13 +33,14 @@ export const GET = (request: Request): Response => {
  * check fails for anyone's forged call, and Disconnect in Settings deletes the data.
  */
 export const POST = async (request: Request): Promise<Response> => {
-  const event = (await request.json().catch(() => null)) as StravaEvent | null;
+  // Its ids are numbers with no string twin: read as text, so a 64-bit id stays whole.
+  const event = await readStravaJson<StravaEvent>(request).catch(() => null);
 
   // Only riders on the list who logged in have tokens; anything else is not ours.
   if (
     null === event ||
     !allowedAthletes().includes(event.owner_id) ||
-    null === (await redis().hget(TOKENS_KEY, String(event.owner_id)))
+    null === (await redis().hget(TOKENS_KEY, event.owner_id))
   ) {
     return json({ok: true});
   }

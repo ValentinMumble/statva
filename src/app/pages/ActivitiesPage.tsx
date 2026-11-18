@@ -545,10 +545,10 @@ const ActivitiesPage = () => {
   const listRef = useRef<HTMLDivElement>(null);
   // Picking activities recorded in parts, to merge them into one.
   const [picking, setPicking] = useState(false);
-  const [picked, setPicked] = useState<number[]>([]);
+  const [picked, setPicked] = useState<string[]>([]);
   const [mergeOpen, setMergeOpen] = useState(false);
   const {data: pendingMerge = null} = useQuery({queryKey: ['pendingMerge'], queryFn: fetchPendingMerge});
-  const togglePicked = (id: number) =>
+  const togglePicked = (id: string) =>
     setPicked(current =>
       current.includes(id)
         ? current.filter(pickedId => pickedId !== id)
@@ -603,7 +603,7 @@ const ActivitiesPage = () => {
   );
   const shownColumns = TAGS.filter(({sortType}) => columns.includes(sortType));
   // Devices are in the details; an activity whose details have not arrived yet is left out.
-  const deviceOf = (id: number): string | null => {
+  const deviceOf = (id: string): string | null => {
     const detail = activityMeta[id];
 
     return undefined === detail ? null : detail.device_name || 'unknown';

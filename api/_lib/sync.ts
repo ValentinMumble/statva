@@ -5,6 +5,7 @@ import {analysePower, PowerAnalysis, PowerStreams} from './power.js';
 import {redis} from './redis.js';
 import {RideRule, ruleUpdate, RuledActivity} from './rules.js';
 import {stravaGet, stravaPut} from './strava.js';
+import {newestFirst, readStravaJson, withStringIds} from './strava-ids.js';
 
 const PAGE_SIZE = 200;
 // Kept small so one call stays well inside a function's time limit.
@@ -31,31 +32,30 @@ const PRIVATE_NAMES = ['merge', 'profile', 'ride-bookmarks'];
 
 type SyncState = {nextPage: number; historyDone: boolean; newestStart: number};
 // What a sync brought in, quickly: new activities and their details (detailIds).
-type SyncReport = {added: number; historyDone: boolean; detailIds: number[]; limited: boolean};
+type SyncReport = {added: number; historyDone: boolean; detailIds: string[]; limited: boolean};
 // What a backfill filled in, slowly: details and power data of older activities.
-type BackfillReport = {detailIds: number[]; detailsMissing: number; powerFetched: number; limited: boolean};
+type BackfillReport = {detailIds: string[]; detailsMissing: number; powerFetched: number; limited: boolean};
 
 class RateLimitedError extends Error {}
 
 /** Removes activities from what Statva stores: gone from Strava, or parts of a merge the rider deletes there next. */
-const forgetActivities = async (athleteId: number, ids: number[]): Promise<void> => {
-  for (const name of ['activities', 'details', 'power'])
-    await redis().hdel(athleteKey(athleteId, name), ...ids.map(String));
+const forgetActivities = async (athleteId: string, ids: string[]): Promise<void> => {
+  for (const name of ['activities', 'details', 'power']) await redis().hdel(athleteKey(athleteId, name), ...ids);
 };
 
 const startOf = ({start_date}: StravaActivity): number => Math.floor(new Date(start_date).getTime() / 1000);
 
-const listPage = async (athleteId: number, params: Record<string, number>): Promise<StravaActivity[]> => {
+const listPage = async (athleteId: string, params: Record<string, number>): Promise<StravaActivity[]> => {
   const query = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)]));
   const response = await stravaGet(athleteId, 'athlete/activities', query);
 
   if (429 === response.status) throw new RateLimitedError('Strava rate limit reached');
   if (!response.ok) throw new Error(`Strava listed activities with ${response.status}`);
 
-  return (await response.json()) as StravaActivity[];
+  return await readStravaJson<StravaActivity[]>(response);
 };
 
-const storeSummaries = async (athleteId: number, activities: StravaActivity[]): Promise<void> => {
+const storeSummaries = async (athleteId: string, activities: StravaActivity[]): Promise<void> => {
   if (0 === activities.length) return;
 
   await redis().hset(
@@ -69,7 +69,7 @@ const storeSummaries = async (athleteId: number, activities: StravaActivity[]): 
  * best efforts, time per power band, heart rate drift), from its data streams: one more
  * read. Estimated power is left out, as Sauce does.
  */
-const powerOf = async (athleteId: number, detail: StravaActivity): Promise<PowerAnalysis | null> => {
+const powerOf = async (athleteId: string, detail: StravaActivity): Promise<PowerAnalysis | null> => {
   // Rides only: a run's power (an Apple Watch's, say) is no cycling effort.
   const sport = String(detail.sport_type ?? '');
   const pedalled = sport.includes('Ride') || 'Velomobile' === sport || 'Handcycle' === sport;
@@ -92,7 +92,7 @@ const powerOf = async (athleteId: number, detail: StravaActivity): Promise<Power
 };
 
 /** Stores an activity's details with what its power data says, and notes that it has been worked out. */
-const storeDetail = async (athleteId: number, detail: StravaActivity, power: PowerAnalysis | null): Promise<void> => {
+const storeDetail = async (athleteId: string, detail: StravaActivity, power: PowerAnalysis | null): Promise<void> => {
   const withPower = {
     ...detail,
     normalized_power: power?.normalizedPower ?? null,
@@ -110,7 +110,7 @@ const storeDetail = async (athleteId: number, detail: StravaActivity, power: Pow
  * longer has is removed, which also makes a forged webhook harmless: nothing is deleted
  * unless Strava itself says the activity is gone.
  */
-const refreshActivity = async (athleteId: number, activityId: number): Promise<StravaActivity | null> => {
+const refreshActivity = async (athleteId: string, activityId: string): Promise<StravaActivity | null> => {
   const response = await stravaGet(athleteId, `activities/${activityId}`);
 
   if (404 === response.status) {
@@ -121,7 +121,7 @@ const refreshActivity = async (athleteId: number, activityId: number): Promise<S
   if (429 === response.status) throw new RateLimitedError('Strava rate limit reached');
   if (!response.ok) throw new Error(`Strava sent activity ${activityId} with ${response.status}`);
 
-  const detail = (await response.json()) as StravaActivity;
+  const detail = await readStravaJson<StravaActivity>(response);
   await redis().hset(athleteKey(athleteId, 'activities'), {[activityId]: summaryOf(detail)});
   await storeDetail(athleteId, detail, await powerOf(athleteId, detail));
 
@@ -129,35 +129,36 @@ const refreshActivity = async (athleteId: number, activityId: number): Promise<S
 };
 
 /** Ids with a summary but no details yet, newest first (Strava ids grow over time). */
-const missingDetails = async (athleteId: number): Promise<number[]> => {
+const missingDetails = async (athleteId: string): Promise<string[]> => {
   // The client parses replies as JSON, so numeric field names come back as numbers.
-  const summaries = new Set((await redis().hkeys(athleteKey(athleteId, 'activities'))).map(Number));
-  const details = new Set((await redis().hkeys(athleteKey(athleteId, 'details'))).map(Number));
+  const summaries = new Set((await redis().hkeys(athleteKey(athleteId, 'activities'))).map(String));
+  const details = new Set((await redis().hkeys(athleteKey(athleteId, 'details'))).map(String));
 
-  return [...summaries].filter(id => !details.has(id)).sort((a, b) => b - a);
+  return [...summaries].filter(id => !details.has(id)).sort(newestFirst);
 };
 
 /** Ids with details but no normalized power worked out yet, newest first. */
-const missingPower = async (athleteId: number): Promise<number[]> => {
-  const details = (await redis().hkeys(athleteKey(athleteId, 'details'))).map(Number);
-  const done = new Set((await redis().hkeys(athleteKey(athleteId, 'power'))).map(Number));
+const missingPower = async (athleteId: string): Promise<string[]> => {
+  const details = (await redis().hkeys(athleteKey(athleteId, 'details'))).map(String);
+  const done = new Set((await redis().hkeys(athleteKey(athleteId, 'power'))).map(String));
 
-  return details.filter(id => !done.has(id)).sort((first, second) => second - first);
+  return details.filter(id => !done.has(id)).sort(newestFirst);
 };
 
 /**
  * Works out the normalized power of activities stored before Statva did, a few per call.
  * Those without a power meter are noted at once, without asking Strava anything.
  */
-const backfillPower = async (athleteId: number): Promise<{ids: number[]; limited: boolean}> => {
+const backfillPower = async (athleteId: string): Promise<{ids: string[]; limited: boolean}> => {
   const pending = await missingPower(athleteId);
-  const filled: number[] = [];
+  const filled: string[] = [];
   let fetched = 0;
 
   for (let start = 0; start < pending.length && fetched < POWER_PER_CALL; start += POWER_BATCH) {
-    const ids = pending.slice(start, start + POWER_BATCH).map(String);
-    const details =
-      (await redis().hmget<Record<string, StravaActivity | null>>(athleteKey(athleteId, 'details'), ...ids)) ?? {};
+    const ids = pending.slice(start, start + POWER_BATCH);
+    const details = withStringIds(
+      (await redis().hmget<Record<string, StravaActivity | null>>(athleteKey(athleteId, 'details'), ...ids)) ?? {},
+    );
     const withoutPower = ids.filter(id => !details[id]?.device_watts);
 
     if (0 < withoutPower.length)
@@ -169,7 +170,7 @@ const backfillPower = async (athleteId: number): Promise<{ids: number[]; limited
       try {
         const detail = details[id] as StravaActivity;
         await storeDetail(athleteId, detail, await powerOf(athleteId, detail));
-        filled.push(Number(id));
+        filled.push(id);
         fetched++;
       } catch (error) {
         if (!(error instanceof RateLimitedError)) throw error;
@@ -201,8 +202,8 @@ const sameText = (sent: unknown, received: unknown): boolean =>
  * not that one.
  */
 const changeActivity = async (
-  athleteId: number,
-  activityId: number,
+  athleteId: string,
+  activityId: string,
   update: Record<string, unknown>,
 ): Promise<ChangeResult> => {
   const response = await stravaPut(athleteId, `activities/${activityId}`, update);
@@ -210,7 +211,7 @@ const changeActivity = async (
 
   // What Strava kept as it was, comparing its answer with what was sent: texts loosely,
   // flags exactly. Only what it took is stored, so Statva never shows what Strava does not have.
-  const changed = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+  const changed = await readStravaJson<Record<string, unknown>>(response).catch(() => null);
   // A text missing from the answer was kept too; a flag only when the answer has it.
   const kept = (key: string): boolean =>
     null !== changed &&
@@ -228,9 +229,9 @@ const changeActivity = async (
   };
   if (0 < Object.keys(taken).length) {
     for (const name of ['activities', 'details']) {
-      const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), String(activityId));
+      const stored = await redis().hget<StravaActivity>(athleteKey(athleteId, name), activityId);
       if (null !== stored)
-        await redis().hset(athleteKey(athleteId, name), {[activityId]: {...stored, ...storedUpdate}});
+        await redis().hset(athleteKey(athleteId, name), {[activityId]: {...withStringIds(stored), ...storedUpdate}});
     }
   }
 
@@ -244,7 +245,7 @@ const changeActivity = async (
  * access (logged in before Statva asked for it), nothing changes. What Statva uploaded (a merge,
  * a copy) is left as the rider set it up.
  */
-const applyRideRules = async (athleteId: number, detail: StravaActivity | null): Promise<void> => {
+const applyRideRules = async (athleteId: string, detail: StravaActivity | null): Promise<void> => {
   if (null === detail || isStatvaUpload(detail)) return;
 
   const rules = (await redis().hget<RideRule[]>(athleteKey(athleteId, 'settings'), 'rideRules')) ?? [];
@@ -261,11 +262,11 @@ const applyRideRules = async (athleteId: number, detail: StravaActivity | null):
  * details of the activities that are new. Older details and power data are left to the
  * backfill, so a refresh never waits for them.
  */
-const syncActivities = async (athleteId: number): Promise<SyncReport> => {
+const syncActivities = async (athleteId: string): Promise<SyncReport> => {
   const stored = await redis().hgetall<Partial<SyncState>>(athleteKey(athleteId, 'sync'));
   const state: SyncState = {nextPage: 1, historyDone: false, newestStart: 0, ...stored};
   // The client parses replies as JSON, so numeric field names come back as numbers.
-  const known = new Set((await redis().hkeys(athleteKey(athleteId, 'activities'))).map(Number));
+  const known = new Set((await redis().hkeys(athleteKey(athleteId, 'activities'))).map(String));
   const listed: StravaActivity[] = [];
   let limited = false;
 
@@ -294,8 +295,8 @@ const syncActivities = async (athleteId: number): Promise<SyncReport> => {
   await redis().hset(athleteKey(athleteId, 'sync'), state);
 
   // The new activities, newest first, get their details now: they are the ones on screen.
-  const added = listed.filter(({id}) => !known.has(id)).sort((first, second) => second.id - first.id);
-  const detailIds: number[] = [];
+  const added = listed.filter(({id}) => !known.has(id)).sort((first, second) => newestFirst(first.id, second.id));
+  const detailIds: string[] = [];
 
   for (const {id} of added.slice(0, DETAILS_PER_CALL)) {
     if (limited) break;
@@ -318,9 +319,9 @@ const syncActivities = async (athleteId: number): Promise<SyncReport> => {
  * Fills in what older activities still lack, a few per call, while the shared rate limit
  * has room: their details first, newest first, then their power data.
  */
-const backfillActivities = async (athleteId: number): Promise<BackfillReport> => {
+const backfillActivities = async (athleteId: string): Promise<BackfillReport> => {
   const missing = await missingDetails(athleteId);
-  const detailIds: number[] = [];
+  const detailIds: string[] = [];
   let limited = false;
 
   for (const activityId of missing.slice(0, DETAILS_PER_CALL)) {
@@ -347,7 +348,7 @@ const backfillActivities = async (athleteId: number): Promise<BackfillReport> =>
 };
 
 /** Removes everything Statva holds for a rider, as Strava requires once they disconnect. */
-const forgetAthlete = async (athleteId: number): Promise<void> => {
+const forgetAthlete = async (athleteId: string): Promise<void> => {
   await redis().del(
     ...[...SERVER_NAMES, ...RIDER_NAMES, ...RETIRED_NAMES, ...PRIVATE_NAMES].map(name => athleteKey(athleteId, name)),
   );

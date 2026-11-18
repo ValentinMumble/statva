@@ -3,6 +3,7 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {ActivityFilter, dateSearchHaystack, hasEmoji, normalizeString, sortActivities} from '../models';
 import {BackfillReport, SyncReport} from '../api';
 import {Activity, DetailedActivity} from '../models/strava';
+import {compareIds} from '../models/strava-id';
 import {getFetcher} from './useFetcher';
 import {useFtp} from './useFtp';
 import {useActivityMeta} from './useActivityMeta';
@@ -56,8 +57,11 @@ const useAllActivities = () => {
   const replaceLatest = useCallback(
     (latest: Activity[]) =>
       queryClient.setQueryData<Activity[]>(['activities'], current => {
-        const lowest = latest.length < FIRST_COUNT ? 0 : Math.min(...latest.map(({id}) => id));
-        const older = (current ?? []).filter(({id}) => id < lowest);
+        const lowest =
+          latest.length < FIRST_COUNT
+            ? null
+            : latest.map(({id}) => id).reduce((low, id) => (compareIds(id, low) < 0 ? id : low));
+        const older = null === lowest ? [] : (current ?? []).filter(({id}) => compareIds(id, lowest) < 0);
 
         return Object.values(Object.assign(byId(older), byId(latest)));
       }),
@@ -84,7 +88,7 @@ const useAllActivities = () => {
   // latest few are read again even when nothing is new: one already stored can have changed on
   // Strava since (renamed, its segments ranked), and the webhook stored that.
   const addDetails = useCallback(
-    async (ids: number[]) => {
+    async (ids: string[]) => {
       for (let start = 0; start < ids.length; start += DETAILS_PER_READ) {
         const fresh = await fetchSomeDetails(ids.slice(start, start + DETAILS_PER_READ));
         const found = Object.fromEntries(
@@ -163,7 +167,7 @@ const useActivities = ({
   const queryClient = useQueryClient();
 
   const deleteActivity = useCallback(
-    (id: number) => {
+    (id: string) => {
       queryClient.setQueryData<Activity[]>(['activities'], old => (old ? old.filter(a => a.id !== id) : old));
     },
     [queryClient],

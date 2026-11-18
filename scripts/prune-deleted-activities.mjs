@@ -12,6 +12,7 @@
  */
 import {Redis} from '@upstash/redis';
 import {loadEnv, ownerAccessToken, REDIS_KEYS, STRAVA_KEYS} from './env.mjs';
+import {parseStravaJson} from './strava-json.mjs';
 
 const env = loadEnv([...STRAVA_KEYS, ...REDIS_KEYS]);
 const redis = new Redis({url: env.KV_REST_API_URL, token: env.KV_REST_API_TOKEN});
@@ -41,8 +42,8 @@ const stravaIds = async () => {
 
     if (!response.ok) throw new Error(`Could not list activities: ${response.status}`);
 
-    const batch = await response.json();
-    batch.forEach(({id}) => ids.add(String(id)));
+    const batch = parseStravaJson(await response.text());
+    batch.forEach(({id}) => ids.add(id));
     console.log(`  page ${page}: ${ids.size} activities on Strava so far`);
     if (batch.length < PAGE_SIZE) return ids;
 

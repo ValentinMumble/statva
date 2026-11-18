@@ -21,7 +21,7 @@ export interface Athlete {
   friend_count: number;
   friend: FollowerStatus;
   ftp: number;
-  id: number;
+  id: string;
   is_winback_via_upload: boolean;
   is_winback_via_view: boolean;
   lastname: string;

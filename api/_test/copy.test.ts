@@ -6,7 +6,7 @@ import {POST as copy} from '../activity.js';
 // A commute ridden on 12 Oct at 13:15:01 in Paris, 10 minutes long.
 const withCommute = (startLocal = '2026-10-12T13:15:01Z', start = '2026-10-12T11:15:01Z') => {
   const fake = install();
-  fake.login(42);
+  fake.login('42');
   fake.strava.activities = [
     {
       id: 7001,
@@ -38,9 +38,9 @@ describe('copying a ride', () => {
   it('uploads it at the same time today with its name, gear and commute flag, off the feed', async () => {
     const fake = withCommute();
 
-    const result = await copyActivity(42, 7001, {}, Date.parse('2026-10-29T14:00:00Z'));
+    const result = await copyActivity('42', '7001', {}, Date.parse('2026-10-29T14:00:00Z'));
 
-    expect(result).toMatchObject({outcome: 'copied', activity: {id: 9001, name: 'Blum Kerdiret 🦝'}});
+    expect(result).toMatchObject({outcome: 'copied', activity: {id: '9001', name: 'Blum Kerdiret 🦝'}});
     const [upload] = fake.strava.uploads;
     expect(upload).toMatchObject({name: 'Blum Kerdiret 🦝', sport_type: 'Ride', commute: '1'});
     expect(upload.external_id).toMatch(/^statva-copy-/);
@@ -53,7 +53,7 @@ describe('copying a ride', () => {
   it('goes to the day and time asked for, where the ride was', async () => {
     const fake = withCommute();
 
-    await copyActivity(42, 7001, {date: '2026-10-27', time: '08:05'}, Date.parse('2026-10-29T14:00:00Z'));
+    await copyActivity('42', '7001', {date: '2026-10-27', time: '08:05'}, Date.parse('2026-10-29T14:00:00Z'));
 
     expect(fake.strava.uploads[0].file).toContain('<Id>2026-10-27T07:05:00.000Z</Id>');
   });
@@ -61,7 +61,7 @@ describe('copying a ride', () => {
   it('takes the gear and commute flag chosen', async () => {
     const fake = withCommute();
 
-    await copyActivity(42, 7001, {gearId: 'b2', commute: false}, Date.parse('2026-10-29T14:00:00Z'));
+    await copyActivity('42', '7001', {gearId: 'b2', commute: false}, Date.parse('2026-10-29T14:00:00Z'));
 
     expect(fake.strava.uploads[0]).toMatchObject({commute: '0'});
     expect(fake.strava.puts).toEqual([{id: 9001, gear_id: 'b2', hide_from_home: true}]);
@@ -70,7 +70,7 @@ describe('copying a ride', () => {
   it('waits until that time has passed today', async () => {
     const fake = withCommute();
 
-    await expect(copyActivity(42, 7001, {}, Date.parse('2026-10-29T12:20:00Z'))).rejects.toThrow(
+    await expect(copyActivity('42', '7001', {}, Date.parse('2026-10-29T12:20:00Z'))).rejects.toThrow(
       'The copy would end on 29 Oct, 13:25, still to come',
     );
     expect(fake.strava.uploads).toEqual([]);
@@ -83,7 +83,7 @@ describe('copying a ride', () => {
       await copy(
         new Request('https://statva.test/api/activity?action=copy&id=7001', {
           method: 'POST',
-          headers: {cookie: sessionCookie(42).split(';')[0]},
+          headers: {cookie: sessionCookie('42').split(';')[0]},
           body: JSON.stringify(body),
         }),
       );

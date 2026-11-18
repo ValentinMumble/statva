@@ -11,6 +11,7 @@ import {
 } from './_lib/merge.js';
 import {canUseKomoot, komootTour, komootTours, KomootUnavailableError} from './_lib/komoot.js';
 import {readSession} from './_lib/session.js';
+import {isStravaId} from './_lib/strava-ids.js';
 import {
   bookmarkedRides,
   bookmarkRide,
@@ -35,17 +36,18 @@ export const maxDuration = 60;
 // Notes are free text; this only keeps a request from being huge.
 const MAX_NOTE = 10_000;
 
-const activityIdOf = (request: Request): number | null => {
-  const activityId = Number(new URL(request.url).searchParams.get('id'));
+/** The id in the address (?id=): a Strava activity's, or a Komoot tour's. */
+const activityIdOf = (request: Request): string | null => {
+  const activityId = new URL(request.url).searchParams.get('id');
 
-  return Number.isInteger(activityId) && 0 < activityId ? activityId : null;
+  return isStravaId(activityId) ? activityId : null;
 };
 
 const actionOf = (request: Request): string | null => new URL(request.url).searchParams.get('action');
 const shareIdOf = (request: Request): string => new URL(request.url).searchParams.get('id') ?? '';
 
 /** A shared ride changed behind the same link (?action=share&id=), by the rider who made it. */
-const updateShare = async (request: Request, athleteId: number): Promise<Response> => {
+const updateShare = async (request: Request, athleteId: string): Promise<Response> => {
   try {
     return (await updateSharedRide(shareIdOf(request), await request.json().catch(() => null), athleteId))
       ? json({ok: true})
@@ -68,7 +70,7 @@ const mergeAnswer = (result: MergeResult): Response =>
  * Merges activities into a new one on Strava ({ids, name, gear_id, commute}), or uploads the
  * waiting merge again ({retry: true}) once its parts are deleted.
  */
-const merge = async (request: Request, athleteId: number): Promise<Response> => {
+const merge = async (request: Request, athleteId: string): Promise<Response> => {
   const body = (await request.json().catch(() => null)) as {
     ids?: unknown;
     name?: unknown;
@@ -82,13 +84,13 @@ const merge = async (request: Request, athleteId: number): Promise<Response> => 
 
     const ids = Array.isArray(body?.ids) ? body.ids : [];
     const name = 'string' === typeof body?.name ? body.name.trim() : '';
-    if (!ids.every(id => Number.isInteger(id) && 0 < id) || ids.length > MAX_PARTS)
+    if (!ids.every(isStravaId) || ids.length > MAX_PARTS)
       return json({error: `Merge up to ${MAX_PARTS} activities`}, 400);
     if (0 === name.length || name.length > MAX_NAME) return json({error: 'A name is needed'}, 400);
     if ('string' !== typeof body?.gear_id || !GEAR_ID.test(body.gear_id)) return json({error: 'Unknown gear'}, 400);
 
     return mergeAnswer(
-      await mergeActivities(athleteId, ids as number[], {name, gearId: body.gear_id, commute: true === body.commute}),
+      await mergeActivities(athleteId, ids as string[], {name, gearId: body.gear_id, commute: true === body.commute}),
     );
   } catch (error) {
     return uploadFailure(error);
@@ -103,7 +105,7 @@ const TIME = /^\d{2}:\d{2}$/;
  * Copies a ride to another day and time ({date, time, gear_id, commute}: today at its own time,
  * with its own gear and commute flag by default), on Strava and in Statva.
  */
-const copy = async (request: Request, athleteId: number, activityId: number): Promise<Response> => {
+const copy = async (request: Request, athleteId: string, activityId: string): Promise<Response> => {
   const body = (await request.json().catch(() => null)) as {
     date?: unknown;
     time?: unknown;
@@ -138,12 +140,12 @@ const copy = async (request: Request, athleteId: number, activityId: number): Pr
 };
 
 /** The owner's planned Komoot tours, or one of them with its points (?action=komoot&id=). */
-const komoot = async (request: Request, athleteId: number): Promise<Response> => {
+const komoot = async (request: Request, athleteId: string): Promise<Response> => {
   if (!canUseKomoot(athleteId)) return json({error: 'Komoot is not set up'}, 404);
 
   try {
     const id = activityIdOf(request);
-    return json(null === id ? await komootTours() : await komootTour(id));
+    return json(null === id ? await komootTours() : await komootTour(Number(id)));
   } catch (error) {
     if (error instanceof KomootUnavailableError) return json({error: error.message}, 502);
     throw error;

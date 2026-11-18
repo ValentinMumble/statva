@@ -10,7 +10,7 @@ const label = (key: string | null) => (null === key ? '🤷' : `[${key}]`);
 const ridesOn = (days: number[], km = 100) =>
   days.map(day =>
     buildActivity({
-      id: day,
+      id: String(day),
       gear_id: BIKE,
       distance: km * 1000,
       start_date: `2025-01-${String(day).padStart(2, '0')}T08:00:00Z`,

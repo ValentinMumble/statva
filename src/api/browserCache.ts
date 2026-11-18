@@ -11,11 +11,16 @@ type CachedData = {activities: Activity[]; activityMeta: Record<string, Detailed
 
 const DATABASE = 'statva';
 const STORE = 'rider';
+// 2: Strava ids as strings. What an older version kept is dropped, and loads again.
+const VERSION = 2;
 
 const open = () =>
   new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open(DATABASE, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE);
+    const request = indexedDB.open(DATABASE, VERSION);
+    request.onupgradeneeded = () => {
+      if (request.result.objectStoreNames.contains(STORE)) request.result.deleteObjectStore(STORE);
+      request.result.createObjectStore(STORE);
+    };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
@@ -33,7 +38,7 @@ const run = async <T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) 
   }
 };
 
-const loadCachedData = async (athleteId: number): Promise<CachedData | null> => {
+const loadCachedData = async (athleteId: string): Promise<CachedData | null> => {
   try {
     return ((await run('readonly', store => store.get(athleteId))) as CachedData | undefined) ?? null;
   } catch {
@@ -41,7 +46,7 @@ const loadCachedData = async (athleteId: number): Promise<CachedData | null> => 
   }
 };
 
-const saveCachedData = async (athleteId: number, data: CachedData): Promise<void> => {
+const saveCachedData = async (athleteId: string, data: CachedData): Promise<void> => {
   try {
     await run('readwrite', store => store.put(data, athleteId));
   } catch {

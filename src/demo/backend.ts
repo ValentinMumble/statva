@@ -14,6 +14,7 @@ import {
 } from '../models';
 import {UploadRefusedError} from '../api/strava';
 import {Activity, DetailedActivity} from '../models/strava';
+import {compareIds} from '../models/strava-id';
 import {DEMO_CLUB, DEMO_FINISHES, DemoData, demoStreams, generateDemo} from './generate';
 
 /**
@@ -31,6 +32,9 @@ const answer = async <T>(value: T): Promise<T> => {
 };
 
 const DAY_MS = 86_400_000;
+
+/** The id Strava would give a new activity: past the newest one (demo ids fit in a number). */
+const newestId = (): string => String(Math.max(...demo().activities.map(({id}) => Number(id))) + 1);
 
 /**
  * The demo club's calendar: every session ridden, and those between them that were missed,
@@ -72,15 +76,15 @@ const demoBackend = {
   getActivities: () => answer(demo().activities),
   sync: () => answer({added: 0, historyDone: true, detailIds: [], limited: false}),
   backfill: () => answer({detailIds: [], detailsMissing: 0, powerFetched: 0, limited: false}),
-  refreshActivity: (id: number) => answer(demo().details[id]),
-  renameActivity: async (id: number, name: string) => {
+  refreshActivity: (id: string) => answer(demo().details[id]),
+  renameActivity: async (id: string, name: string) => {
     demo().activities = demo().activities.map(activity => (activity.id === id ? {...activity, name} : activity));
     if (demo().details[id]) demo().details[id] = {...demo().details[id], name};
   },
-  setActivityNote: async (id: number, note: 'description' | 'private_note', text: string) => {
+  setActivityNote: async (id: string, note: 'description' | 'private_note', text: string) => {
     if (demo().details[id]) demo().details[id] = {...demo().details[id], [note]: text};
   },
-  setActivityGear: async (id: number, gearId: string) => {
+  setActivityGear: async (id: string, gearId: string) => {
     const newGearId = 'none' === gearId ? null : gearId;
     demo().activities = demo().activities.map(activity =>
       activity.id === id ? {...activity, gear_id: newGearId} : activity,
@@ -92,7 +96,7 @@ const demoBackend = {
   mergeActivities: ({ids, name, gearId, commute}: MergeChoice): Promise<MergeResult> => {
     const plan = mergePlan(demo().activities.filter(({id}) => ids.includes(id)));
     const [first] = plan.parts;
-    const id = Math.max(...demo().activities.map(activity => activity.id)) + 1;
+    const id = newestId();
     const polyline = encodePolyline(plan.parts.flatMap(({map}) => decodePolyline(map?.summary_polyline ?? '')));
     const activity: Activity = {
       ...first,
@@ -114,7 +118,7 @@ const demoBackend = {
   },
   // The day and time asked for (today at the ride's own time by default) in the browser's time
   // zone, near enough for the demo, once the copy would be over.
-  copyActivity: (id: number, {date, time, gearId, commute}: CopyChoice = {}): Promise<CopyResult> => {
+  copyActivity: (id: string, {date, time, gearId, commute}: CopyChoice = {}): Promise<CopyResult> => {
     const original = demo().activities.find(activity => activity.id === id);
     if (undefined === original) return Promise.reject(new UploadRefusedError('The activity is not on Strava any more'));
     const day = date ?? new Date().toLocaleDateString('en-CA');
@@ -130,7 +134,7 @@ const demoBackend = {
       return Promise.reject(new UploadRefusedError(`The copy would end on ${at}, still to come: pick an earlier time`));
     }
 
-    const copyId = Math.max(...demo().activities.map(activity => activity.id)) + 1;
+    const copyId = newestId();
     const activity: Activity = {
       ...original,
       id: copyId,
@@ -146,17 +150,18 @@ const demoBackend = {
     return answer({outcome: 'copied', activity});
   },
   getDetails: (): Promise<Record<string, DetailedActivity>> => answer(demo().details),
-  getLatestSummaries: (count: number) => answer([...demo().activities].sort((a, b) => b.id - a.id).slice(0, count)),
+  getLatestSummaries: (count: number) =>
+    answer([...demo().activities].sort((a, b) => compareIds(b.id, a.id)).slice(0, count)),
   getLatestDetails: (count: number) =>
     answer(
       Object.fromEntries(
         [...demo().activities]
-          .sort((a, b) => b.id - a.id)
+          .sort((a, b) => compareIds(b.id, a.id))
           .slice(0, count)
           .map(({id}) => [id, demo().details[id]]),
       ),
     ),
-  getSomeDetails: (ids: number[]) => answer(Object.fromEntries(ids.map(id => [id, demo().details[id] ?? null]))),
+  getSomeDetails: (ids: string[]) => answer(Object.fromEntries(ids.map(id => [id, demo().details[id] ?? null]))),
   getEvents: () => answer(demo().events),
   setEvent: async (event: Event) => {
     demo().events = upsert(demo().events, event);
@@ -187,14 +192,14 @@ const demoBackend = {
     demo().settings = {...demo().settings, [field]: value};
   },
   getClubCalendar: () => answer({rides: demoCalendar(), complete: true}),
-  getComments: (id: number) => {
+  getComments: (id: string) => {
     const count = demo().activities.find(activity => activity.id === id)?.comment_count ?? 0;
     const texts = ['Great pace tonight!', 'See you next week', 'That last climb though'];
     const start = new Date(demo().activities.find(activity => activity.id === id)?.start_date ?? Date.now()).getTime();
 
     return answer(
       texts.slice(0, count).map((text, index) => ({
-        id: id * 10 + index,
+        id: `${id}${index}`,
         activity_id: id,
         text,
         athlete: {firstname: ['Camille', 'Jules', 'Inès'][index], lastname: 'D.'},
@@ -205,7 +210,7 @@ const demoBackend = {
     );
   },
   // Heart rate points only: the demo's rides have no positions, so no stops.
-  getStreams: (id: number) => {
+  getStreams: (id: string) => {
     const activity = demo().activities.find(activity => activity.id === id);
 
     return answer(undefined === activity ? {} : demoStreams(activity as Activity));

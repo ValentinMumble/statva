@@ -80,12 +80,12 @@ describe('login', () => {
     const fake = install();
     const session = await logIn();
 
-    expect(await (await strava(request('/api/strava?path=athlete', session))).json()).toEqual({id: 42});
+    expect(await (await strava(request('/api/strava?path=athlete', session))).json()).toEqual({id: '42'});
 
     fake.strava.tokens[42] = false;
     const kept = await strava(request('/api/strava?path=athlete', session));
     expect(kept.status).toBe(200);
-    expect(await kept.json()).toEqual({id: 42});
+    expect(await kept.json()).toEqual({id: '42'});
   });
 
   it('refuses a missing or edited session', async () => {

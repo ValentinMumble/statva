@@ -511,7 +511,7 @@ const usePhotos = (activity: Activity | undefined, detail: DetailedActivity | nu
   const count = detail?.total_photo_count ?? activity?.total_photo_count ?? 0;
   const {data: photos} = useQuery({
     queryKey: ['photos', activity?.id, count],
-    queryFn: () => fetchPhotos(activity?.id ?? 0),
+    queryFn: () => fetchPhotos(activity?.id ?? ''),
     enabled: 0 < count,
     retry: false,
   });
@@ -848,7 +848,7 @@ const ActivityPage = () => {
   const {getFtp} = useFtp();
   const [refreshing, setRefreshing] = useState(false);
 
-  const summary = activities?.find(({id}) => String(id) === activityId);
+  const summary = activities?.find(({id}) => id === activityId);
   const detail: DetailedActivity | null = activityMeta[activityId ?? ''] ?? null;
   const komRank = bestKomRank(detail);
   // The summary has every figure; the details add notes, calories, devices and the full track.
@@ -869,7 +869,7 @@ const ActivityPage = () => {
   const outdoors = undefined !== activity && !activity.trainer && 2 === activity.start_latlng?.length;
   const streams = useQuery({
     queryKey: ['streams', activity?.id],
-    queryFn: () => fetchStreams(activity?.id ?? 0),
+    queryFn: () => fetchStreams(activity?.id ?? ''),
     enabled: outdoors || true === activity?.has_heartrate,
     staleTime: Infinity,
     retry: false,

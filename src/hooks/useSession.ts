@@ -6,18 +6,18 @@ const useSession = () => {
   const demo = isDemo();
   const {data, isLoading} = useQuery({
     queryKey: ['session'],
-    queryFn: async (): Promise<number | null> => {
+    queryFn: async (): Promise<string | null> => {
       const response = await fetch('/api/auth/me');
       if (!response.ok) return null;
 
-      return ((await response.json()) as {athleteId: number}).athleteId;
+      return ((await response.json()) as {athleteId: string}).athleteId;
     },
     enabled: !demo,
     retry: false,
   });
 
   return {
-    isLoggedIn: demo || 'number' === typeof data,
+    isLoggedIn: demo || 'string' === typeof data,
     athleteId: demo ? null : (data ?? null),
     isLoading: !demo && isLoading,
     isDemo: demo,

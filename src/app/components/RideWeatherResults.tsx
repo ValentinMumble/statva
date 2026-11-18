@@ -441,7 +441,7 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
   const climb = useMemo(() => climbing(points), [points]);
   // Flat to mountainous, as an activity's page grades it.
   const difficulty = useMemo(
-    () => terrainOf({id: -1, distance, total_elevation_gain: climb}, rides),
+    () => terrainOf({id: '', distance, total_elevation_gain: climb}, rides),
     [distance, climb, rides],
   );
   const riding = useMemo(() => timeline(points, pace), [points, pace]);

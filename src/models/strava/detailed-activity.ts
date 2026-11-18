@@ -38,7 +38,7 @@ export interface DetailedActivity {
   has_kudoed: boolean;
   heartrate_opt_out: boolean;
   hide_from_home: boolean;
-  id: number;
+  id: string;
   kilojoules: number;
   kudos_count: number;
   laps: unknown[];
