@@ -18,6 +18,7 @@ import {
   fetchAthlete,
   fetchForecasts,
   fetchKomootSavedTour,
+  fetchGpxToolRoute,
   fetchKomootTour,
   fetchKomootTours,
   bookmarkRide,
@@ -94,6 +95,7 @@ const REAL: Record<string, Fetcher<unknown>> = {
   'routes.strava': fetchStravaRoutes,
   'route.strava': fetchStravaRoute,
   'route.komoot': fetchKomootTour,
+  'route.gpxtool': fetchGpxToolRoute,
   'komoot.tours': fetchKomootTours,
   'komoot.tour': fetchKomootSavedTour,
   'weather.forecast': fetchForecasts,
@@ -147,6 +149,8 @@ const DEMO: typeof REAL = {
   'routes.strava': () => Promise.resolve([]),
   'route.strava': () => Promise.reject(new Error('The demo has no Strava routes')),
   'route.komoot': fetchKomootTour,
+  // prendslaroue.fr's routes come through the server, which needs a login.
+  'route.gpxtool': () => Promise.reject(new Error('The demo cannot read prendslaroue.fr routes')),
   // The demo has no Komoot login: links only.
   'komoot.tours': () => Promise.resolve([]),
   'komoot.tour': () => Promise.reject(new Error('The demo has no Komoot login')),

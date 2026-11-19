@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Link, useSearchParams} from 'react-router';
-import {LuArrowLeft, LuShare2, LuX} from 'react-icons/lu';
+import {LuArrowLeft, LuBike, LuShare2, LuX} from 'react-icons/lu';
 import {SiKomoot, SiStrava} from 'react-icons/si';
 import {useLocalStorage} from 'usehooks-ts';
 import {KomootTourSummary, RideBookmark, SharedRide, StravaRoute, UnknownLinkError} from '../../api';
@@ -33,6 +33,7 @@ import {km} from '../format';
 const fetchStravaRoutes = getFetcher<StravaRoute[]>('routes.strava');
 const fetchStravaRoute = getFetcher<PlannedRoute>('route.strava');
 const fetchKomootTour = getFetcher<PlannedRoute>('route.komoot');
+const fetchGpxToolRoute = getFetcher<PlannedRoute>('route.gpxtool');
 const fetchKomootTours = getFetcher<KomootTourSummary[]>('komoot.tours');
 const fetchKomootSavedTour = getFetcher<PlannedRoute>('komoot.tour');
 const shareRide = getFetcher<string>('ride.share');
@@ -48,7 +49,7 @@ const useRides = (): Activity[] => {
   return useMemo(() => (activities ?? []).filter(({sport_type}) => RIDE_TYPES.includes(sport_type)), [activities]);
 };
 
-type Source = 'strava' | 'komoot';
+type Source = 'strava' | 'komoot' | 'prendslaroue';
 // The two services' own colours, for their logos.
 const STRAVA_ORANGE = '#fc4c02';
 const KOMOOT_GREEN = '#6aa127';
@@ -182,8 +183,8 @@ const BookmarkedRideWeather = ({id}: {id: string}) => {
 };
 
 /**
- * The weather on a planned ride, as Epic Ride Weather shows it: a Strava route or a Komoot
- * tour, ridden at the rider's own pace from a start time, with the forecast at each part of
+ * The weather on a planned ride, as Epic Ride Weather shows it: a Strava route, a Komoot tour or
+ * a route of prendslaroue.fr's GPX tool, ridden at the rider's own pace from a start time, with the forecast at each part of
  * the route when they get there, and the wind as head or tail wind. Share makes a link.
  */
 const PlannedRideWeather = () => {
@@ -196,6 +197,8 @@ const PlannedRideWeather = () => {
   const [komootLink, setKomootLink] = useLocalStorage<string>('ride-weather-komoot-link', '');
   const [komootChoice, setKomootChoice] = useLocalStorage<string>('ride-weather-komoot-tour', '');
   const [linkDraft, setLinkDraft] = useState(komootLink);
+  const [gpxToolLink, setGpxToolLink] = useLocalStorage<string>('ride-weather-prendslaroue-link', '');
+  const [gpxToolDraft, setGpxToolDraft] = useState(gpxToolLink);
   const [sharing, setSharing] = useState(false);
   const queryClient = useQueryClient();
   // The link made, with what it was made of: a change to the ride hides it.
@@ -221,14 +224,25 @@ const PlannedRideWeather = () => {
       ? null
       : (savedTours.find(({id}) => String(id) === komootChoice) ?? savedTours[0] ?? null);
   const route = useQuery({
-    queryKey: ['plannedRoute', source, 'strava' === source ? stravaRoute?.id_str : (komootTour?.id ?? komootLink)],
+    queryKey: [
+      'plannedRoute',
+      source,
+      'strava' === source ? stravaRoute?.id_str : 'komoot' === source ? (komootTour?.id ?? komootLink) : gpxToolLink,
+    ],
     queryFn: () =>
       'strava' === source
         ? fetchStravaRoute(stravaRoute)
-        : null !== komootTour
-          ? fetchKomootSavedTour(komootTour.id)
-          : fetchKomootTour(komootLink),
-    enabled: 'strava' === source ? undefined !== stravaRoute : null !== komootTour || '' !== komootLink,
+        : 'prendslaroue' === source
+          ? fetchGpxToolRoute(gpxToolLink)
+          : null !== komootTour
+            ? fetchKomootSavedTour(komootTour.id)
+            : fetchKomootTour(komootLink),
+    enabled:
+      'strava' === source
+        ? undefined !== stravaRoute
+        : 'prendslaroue' === source
+          ? '' !== gpxToolLink
+          : null !== komootTour || '' !== komootLink,
     staleTime: Infinity,
     retry: false,
   });
@@ -330,6 +344,14 @@ const PlannedRideWeather = () => {
                     </HStack>
                   ),
                 },
+                {
+                  value: 'prendslaroue',
+                  label: (
+                    <HStack gap="6px">
+                      <LuBike /> Prends la roue
+                    </HStack>
+                  ),
+                },
               ]}
             />
           </SegmentGroup.Root>
@@ -360,6 +382,22 @@ const PlannedRideWeather = () => {
                 </NativeSelect.Root>
               </Field.Root>
             )
+          ) : 'prendslaroue' === source ? (
+            <Field.Root>
+              <Field.Label>Prends la roue link</Field.Label>
+              <HStack width="full">
+                <Input
+                  value={gpxToolDraft}
+                  placeholder="https://www.prendslaroue.fr/gpxtool/…"
+                  onChange={({target}) => setGpxToolDraft(target.value)}
+                  onKeyDown={({key}) => 'Enter' === key && setGpxToolLink(gpxToolDraft.trim())}
+                />
+                <Button onClick={() => setGpxToolLink(gpxToolDraft.trim())} disabled={'' === gpxToolDraft.trim()}>
+                  Load
+                </Button>
+              </HStack>
+              <Field.HelperText>A route from the GPX tool of prendslaroue.fr.</Field.HelperText>
+            </Field.Root>
           ) : (
             <Stack gap="12px">
               {0 < savedTours.length && (
@@ -415,9 +453,13 @@ const PlannedRideWeather = () => {
       {route.isFetching && <Spinner alignSelf="center" />}
       {route.isError && (
         <Text color="fg.error">
-          {route.error instanceof UnknownLinkError
-            ? 'That is not a Komoot tour link.'
-            : 'The route could not be loaded. A private Komoot tour needs the link from its Share button.'}
+          {'prendslaroue' === source
+            ? route.error instanceof UnknownLinkError
+              ? 'That is not a link to a route of the prendslaroue.fr GPX tool.'
+              : 'The route could not be loaded from prendslaroue.fr.'
+            : route.error instanceof UnknownLinkError
+              ? 'That is not a Komoot tour link.'
+              : 'The route could not be loaded. A private Komoot tour needs the link from its Share button.'}
         </Text>
       )}
 

@@ -18,8 +18,8 @@ type SharedRide = {
   pace: {secondsPerMetre: number; secondsPerMetreClimbed: number};
   // Stops along the way (s), when the rider set or kept them.
   stops?: number;
-  // The route's page on Strava or Komoot, when it has one.
-  source?: {service: 'strava' | 'komoot'; url: string};
+  // The route's page on Strava, Komoot or prendslaroue.fr, when it has one.
+  source?: {service: 'strava' | 'komoot' | 'prendslaroue'; url: string};
 };
 
 const SHARE_DAYS = 15;
@@ -29,6 +29,7 @@ const ID = /^[A-Za-z0-9_-]{8}$/;
 const SOURCES = {
   strava: /^https:\/\/www\.strava\.com\/routes\/\d+$/,
   komoot: /^https:\/\/www\.komoot\.com\/tour\/\d+$/,
+  prendslaroue: /^https:\/\/www\.prendslaroue\.fr\/gpxtool\/[0-9a-f-]{36}$/,
 };
 
 const shareKey = (id: string): string => `ride-share:${id}`;
@@ -58,7 +59,7 @@ const sharedRideOf = (body: unknown): SharedRide => {
   if (undefined !== stops && (!isNumber(stops) || stops < 0 || stops > MAX_STOPS))
     throw new ShareError('Stops of 0 to 24 hours');
   if (undefined !== source && !SOURCES[source?.service]?.test(String(source?.url)))
-    throw new ShareError('a Strava or Komoot page as its source');
+    throw new ShareError('a Strava, Komoot or prendslaroue.fr page as its source');
 
   return {
     name: name.trim(),

@@ -63,6 +63,22 @@ describe('sharing a planned ride by link', () => {
     }
   });
 
+  it('keeps a prendslaroue.fr route as its source', async () => {
+    install();
+    const source = {
+      service: 'prendslaroue',
+      url: 'https://www.prendslaroue.fr/gpxtool/bb3e35d3-dcef-442e-ad69-93eef3d1c1d7',
+    };
+
+    const {id} = (await (await call(save, 'POST', 'action=share', {...ride, source})).json()) as {id: string};
+    const shared = (await (await call(read, 'GET', `action=share&id=${id}`, undefined, false)).json()) as {
+      source: unknown;
+    };
+    expect(shared.source).toEqual(source);
+    const elsewhere = {...source, url: 'https://www.prendslaroue.fr/elsewhere'};
+    expect((await call(save, 'POST', 'action=share', {...ride, source: elsewhere})).status).toBe(400);
+  });
+
   it('says when a link leads nowhere', async () => {
     install();
 

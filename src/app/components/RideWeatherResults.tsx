@@ -4,7 +4,7 @@ import {Chart, useChart} from '@chakra-ui/charts';
 import {useQuery} from '@tanstack/react-query';
 import {divIcon} from 'leaflet';
 import {CircleMarker, Marker, Polyline, Tooltip as MapTooltip} from 'react-leaflet';
-import {LuArrowUp, LuExternalLink} from 'react-icons/lu';
+import {LuArrowUp, LuBike, LuExternalLink} from 'react-icons/lu';
 import {SiKomoot, SiStrava} from 'react-icons/si';
 import {
   Area,
@@ -66,6 +66,8 @@ const fetchForecasts = getFetcher<HourForecast[][]>('weather.forecast');
 const fetchPlaceNames = getFetcher<(string | null)[]>('place.names');
 
 const DAY_MS = 86400000;
+// Where a route comes from, as its "From …" link says.
+const SOURCE_NAMES = {strava: 'Strava', komoot: 'Komoot', prendslaroue: 'Prends la roue'};
 const HOUR_MS = 3600000;
 const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 // About this many wind arrows and distance marks on the map, whatever the route's length.
@@ -548,8 +550,10 @@ const RideWeatherResults = ({route, start, pace, locale, stops, onSky, rides = [
           </Text>
           {undefined !== route.source && (
             <ChakraLink href={route.source.url} target="_blank" rel="noreferrer" fontSize="sm" color="fg.muted">
-              {'strava' === route.source.service ? <SiStrava color="#fc4c02" /> : <SiKomoot color="#6aa127" />}
-              From {'strava' === route.source.service ? 'Strava' : 'Komoot'} <LuExternalLink />
+              {'strava' === route.source.service && <SiStrava color="#fc4c02" />}
+              {'komoot' === route.source.service && <SiKomoot color="#6aa127" />}
+              {'prendslaroue' === route.source.service && <LuBike />}
+              From {SOURCE_NAMES[route.source.service]} <LuExternalLink />
             </ChakraLink>
           )}
         </HStack>

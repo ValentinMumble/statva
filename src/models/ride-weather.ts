@@ -9,7 +9,7 @@ import {Activity} from './strava';
 
 type RoutePoint = {lat: number; lng: number; altitude: number; distance: number};
 // Where the route comes from: the route or tour on Strava or Komoot.
-type RouteSource = {service: 'strava' | 'komoot'; url: string};
+type RouteSource = {service: 'strava' | 'komoot' | 'prendslaroue'; url: string};
 type PlannedRoute = {name: string; points: RoutePoint[]; source?: RouteSource};
 
 // The rider's pace: seconds per metre on the flat, and seconds more per metre climbed.

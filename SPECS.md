@@ -381,12 +381,15 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
   of their planned tours: the server logs in the way Komoot's apps and community tools do
   (Komoot has no open API) and keeps only the session key Komoot gives, logging in again
   when it runs out. Otherwise, or with "Paste a link…", a tour link: a public tour, or a
-  private one through the link its Share button gives, read straight from the browser.
+  private one through the link its Share button gives, read straight from the browser. Or a
+  route of prendslaroue.fr's GPX tool from its link (`/gpxtool/<id>`): the server reads its GPX
+  file (the site does not let other sites read it from the browser), the track or else the
+  route, with its name and heights.
 - **Start**: a day from a list of the next 15, written in Statva's language (a date input
   would show the device's own format), and a time from a list every 15 minutes, for the same
   reason (the next full hour by default), and **The other way round**, which rides the
   route from its finish (timing, climbs, wind and forecast follow; shared too). The
-  Strava and Komoot choices carry their logos.
+  Strava and Komoot choices carry their logos, Prends la roue a bike.
 - **Pace**: fitted on the rider's outdoor rides of the last two years, half to twice the
   route's length (all of them under 5 such rides): moving time = a × distance + b ×
   climbing, by least squares. So each part of the route takes its length at the flat
@@ -403,7 +406,7 @@ The weather on a ride still to come, as Epic Ride Weather shows it.
 - **Shows**: the route's name, the towns it starts and ends in ("Nantes → Clisson", or "From
   and back to Nantes"; from OpenStreetMap's Nominatim, no key, in the page's language, left
   out when it knows none), day, start and finish, and where it comes from (its page on
-  Strava or Komoot, with the logo; never a private share token); then distance (a loop, or
+  Strava, Komoot or prendslaroue.fr, with the logo; never a private share token); then distance (a loop, or
   how far from the start it ends), elevation (climbing with its terrain tag, Flat to
   Mountainous, graded as on an activity's page; metres per km, highest point), moving
   time (and the time back), average speed, temperature and feels like (lowest to highest), rain (highest
@@ -560,6 +563,7 @@ shared ride need a session.
 | `POST /api/sync?step=backfill` | Fill in the details and power data of a few older activities |
 | `POST /api/activity?id=` | Fetch one activity again and store it |
 | `GET /api/activity?action=komoot`, `&id=` | The owner's planned Komoot tours, or one with its points (9.5) |
+| `GET /api/activity?action=gpx&id=` | A route of prendslaroue.fr's GPX tool, with its points, read from its GPX file (9.5) |
 | `POST /api/activity?action=share`, `GET ?action=share&id=`, `PUT ?action=share&id=` | Keep a planned ride for a share link (15 days); read it, with no login; change it behind the same link, by its maker (9.5) |
 | `POST /api/activity?action=copy&id=` | Copy a ride to the day and time given (`{date, time}`, today at its own time by default), on Strava and in Statva (4) |
 | `GET, POST, DELETE /api/activity?action=merge` | Merge activities into a new one on Strava (3.5); the merge Strava refused, uploaded again or forgotten |

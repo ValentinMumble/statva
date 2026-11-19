@@ -27,7 +27,7 @@ into a home page, stats, records and an explorer map.
   charts for training load, volume and gear.
 - **Records:** all-time totals, the hall of fame, Eddington by year, and the explorer tiles
   you have ridden, with the biggest square and the yard as Squadrats defines them.
-- **Ride weather:** a Strava route or a Komoot tour, ridden at your own pace (or a speed you
+- **Ride weather:** a Strava route, a Komoot tour or a route from prendslaroue.fr's GPX tool, ridden at your own pace (or a speed you
   pick) from a day and time, with stops, either way round, with the forecast at each part of the route
   when you get there and the wind as head or tail wind, like Epic Ride Weather. Advice on
   the best start, the wind's cost, rain and what to wear. Share it by link: a friend opens
@@ -135,7 +135,7 @@ npm run build
   the dashboard), each with tests.
 - `src/demo/`: the made-up rides behind the demo.
 - `api/`: the server functions: Strava login, the Strava and database proxies, sync, the
-  webhook, shared rides and Komoot. Secrets never reach the browser.
+  webhook, shared rides, Komoot and prendslaroue.fr routes. Secrets never reach the browser.
 - `sw/sw.js`: the service worker that keeps the app on the device (the build adds its file list).
 - `scripts/`: one-off jobs (backfill details, find deleted activities, register the webhook).
 

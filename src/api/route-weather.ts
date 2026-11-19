@@ -4,7 +4,8 @@ import {getJson} from './strava';
 /**
  * Where Ride weather gets its routes and forecasts: the rider's saved routes on Strava
  * (through the server, which holds the tokens), a Komoot tour from its link and the forecast
- * from Open-Meteo, both straight from the browser (they need no key and allow it).
+ * from Open-Meteo, both straight from the browser (they need no key and allow it), and a route
+ * of prendslaroue.fr's GPX tool from its link (through the server: the site does not allow it).
  */
 
 // Strava route ids pass JavaScript's safe integers: id_str is the one to use.
@@ -61,6 +62,26 @@ const fetchKomootTour = async (link: string): Promise<PlannedRoute> => {
     points: routeFromPoints(
       items.map(({lat, lng}) => [lat, lng]),
       items.map(({alt}) => alt ?? 0),
+    ),
+  };
+};
+
+/** A route of prendslaroue.fr's GPX tool from its link: https://www.prendslaroue.fr/gpxtool/<id>. */
+const fetchGpxToolRoute = async (link: string): Promise<PlannedRoute> => {
+  const url = new URL(link.trim());
+  const id = url.pathname.match(/^\/gpxtool\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)?.[1];
+  if (!url.hostname.endsWith('prendslaroue.fr') || undefined === id) throw new UnknownLinkError();
+
+  const route = await getJson<{name: string; points: {lat: number; lng: number; alt?: number}[]}>(
+    `/api/activity?${new URLSearchParams({action: 'gpx', id: id.toLowerCase()})}`,
+  );
+
+  return {
+    name: route.name,
+    source: {service: 'prendslaroue', url: `https://www.prendslaroue.fr/gpxtool/${id.toLowerCase()}`},
+    points: routeFromPoints(
+      route.points.map(({lat, lng}) => [lat, lng]),
+      route.points.map(({alt}) => alt ?? 0),
     ),
   };
 };
@@ -264,6 +285,7 @@ export {
   fetchBookmarks,
   fetchForecasts,
   fetchKomootSavedTour,
+  fetchGpxToolRoute,
   fetchKomootTour,
   fetchKomootTours,
   fetchPlaceNames,

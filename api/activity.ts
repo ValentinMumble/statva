@@ -9,6 +9,7 @@ import {
   retryMerge,
   UploadError,
 } from './_lib/merge.js';
+import {gpxToolRoute, GpxToolError} from './_lib/gpx-tool.js';
 import {canUseKomoot, komootTour, komootTours, KomootUnavailableError} from './_lib/komoot.js';
 import {readSession} from './_lib/session.js';
 import {isStravaId} from './_lib/strava-ids.js';
@@ -26,8 +27,9 @@ import {changeActivity, refreshActivity} from './_lib/sync.js';
 /**
  * One activity, and what Statva uploads from activities: a merge (?action=merge) and a copy to
  * another day (?action=copy); a planned ride shared by link (?action=share), the shared rides a
- * rider bookmarked (?action=bookmark), and the owner's Komoot tours for it (?action=komoot). One function for all, as the Hobby plan allows 12 per
- * deployment.
+ * rider bookmarked (?action=bookmark), the owner's Komoot tours for it (?action=komoot) and a route
+ * of prendslaroue.fr's GPX tool (?action=gpx). One function for all, as the Hobby plan allows 12
+ * per deployment.
  */
 
 // Reading up to 10 activities, uploading and waiting for Strava takes longer than the default.
@@ -152,10 +154,20 @@ const komoot = async (request: Request, athleteId: string): Promise<Response> =>
   }
 };
 
+/** A route of prendslaroue.fr's GPX tool, with its points (?action=gpx&id=). */
+const gpxTool = async (request: Request): Promise<Response> => {
+  try {
+    return json(await gpxToolRoute(new URL(request.url).searchParams.get('id') ?? ''));
+  } catch (error) {
+    if (error instanceof GpxToolError) return json({error: error.message}, 502);
+    throw error;
+  }
+};
+
 /**
  * The merge Strava refused, waiting for its parts to be deleted, or null (?action=merge); a
  * shared ride (?action=share&id=), for anyone with its link; the rider's bookmarked rides
- * still to come (?action=bookmark).
+ * still to come (?action=bookmark); a route of prendslaroue.fr's GPX tool (?action=gpx&id=).
  */
 export const GET = async (request: Request): Promise<Response> => {
   if ('share' === actionOf(request)) {
@@ -167,6 +179,7 @@ export const GET = async (request: Request): Promise<Response> => {
 
   if (null === athleteId) return json({error: 'Not logged in'}, 401);
   if ('komoot' === actionOf(request)) return await komoot(request, athleteId);
+  if ('gpx' === actionOf(request)) return await gpxTool(request);
   if ('bookmark' === actionOf(request)) return json(await bookmarkedRides(athleteId));
   if ('merge' !== actionOf(request)) return json({error: 'Not found'}, 404);
 

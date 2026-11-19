@@ -234,6 +234,18 @@ const install = () => {
       return reply({}, 404);
     }
 
+    // One route of prendslaroue.fr's GPX tool, as its GPX file: a track, and a café on the way.
+    if ('www.prendslaroue.fr' === url.host) {
+      if ('/gpxtool/bb3e35d3-dcef-442e-ad69-93eef3d1c1d7/gpx' !== url.pathname)
+        return new Response('No', {status: 404});
+      return new Response(
+        `<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"><wpt lat="47.3" lon="-1.6"><name>Caf&#233; de l&#39;&#233;glise</name></wpt>
+<trk><name>NP-MU 3.2</name><trkseg><trkpt lat="47.229496" lon="-1.572533"><ele>12.5</ele></trkpt>
+<trkpt lon="-1.5723031" lat="47.2293986"><ele>14</ele></trkpt><trkpt lat="47.2290" lon="-1.5720"/></trkseg></trk></gpx>`,
+        {headers: {'Content-Type': 'application/gpx+xml'}},
+      );
+    }
+
     if ('www.pedalons.fr' === url.host) {
       site.requests.push(`${url.pathname}?page=${url.searchParams.get('page')}&size=${url.searchParams.get('size')}`);
       if (site.down) return new Response('Down', {status: 503});
