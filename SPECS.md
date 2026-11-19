@@ -648,10 +648,22 @@ change). A visit shows them at once, then the first sync reloads the list whole 
 details reload when a page needs them. Logging out or disconnecting deletes them from the
 browser. In a private window or with storage blocked, the app loads from the server as before.
 
-The app keeps itself current: a page left open across a deploy that asks for a file the deploy
-removed reloads, and each time the app comes back to the front (at most once a minute) it reads
-the live page and reloads when it names another build than the one running. An app on a
-phone's home screen can otherwise sit in memory on an old deploy for days.
+A service worker (`sw/sw.js`, written into the build with the list of its files and an id that
+changes with them) keeps the page and every file of the build on the device, the fonts outside
+Latin only once a page needs them. So the app opens at once, and with no network at all: the
+login check then falls back to the rider of the last visit (kept in localStorage, forgotten on
+a 401), the activities show from IndexedDB, and what needs the server says "No connection to
+Statva". An answer that is a page and not data (a Wi-Fi login) is an error, never data shown.
+The `/api/` calls always go to the network. The files under `/assets/` are cached for a year
+(their names change with their content), and the fonts (Inter, Space Grotesk) come with the
+app, not from Google.
+
+The app keeps itself current: a new deploy is a new service worker, which installs in the
+background (copying the files that did not change from the build before), takes over and drops
+the old files. The page then reloads into it at once while nothing was tapped yet, else when it
+next comes back to the front. Each return to the front (at most once a minute) checks for a new
+deploy, and a page left open across a deploy that asks for a file the deploy removed reloads. An
+app on a phone's home screen could otherwise sit in memory on an old deploy for days.
 
 ### 11.6 Without Strava
 Strava's API needs a paid subscription on the account that owns the app. Once it lapses,
@@ -710,7 +722,7 @@ development runs on it unless `VITE_REAL_DATA=1` (then `vercel dev` serves the A
 ### 13.4 Phones
 - Floating tab bar, swipe between tabs, one column at a time, thumb-sized buttons, dialogs
   from the bottom, pages kept clear of the notch and the home indicator.
-- Installable as an app (web manifest).
+- Installable as an app (web manifest), which opens with no network (11.5).
 
 ### 13.5 Quality
 - Every calculation lives in `src/models` with tests, except the column formatting

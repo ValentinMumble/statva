@@ -38,7 +38,8 @@ into a home page, stats, records and an explorer map.
 - **Club:** for riders in a club, its own page: attendance week by week, groups and their
   pace, session records, finish places, every route on one map.
 - **Settings:** bikes, part limits, goal, heart rate, weight, club rules, language, labels.
-- **On a phone:** installable as an app, with a tab bar you can also swipe through.
+- **On a phone:** installable as an app, with a tab bar you can also swipe through. It opens at
+  once, even with no network, on the activities kept from the last visit.
   Export your data or disconnect from Strava (which deletes everything Statva holds).
 
 The full feature list is in [SPECS.md](SPECS.md).
@@ -135,6 +136,7 @@ npm run build
 - `src/demo/`: the made-up rides behind the demo.
 - `api/`: the server functions: Strava login, the Strava and database proxies, sync, the
   webhook, shared rides and Komoot. Secrets never reach the browser.
+- `sw/sw.js`: the service worker that keeps the app on the device (the build adds its file list).
 - `scripts/`: one-off jobs (backfill details, find deleted activities, register the webhook).
 
 ## Your data

@@ -1,4 +1,5 @@
 import {BikeExpense, Event, FTPTest, Labels, Settings} from '../models';
+import {call, readJson} from './http';
 import {NotLoggedInError} from './strava';
 import {Activity, DetailedActivity} from '../models/strava';
 
@@ -15,7 +16,7 @@ enum Key {
 }
 
 const send = async <T>(body: Record<string, unknown>): Promise<T> => {
-  const response = await fetch('/api/store', {
+  const response = await call('/api/store', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(body),
@@ -24,7 +25,7 @@ const send = async <T>(body: Record<string, unknown>): Promise<T> => {
   if (401 === response.status) throw new NotLoggedInError('Not logged in');
   if (!response.ok) throw new Error(`Store ${response.status}`);
 
-  return await response.json();
+  return await readJson<T>(response);
 };
 
 // The same few hash commands as the Upstash client, run by the server on the logged-in

@@ -2,12 +2,13 @@ import type {ClubRide} from '../models/club';
 import type {CopyChoice, CopyResult, MergeChoice, MergeResult, PendingMerge} from '../models/merge';
 import type {ActivityStreams} from '../models/stops';
 import {Athlete, Comment, DetailedActivity} from '../models/strava';
+import {call, readJson} from './http';
 
 /** Thrown when the server says nobody is logged in, so the app can show the login screen. */
 class NotLoggedInError extends Error {}
 
 const getJson = async <T>(url: string): Promise<T> => {
-  const response = await fetch(url);
+  const response = await call(url);
 
   if (401 === response.status) throw new NotLoggedInError('Not logged in');
   if (!response.ok) {
@@ -15,7 +16,7 @@ const getJson = async <T>(url: string): Promise<T> => {
     throw new Error(`Strava API ${response.status}: ${body.message ?? body.error ?? response.statusText}`);
   }
 
-  return await response.json();
+  return await readJson<T>(response);
 };
 
 // Strava is only ever called through the server, which holds the tokens.
@@ -33,12 +34,12 @@ type SyncReport = {added: number; historyDone: boolean; detailIds: string[]; lim
 type BackfillReport = {detailIds: string[]; detailsMissing: number; powerFetched: number; limited: boolean};
 
 const post = async <T>(url: string): Promise<T> => {
-  const response = await fetch(url, {method: 'POST'});
+  const response = await call(url, {method: 'POST'});
 
   if (401 === response.status) throw new NotLoggedInError('Not logged in');
   if (!response.ok) throw new Error(`${url} ${response.status}`);
 
-  return await response.json();
+  return await readJson<T>(response);
 };
 
 /** Asks the server to bring the stored activities up to date with Strava. */
@@ -58,7 +59,7 @@ type ActivityNote = 'description' | 'private_note';
 type ActivityChange = {name: string} | {gear_id: string} | Partial<Record<ActivityNote, string>>;
 
 const changeActivity = async (id: string, change: ActivityChange): Promise<void> => {
-  const response = await fetch(`/api/activity?id=${id}`, {
+  const response = await call(`/api/activity?id=${id}`, {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(change),
@@ -84,7 +85,7 @@ class UploadRefusedError extends Error {}
 
 // A merge Strava refused answers 409 with what it keeps for a retry: an answer, not a failure.
 const sendUpload = async <T>(url: string, body: unknown = {}, keptWhenRefused = false): Promise<T> => {
-  const response = await fetch(url, {
+  const response = await call(url, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(body),
@@ -119,7 +120,7 @@ const fetchPendingMerge = async (): Promise<PendingMerge | null> =>
   (await getJson<{pending: PendingMerge | null}>('/api/activity?action=merge')).pending;
 
 const discardMerge = async (): Promise<void> => {
-  await fetch('/api/activity?action=merge', {method: 'DELETE'});
+  await call('/api/activity?action=merge', {method: 'DELETE'});
 };
 
 /** The club's calendar, from its team on pedalons.fr. */
